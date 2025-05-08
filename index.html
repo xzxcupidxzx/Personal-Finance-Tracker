@@ -40,7 +40,7 @@
             display: block;
             margin-bottom: 5px;
         }
-        input[type="text"], input[type="number"], input[type="datetime-local"], select {
+        input[type="text"], input[type="datetime-local"], select { /* Removed number type as amount is text now */
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
@@ -49,7 +49,11 @@
             box-sizing: border-box;
             transition: border-color 0.3s;
         }
-        input[type="text"]:focus, input[type="number"]:focus, input[type="datetime-local"]:focus, select:focus {
+         input#amount-input[type="text"] {
+            /* No specific styles needed now, handled by general text input style */
+         }
+
+        input[type="text"]:focus, input[type="datetime-local"]:focus, select:focus {
             border-color: #3b82f6;
             outline: none;
         }
@@ -73,7 +77,7 @@
             gap: 10px;
             margin-bottom: 15px;
         }
-        .amount-currency-group input[type="number"] {
+        .amount-currency-group input[type="text"] { /* Input is text */
             flex-grow: 1;
             margin-bottom: 0;
         }
@@ -266,24 +270,7 @@
                         </label>
                     </div>
                 </div>
-                 <div>
-                    <label for="amount-input">Số tiền:</label>
-                    <div class="amount-currency-group">
-                         <input type="number" id="amount-input" placeholder="Nhập số (VD: 22.5)" required min="0" step="0.01">
-                         <select id="form-currency-selector">
-                             <option value="VND">VNĐ (x1000)</option>
-                             <option value="USD">USD (quy đổi)</option>
-                         </select>
-                    </div>
-                 </div>
-                <div>
-                    <label for="category">Hạng mục:</label>
-                    <select id="category" required>
-                        </select>
-                </div>
-                <div><label for="description">Nội dung chi tiết:</label><input type="text" id="description" placeholder="VD: Ăn trưa, Tiền điện"></div>
-                <div>
-                    <label for="account">Tài khoản:</label>
+                <div> <label for="account">Tài khoản:</label>
                     <select id="account" required>
                         <option value="Tiền mặt">Tiền mặt</option>
                         <option value="Momo">Momo</option>
@@ -292,6 +279,22 @@
                         <option value="BIDV">BIDV</option>
                         <option value="Khác">Khác</option>
                     </select>
+                </div>
+                <div> <label for="category">Hạng mục:</label>
+                    <select id="category" required>
+                        </select>
+                </div>
+                 <div> <label for="amount-input">Số tiền:</label>
+                    <div class="amount-currency-group">
+                         <input type="text" inputmode="decimal" id="amount-input" placeholder="Nhập số (VD: 22.5)" required>
+                         <select id="form-currency-selector">
+                             <option value="VND">VNĐ (x1000)</option>
+                             <option value="USD">USD (quy đổi)</option>
+                         </select>
+                    </div>
+                 </div>
+                <div> <label for="description">Nội dung chi tiết:</label>
+                    <input type="text" id="description" placeholder="VD: Ăn trưa, Tiền điện">
                 </div>
                 <div class="md:col-span-2 mt-4">
                     <button type="submit" id="submit-transaction-button" class="btn-primary w-full">
@@ -441,7 +444,7 @@
         const accountBalanceListEl = document.getElementById('account-balance-list');
         const datetimeInput = document.getElementById('datetime-input');
         const categoryInput = document.getElementById('category');
-        const amountNumberInput = document.getElementById('amount-input');
+        const amountTextInput = document.getElementById('amount-input'); // Input is text type
         const formCurrencySelector = document.getElementById('form-currency-selector');
         const descriptionInput = document.getElementById('description');
         const accountInput = document.getElementById('account');
@@ -517,13 +520,9 @@
         function formatCurrency(amount) {
             const options = { style: 'currency', currency: 'VND' };
             const locale = 'vi-VN';
-            if (amount % 1 === 0) {
-                 options.minimumFractionDigits = 0;
-                 options.maximumFractionDigits = 0;
-            } else {
-                 options.minimumFractionDigits = 0;
-                 options.maximumFractionDigits = 2; // Allow decimals if needed
-            }
+            // Allow decimals for VND display if needed
+            options.minimumFractionDigits = 0;
+            options.maximumFractionDigits = 2;
             if (isNaN(amount) || amount === null) {
                 amount = 0;
             }
@@ -550,18 +549,23 @@
              return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
          }
 
+        /**
+         * Formats an ISO datetime string to 'YYYY-MM-DD HH:MM' for display.
+         * @param {string} isoString - The ISO datetime string.
+         * @returns {string} - The formatted display datetime string.
+         */
         function formatDisplayDateTime(isoString) {
             if (!isoString) return '';
             try {
                 const date = new Date(isoString);
                 if (isNaN(date.getTime())) return isoString;
 
-                const day = String(date.getDate()).padStart(2, '0');
+                const year = date.getFullYear(); // Full year
                 const month = String(date.getMonth() + 1).padStart(2, '0');
-                const year = String(date.getFullYear()).slice(-2);
+                const day = String(date.getDate()).padStart(2, '0');
                 const hours = String(date.getHours()).padStart(2, '0');
                 const minutes = String(date.getMinutes()).padStart(2, '0');
-                return `${day}/${month}/${year} ${hours}:${minutes}`;
+                return `${year}-${month}-${day} ${hours}:${minutes}`; // Changed format
             } catch (e) {
                 console.error("Error formatting display date/time:", e, "Input:", isoString);
                 return isoString;
@@ -684,8 +688,7 @@
                 const row = transactionList.insertRow();
                 const transactionIdForButton = Number(transaction.id);
                 row.innerHTML = `
-                    <td>${formatDisplayDateTime(transaction.datetime)}</td>
-                    <td>${transaction.description || ''}</td>
+                    <td>${formatDisplayDateTime(transaction.datetime)}</td> <td>${transaction.description || ''}</td>
                     <td>${transaction.category}</td>
                     <td class="${transaction.type === 'Thu' ? 'text-green-600' : 'text-red-600'}">${formatCurrency(transaction.amount)}</td>
                     <td>${transaction.type}</td>
@@ -1138,10 +1141,8 @@
 
                 populateCategories();
                 categoryInput.value = transactionToEdit.category;
-                // Display the stored VND amount / 1000 for editing when VND was the original input method
-                // Or display the original USD amount if that was used (requires storing original input currency, which we are not doing)
-                // Simplest approach: Display the stored VND amount. User needs to re-enter considering the input rules.
-                amountNumberInput.value = transactionToEdit.amount; // Show stored VND amount
+                // Display the stored VND amount. User needs to re-enter considering the input rules.
+                amountTextInput.value = transactionToEdit.amount / 1000; // Display amount / 1000 for VNĐ (x1000) input
                 descriptionInput.value = transactionToEdit.description || '';
                 accountInput.value = transactionToEdit.account;
                 formCurrencySelector.value = 'VND'; // Default to VND for editing
@@ -1158,6 +1159,38 @@
             }
          }
 
+        /**
+         * Parses the amount input from text, handling potential commas and converting based on selected currency.
+         * @param {string} amountStr - The input string from the amount field.
+         * @param {string} currency - The selected currency ('VND' or 'USD').
+         * @returns {number | null} - The parsed numeric amount in VND or null if invalid.
+         */
+        function parseAmountInput(amountStr, currency) {
+            if (!amountStr) return null;
+            // Replace comma with dot for decimal parsing, remove other non-numeric except dot
+            const cleanedAmountStr = amountStr.replace(/,/g, '.').replace(/[^\d.]/g, '');
+            const numericAmount = parseFloat(cleanedAmountStr);
+
+            if (isNaN(numericAmount) || numericAmount < 0) {
+                return null; // Invalid number or negative
+            }
+
+            let amountInVND;
+            if (currency === 'USD') {
+                amountInVND = numericAmount * USD_TO_VND_RATE;
+            } else { // Assume VND
+                amountInVND = numericAmount * 1000; // Multiply by 1000 if VND is selected
+            }
+
+            // Ensure amountInVND is a valid number after potential conversion/multiplication
+            if (isNaN(amountInVND)) {
+                 return null;
+            }
+
+            return amountInVND;
+        }
+
+
         function handleTransactionSubmit(e) {
             e.preventDefault();
 
@@ -1167,33 +1200,21 @@
             const selectedTypeRadio = document.querySelector('input[name="type"]:checked');
             const currentType = selectedTypeRadio ? selectedTypeRadio.value : null;
             const currentAccount = accountInput.value;
-            const amountEntered = parseFloat(amountNumberInput.value);
+            const amountStr = amountTextInput.value; // Get value from text input
             const selectedFormCurrency = formCurrencySelector.value;
 
+            const amountInVND = parseAmountInput(amountStr, selectedFormCurrency); // Use parsing function
+
             // Validation
-            if (!currentDateTime || !currentCategory || isNaN(amountEntered) || !currentType || !currentAccount) {
-                showMessage('Vui lòng điền đầy đủ Ngày & Giờ, Hạng mục, Số tiền, Tài khoản và chọn Loại giao dịch.', 'error');
-                console.log("Validation failed:", {currentDateTime, currentCategory, amountEntered, currentType, currentAccount});
+            if (!currentDateTime || !currentCategory || amountInVND === null || !currentType || !currentAccount) {
+                showMessage('Vui lòng điền đầy đủ Ngày & Giờ, Hạng mục, Số tiền hợp lệ, Tài khoản và chọn Loại giao dịch.', 'error');
+                console.log("Validation failed:", {currentDateTime, currentCategory, amountEntered: amountStr, amountInVND, currentType, currentAccount});
                 return;
             }
-             if (amountEntered <= 0) {
-                 showMessage('Số tiền phải lớn hơn 0.', 'error');
+             if (amountInVND <= 0) {
+                 showMessage('Số tiền cuối cùng (sau quy đổi/nhân) phải lớn hơn 0.', 'error');
                  return;
              }
-
-            // Convert amount to VND based on the selected currency in the form
-            let amountInVND;
-            if (selectedFormCurrency === 'USD') {
-                amountInVND = amountEntered * USD_TO_VND_RATE;
-            } else { // Assume VND
-                amountInVND = amountEntered * 1000; // Multiply by 1000 if VND is selected
-            }
-
-            // Ensure amountInVND is a valid number after potential conversion/multiplication
-            if (isNaN(amountInVND)) {
-                 showMessage('Lỗi xử lý số tiền. Vui lòng kiểm tra lại.', 'error');
-                 return;
-            }
 
 
             if (editingTransactionId !== null) {
@@ -1293,8 +1314,8 @@
                 if (start && end) {
                     const option = document.createElement('option');
                     option.value = weekId;
-                    const startDateDisplay = formatDisplayDateTime(start + "T00:00").split(' ')[0];
-                    const endDateDisplay = formatDisplayDateTime(end + "T23:59").split(' ')[0];
+                    const startDateDisplay = formatDisplayDateTime(start + "T00:00").split(' ')[0]; // Show YYYY-MM-DD
+                    const endDateDisplay = formatDisplayDateTime(end + "T23:59").split(' ')[0]; // Show YYYY-MM-DD
                     option.textContent = `${weekId} (${startDateDisplay} - ${endDateDisplay})`;
                     filterComparisonWeekSelect.appendChild(option);
                 }
