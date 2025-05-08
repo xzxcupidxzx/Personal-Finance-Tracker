@@ -269,9 +269,11 @@
                  <div>
                     <label for="amount-input">Số tiền:</label>
                     <div class="amount-currency-group">
-                         <input type="number" id="amount-input" placeholder="Nhập số (x1000 nếu VNĐ)" required min="0" step="0.01">
+                         <input type="number" id="amount-input" placeholder="Nhập số (VD: 22.5)" required min="0" step="0.01">
                          <select id="form-currency-selector">
-                             <option value="VND">VNĐ (x1000)</option> <option value="USD">USD (quy đổi)</option> </select>
+                             <option value="VND">VNĐ (x1000)</option>
+                             <option value="USD">USD (quy đổi)</option>
+                         </select>
                     </div>
                  </div>
                 <div>
@@ -426,7 +428,7 @@
         Chart.register(ChartDataLabels);
 
         // Constants
-        const USD_TO_VND_RATE = 25000; // Define exchange rate (Example: 1 USD = 25000 VND)
+        const USD_TO_VND_RATE = 25000; // Define exchange rate
 
         // DOM Elements
         const transactionForm = document.getElementById('transaction-form');
@@ -520,7 +522,7 @@
                  options.maximumFractionDigits = 0;
             } else {
                  options.minimumFractionDigits = 0;
-                 options.maximumFractionDigits = 2;
+                 options.maximumFractionDigits = 2; // Allow decimals if needed
             }
             if (isNaN(amount) || amount === null) {
                 amount = 0;
@@ -1136,11 +1138,13 @@
 
                 populateCategories();
                 categoryInput.value = transactionToEdit.category;
-                // Display the stored VND amount. User needs to re-enter if they want to edit in USD terms.
-                amountNumberInput.value = transactionToEdit.amount;
+                // Display the stored VND amount / 1000 for editing when VND was the original input method
+                // Or display the original USD amount if that was used (requires storing original input currency, which we are not doing)
+                // Simplest approach: Display the stored VND amount. User needs to re-enter considering the input rules.
+                amountNumberInput.value = transactionToEdit.amount; // Show stored VND amount
                 descriptionInput.value = transactionToEdit.description || '';
                 accountInput.value = transactionToEdit.account;
-                formCurrencySelector.value = 'VND'; // Always default to VND when loading for edit
+                formCurrencySelector.value = 'VND'; // Default to VND for editing
 
                 editingTransactionId = idToEdit;
                 formTitleEl.textContent = "Sửa Giao Dịch";
@@ -1169,7 +1173,7 @@
             // Validation
             if (!currentDateTime || !currentCategory || isNaN(amountEntered) || !currentType || !currentAccount) {
                 showMessage('Vui lòng điền đầy đủ Ngày & Giờ, Hạng mục, Số tiền, Tài khoản và chọn Loại giao dịch.', 'error');
-                console.log("Validation failed:", {currentDateTime, currentCategory, amountEntered, currentType, currentAccount}); // Debug log
+                console.log("Validation failed:", {currentDateTime, currentCategory, amountEntered, currentType, currentAccount});
                 return;
             }
              if (amountEntered <= 0) {
