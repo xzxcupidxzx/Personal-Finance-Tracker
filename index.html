@@ -20,19 +20,27 @@
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .form-section, .summary-section, .table-section, .chart-section, .comparison-section, .expense-breakdown-section {
+        .form-section, .summary-section, .table-section, .chart-section, .comparison-section, .expense-breakdown-section, .data-io-section {
             margin-bottom: 30px;
             padding: 20px;
             border: 1px solid #e5e7eb;
             border-radius: 10px;
         }
-        .form-section h2, .summary-section h2, .table-section h2, .chart-section h2, .comparison-section h2, .expense-breakdown-section h2 {
+        .form-section h2, .summary-section h2, .table-section h2, .chart-section h2, .comparison-section h2, .expense-breakdown-section h2, .data-io-section h2 {
             font-size: 1.5rem;
             font-weight: 600;
             color: #1f2937;
             margin-bottom: 15px;
             border-bottom: 2px solid #60a5fa;
             padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        .form-section h2 svg, .summary-section h2 svg, .table-section h2 svg, .chart-section h2 svg, .comparison-section h2 svg, .expense-breakdown-section h2 svg, .data-io-section h2 svg {
+             width: 1.5rem;
+             height: 1.5rem;
+             margin-right: 0.5rem;
+             color: #3b82f6;
         }
         label {
             font-weight: 500;
@@ -40,7 +48,7 @@
             display: block;
             margin-bottom: 5px;
         }
-        input[type="text"], input[type="datetime-local"], select { /* Removed number type as amount is text now */
+        input[type="text"], input[type="datetime-local"], input[type="date"], select {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
@@ -49,11 +57,9 @@
             box-sizing: border-box;
             transition: border-color 0.3s;
         }
-         input#amount-input[type="text"] {
-            /* No specific styles needed now, handled by general text input style */
-         }
+         input#amount-input[type="text"] { }
 
-        input[type="text"]:focus, input[type="datetime-local"]:focus, select:focus {
+        input[type="text"]:focus, input[type="datetime-local"]:focus, input[type="date"]:focus, select:focus {
             border-color: #3b82f6;
             outline: none;
         }
@@ -77,7 +83,7 @@
             gap: 10px;
             margin-bottom: 15px;
         }
-        .amount-currency-group input[type="text"] { /* Input is text */
+        .amount-currency-group input[type="text"] {
             flex-grow: 1;
             margin-bottom: 0;
         }
@@ -94,7 +100,15 @@
             cursor: pointer;
             font-weight: 500;
             transition: background-color 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
+         button svg {
+             width: 1.25rem;
+             height: 1.25rem;
+             margin-right: 0.375rem;
+         }
         .btn-primary {
             background-color: #3b82f6;
             color: white;
@@ -102,12 +116,41 @@
         .btn-primary:hover {
             background-color: #2563eb;
         }
+        .btn-secondary {
+             background-color: #6b7280;
+             color: white;
+         }
+         .btn-secondary:hover {
+             background-color: #4b5563;
+         }
         .btn-edit {
             background-color: #f59e0b;
             color: white;
+            padding: 4px 8px; /* Smaller padding for table buttons */
+            font-size: 0.8rem; /* Smaller font size */
+            margin-right: 4px; /* Add space between buttons */
+        }
+        .btn-edit svg { /* Adjust icon size in edit button */
+             width: 0.9rem;
+             height: 0.9rem;
+             margin-right: 2px;
         }
         .btn-edit:hover {
             background-color: #d97706;
+        }
+        .btn-delete { /* Style for delete button */
+            background-color: #ef4444; /* Red */
+            color: white;
+            padding: 4px 8px; /* Smaller padding */
+            font-size: 0.8rem; /* Smaller font size */
+        }
+        .btn-delete svg { /* Adjust icon size in delete button */
+             width: 0.9rem;
+             height: 0.9rem;
+             margin-right: 2px;
+        }
+        .btn-delete:hover {
+            background-color: #dc2626; /* Darker Red */
         }
         table {
             width: 100%;
@@ -119,6 +162,11 @@
             padding: 12px;
             text-align: left;
             font-size: 0.9rem;
+        }
+        /* Ensure action column has enough width */
+        th:last-child, td:last-child {
+            width: 120px; /* Adjust as needed */
+            text-align: center;
         }
         th {
             background-color: #f9fafb;
@@ -240,6 +288,11 @@
              justify-content: flex-end;
              margin-bottom: 20px;
         }
+        .data-io-section .button-group {
+             display: flex;
+             gap: 1rem;
+             flex-wrap: wrap;
+         }
 
     </style>
 </head>
@@ -252,9 +305,36 @@
 
         <div id="message-box" style="display: none;"></div>
 
+        <div class="data-io-section">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                Quản lý Dữ liệu
+            </h2>
+            <div class="button-group">
+                <button id="export-button" class="btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
+                    Xuất Dữ Liệu (JSON)
+                </button>
+                <button id="import-button" class="btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                    </svg>
+                    Nhập Dữ Liệu (JSON)
+                </button>
+                <input type="file" id="import-file-input" accept=".json" style="display: none;"> </div>
+            <p class="text-sm text-gray-500 mt-3">Lưu ý: Nhập dữ liệu sẽ ghi đè toàn bộ dữ liệu hiện tại.</p>
+        </div>
+
+
         <div class="form-section">
              <h2>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 inline-block mr-2 text-blue-500"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                </svg>
                 <span id="form-title">Thêm Giao Dịch Mới</span>
             </h2>
             <form id="transaction-form" class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
@@ -298,9 +378,9 @@
                 </div>
                 <div class="md:col-span-2 mt-4">
                     <button type="submit" id="submit-transaction-button" class="btn-primary w-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 inline-block mr-1">
+                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                        </svg>
+                         </svg>
                         Thêm Giao Dịch
                     </button>
                 </div>
@@ -309,7 +389,9 @@
 
         <div class="summary-section">
             <h2>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 inline-block mr-2 text-blue-500"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h15.75c.621 0 1.125.504 1.125 1.125v6.75c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 013 19.875v-6.75zM3 6.375C3 5.754 3.504 5.25 4.125 5.25h15.75c.621 0 1.125.504 1.125 1.125v6.75c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 013 13.125V6.375zM12 3v2.25M12 17.25v2.25M6.375 12H4.125m15.75 0H17.625" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0l.879-.659M18 10.2F18 6.57 15.314 4 12 4s-6 2.57-6 6.2c0 1.707.673 3.293 1.758 4.45l.149.149A6.086 6.086 0 0012 20.25a6.086 6.086 0 004.093-1.45l.149-.149A5.99 5.99 0 0018 10.2z" />
+                </svg>
                 Tóm Tắt Tài Chính (VNĐ)
             </h2>
             <div id="summary-content">
@@ -324,10 +406,8 @@
 
         <div class="expense-breakdown-section">
             <h2>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 inline-block mr-2 text-blue-500">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 100 15 7.5 7.5 0 000-15z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 10.5v.01M15.088 11.129l.793-.793a.75.75 0 011.06 1.06l-.792.792a3.751 3.751 0 01-5.304 0L8.12 9.364a.75.75 0 011.06-1.06l.793.793" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 12a3.752 3.752 0 00-2.716 1.116l-.79.79a.75.75 0 001.06 1.06l.79-.79A2.252 2.252 0 0112 13.5a2.252 2.252 0 011.588.656l.79.79a.75.75 0 101.06-1.06l-.79-.79A3.752 3.752 0 0012 12z" />
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                   <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 100 15 7.5 7.5 0 000-15z" /> <path stroke-linecap="round" stroke-linejoin="round" d="M12 10.5v.01M15.088 11.129l.793-.793a.75.75 0 011.06 1.06l-.792.792a3.751 3.751 0 01-5.304 0L8.12 9.364a.75.75 0 011.06-1.06l.793.793" /> <path stroke-linecap="round" stroke-linejoin="round" d="M12 12a3.752 3.752 0 00-2.716 1.116l-.79.79a.75.75 0 001.06 1.06l.79-.79A2.252 2.252 0 0112 13.5a2.252 2.252 0 011.588.656l.79.79a.75.75 0 101.06-1.06l-.79-.79A3.752 3.752 0 0012 12z" />
                 </svg>
                 Phân Loại Chi Tiêu (Tháng Lọc - VNĐ)
             </h2>
@@ -344,21 +424,27 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="chart-section">
                 <h2>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 inline-block mr-2 text-blue-500"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 100 15 7.5 7.5 0 000-15zM12 10.5v4.5m0 0l2.25-2.25M12 14.25l-2.25-2.25M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                       <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h15.75c.621 0 1.125.504 1.125 1.125v6.75c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 013 19.875v-6.75zM3 6.375C3 5.754 3.504 5.25 4.125 5.25h15.75c.621 0 1.125.504 1.125 1.125v6.75c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 013 13.125V6.375z" />
+                    </svg>
                     Biểu Đồ Thu vs Chi (Tháng Lọc - VNĐ)
                 </h2>
                 <div class="chart-container"><canvas id="incomeExpenseChart"></canvas></div>
             </div>
              <div class="chart-section">
                  <h2>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 inline-block mr-2 text-red-500"> <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" /> </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                       <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
+                    </svg>
                      Chi Tiêu 7 Ngày Qua (Biểu đồ đường - VNĐ)
                 </h2>
                 <div class="chart-container"><canvas id="last7DaysChart"></canvas></div>
             </div>
              <div class="chart-section md:col-span-2">
                  <h2>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 inline-block mr-2 text-purple-500"> <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" /> </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                       <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
+                    </svg>
                      So Sánh Tháng Này & Tháng Trước (VNĐ)
                 </h2>
                 <div class="chart-container"><canvas id="monthComparisonChart"></canvas></div>
@@ -367,7 +453,9 @@
 
         <div class="comparison-section">
             <h2>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 inline-block mr-2 text-blue-500"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-3.75h.008v.008H12v-.008zM12 12.75h.008v.008H12v-.008z" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                   <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-3.75h.008v.008H12v-.008zM12 12.75h.008v.008H12v-.008z" />
+                </svg>
                 Thống Kê & So Sánh Tuần (VNĐ)
             </h2>
             <div class="filter-container">
@@ -400,6 +488,12 @@
         </div>
 
         <div class="table-section">
+             <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                   <path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5M3.375 19.5l1.95-1.95M12.375 19.5h8.875M12.375 19.5l-1.95-1.95M20.625 19.5a1.125 1.125 0 001.125-1.125M20.625 19.5l-1.95-1.95M3.75 4.5h16.5M3.75 4.5a2.25 2.25 0 00-2.25 2.25v11.25c0 1.24 1.01 2.25 2.25 2.25h16.5c1.24 0 2.25-1.01 2.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25M3.75 4.5v.75m16.5-.75v.75m0 0a2.25 2.25 0 01-2.25 2.25h-5.25a2.25 2.25 0 01-2.25-2.25m-5.25 0h5.25m-5.25 0a2.25 2.25 0 01-2.25-2.25M3.75 7.5v.75m16.5-.75v.75" />
+                </svg>
+                Danh Sách Giao Dịch
+             </h2>
              <div class="table-actions">
                  <div class="filter-container">
                     <label for="filter-month">Lọc theo tháng:</label>
@@ -410,8 +504,7 @@
                 <table id="transaction-table">
                     <thead>
                         <tr>
-                            <th>Ngày & Giờ</th>
-                            <th>Nội dung</th>
+                            <th>Ngày & Giờ (YYYY-MM-DD HH:MM)</th> <th>Nội dung</th>
                             <th>Hạng mục</th>
                             <th>Số tiền (VNĐ)</th> <th>Loại</th>
                             <th>Tài khoản</th>
@@ -470,6 +563,9 @@
         const spendingDifferenceEl = document.getElementById('spending-difference');
         const noComparisonDataEl = document.getElementById('no-comparison-data');
         const typeRadioButtons = document.querySelectorAll('input[name="type"]');
+        const exportButton = document.getElementById('export-button');
+        const importButton = document.getElementById('import-button');
+        const importFileInput = document.getElementById('import-file-input');
 
         let transactions = JSON.parse(localStorage.getItem('transactions_v2')) || [];
         let incomeExpenseChart;
@@ -520,7 +616,6 @@
         function formatCurrency(amount) {
             const options = { style: 'currency', currency: 'VND' };
             const locale = 'vi-VN';
-            // Allow decimals for VND display if needed
             options.minimumFractionDigits = 0;
             options.maximumFractionDigits = 2;
             if (isNaN(amount) || amount === null) {
@@ -558,14 +653,22 @@
             if (!isoString) return '';
             try {
                 const date = new Date(isoString);
-                if (isNaN(date.getTime())) return isoString;
+                if (isNaN(date.getTime())) {
+                    // Try parsing without seconds if full ISO fails
+                    const dateWithoutSeconds = new Date(isoString.substring(0, 16));
+                     if (isNaN(dateWithoutSeconds.getTime())) {
+                         console.warn("Could not parse date string:", isoString);
+                         return isoString; // Return original if still invalid
+                     }
+                    date = dateWithoutSeconds;
+                };
 
                 const year = date.getFullYear(); // Full year
                 const month = String(date.getMonth() + 1).padStart(2, '0');
                 const day = String(date.getDate()).padStart(2, '0');
                 const hours = String(date.getHours()).padStart(2, '0');
                 const minutes = String(date.getMinutes()).padStart(2, '0');
-                return `${year}-${month}-${day} ${hours}:${minutes}`; // Changed format
+                return `${year}-${month}-${day} ${hours}:${minutes}`; // Use YYYY-MM-DD HH:MM format
             } catch (e) {
                 console.error("Error formatting display date/time:", e, "Input:", isoString);
                 return isoString;
@@ -674,8 +777,12 @@
             return `${year}-W${String(week).padStart(2, '0')}`;
         }
 
+        /**
+         * Renders the list of transactions in the table.
+         * @param {Array} filteredTransactions - The transactions to display.
+         */
         function renderMainTransactions(filteredTransactions = transactions) {
-            transactionList.innerHTML = '';
+            transactionList.innerHTML = ''; // Clear existing rows
             noTransactionsMessage.style.display = filteredTransactions.length === 0 ? 'block' : 'none';
 
              if (filteredTransactions.length === 0 && transactions.length > 0 && filterMonthSelect.value !== 'all') {
@@ -693,12 +800,58 @@
                     <td class="${transaction.type === 'Thu' ? 'text-green-600' : 'text-red-600'}">${formatCurrency(transaction.amount)}</td>
                     <td>${transaction.type}</td>
                     <td>${transaction.account}</td>
-                    <td><button class="btn-edit text-xs px-2 py-1" onclick="loadTransactionForEdit(${transactionIdForButton})">Sửa</button></td>
+                    <td>
+                        <button class="btn-edit" onclick="loadTransactionForEdit(${transactionIdForButton})">
+                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>
+                             Sửa
+                        </button>
+                        <button class="btn-delete" onclick="deleteTransaction(${transactionIdForButton})">
+                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                             Xóa
+                        </button>
+                    </td>
                 `;
             });
             updateAllSummariesAndCharts(filteredTransactions);
             populateMonthFilter();
         }
+
+        /**
+         * Deletes a transaction after confirmation.
+         * @param {number} transactionId - The ID of the transaction to delete.
+         */
+        window.deleteTransaction = function(transactionId) { // Make it global
+            const idToDelete = Number(transactionId);
+            if (isNaN(idToDelete)) {
+                 showMessage('Lỗi: ID giao dịch không hợp lệ để xóa.', 'error');
+                 return;
+            }
+
+            const transactionToDelete = transactions.find(t => t.id === idToDelete);
+            if (!transactionToDelete) {
+                showMessage(`Lỗi: Không tìm thấy giao dịch với ID ${idToDelete} để xóa.`, 'error');
+                return;
+            }
+
+            // Confirmation dialog
+            if (confirm(`Bạn có chắc chắn muốn xóa giao dịch "${transactionToDelete.description || 'Không có nội dung'}" vào ngày ${formatDisplayDateTime(transactionToDelete.datetime)} không? Thao tác này không thể hoàn tác.`)) {
+                try {
+                    // Filter out the transaction to delete
+                    transactions = transactions.filter(t => t.id !== idToDelete);
+                    localStorage.setItem('transactions_v2', JSON.stringify(transactions)); // Update localStorage
+                    applyMainFilter(); // Re-render the UI
+                    populateComparisonWeekFilter();
+                    updateWeeklyComparisonDisplay();
+                    showMessage('Đã xóa giao dịch thành công!', 'success');
+                } catch (error) {
+                     console.error('Lỗi khi xóa giao dịch:', error);
+                     showMessage('Đã xảy ra lỗi khi xóa giao dịch.', 'error');
+                }
+            } else {
+                showMessage('Đã hủy thao tác xóa.', 'info');
+            }
+        }
+
 
         function updateAllSummariesAndCharts(transactionsToAnalyze = transactions) {
              updateMainSummaryAndChart(transactionsToAnalyze);
@@ -1141,8 +1294,8 @@
 
                 populateCategories();
                 categoryInput.value = transactionToEdit.category;
-                // Display the stored VND amount. User needs to re-enter considering the input rules.
-                amountTextInput.value = transactionToEdit.amount / 1000; // Display amount / 1000 for VNĐ (x1000) input
+                // Display the stored VND amount divided by 1000 for easier editing
+                amountTextInput.value = transactionToEdit.amount / 1000;
                 descriptionInput.value = transactionToEdit.description || '';
                 accountInput.value = transactionToEdit.account;
                 formCurrencySelector.value = 'VND'; // Default to VND for editing
@@ -1404,8 +1557,80 @@
             noComparisonDataEl.style.display = 'none';
         }
 
-        // --- Event Listener for Currency Change (Form Only - No global effect) ---
-        // No listener needed as it doesn't change global state
+        // --- Export Data Function ---
+        function exportData() {
+            if (transactions.length === 0) {
+                showMessage('Không có dữ liệu để xuất.', 'error');
+                return;
+            }
+            try {
+                const jsonData = JSON.stringify(transactions, null, 2);
+                const blob = new Blob([jsonData], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+                link.download = `so-tai-chinh-data-${timestamp}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                showMessage('Xuất dữ liệu thành công!', 'success');
+            } catch (error) {
+                console.error('Lỗi khi xuất dữ liệu:', error);
+                showMessage('Đã xảy ra lỗi khi xuất dữ liệu.', 'error');
+            }
+        }
+
+        // --- Import Data Function ---
+        function handleImportFile(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+
+                    if (!Array.isArray(importedData)) {
+                        throw new Error('File không chứa định dạng dữ liệu hợp lệ (không phải là một mảng).');
+                    }
+
+                    const isValidStructure = importedData.every(item =>
+                        typeof item === 'object' && item !== null &&
+                        'id' in item && 'datetime' in item && 'amount' in item && 'type' in item && 'category' in item && 'account' in item
+                    );
+
+                    if (!isValidStructure) {
+                         console.warn('Dữ liệu nhập vào có cấu trúc không hoàn toàn khớp, nhưng vẫn thử nhập.');
+                    }
+
+                    if (confirm(`Bạn có chắc muốn nhập ${importedData.length} giao dịch từ file này? Dữ liệu hiện tại sẽ bị ghi đè.`)) {
+                        transactions = importedData;
+                        localStorage.setItem('transactions_v2', JSON.stringify(transactions));
+                        applyMainFilter();
+                        populateComparisonWeekFilter();
+                        updateWeeklyComparisonDisplay();
+                        showMessage('Nhập dữ liệu thành công!', 'success');
+                    } else {
+                        showMessage('Đã hủy thao tác nhập dữ liệu.', 'info');
+                    }
+
+                } catch (error) {
+                    console.error('Lỗi khi nhập dữ liệu:', error);
+                    showMessage(`Lỗi khi đọc hoặc xử lý file: ${error.message}`, 'error');
+                } finally {
+                    importFileInput.value = null;
+                }
+            };
+            reader.onerror = function() {
+                showMessage('Đã xảy ra lỗi khi đọc file.', 'error');
+                 importFileInput.value = null;
+            };
+            reader.readAsText(file);
+        }
+
 
         // --- Initial Load ---
         function initializeApp() {
@@ -1434,6 +1659,9 @@
              populateComparisonWeekFilter();
         });
         filterComparisonWeekSelect.addEventListener('change', updateWeeklyComparisonDisplay);
+        exportButton.addEventListener('click', exportData);
+        importButton.addEventListener('click', () => importFileInput.click());
+        importFileInput.addEventListener('change', handleImportFile);
 
         initializeApp(); // Run initialization
 
