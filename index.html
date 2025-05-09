@@ -408,6 +408,21 @@
             </div>
         </div>
 
+        <div class="section table-section">
+             <h2 class="section-header collapsible-header active" data-collapsible-target="table-content"> <div class="header-text-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5M3.375 19.5l1.95-1.95M12.375 19.5h8.875M12.375 19.5l-1.95-1.95M20.625 19.5a1.125 1.125 0 001.125-1.125M20.625 19.5l-1.95-1.95M3.75 4.5h16.5M3.75 4.5a2.25 2.25 0 00-2.25 2.25v11.25c0 1.24 1.01 2.25 2.25 2.25h16.5c1.24 0 2.25-1.01 2.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25M3.75 4.5v.75m16.5-.75v.75m0 0a2.25 2.25 0 01-2.25 2.25h-5.25a2.25 2.25 0 01-2.25-2.25m-5.25 0h5.25m-5.25 0a2.25 2.25 0 01-2.25-2.25M3.75 7.5v.75m16.5-.75v.75" /></svg>
+                    Danh Sách Giao Dịch
+                </div>
+                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+            </h2>
+             <div class="collapsible-content active" id="table-content"> <div class="table-actions">
+                     <div class="filter-container"><label for="filter-month">Lọc theo tháng:</label><select id="filter-month" class="p-2 border rounded-md"><option value="all">Tất cả</option></select></div>
+                </div>
+                <div class="overflow-x-auto"><table id="transaction-table"><thead><tr><th>Ngày & Giờ</th><th>Nội dung</th><th>Hạng mục</th><th>Số tiền (VNĐ)</th><th>Loại</th><th>Tài khoản</th><th>Thao tác</th></tr></thead><tbody id="transaction-list"></tbody></table></div>
+                <p id="no-transactions" class="text-center text-gray-500 mt-4" style="display: none;">Chưa có giao dịch nào.</p>
+            </div>
+        </div>
+
         <div class="section summary-section">
             <h2 class="section-header collapsible-header active" data-collapsible-target="summary-content-wrapper"> <div class="header-text-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0l.879-.659M18 10.2F18 6.57 15.314 4 12 4s-6 2.57-6 6.2c0 1.707.673 3.293 1.758 4.45l.149.149A6.086 6.086 0 0012 20.25a6.086 6.086 0 004.093-1.45l.149-.149A5.99 5.99 0 0018 10.2z" /></svg>
@@ -416,9 +431,9 @@
                 <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
             </h2>
             <div class="collapsible-content active" id="summary-content-wrapper"> <div id="summary-content">
-                    <div class="summary-item"><span>Tổng Thu (Tháng Lọc):</span><span id="total-income" class="text-green-600 font-semibold">0</span></div>
-                    <div class="summary-item"><span>Tổng Chi (Tháng Lọc):</span><span id="total-expenses" class="text-red-600 font-semibold">0</span></div>
-                    <div class="summary-item"><span>Số Dư (Tháng Lọc):</span><span id="current-balance" class="text-blue-600 font-bold">0</span></div>
+					<div class="summary-item"><span>Tổng Thu <span id="summary-income-month-display">(Tháng Lọc)</span>:</span><span id="total-income" class="text-green-600 font-semibold">0</span></div>
+					<div class="summary-item"><span>Tổng Chi <span id="summary-expense-month-display">(Tháng Lọc)</span>:</span><span id="total-expenses" class="text-red-600 font-semibold">0</span></div>
+					<div class="summary-item"><span>Số Dư <span id="summary-balance-month-display">(Tháng Lọc)</span>:</span><span id="current-balance" class="text-blue-600 font-bold">0</span></div>
                 </div>
                 <div id="account-balance-list" class="account-balance-list"><h3>Số Dư Theo Tài Khoản (Tổng thể - VNĐ):</h3></div>
             </div>
@@ -426,10 +441,10 @@
 
         <div class="section expense-breakdown-section">
             <h2 class="section-header collapsible-header" data-collapsible-target="expense-breakdown-content">
-                 <div class="header-text-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 100 15 7.5 7.5 0 000-15z" /> <path stroke-linecap="round" stroke-linejoin="round" d="M12 10.5v.01M15.088 11.129l.793-.793a.75.75 0 011.06 1.06l-.792.792a3.751 3.751 0 01-5.304 0L8.12 9.364a.75.75 0 011.06-1.06l.793.793" /> <path stroke-linecap="round" stroke-linejoin="round" d="M12 12a3.752 3.752 0 00-2.716 1.116l-.79.79a.75.75 0 001.06 1.06l.79-.79A2.252 2.252 0 0112 13.5a2.252 2.252 0 011.588.656l.79.79a.75.75 0 101.06-1.06l-.79-.79A3.752 3.752 0 0012 12z" /></svg>
-                    Phân Loại Chi Tiêu (Tháng Lọc - VNĐ)
-                </div>
+				<div class="header-text-icon">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 100 15 7.5 7.5 0 000-15z" /> <path stroke-linecap="round" stroke-linejoin="round" d="M12 10.5v.01M15.088 11.129l.793-.793a.75.75 0 011.06 1.06l-.792.792a3.751 3.751 0 01-5.304 0L8.12 9.364a.75.75 0 011.06-1.06l.793.793" /> <path stroke-linecap="round" stroke-linejoin="round" d="M12 12a3.752 3.752 0 00-2.716 1.116l-.79.79a.75.75 0 001.06 1.06l.79-.79A2.252 2.252 0 0112 13.5a2.252 2.252 0 011.588.656l.79.79a.75.75 0 101.06-1.06l-.79-.79A3.752 3.752 0 0012 12z" /></svg>
+					<span id="expense-breakdown-title-text">Phân Loại Chi Tiêu (Tháng Lọc - VNĐ)</span>
+				</div>
                 <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
             </h2>
             <div class="collapsible-content" id="expense-breakdown-content">
@@ -450,7 +465,7 @@
             </h2>
             <div class="collapsible-content" id="charts-grid-content">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div> <h3 class="text-lg font-semibold mb-2 text-center">Biểu Đồ Thu vs Chi (Tháng Lọc - VNĐ)</h3>
+                    <div> <h3 class="text-lg font-semibold mb-2 text-center" id="income-expense-chart-title">Biểu Đồ Thu vs Chi (Tháng Lọc - VNĐ)</h3>
                         <div class="chart-container"><canvas id="incomeExpenseChart"></canvas></div>
                     </div>
                     <div>
@@ -485,22 +500,6 @@
                 <p id="no-comparison-data" class="text-center text-gray-500 mt-4">Chọn một năm và tuần để xem thống kê.</p>
             </div>
         </div>
-
-        <div class="section table-section">
-             <h2 class="section-header collapsible-header active" data-collapsible-target="table-content"> <div class="header-text-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5M3.375 19.5l1.95-1.95M12.375 19.5h8.875M12.375 19.5l-1.95-1.95M20.625 19.5a1.125 1.125 0 001.125-1.125M20.625 19.5l-1.95-1.95M3.75 4.5h16.5M3.75 4.5a2.25 2.25 0 00-2.25 2.25v11.25c0 1.24 1.01 2.25 2.25 2.25h16.5c1.24 0 2.25-1.01 2.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25M3.75 4.5v.75m16.5-.75v.75m0 0a2.25 2.25 0 01-2.25 2.25h-5.25a2.25 2.25 0 01-2.25-2.25m-5.25 0h5.25m-5.25 0a2.25 2.25 0 01-2.25-2.25M3.75 7.5v.75m16.5-.75v.75" /></svg>
-                    Danh Sách Giao Dịch
-                </div>
-                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
-            </h2>
-             <div class="collapsible-content active" id="table-content"> <div class="table-actions">
-                     <div class="filter-container"><label for="filter-month">Lọc theo tháng:</label><select id="filter-month" class="p-2 border rounded-md"><option value="all">Tất cả</option></select></div>
-                </div>
-                <div class="overflow-x-auto"><table id="transaction-table"><thead><tr><th>Ngày & Giờ</th><th>Nội dung</th><th>Hạng mục</th><th>Số tiền (VNĐ)</th><th>Loại</th><th>Tài khoản</th><th>Thao tác</th></tr></thead><tbody id="transaction-list"></tbody></table></div>
-                <p id="no-transactions" class="text-center text-gray-500 mt-4" style="display: none;">Chưa có giao dịch nào.</p>
-            </div>
-        </div>
-
         <div class="section category-customization-section">
             <h2 class="section-header collapsible-header" data-collapsible-target="category-customization-content">
                 <div class="header-text-icon">
@@ -846,67 +845,113 @@
             return Math.round(val);
         }
 
-        function handleTransactionSubmit(e) {
-            e.preventDefault();
-            const datetimeValue = datetimeInput.value;
-            const typeRadio = document.querySelector('input[name="type"]:checked');
-            const type = typeRadio ? typeRadio.value : null;
-            const amountRaw = amountTextInput.value;
-            const currency = formCurrencySelector.value;
-            let categoryValue = (type !== 'Transfer') ? categoryInput.value : null;
-            const accountValue = accountInput.value;
-            const toAccountValue = (type === 'Transfer') ? toAccountInput.value : null;
-            const descriptionValue = descriptionInput.value.trim();
+		function handleTransactionSubmit(e) {
+			e.preventDefault();
+			const datetimeValue = datetimeInput.value;
+			const typeRadio = document.querySelector('input[name="type"]:checked');
+			const type = typeRadio ? typeRadio.value : null;
+			const amountRaw = amountTextInput.value;
+			const currency = formCurrencySelector.value;
+			let categoryValue = (type !== 'Transfer') ? categoryInput.value : null;
+			const accountValue = accountInput.value;
+			const toAccountValue = (type === 'Transfer') ? toAccountInput.value : null;
+			const descriptionValue = descriptionInput.value.trim();
 
-            if (!datetimeValue || !type || !amountRaw || !accountValue) { showMessage('Vui lòng điền đầy đủ các trường bắt buộc.', 'error'); return; }
-            if (type !== 'Transfer' && !categoryValue) { showMessage('Vui lòng chọn hạng mục.', 'error'); return; }
-            if (type === 'Transfer' && !toAccountValue) { showMessage('Vui lòng chọn tài khoản nhận cho giao dịch chuyển tiền.', 'error'); return; }
-            if (type === 'Transfer' && accountValue === toAccountValue) { showMessage('Tài khoản chuyển và tài khoản nhận không được trùng nhau.', 'error'); return; }
+			// --- GIỮ NGUYÊN PHẦN VALIDATION DỮ LIỆU ---
+			if (!datetimeValue || !type || !amountRaw || !accountValue) { showMessage('Vui lòng điền đầy đủ các trường bắt buộc.', 'error'); return; }
+			if (type !== 'Transfer' && !categoryValue) { showMessage('Vui lòng chọn hạng mục.', 'error'); return; }
+			if (type === 'Transfer' && !toAccountValue) { showMessage('Vui lòng chọn tài khoản nhận cho giao dịch chuyển tiền.', 'error'); return; }
+			if (type === 'Transfer' && accountValue === toAccountValue) { showMessage('Tài khoản chuyển và tài khoản nhận không được trùng nhau.', 'error'); return; }
+			let amount = parseAmountInput(amountRaw, currency);
+			if (isNaN(amount) || amount <= 0) { showMessage('Số tiền không hợp lệ hoặc phải lớn hơn 0.', 'error'); return; }
+			const transactionDateTime = formatIsoDateTime(new Date(datetimeValue));
+			// --- KẾT THÚC PHẦN VALIDATION ---
 
-            let amount = parseAmountInput(amountRaw, currency);
-            if (isNaN(amount) || amount <= 0) { showMessage('Số tiền không hợp lệ hoặc phải lớn hơn 0.', 'error'); return; }
-            const transactionDateTime = formatIsoDateTime(new Date(datetimeValue));
+			const persistedTransactionType = type; 
 
-            if (editingTransactionId) {
-                const existingTransactionIndex = transactions.findIndex(t => t.id === editingTransactionId || (t.isTransfer && (t.id.startsWith(editingTransactionId) || t.transferPairId.startsWith(editingTransactionId))));
-                if (existingTransactionIndex === -1 && type !== 'Transfer') { showMessage('Lỗi: Giao dịch gốc để sửa không tìm thấy.', 'error'); editingTransactionId = null; return; }
-                if (transactions.find(t => t.id.startsWith(editingTransactionId) && t.isTransfer) || type === 'Transfer') {
-                    transactions = transactions.filter(t => !t.id.startsWith(editingTransactionId) && !(t.transferPairId && t.transferPairId.startsWith(editingTransactionId)));
-                } else if (existingTransactionIndex !== -1) { transactions.splice(existingTransactionIndex, 1); }
-                const baseId = editingTransactionId;
-                if (type === 'Transfer') {
-                    categoryValue = null;
-                    const transferOutId = baseId + "_out_edited_" + Date.now(); const transferInId = baseId + "_in_edited_" + Date.now();
-                    transactions.push({ id: transferOutId, datetime: transactionDateTime, description: descriptionValue || `Chuyển tiền từ ${accountValue} đến ${toAccountValue}`, category: TRANSFER_CATEGORY_OUT, amount, type: 'Chi', account: accountValue, currency: 'VND', isTransfer: true, transferPairId: transferInId, originalAmount: parseFloat(amountRaw), originalCurrency: currency });
-                    transactions.push({ id: transferInId, datetime: transactionDateTime, description: descriptionValue || `Nhận tiền từ ${accountValue} vào ${toAccountValue}`, category: TRANSFER_CATEGORY_IN, amount, type: 'Thu', account: toAccountValue, currency: 'VND', isTransfer: true, transferPairId: transferOutId, originalAmount: parseFloat(amountRaw), originalCurrency: currency });
-                    showMessage('Giao dịch chuyển tiền đã được cập nhật!', 'success');
-                } else {
-                    transactions.push({ id: baseId, datetime: transactionDateTime, description: descriptionValue, category: categoryValue, amount, type, account: accountValue, currency: 'VND', isTransfer: false, transferPairId: null, originalAmount: parseFloat(amountRaw), originalCurrency: currency });
-                    showMessage(`Giao dịch ${type === 'Thu' ? 'thu' : 'chi'} đã được cập nhật!`, 'success');
-                }
-                editingTransactionId = null;
-            } else {
-                const newIdBase = Date.now().toString();
-                if (type === 'Transfer') {
-                    const transferOutId = newIdBase + "_out"; const transferInId = newIdBase + "_in";
-                    transactions.push({ id: transferOutId, datetime: transactionDateTime, description: descriptionValue || `Chuyển tiền từ ${accountValue} đến ${toAccountValue}`, category: TRANSFER_CATEGORY_OUT, amount, type: 'Chi', account: accountValue, currency: 'VND', isTransfer: true, transferPairId: transferInId, originalAmount: parseFloat(amountRaw), originalCurrency: currency });
-                    transactions.push({ id: transferInId, datetime: transactionDateTime, description: descriptionValue || `Nhận tiền từ ${accountValue} vào ${toAccountValue}`, category: TRANSFER_CATEGORY_IN, amount, type: 'Thu', account: toAccountValue, currency: 'VND', isTransfer: true, transferPairId: transferOutId, originalAmount: parseFloat(amountRaw), originalCurrency: currency });
-                    showMessage('Giao dịch chuyển tiền đã được thêm!', 'success');
-                } else {
-                    transactions.push({ id: newIdBase, datetime: transactionDateTime, description: descriptionValue, category: categoryValue, amount, type, account: accountValue, currency: 'VND', isTransfer: false, transferPairId: null, originalAmount: parseFloat(amountRaw), originalCurrency: currency });
-                    showMessage(`Giao dịch ${type === 'Thu' ? 'thu' : 'chi'} đã được thêm!`, 'success');
-                }
-            }
-            saveTransactions(); applyMainFilter(); resetForm();
-        }
+			if (editingTransactionId) {
+				// --- GIỮ NGUYÊN LOGIC SỬA GIAO DỊCH ---
+				// (Toàn bộ khối if (editingTransactionId) { ... } else { ... } giữ nguyên như trước)
+				const existingTransactionIndex = transactions.findIndex(t => t.id === editingTransactionId || (t.isTransfer && (t.id.startsWith(editingTransactionId) || t.transferPairId.startsWith(editingTransactionId))));
+				if (existingTransactionIndex === -1 && type !== 'Transfer') { showMessage('Lỗi: Giao dịch gốc để sửa không tìm thấy.', 'error'); editingTransactionId = null; return; }
+				if (transactions.find(t => t.id.startsWith(editingTransactionId) && t.isTransfer) || type === 'Transfer') {
+					transactions = transactions.filter(t => !t.id.startsWith(editingTransactionId) && !(t.transferPairId && t.transferPairId.startsWith(editingTransactionId)));
+				} else if (existingTransactionIndex !== -1) { transactions.splice(existingTransactionIndex, 1); }
+				const baseId = editingTransactionId;
+				if (type === 'Transfer') {
+					categoryValue = null;
+					const transferOutId = baseId + "_out_edited_" + Date.now(); const transferInId = baseId + "_in_edited_" + Date.now();
+					transactions.push({ id: transferOutId, datetime: transactionDateTime, description: descriptionValue || `Chuyển tiền từ ${accountValue} đến ${toAccountValue}`, category: TRANSFER_CATEGORY_OUT, amount, type: 'Chi', account: accountValue, currency: 'VND', isTransfer: true, transferPairId: transferInId, originalAmount: parseFloat(amountRaw), originalCurrency: currency });
+					transactions.push({ id: transferInId, datetime: transactionDateTime, description: descriptionValue || `Nhận tiền từ ${accountValue} vào ${toAccountValue}`, category: TRANSFER_CATEGORY_IN, amount, type: 'Thu', account: toAccountValue, currency: 'VND', isTransfer: true, transferPairId: transferOutId, originalAmount: parseFloat(amountRaw), originalCurrency: currency });
+					showMessage('Giao dịch chuyển tiền đã được cập nhật!', 'success');
+				} else {
+					transactions.push({ id: baseId, datetime: transactionDateTime, description: descriptionValue, category: categoryValue, amount, type, account: accountValue, currency: 'VND', isTransfer: false, transferPairId: null, originalAmount: parseFloat(amountRaw), originalCurrency: currency });
+					showMessage(`Giao dịch ${type === 'Thu' ? 'thu' : 'chi'} đã được cập nhật!`, 'success');
+				}
+				editingTransactionId = null;
+			} else {
+				// --- GIỮ NGUYÊN LOGIC THÊM MỚI GIAO DỊCH ---
+				const newIdBase = Date.now().toString();
+				if (type === 'Transfer') {
+					const transferOutId = newIdBase + "_out"; const transferInId = newIdBase + "_in";
+					transactions.push({ id: transferOutId, datetime: transactionDateTime, description: descriptionValue || `Chuyển tiền từ ${accountValue} đến ${toAccountValue}`, category: TRANSFER_CATEGORY_OUT, amount, type: 'Chi', account: accountValue, currency: 'VND', isTransfer: true, transferPairId: transferInId, originalAmount: parseFloat(amountRaw), originalCurrency: currency });
+					transactions.push({ id: transferInId, datetime: transactionDateTime, description: descriptionValue || `Nhận tiền từ ${accountValue} vào ${toAccountValue}`, category: TRANSFER_CATEGORY_IN, amount, type: 'Thu', account: toAccountValue, currency: 'VND', isTransfer: true, transferPairId: transferOutId, originalAmount: parseFloat(amountRaw), originalCurrency: currency });
+					showMessage('Giao dịch chuyển tiền đã được thêm!', 'success');
+				} else {
+					transactions.push({ id: newIdBase, datetime: transactionDateTime, description: descriptionValue, category: categoryValue, amount, type, account: accountValue, currency: 'VND', isTransfer: false, transferPairId: null, originalAmount: parseFloat(amountRaw), originalCurrency: currency });
+					showMessage(`Giao dịch ${type === 'Thu' ? 'thu' : 'chi'} đã được thêm!`, 'success');
+				}
+			}
+			// --- KẾT THÚC LOGIC THÊM/SỬA ---
 
-        function resetForm() {
-            transactionForm.reset(); setDefaultDateTime(); formCurrencySelector.value = 'VND';
-            document.getElementById('type-chi').checked = true; editingTransactionId = null;
-            formTitleEl.textContent = 'Thêm Giao Dịch Mới';
-            submitButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>Thêm Giao Dịch`;
-            toggleFormFields(); populateAccountDropdowns();
-        }
+			saveTransactions();
+			populateMonthFilter(); // <--- THÊM DÒNG NÀY ĐỂ CẬP NHẬT DROPDOWN THÁNG
+			applyMainFilter();
+			resetForm(persistedTransactionType);
+		}
+
+        function resetForm(persistedType = null) { // Thêm tham số persistedType, mặc định là null
+            transactionForm.reset(); // Reset tất cả các trường về giá trị mặc định trong HTML (Loại "Chi" sẽ được chọn)
+			setDefaultDateTime();
+			formCurrencySelector.value = 'VND';
+
+			// Nếu có persistedType được truyền vào (tức là sau khi submit một giao dịch)
+			// thì khôi phục lại lựa chọn loại giao dịch đó.
+			if (persistedType) {
+				const radioToSelect = document.querySelector(`input[name="type"][value="${persistedType}"]`);
+				if (radioToSelect) {
+					radioToSelect.checked = true;
+				}
+			}
+			// Nếu không có persistedType (ví dụ: reset từ một nguồn khác),
+			// transactionForm.reset() đã tự động chọn "Chi" dựa trên HTML.
+
+			editingTransactionId = null;
+			formTitleEl.textContent = 'Thêm Giao Dịch Mới';
+			// Đảm bảo nội dung SVG của nút submit được giữ nguyên hoặc cập nhật đúng
+			submitButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>Thêm Giao Dịch';
+			
+			// Quan trọng: Gọi toggleFormFields SAU KHI đã đặt lại radio button loại giao dịch
+			// để các trường hiển thị đúng theo loại đã chọn.
+			toggleFormFields(); 
+			populateAccountDropdowns();
+		}
+
+		function getMonthDisplayText(selectedMonthValue, withParentheses = true) {
+			let text;
+			if (selectedMonthValue === 'all' || !selectedMonthValue) {
+				text = "Tất cả";
+			} else {
+				const parts = selectedMonthValue.split('-'); // Ví dụ: "2025-05"
+				if (parts.length === 2) {
+					const [year, month] = parts;
+					text = `Tháng ${month}/${year}`;
+				} else {
+					text = "Đã chọn"; // Trường hợp dự phòng nếu định dạng không như mong đợi
+				}
+			}
+			return withParentheses ? `(${text})` : text;
+		}
 
         window.loadTransactionForEdit = function(transactionId) {
             let transactionToEdit = transactions.find(t => t.id === transactionId);
@@ -929,7 +974,7 @@
             } else {
                 datetimeInput.value = formatDateTimeLocalInput(new Date(transactionToEdit.datetime));
                 document.querySelector(`input[name="type"][value="${transactionToEdit.type}"]`).checked = true;
-                amountTextInput.value = transactionToEdit.originalCurrency === 'VND' ? transactionToEdit.originalAmount / 1000 : transactionToEdit.originalAmount;
+                amountTextInput.value = transactionToEdit.originalAmount;
                 formCurrencySelector.value = transactionToEdit.originalCurrency;
                 descriptionInput.value = transactionToEdit.description; accountInput.value = transactionToEdit.account;
                 if (transactionToEdit.type !== 'Transfer') categoryInput.value = transactionToEdit.category;
@@ -962,41 +1007,85 @@
             saveTransactions(); applyMainFilter(); showMessage('Đã xóa giao dịch.', 'success');
         }
 
-        function renderMainTransactions(txsToRender = transactions) {
-            transactionList.innerHTML = '';
-            if (txsToRender.length === 0) { noTransactionsMessage.style.display = 'block'; return; }
-            noTransactionsMessage.style.display = 'none';
-            txsToRender.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
-            txsToRender.forEach(tx => {
-                const row = transactionList.insertRow();
-                row.insertCell().textContent = formatDisplayDateTime(tx.datetime);
-                let displayDescription = tx.description; let displayCategory = tx.category;
-                let displayAccount = accounts.find(a => a.value === tx.account)?.text || tx.account;
-                if (tx.isTransfer) {
-                    const pair = transactions.find(p => p.id === tx.transferPairId);
-                    const pairAccountName = pair ? (accounts.find(a => a.value === pair.account)?.text || pair.account) : 'N/A';
-                    if (tx.type === 'Chi') displayDescription = displayDescription || `Chuyển đến ${pairAccountName}`;
-                    else displayDescription = displayDescription || `Nhận từ ${pairAccountName}`;
-                }
-                row.insertCell().textContent = displayDescription; row.insertCell().textContent = displayCategory;
-                const amountCell = row.insertCell(); amountCell.textContent = formatCurrency(tx.amount);
-                amountCell.classList.add(tx.type === 'Thu' ? 'text-green-600' : 'text-red-600');
-                row.insertCell().textContent = tx.type === 'Thu' ? 'Thu Nhập' : (tx.type === 'Chi' ? 'Chi Tiêu' : 'Chuyển Tiền');
-                row.insertCell().textContent = displayAccount;
-                const actionsCell = row.insertCell(); actionsCell.classList.add('text-center');
-                const editBtn = document.createElement('button');
-                editBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square mr-1" viewBox="0 0 16 16"> <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/> <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/> </svg>Sửa`;
-                editBtn.classList.add('btn-edit');
-                const editId = tx.isTransfer ? tx.id.split('_')[0] : tx.id;
-                editBtn.onclick = () => loadTransactionForEdit(editId);
-                const deleteBtn = document.createElement('button');
-                deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/> </svg>Xóa`;
-                deleteBtn.classList.add('btn-delete');
-                const deleteId = tx.isTransfer ? tx.id.split('_')[0] : tx.id;
-                deleteBtn.onclick = () => deleteTransaction(deleteId);
-                actionsCell.appendChild(editBtn); actionsCell.appendChild(deleteBtn);
-            });
-        }
+		function renderMainTransactions(txsToRender = transactions) {
+			transactionList.innerHTML = ''; // Xóa các hàng cũ trong bảng
+			if (txsToRender.length === 0) {
+				noTransactionsMessage.style.display = 'block'; // Hiển thị thông báo nếu không có giao dịch
+				return;
+			}
+			noTransactionsMessage.style.display = 'none'; // Ẩn thông báo nếu có giao dịch
+
+			// Sắp xếp giao dịch theo ngày giờ mới nhất lên trước
+			txsToRender.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+
+			txsToRender.forEach(tx => {
+				const row = transactionList.insertRow(); // Tạo một hàng mới trong bảng
+
+				// Ô Ngày & Giờ
+				row.insertCell().textContent = formatDisplayDateTime(tx.datetime);
+
+				// Xử lý hiển thị Nội dung và Hạng mục (đặc biệt cho giao dịch chuyển tiền)
+				let displayDescription = tx.description;
+				let displayCategory = tx.category;
+				let displayAccount = accounts.find(a => a.value === tx.account)?.text || tx.account;
+
+				if (tx.isTransfer) {
+					const pair = transactions.find(p => p.id === tx.transferPairId);
+					const pairAccountName = pair ? (accounts.find(a => a.value === pair.account)?.text || pair.account) : 'N/A';
+					if (tx.type === 'Chi') { // Chuyển tiền đi
+						displayDescription = displayDescription || `Chuyển đến ${pairAccountName}`;
+					} else { // Nhận tiền chuyển
+						displayDescription = displayDescription || `Nhận từ ${pairAccountName}`;
+					}
+				}
+
+				// Ô Nội dung
+				row.insertCell().textContent = displayDescription;
+				// Ô Hạng mục
+				row.insertCell().textContent = displayCategory;
+
+				// Ô Số tiền (VNĐ) - ĐÃ CHỈNH SỬA ĐỂ THÊM GHI CHÚ USD
+				const amountCell = row.insertCell();
+				const vndAmountFormatted = formatCurrency(tx.amount); // tx.amount luôn là giá trị VNĐ
+
+				if (tx.originalCurrency === 'USD' && typeof tx.originalAmount === 'number') {
+					const originalUsdFormatted = formatCurrency(tx.originalAmount, 'USD'); // Định dạng số tiền USD gốc
+					// Hiển thị số tiền VNĐ, kèm theo ghi chú về số tiền USD gốc
+					amountCell.innerHTML = `${vndAmountFormatted} <span class="text-xs text-gray-500 block sm:inline ml-1">(${originalUsdFormatted} gốc)</span>`;
+				} else {
+					amountCell.textContent = vndAmountFormatted;
+				}
+				// Thêm màu sắc cho số tiền dựa trên loại giao dịch (Thu/Chi)
+				amountCell.classList.add(tx.type === 'Thu' ? 'text-green-600' : 'text-red-600');
+
+				// Ô Loại giao dịch
+				row.insertCell().textContent = tx.type === 'Thu' ? 'Thu Nhập' : (tx.type === 'Chi' ? 'Chi Tiêu' : 'Chuyển Tiền');
+				
+				// Ô Tài khoản
+				row.insertCell().textContent = displayAccount;
+
+				// Ô Thao tác (Sửa, Xóa)
+				const actionsCell = row.insertCell();
+				actionsCell.classList.add('text-center'); // Căn giữa nội dung ô
+
+				// Nút Sửa
+				const editBtn = document.createElement('button');
+				editBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square mr-1" viewBox="0 0 16 16"> <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/> <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/> </svg>Sửa`;
+				editBtn.classList.add('btn-edit');
+				const editId = tx.isTransfer ? tx.id.split('_')[0] : tx.id; // Lấy ID gốc nếu là giao dịch chuyển tiền
+				editBtn.onclick = () => loadTransactionForEdit(editId);
+
+				// Nút Xóa
+				const deleteBtn = document.createElement('button');
+				deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/> </svg>Xóa`;
+				deleteBtn.classList.add('btn-delete');
+				const deleteId = tx.isTransfer ? tx.id.split('_')[0] : tx.id; // Lấy ID gốc nếu là giao dịch chuyển tiền
+				deleteBtn.onclick = () => deleteTransaction(deleteId);
+
+				actionsCell.appendChild(editBtn);
+				actionsCell.appendChild(deleteBtn);
+			});
+		}
 
         function updateAllSummariesAndCharts(transactionsToAnalyze = transactions) {
             updateMainSummaryAndChart(transactionsToAnalyze);
@@ -1004,17 +1093,37 @@
             updateAccountBalances(); renderLast7DaysChart(); renderMonthComparisonChart();
         }
 
-        function updateMainSummaryAndChart(summaryTransactions = transactions) {
-            let totalIncome = 0; let totalExpenses = 0;
-            summaryTransactions.forEach(tx => {
-                if (tx.type === 'Thu') totalIncome += tx.amount;
-                else if (tx.type === 'Chi') totalExpenses += tx.amount;
-            });
-            totalIncomeEl.textContent = formatCurrency(totalIncome); totalExpensesEl.textContent = formatCurrency(totalExpenses);
-            currentBalanceEl.textContent = formatCurrency(totalIncome - totalExpenses);
-            currentBalanceEl.className = (totalIncome - totalExpenses >= 0) ? 'text-blue-600 font-bold' : 'text-red-600 font-bold';
-            renderOrUpdateMainChart(totalIncome, totalExpenses);
-        }
+		function updateMainSummaryAndChart(summaryTransactions = transactions) {
+			let totalIncome = 0;
+			let totalExpenses = 0;
+			summaryTransactions.forEach(tx => {
+				if (tx.type === 'Thu') totalIncome += tx.amount;
+				else if (tx.type === 'Chi') totalExpenses += tx.amount;
+			});
+
+			// Lấy giá trị tháng hiện tại từ bộ lọc filterMonthSelect
+			const selectedMonthValue = filterMonthSelect.value;
+			// Lấy văn bản hiển thị cho tháng, có dấu ngoặc đơn, dùng cho các nhãn tóm tắt
+			const monthDisplayTextForLabels = getMonthDisplayText(selectedMonthValue, true); 
+
+			// Cập nhật các nhãn trong phần tóm tắt (sử dụng ID đã thêm ở Bước 1)
+			const summaryIncomeMonthDisplayEl = document.getElementById('summary-income-month-display');
+			if (summaryIncomeMonthDisplayEl) summaryIncomeMonthDisplayEl.textContent = monthDisplayTextForLabels;
+
+			const summaryExpenseMonthDisplayEl = document.getElementById('summary-expense-month-display');
+			if (summaryExpenseMonthDisplayEl) summaryExpenseMonthDisplayEl.textContent = monthDisplayTextForLabels;
+
+			const summaryBalanceMonthDisplayEl = document.getElementById('summary-balance-month-display');
+			if (summaryBalanceMonthDisplayEl) summaryBalanceMonthDisplayEl.textContent = monthDisplayTextForLabels;
+
+			// Các dòng cập nhật số tiền giữ nguyên
+			totalIncomeEl.textContent = formatCurrency(totalIncome);
+			totalExpensesEl.textContent = formatCurrency(totalExpenses);
+			currentBalanceEl.textContent = formatCurrency(totalIncome - totalExpenses);
+			currentBalanceEl.className = (totalIncome - totalExpenses >= 0) ? 'text-blue-600 font-bold' : 'text-red-600 font-bold';
+
+			renderOrUpdateMainChart(totalIncome, totalExpenses);
+		}
 
         function renderOrUpdateMainChart(income, expenses) {
             const data = { labels: ['Tổng Thu', 'Tổng Chi'], datasets: [{ label: 'Số tiền (VNĐ)', data: [income, expenses], backgroundColor: [categoryColors[1], categoryColors[0]], }] };
@@ -1107,11 +1216,30 @@
 
         function filterTransactionsByMonth() { applyMainFilter(); }
         
-        function applyMainFilter() {
-            const selectedMonth = filterMonthSelect.value;
-            let filteredTransactions = (selectedMonth === 'all') ? [...transactions] : transactions.filter(tx => tx.datetime.startsWith(selectedMonth));
-            renderMainTransactions(filteredTransactions); updateAllSummariesAndCharts(filteredTransactions);
-        }
+		function applyMainFilter() {
+			const selectedMonth = filterMonthSelect.value;
+			let filteredTransactions = (selectedMonth === 'all') ? [...transactions] : transactions.filter(tx => tx.datetime.startsWith(selectedMonth));
+
+			// Lấy văn bản hiển thị cho tháng, không có dấu ngoặc đơn, dùng cho tiêu đề
+			const monthDisplayForTitles = getMonthDisplayText(selectedMonth, false); 
+
+			// Cập nhật tiêu đề phần "Phân Loại Chi Tiêu"
+			const expenseBreakdownTitleTextEl = document.getElementById('expense-breakdown-title-text');
+			if (expenseBreakdownTitleTextEl) {
+				expenseBreakdownTitleTextEl.textContent = `Phân Loại Chi Tiêu ${monthDisplayForTitles} - VNĐ`;
+			}
+
+			// Cập nhật tiêu đề biểu đồ "Thu vs Chi"
+			const incomeExpenseChartTitleEl = document.getElementById('income-expense-chart-title');
+			if (incomeExpenseChartTitleEl) {
+				incomeExpenseChartTitleEl.textContent = `Biểu Đồ Thu vs Chi ${monthDisplayForTitles} - VNĐ`;
+			}
+
+			// Các dòng còn lại của hàm applyMainFilter giữ nguyên
+			renderMainTransactions(filteredTransactions);
+			updateAllSummariesAndCharts(filteredTransactions); // Hàm này sẽ gọi updateMainSummaryAndChart
+			renderMonthComparisonChart(); // Gọi lại để cập nhật biểu đồ so sánh tháng nếu cần
+		}
 
         function getISOWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7)); const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); return Math.ceil((((d - yearStart) / 86400000) + 1) / 7); }
         function getWeekIdFromDateTime(dateTimeStr) { if (!dateTimeStr) return null; const date = new Date(dateTimeStr); if (isNaN(date.getTime())) return null; const year = date.getFullYear(); const weekNumber = getISOWeekNumber(date); return `${year}-W${String(weekNumber).padStart(2, '0')}`; }
@@ -1215,22 +1343,26 @@
             reader.readAsText(file);
         }
 
-        function initializeApp() {
-            loadUserPreferences(); formCurrencySelector.value = 'VND'; setDefaultDateTime(); setDefaultComparisonYear();
-            document.getElementById('type-chi').checked = true;
-            populateAccountDropdowns(); toggleFormFields(); renderCustomCategoryLists();
-            populateMonthFilter(); applyMainFilter();
-            populateComparisonWeekFilter(); updateWeeklyComparisonDisplay();
-            const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
-            collapsibleHeaders.forEach(header => {
-                const contentId = header.dataset.collapsibleTarget; const content = document.getElementById(contentId); if (!content) return;
-                const storedState = localStorage.getItem(`collapsibleState_${contentId}`);
-                const defaultOpen = content.classList.contains('active');
-                if (storedState === 'expanded' || (storedState === null && defaultOpen)) { content.classList.add('active'); header.classList.add('active'); }
-                else if (storedState === 'collapsed' || (storedState === null && !defaultOpen)) { content.classList.remove('active'); header.classList.remove('active'); }
-                header.addEventListener('click', () => { const isActive = content.classList.contains('active'); localStorage.setItem(`collapsibleState_${contentId}`, !isActive ? 'expanded' : 'collapsed'); content.classList.toggle('active'); header.classList.toggle('active'); });
-            });
-        }
+		function initializeApp() {
+			// ... (các mã khởi tạo khác) ...
+			loadUserPreferences(); 
+			formCurrencySelector.value = 'VND'; 
+			setDefaultDateTime(); 
+			setDefaultComparisonYear();
+			document.getElementById('type-chi').checked = true;
+			
+			populateAccountDropdowns(); 
+			toggleFormFields(); 
+			renderCustomCategoryLists();
+			
+			populateMonthFilter(); // Quan trọng: gọi populateMonthFilter trước khi applyMainFilter
+			applyMainFilter();     // Đảm bảo dòng này được gọi để cập nhật giao diện ban đầu
+
+			populateComparisonWeekFilter(); 
+			updateWeeklyComparisonDisplay();
+			
+			// ... (xử lý collapsible headers) ...
+		}
 
         transactionForm.addEventListener('submit', handleTransactionSubmit);
         filterMonthSelect.addEventListener('change', filterTransactionsByMonth);
