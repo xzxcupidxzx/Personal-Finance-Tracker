@@ -20,27 +20,51 @@
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .form-section, .summary-section, .table-section, .chart-section, .comparison-section, .expense-breakdown-section, .data-io-section {
+        .section {
             margin-bottom: 30px;
             padding: 20px;
             border: 1px solid #e5e7eb;
             border-radius: 10px;
         }
-        .form-section h2, .summary-section h2, .table-section h2, .chart-section h2, .comparison-section h2, .expense-breakdown-section h2, .data-io-section h2 {
+        .section-header {
             font-size: 1.5rem;
             font-weight: 600;
             color: #1f2937;
-            margin-bottom: 15px;
+            margin-bottom: 0;
             border-bottom: 2px solid #60a5fa;
             padding-bottom: 8px;
             display: flex;
             align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
         }
-        .form-section h2 svg, .summary-section h2 svg, .table-section h2 svg, .chart-section h2 svg, .comparison-section h2 svg, .expense-breakdown-section h2 svg, .data-io-section h2 svg {
+        .section-header .header-text-icon {
+            display: flex;
+            align-items: center;
+        }
+        .section-header svg:not(.toggle-icon) {
              width: 1.5rem;
              height: 1.5rem;
              margin-right: 0.5rem;
              color: #3b82f6;
+        }
+        .collapsible-content {
+            display: none;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        .collapsible-content.active {
+            display: block;
+        }
+        .toggle-icon {
+            transition: transform 0.3s ease;
+            width: 1.25rem;
+            height: 1.25rem;
+            color: #374151;
+        }
+        .section-header.active .toggle-icon {
+            transform: rotate(180deg);
         }
         label {
             font-weight: 500;
@@ -48,7 +72,7 @@
             display: block;
             margin-bottom: 5px;
         }
-        input[type="text"], input[type="datetime-local"], input[type="date"], select {
+        input[type="text"], input[type="datetime-local"], input[type="date"], select, input[type="number"] {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
@@ -59,7 +83,7 @@
         }
          input#amount-input[type="text"] { }
 
-        input[type="text"]:focus, input[type="datetime-local"]:focus, input[type="date"]:focus, select:focus {
+        input[type="text"]:focus, input[type="datetime-local"]:focus, input[type="date"]:focus, select:focus, input[type="number"]:focus {
             border-color: #3b82f6;
             outline: none;
         }
@@ -108,7 +132,7 @@
              width: 1.25rem;
              height: 1.25rem;
              margin-right: 0.375rem;
-         }
+        }
         .btn-primary {
             background-color: #3b82f6;
             color: white;
@@ -119,18 +143,18 @@
         .btn-secondary {
              background-color: #6b7280;
              color: white;
-         }
+        }
          .btn-secondary:hover {
              background-color: #4b5563;
-         }
+        }
         .btn-edit {
             background-color: #f59e0b;
             color: white;
-            padding: 4px 8px; /* Smaller padding for table buttons */
-            font-size: 0.8rem; /* Smaller font size */
-            margin-right: 4px; /* Add space between buttons */
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            margin-right: 4px;
         }
-        .btn-edit svg { /* Adjust icon size in edit button */
+        .btn-edit svg {
              width: 0.9rem;
              height: 0.9rem;
              margin-right: 2px;
@@ -138,19 +162,19 @@
         .btn-edit:hover {
             background-color: #d97706;
         }
-        .btn-delete { /* Style for delete button */
-            background-color: #ef4444; /* Red */
+        .btn-delete {
+            background-color: #ef4444;
             color: white;
-            padding: 4px 8px; /* Smaller padding */
-            font-size: 0.8rem; /* Smaller font size */
+            padding: 4px 8px;
+            font-size: 0.8rem;
         }
-        .btn-delete svg { /* Adjust icon size in delete button */
+        .btn-delete svg {
              width: 0.9rem;
              height: 0.9rem;
              margin-right: 2px;
         }
         .btn-delete:hover {
-            background-color: #dc2626; /* Darker Red */
+            background-color: #dc2626;
         }
         table {
             width: 100%;
@@ -163,9 +187,8 @@
             text-align: left;
             font-size: 0.9rem;
         }
-        /* Ensure action column has enough width */
         th:last-child, td:last-child {
-            width: 120px; /* Adjust as needed */
+            width: 130px; /* Increased width for two buttons */
             text-align: center;
         }
         th {
@@ -292,8 +315,51 @@
              display: flex;
              gap: 1rem;
              flex-wrap: wrap;
-         }
+        }
+         .form-field-transfer { display: none; }
+         .form-field-normal { display: block; }
+         form[data-transaction-mode="Transfer"] .form-field-transfer { display: block; }
+         form[data-transaction-mode="Transfer"] .form-field-normal { display: none; }
 
+         .category-customization-section .category-management {
+             display: grid;
+             grid-template-columns: 1fr;
+             gap: 2rem;
+         }
+         @media (min-width: 768px) {
+             .category-customization-section .category-management {
+                 grid-template-columns: 1fr 1fr;
+             }
+         }
+         .category-customization-section .category-list {
+             list-style: none;
+             padding: 0;
+         }
+         .category-customization-section .category-list li {
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+             padding: 0.5rem 0;
+             border-bottom: 1px solid #eee;
+         }
+         .category-customization-section .category-list li:last-child {
+             border-bottom: none;
+         }
+         .category-customization-section input[type="text"] {
+             margin-bottom: 0.5rem;
+         }
+         .category-customization-section .btn-add-category {
+             width: 100%;
+             margin-top: 0.5rem;
+         }
+         .category-customization-section h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.375rem;
+            border-bottom: 1px solid #e5e7eb;
+         }
     </style>
 </head>
 <body>
@@ -305,217 +371,174 @@
 
         <div id="message-box" style="display: none;"></div>
 
-        <div class="data-io-section">
-            <h2>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                </svg>
-                Quản lý Dữ liệu
+        <div class="section form-section">
+             <h2 class="section-header collapsible-header active" data-collapsible-target="form-content"> <div class="header-text-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                    </svg>
+                    <span id="form-title">Thêm Giao Dịch Mới</span>
+                </div>
+                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
             </h2>
-            <div class="button-group">
-                <button id="export-button" class="btn-secondary">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                    </svg>
-                    Xuất Dữ Liệu (JSON)
-                </button>
-                <button id="import-button" class="btn-secondary">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                    </svg>
-                    Nhập Dữ Liệu (JSON)
-                </button>
-                <input type="file" id="import-file-input" accept=".json" style="display: none;"> </div>
-            <p class="text-sm text-gray-500 mt-3">Lưu ý: Nhập dữ liệu sẽ ghi đè toàn bộ dữ liệu hiện tại.</p>
+            <div class="collapsible-content active" id="form-content">
+                <form id="transaction-form" class="grid grid-cols-1 md:grid-cols-2 gap-x-6" data-transaction-mode="Chi">
+                    <div><label for="datetime-input">Ngày & Giờ:</label><input type="datetime-local" id="datetime-input" required></div>
+
+                    <div>
+                        <label>Loại giao dịch:</label>
+                        <div class="radio-group">
+                            <label for="type-thu"><input type="radio" id="type-thu" name="type" value="Thu" required> Thu</label>
+                            <label for="type-chi"><input type="radio" id="type-chi" name="type" value="Chi" checked required> Chi</label>
+                            <label for="type-transfer"><input type="radio" id="type-transfer" name="type" value="Transfer" required> Chuyển tiền</label>
+                        </div>
+                    </div>
+
+                    <div class="form-field-normal"><label for="category">Hạng mục:</label><select id="category" required></select></div>
+
+                    <div><label for="account" id="account-label">Tài khoản:</label><select id="account" required></select></div>
+
+                    <div class="form-field-transfer"><label for="to-account">Đến Tài khoản:</label><select id="to-account"></select></div>
+
+                    <div><label for="amount-input">Số tiền:</label><div class="amount-currency-group"><input type="text" inputmode="decimal" id="amount-input" placeholder="Nhập số (VD: 22.5 cho 22.500)" required><select id="form-currency-selector"><option value="VND">VNĐ (x1000)</option><option value="USD">USD (quy đổi)</option></select></div></div>
+
+                    <div><label for="description">Nội dung chi tiết:</label><input type="text" id="description" placeholder="VD: Chuyển tiền học, Ăn trưa"></div>
+
+                    <div class="md:col-span-2 mt-4"><button type="submit" id="submit-transaction-button" class="btn-primary w-full"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>Thêm Giao Dịch</button></div>
+                </form>
+            </div>
         </div>
 
-
-        <div class="form-section">
-             <h2>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                </svg>
-                <span id="form-title">Thêm Giao Dịch Mới</span>
+        <div class="section summary-section">
+            <h2 class="section-header collapsible-header active" data-collapsible-target="summary-content-wrapper"> <div class="header-text-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0l.879-.659M18 10.2F18 6.57 15.314 4 12 4s-6 2.57-6 6.2c0 1.707.673 3.293 1.758 4.45l.149.149A6.086 6.086 0 0012 20.25a6.086 6.086 0 004.093-1.45l.149-.149A5.99 5.99 0 0018 10.2z" /></svg>
+                    Tóm Tắt Tài Chính (VNĐ)
+                </div>
+                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
             </h2>
-            <form id="transaction-form" class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                <div><label for="datetime-input">Ngày & Giờ:</label><input type="datetime-local" id="datetime-input" required></div>
-                <div>
-                    <label>Loại giao dịch:</label>
-                    <div class="radio-group">
-                        <label for="type-thu">
-                            <input type="radio" id="type-thu" name="type" value="Thu" required> Thu
-                        </label>
-                        <label for="type-chi">
-                            <input type="radio" id="type-chi" name="type" value="Chi" checked required> Chi
-                        </label>
+            <div class="collapsible-content active" id="summary-content-wrapper"> <div id="summary-content">
+                    <div class="summary-item"><span>Tổng Thu (Tháng Lọc):</span><span id="total-income" class="text-green-600 font-semibold">0</span></div>
+                    <div class="summary-item"><span>Tổng Chi (Tháng Lọc):</span><span id="total-expenses" class="text-red-600 font-semibold">0</span></div>
+                    <div class="summary-item"><span>Số Dư (Tháng Lọc):</span><span id="current-balance" class="text-blue-600 font-bold">0</span></div>
+                </div>
+                <div id="account-balance-list" class="account-balance-list"><h3>Số Dư Theo Tài Khoản (Tổng thể - VNĐ):</h3></div>
+            </div>
+        </div>
+
+        <div class="section expense-breakdown-section">
+            <h2 class="section-header collapsible-header" data-collapsible-target="expense-breakdown-content">
+                 <div class="header-text-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 100 15 7.5 7.5 0 000-15z" /> <path stroke-linecap="round" stroke-linejoin="round" d="M12 10.5v.01M15.088 11.129l.793-.793a.75.75 0 011.06 1.06l-.792.792a3.751 3.751 0 01-5.304 0L8.12 9.364a.75.75 0 011.06-1.06l.793.793" /> <path stroke-linecap="round" stroke-linejoin="round" d="M12 12a3.752 3.752 0 00-2.716 1.116l-.79.79a.75.75 0 001.06 1.06l.79-.79A2.252 2.252 0 0112 13.5a2.252 2.252 0 011.588.656l.79.79a.75.75 0 101.06-1.06l-.79-.79A3.752 3.752 0 0012 12z" /></svg>
+                    Phân Loại Chi Tiêu (Tháng Lọc - VNĐ)
+                </div>
+                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+            </h2>
+            <div class="collapsible-content" id="expense-breakdown-content">
+                <div class="md:flex md:gap-6">
+                    <div class="chart-container md:w-1/2"><canvas id="expenseCategoryChart"></canvas></div>
+                    <div id="expense-category-list-container" class="expense-category-list md:w-1/2"><p id="no-expense-data" class="text-center text-gray-500 mt-4">Không có dữ liệu chi tiêu để hiển thị.</p></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section chart-section">
+            <h2 class="section-header collapsible-header" data-collapsible-target="charts-grid-content">
+                <div class="header-text-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M7.5 14.25V18a2.25 2.25 0 002.25 2.25h3.5A2.25 2.25 0 0015 18v-3.75M3.375 4.5c-.621 0-1.125.504-1.125 1.125v14.25c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125V5.625c0-.621-.504-1.125-1.125-1.125H3.375z" /></svg>
+                    Biểu Đồ Tổng Quan
+                </div>
+                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+            </h2>
+            <div class="collapsible-content" id="charts-grid-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div> <h3 class="text-lg font-semibold mb-2 text-center">Biểu Đồ Thu vs Chi (Tháng Lọc - VNĐ)</h3>
+                        <div class="chart-container"><canvas id="incomeExpenseChart"></canvas></div>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2 text-center">Chi Tiêu 7 Ngày Qua (Biểu đồ đường - VNĐ)</h3>
+                        <div class="chart-container"><canvas id="last7DaysChart"></canvas></div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <h3 class="text-lg font-semibold mb-2 text-center">So Sánh Tháng Này & Tháng Trước (VNĐ)</h3>
+                        <div class="chart-container"><canvas id="monthComparisonChart"></canvas></div>
                     </div>
                 </div>
-                <div> <label for="account">Tài khoản:</label>
-                    <select id="account" required>
-                        <option value="Tiền mặt">Tiền mặt</option>
-                        <option value="Momo">Momo</option>
-                        <option value="Thẻ tín dụng A">Thẻ tín dụng A</option>
-                        <option value="Techcombank">Techcombank</option>
-                        <option value="BIDV">BIDV</option>
-                        <option value="Khác">Khác</option>
-                    </select>
+            </div>
+        </div>
+
+        <div class="section comparison-section">
+            <h2 class="section-header collapsible-header" data-collapsible-target="comparison-content">
+                <div class="header-text-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-3.75h.008v.008H12v-.008zM12 12.75h.008v.008H12v-.008z" /></svg>
+                    Thống Kê & So Sánh Tuần (VNĐ)
                 </div>
-                <div> <label for="category">Hạng mục:</label>
-                    <select id="category" required>
-                        </select>
+                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+            </h2>
+            <div class="collapsible-content" id="comparison-content">
+                <div class="filter-container">
+                    <div class="flex items-center"><label for="filter-comparison-year">Năm:</label><input type="number" id="filter-comparison-year" class="p-2 border rounded-md w-24" min="2000" max="2100"></div>
+                    <div class="flex items-center flex-grow"><label for="filter-comparison-week">Tuần:</label><select id="filter-comparison-week" class="p-2 border rounded-md w-full"><option value="none">-- Chọn tuần --</option></select></div>
                 </div>
-                 <div> <label for="amount-input">Số tiền:</label>
-                    <div class="amount-currency-group">
-                         <input type="text" inputmode="decimal" id="amount-input" placeholder="Nhập số (VD: 22.5)" required>
-                         <select id="form-currency-selector">
-                             <option value="VND">VNĐ (x1000)</option>
-                             <option value="USD">USD (quy đổi)</option>
-                         </select>
-                    </div>
-                 </div>
-                <div> <label for="description">Nội dung chi tiết:</label>
-                    <input type="text" id="description" placeholder="VD: Ăn trưa, Tiền điện">
+                <div id="weekly-comparison-content" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4" style="display: none;">
+                    <div><h3 class="text-lg font-semibold mb-2 text-blue-700">Tuần Được Chọn (<span id="selected-week-display"></span>)</h3><div class="summary-item"><span>Số Dư Đầu Tuần:</span><span id="current-week-start-balance" class="text-blue-600">0</span></div><div class="summary-item"><span>Tổng Thu Tuần Này:</span><span id="current-week-income" class="text-green-600">0</span></div><div class="summary-item"><span>Tổng Chi Tuần Này:</span><span id="current-week-expenses" class="text-red-600">0</span></div><div class="summary-item"><span>Thay Đổi Ròng:</span><span id="current-week-net-change" class="font-bold">0</span></div></div>
+                    <div><h3 class="text-lg font-semibold mb-2 text-gray-700">Tuần Trước Đó (<span id="previous-week-display"></span>)</h3><div class="summary-item"><span>Tổng Chi Tuần Trước:</span><span id="previous-week-expenses" class="text-red-600">0</span></div><hr class="my-3 border-gray-300"><h3 class="text-lg font-semibold mb-2 text-purple-700">So Sánh Chi Tiêu</h3><div class="summary-item"><span>Chênh Lệch (Này - Trước):</span><span id="spending-difference" class="font-bold">0</span></div></div>
                 </div>
-                <div class="md:col-span-2 mt-4">
-                    <button type="submit" id="submit-transaction-button" class="btn-primary w-full">
-                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                         </svg>
-                        Thêm Giao Dịch
+                <p id="no-comparison-data" class="text-center text-gray-500 mt-4">Chọn một năm và tuần để xem thống kê.</p>
+            </div>
+        </div>
+
+        <div class="section table-section">
+             <h2 class="section-header collapsible-header active" data-collapsible-target="table-content"> <div class="header-text-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5M3.375 19.5l1.95-1.95M12.375 19.5h8.875M12.375 19.5l-1.95-1.95M20.625 19.5a1.125 1.125 0 001.125-1.125M20.625 19.5l-1.95-1.95M3.75 4.5h16.5M3.75 4.5a2.25 2.25 0 00-2.25 2.25v11.25c0 1.24 1.01 2.25 2.25 2.25h16.5c1.24 0 2.25-1.01 2.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25M3.75 4.5v.75m16.5-.75v.75m0 0a2.25 2.25 0 01-2.25 2.25h-5.25a2.25 2.25 0 01-2.25-2.25m-5.25 0h5.25m-5.25 0a2.25 2.25 0 01-2.25-2.25M3.75 7.5v.75m16.5-.75v.75" /></svg>
+                    Danh Sách Giao Dịch
+                </div>
+                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+            </h2>
+             <div class="collapsible-content active" id="table-content"> <div class="table-actions">
+                     <div class="filter-container"><label for="filter-month">Lọc theo tháng:</label><select id="filter-month" class="p-2 border rounded-md"><option value="all">Tất cả</option></select></div>
+                </div>
+                <div class="overflow-x-auto"><table id="transaction-table"><thead><tr><th>Ngày & Giờ</th><th>Nội dung</th><th>Hạng mục</th><th>Số tiền (VNĐ)</th><th>Loại</th><th>Tài khoản</th><th>Thao tác</th></tr></thead><tbody id="transaction-list"></tbody></table></div>
+                <p id="no-transactions" class="text-center text-gray-500 mt-4" style="display: none;">Chưa có giao dịch nào.</p>
+            </div>
+        </div>
+
+        <div class="section category-customization-section">
+            <h2 class="section-header collapsible-header" data-collapsible-target="category-customization-content">
+                <div class="header-text-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12a7.5 7.5 0 0015 0m-15 0a7.5 7.5 0 1115 0m-15 0H3m18 0h-1.5m-15.036-7.026A7.5 7.5 0 015.974 3.474m12.052 0A7.5 7.5 0 0118.026 4.974m0 14.052a7.5 7.5 0 01-1.526 1.526M5.974 19.026A7.5 7.5 0 014.5 18m0-12a7.5 7.5 0 00-1.526 1.526M18 4.5a7.5 7.5 0 00-1.526-1.526" /></svg>
+                    Tùy Chỉnh Hạng Mục
+                </div>
+                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+            </h2>
+            <div class="collapsible-content" id="category-customization-content">
+                <div class="category-management">
+                    <div><h3>Hạng Mục Thu</h3><div class="mb-4"><label for="new-income-category-name">Tên hạng mục thu mới:</label><input type="text" id="new-income-category-name" placeholder="VD: Tiền cho thuê nhà"><button id="add-income-category-button" class="btn-primary btn-add-category"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>Thêm Hạng Mục Thu</button></div><h4>Danh sách hạng mục thu:</h4><ul id="income-category-list-admin" class="category-list"></ul></div>
+                    <div><h3>Hạng Mục Chi</h3><div class="mb-4"><label for="new-expense-category-name">Tên hạng mục chi mới:</label><input type="text" id="new-expense-category-name" placeholder="VD: Du lịch"><button id="add-expense-category-button" class="btn-primary btn-add-category"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>Thêm Hạng Mục Chi</button></div><h4>Danh sách hạng mục chi:</h4><ul id="expense-category-list-admin" class="category-list"></ul></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section data-io-section">
+            <h2 class="section-header collapsible-header" data-collapsible-target="data-io-content">
+                <div class="header-text-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                    Quản lý Dữ liệu
+                </div>
+                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+            </h2>
+            <div class="collapsible-content" id="data-io-content">
+                <div class="button-group">
+                    <button id="export-button" class="btn-secondary"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>Xuất Dữ Liệu (JSON)</button>
+                    <button id="export-csv-button" class="btn-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-1">
+                             <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                        </svg>
+                        Xuất Dữ Liệu (CSV)
                     </button>
+                    <button id="import-button" class="btn-secondary"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>Nhập Dữ Liệu (JSON)</button>
+                    <input type="file" id="import-file-input" accept=".json" style="display: none;">
                 </div>
-            </form>
-        </div>
-
-        <div class="summary-section">
-            <h2>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0l.879-.659M18 10.2F18 6.57 15.314 4 12 4s-6 2.57-6 6.2c0 1.707.673 3.293 1.758 4.45l.149.149A6.086 6.086 0 0012 20.25a6.086 6.086 0 004.093-1.45l.149-.149A5.99 5.99 0 0018 10.2z" />
-                </svg>
-                Tóm Tắt Tài Chính (VNĐ)
-            </h2>
-            <div id="summary-content">
-                <div class="summary-item"><span>Tổng Thu (Tháng Lọc):</span><span id="total-income" class="text-green-600 font-semibold">0</span></div>
-                <div class="summary-item"><span>Tổng Chi (Tháng Lọc):</span><span id="total-expenses" class="text-red-600 font-semibold">0</span></div>
-                <div class="summary-item"><span>Số Dư (Tháng Lọc):</span><span id="current-balance" class="text-blue-600 font-bold">0</span></div>
+                <p class="text-sm text-gray-500 mt-3">Lưu ý: Nhập dữ liệu sẽ ghi đè toàn bộ dữ liệu hiện tại.</p>
             </div>
-             <div id="account-balance-list" class="account-balance-list">
-                <h3>Số Dư Theo Tài Khoản (Tổng thể - VNĐ):</h3>
-            </div>
-        </div>
-
-        <div class="expense-breakdown-section">
-            <h2>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                   <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 100 15 7.5 7.5 0 000-15z" /> <path stroke-linecap="round" stroke-linejoin="round" d="M12 10.5v.01M15.088 11.129l.793-.793a.75.75 0 011.06 1.06l-.792.792a3.751 3.751 0 01-5.304 0L8.12 9.364a.75.75 0 011.06-1.06l.793.793" /> <path stroke-linecap="round" stroke-linejoin="round" d="M12 12a3.752 3.752 0 00-2.716 1.116l-.79.79a.75.75 0 001.06 1.06l.79-.79A2.252 2.252 0 0112 13.5a2.252 2.252 0 011.588.656l.79.79a.75.75 0 101.06-1.06l-.79-.79A3.752 3.752 0 0012 12z" />
-                </svg>
-                Phân Loại Chi Tiêu (Tháng Lọc - VNĐ)
-            </h2>
-            <div class="md:flex md:gap-6">
-                <div class="chart-container md:w-1/2">
-                    <canvas id="expenseCategoryChart"></canvas>
-                </div>
-                <div id="expense-category-list-container" class="expense-category-list md:w-1/2">
-                    <p id="no-expense-data" class="text-center text-gray-500 mt-4">Không có dữ liệu chi tiêu để hiển thị.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="chart-section">
-                <h2>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                       <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h15.75c.621 0 1.125.504 1.125 1.125v6.75c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 013 19.875v-6.75zM3 6.375C3 5.754 3.504 5.25 4.125 5.25h15.75c.621 0 1.125.504 1.125 1.125v6.75c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 013 13.125V6.375z" />
-                    </svg>
-                    Biểu Đồ Thu vs Chi (Tháng Lọc - VNĐ)
-                </h2>
-                <div class="chart-container"><canvas id="incomeExpenseChart"></canvas></div>
-            </div>
-             <div class="chart-section">
-                 <h2>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                       <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
-                    </svg>
-                     Chi Tiêu 7 Ngày Qua (Biểu đồ đường - VNĐ)
-                </h2>
-                <div class="chart-container"><canvas id="last7DaysChart"></canvas></div>
-            </div>
-             <div class="chart-section md:col-span-2">
-                 <h2>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                       <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
-                    </svg>
-                     So Sánh Tháng Này & Tháng Trước (VNĐ)
-                </h2>
-                <div class="chart-container"><canvas id="monthComparisonChart"></canvas></div>
-            </div>
-        </div>
-
-        <div class="comparison-section">
-            <h2>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                   <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-3.75h.008v.008H12v-.008zM12 12.75h.008v.008H12v-.008z" />
-                </svg>
-                Thống Kê & So Sánh Tuần (VNĐ)
-            </h2>
-            <div class="filter-container">
-                <div class="flex items-center">
-                    <label for="filter-comparison-year">Năm:</label>
-                    <input type="number" id="filter-comparison-year" class="p-2 border rounded-md w-24" min="2000" max="2100">
-                </div>
-                <div class="flex items-center flex-grow">
-                    <label for="filter-comparison-week">Tuần:</label>
-                    <select id="filter-comparison-week" class="p-2 border rounded-md w-full"><option value="none">-- Chọn tuần --</option></select>
-                </div>
-            </div>
-            <div id="weekly-comparison-content" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4" style="display: none;">
-                <div>
-                    <h3 class="text-lg font-semibold mb-2 text-blue-700">Tuần Được Chọn (<span id="selected-week-display"></span>)</h3>
-                    <div class="summary-item"><span>Số Dư Đầu Tuần:</span><span id="current-week-start-balance" class="text-blue-600">0</span></div>
-                    <div class="summary-item"><span>Tổng Thu Tuần Này:</span><span id="current-week-income" class="text-green-600">0</span></div>
-                    <div class="summary-item"><span>Tổng Chi Tuần Này:</span><span id="current-week-expenses" class="text-red-600">0</span></div>
-                    <div class="summary-item"><span>Thay Đổi Ròng:</span><span id="current-week-net-change" class="font-bold">0</span></div>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold mb-2 text-gray-700">Tuần Trước Đó (<span id="previous-week-display"></span>)</h3>
-                    <div class="summary-item"><span>Tổng Chi Tuần Trước:</span><span id="previous-week-expenses" class="text-red-600">0</span></div>
-                    <hr class="my-3 border-gray-300">
-                    <h3 class="text-lg font-semibold mb-2 text-purple-700">So Sánh Chi Tiêu</h3>
-                    <div class="summary-item"><span>Chênh Lệch (Này - Trước):</span><span id="spending-difference" class="font-bold">0</span></div>
-                </div>
-            </div>
-            <p id="no-comparison-data" class="text-center text-gray-500 mt-4">Chọn một năm và tuần để xem thống kê.</p>
-        </div>
-
-        <div class="table-section">
-             <h2>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                   <path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5M3.375 19.5l1.95-1.95M12.375 19.5h8.875M12.375 19.5l-1.95-1.95M20.625 19.5a1.125 1.125 0 001.125-1.125M20.625 19.5l-1.95-1.95M3.75 4.5h16.5M3.75 4.5a2.25 2.25 0 00-2.25 2.25v11.25c0 1.24 1.01 2.25 2.25 2.25h16.5c1.24 0 2.25-1.01 2.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25M3.75 4.5v.75m16.5-.75v.75m0 0a2.25 2.25 0 01-2.25 2.25h-5.25a2.25 2.25 0 01-2.25-2.25m-5.25 0h5.25m-5.25 0a2.25 2.25 0 01-2.25-2.25M3.75 7.5v.75m16.5-.75v.75" />
-                </svg>
-                Danh Sách Giao Dịch
-             </h2>
-             <div class="table-actions">
-                 <div class="filter-container">
-                    <label for="filter-month">Lọc theo tháng:</label>
-                    <select id="filter-month" class="p-2 border rounded-md"><option value="all">Tất cả</option></select>
-                </div>
-            </div>
-            <div class="overflow-x-auto">
-                <table id="transaction-table">
-                    <thead>
-                        <tr>
-                            <th>Ngày & Giờ (YYYY-MM-DD HH:MM)</th> <th>Nội dung</th>
-                            <th>Hạng mục</th>
-                            <th>Số tiền (VNĐ)</th> <th>Loại</th>
-                            <th>Tài khoản</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="transaction-list">
-                        </tbody>
-                </table>
-            </div>
-            <p id="no-transactions" class="text-center text-gray-500 mt-4" style="display: none;">Chưa có giao dịch nào.</p>
         </div>
     </div>
 
@@ -524,9 +547,11 @@
         Chart.register(ChartDataLabels);
 
         // Constants
-        const USD_TO_VND_RATE = 25000; // Define exchange rate
+        const USD_TO_VND_RATE = 25000; 
+        const TRANSFER_CATEGORY_OUT = "Chuyển tiền đi";
+        const TRANSFER_CATEGORY_IN = "Nhận tiền chuyển";
 
-        // DOM Elements
+        // DOM Elements (Thêm exportCsvButton)
         const transactionForm = document.getElementById('transaction-form');
         const formTitleEl = document.getElementById('form-title');
         const submitButton = document.getElementById('submit-transaction-button');
@@ -537,19 +562,23 @@
         const accountBalanceListEl = document.getElementById('account-balance-list');
         const datetimeInput = document.getElementById('datetime-input');
         const categoryInput = document.getElementById('category');
-        const amountTextInput = document.getElementById('amount-input'); // Input is text type
+        const categoryContainer = categoryInput.parentElement;
+        const amountTextInput = document.getElementById('amount-input');
         const formCurrencySelector = document.getElementById('form-currency-selector');
         const descriptionInput = document.getElementById('description');
         const accountInput = document.getElementById('account');
+        const accountLabel = document.getElementById('account-label');
+        const toAccountContainer = document.querySelector('.form-field-transfer');
+        const toAccountInput = document.getElementById('to-account');
         const noTransactionsMessage = document.getElementById('no-transactions');
         const filterMonthSelect = document.getElementById('filter-month');
         const messageBox = document.getElementById('message-box');
-        const incomeExpenseChartCanvas = document.getElementById('incomeExpenseChart');
-        const expenseCategoryChartCanvas = document.getElementById('expenseCategoryChart');
+        const incomeExpenseChartCanvas = document.getElementById('incomeExpenseChart').getContext('2d');
+        const expenseCategoryChartCanvas = document.getElementById('expenseCategoryChart').getContext('2d');
         const expenseCategoryListContainerEl = document.getElementById('expense-category-list-container');
         const noExpenseDataEl = document.getElementById('no-expense-data');
-        const last7DaysChartCanvas = document.getElementById('last7DaysChart');
-        const monthComparisonChartCanvas = document.getElementById('monthComparisonChart');
+        const last7DaysChartCanvas = document.getElementById('last7DaysChart').getContext('2d');
+        const monthComparisonChartCanvas = document.getElementById('monthComparisonChart').getContext('2d');
         const filterComparisonYearInput = document.getElementById('filter-comparison-year');
         const filterComparisonWeekSelect = document.getElementById('filter-comparison-week');
         const weeklyComparisonContentEl = document.getElementById('weekly-comparison-content');
@@ -564,26 +593,37 @@
         const noComparisonDataEl = document.getElementById('no-comparison-data');
         const typeRadioButtons = document.querySelectorAll('input[name="type"]');
         const exportButton = document.getElementById('export-button');
+        const exportCsvButton = document.getElementById('export-csv-button'); // Khai báo nút mới
         const importButton = document.getElementById('import-button');
         const importFileInput = document.getElementById('import-file-input');
+        const newIncomeCategoryNameInput = document.getElementById('new-income-category-name');
+        const addIncomeCategoryButton = document.getElementById('add-income-category-button');
+        const incomeCategoryListAdminEl = document.getElementById('income-category-list-admin');
+        const newExpenseCategoryNameInput = document.getElementById('new-expense-category-name');
+        const addExpenseCategoryButton = document.getElementById('add-expense-category-button');
+        const expenseCategoryListAdminEl = document.getElementById('expense-category-list-admin');
 
-        let transactions = JSON.parse(localStorage.getItem('transactions_v2')) || [];
+        let transactions = [];
         let incomeExpenseChart;
         let expenseCategoryChart;
         let last7DaysChart;
         let monthComparisonChart;
         let editingTransactionId = null;
 
-        const incomeCategories = [
+        let incomeCategories = [];
+        let expenseCategories = [];
+        let accounts = [];
+
+        const defaultIncomeCategories = [
             { value: "Lương", text: "Lương" }, { value: "Thưởng", text: "Thưởng" },
             { value: "Tiền được trả nợ", text: "Tiền được trả nợ" },
-            { value: "Tiền được chuyển khoản", text: "Tiền được chuyển khoản (nhận)" },
+            { value: TRANSFER_CATEGORY_IN, text: "Nhận tiền chuyển khoản" },
             { value: "Lãi tiết kiệm", text: "Lãi tiết kiệm" },
             { value: "Thu nhập từ đầu tư", text: "Thu nhập từ đầu tư" },
             { value: "Thu nhập phụ", text: "Thu nhập phụ" },
             { value: "Thu nhập khác", text: "Thu nhập khác (chung)" }
         ];
-        const expenseCategories = [
+        const defaultExpenseCategories = [
             { value: "Ăn uống", text: "Ăn uống" }, { value: "Đi lại", text: "Đi lại" },
             { value: "Nhà ở", text: "Nhà ở" },
             { value: "Hóa đơn", text: "Hóa đơn (Điện, nước, internet)" },
@@ -591,40 +631,36 @@
             { value: "Giải trí", text: "Giải trí" }, { value: "Sức khỏe", text: "Sức khỏe" },
             { value: "Giáo dục", text: "Giáo dục" }, { value: "Chi cho đầu tư", text: "Chi cho đầu tư" },
             { value: "Trả nợ", text: "Trả nợ (cho người khác)" },
-            { value: "Chuyển khoản đi", text: "Chuyển khoản đi" },
+            { value: TRANSFER_CATEGORY_OUT, text: "Chuyển tiền đi" },
             { value: "Chi phí khác", text: "Chi phí khác (chung)" }
         ];
+        const defaultAccounts = [
+             { value: "Tiền mặt", text: "Tiền mặt" }, { value: "Momo", text: "Momo" },
+             { value: "Thẻ tín dụng A", text: "Thẻ tín dụng A" }, { value: "Techcombank", text: "Techcombank" },
+             { value: "BIDV", text: "BIDV" }, { value: "Khác", text: "Khác" }
+        ];
         const categoryColors = [
-            'rgba(255, 99, 132, 0.8)', 'rgba(54, 162, 235, 0.8)', 'rgba(255, 206, 86, 0.8)',
-            'rgba(75, 192, 192, 0.8)', 'rgba(153, 102, 255, 0.8)', 'rgba(255, 159, 64, 0.8)',
-            'rgba(199, 199, 199, 0.8)', 'rgba(83, 102, 255, 0.8)', 'rgba(40, 159, 64, 0.8)',
-            'rgba(210, 99, 132, 0.8)', 'rgba(60, 100, 200, 0.8)'
+            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+            '#C9CBCF', '#8366FF', '#289F40', '#D26384', '#3C64C8', '#C89632'
         ];
 
+        // --- Utility Functions ---
         function showMessage(message, type = 'success') {
-             messageBox.textContent = message;
-             messageBox.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'text-green-800 bg-green-100 dark:bg-gray-800 dark:text-green-400' : 'text-red-800 bg-red-100 dark:bg-gray-800 dark:text-red-400'}`;
-             messageBox.style.display = 'block';
-             setTimeout(() => { messageBox.style.display = 'none'; }, 3000);
-         }
-
-        /**
-         * Formats a number as Vietnamese Dong (VNĐ).
-         * @param {number} amount - The amount to format (always in VND).
-         * @returns {string} - The formatted currency string.
-         */
-        function formatCurrency(amount) {
-            const options = { style: 'currency', currency: 'VND' };
-            const locale = 'vi-VN';
-            options.minimumFractionDigits = 0;
-            options.maximumFractionDigits = 2;
-            if (isNaN(amount) || amount === null) {
-                amount = 0;
-            }
-            return new Intl.NumberFormat(locale, options).format(amount);
+            messageBox.textContent = message;
+            messageBox.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'message-success' : 'message-error'}`;
+            messageBox.style.display = 'block';
+            setTimeout(() => { messageBox.style.display = 'none'; }, 3000);
         }
 
-
+        function formatCurrency(amount, currencyCode = 'VND') {
+            const options = { style: 'currency', currency: currencyCode };
+            const locale = 'vi-VN';
+            options.minimumFractionDigits = 0;
+            options.maximumFractionDigits = (currencyCode === 'USD') ? 2 : 0; 
+            if (isNaN(amount) || amount === null) amount = 0;
+            return new Intl.NumberFormat(locale, options).format(amount);
+        }
+        
         function formatDateTimeLocalInput(date) {
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -635,1036 +671,581 @@
         }
 
         function formatIsoDateTime(date) {
-             const year = date.getFullYear();
-             const month = String(date.getMonth() + 1).padStart(2, '0');
-             const day = String(date.getDate()).padStart(2, '0');
-             const hours = String(date.getHours()).padStart(2, '0');
-             const minutes = String(date.getMinutes()).padStart(2, '0');
-             const seconds = String(date.getSeconds()).padStart(2, '0');
-             return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-         }
+            if (!date || isNaN(new Date(date).getTime())) date = new Date();
+            else date = new Date(date);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+        }
 
-        /**
-         * Formats an ISO datetime string to 'YYYY-MM-DD HH:MM' for display.
-         * @param {string} isoString - The ISO datetime string.
-         * @returns {string} - The formatted display datetime string.
-         */
         function formatDisplayDateTime(isoString) {
             if (!isoString) return '';
             try {
-                const date = new Date(isoString);
-                if (isNaN(date.getTime())) {
-                    // Try parsing without seconds if full ISO fails
-                    const dateWithoutSeconds = new Date(isoString.substring(0, 16));
-                     if (isNaN(dateWithoutSeconds.getTime())) {
-                         console.warn("Could not parse date string:", isoString);
-                         return isoString; // Return original if still invalid
-                     }
-                    date = dateWithoutSeconds;
-                };
-
-                const year = date.getFullYear(); // Full year
+                let date = new Date(isoString);
+                if (isNaN(date.getTime())) return isoString;
+                const year = date.getFullYear();
                 const month = String(date.getMonth() + 1).padStart(2, '0');
                 const day = String(date.getDate()).padStart(2, '0');
                 const hours = String(date.getHours()).padStart(2, '0');
                 const minutes = String(date.getMinutes()).padStart(2, '0');
-                return `${year}-${month}-${day} ${hours}:${minutes}`; // Use YYYY-MM-DD HH:MM format
+                return `${day}/${month}/${year} ${hours}:${minutes}`;
             } catch (e) {
                 console.error("Error formatting display date/time:", e, "Input:", isoString);
                 return isoString;
             }
         }
+        function formatDateTimeForCSV(isoString) {
+            if (!isoString) return '';
+            try {
+                const d = new Date(isoString);
+                if (isNaN(d.getTime())) return isoString;
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
+            } catch (e) {
+                return isoString;
+            }
+        }
+
 
         function setDefaultDateTime() {
-            datetimeInput.value = formatDateTimeLocalInput(new Date());
+            if(datetimeInput) datetimeInput.value = formatDateTimeLocalInput(new Date());
         }
         function setDefaultComparisonYear() {
-            filterComparisonYearInput.value = new Date().getFullYear();
+            if(filterComparisonYearInput) filterComparisonYearInput.value = new Date().getFullYear();
+        }
+
+        function loadUserPreferences() {
+            const storedTransactions = localStorage.getItem('transactions_v2');
+            transactions = storedTransactions ? JSON.parse(storedTransactions) : [];
+            const storedIncomeCategories = localStorage.getItem('customIncomeCategories_v2');
+            incomeCategories = storedIncomeCategories ? JSON.parse(storedIncomeCategories) : [...defaultIncomeCategories];
+            if (!Array.isArray(incomeCategories) || incomeCategories.length === 0 || !incomeCategories.find(c => c.value === TRANSFER_CATEGORY_IN)) {
+                 incomeCategories = [...defaultIncomeCategories];
+            }
+            const storedExpenseCategories = localStorage.getItem('customExpenseCategories_v2');
+            expenseCategories = storedExpenseCategories ? JSON.parse(storedExpenseCategories) : [...defaultExpenseCategories];
+             if (!Array.isArray(expenseCategories) || expenseCategories.length === 0 || !expenseCategories.find(c => c.value === TRANSFER_CATEGORY_OUT)) {
+                 expenseCategories = [...defaultExpenseCategories];
+            }
+            const storedAccounts = localStorage.getItem('customAccounts_v2');
+            accounts = storedAccounts ? JSON.parse(storedAccounts) : [...defaultAccounts];
+            if (!Array.isArray(accounts) || accounts.length === 0) accounts = [...defaultAccounts];
+        }
+
+        function saveUserPreferences() {
+            localStorage.setItem('customIncomeCategories_v2', JSON.stringify(incomeCategories));
+            localStorage.setItem('customExpenseCategories_v2', JSON.stringify(expenseCategories));
+            localStorage.setItem('customAccounts_v2', JSON.stringify(accounts));
+        }
+        
+        function saveTransactions() {
+            localStorage.setItem('transactions_v2', JSON.stringify(transactions));
+        }
+
+        function renderCategoryList(listElement, categoriesArray, type) {
+            if (!listElement) return;
+            listElement.innerHTML = '';
+            categoriesArray.forEach(cat => {
+                const isSpecialTransferCategory = (cat.value === TRANSFER_CATEGORY_IN || cat.value === TRANSFER_CATEGORY_OUT);
+                const li = document.createElement('li');
+                li.textContent = cat.text;
+                if (!isSpecialTransferCategory) {
+                    const deleteButton = document.createElement('button');
+                    deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/> </svg>Xóa`;
+                    deleteButton.classList.add('btn-delete', 'text-xs', 'px-2', 'py-1', 'ml-2');
+                    deleteButton.onclick = () => {
+                        if (confirm(`Bạn có chắc muốn xóa hạng mục "${cat.text}" không?`)) {
+                            if (type === 'income') incomeCategories = incomeCategories.filter(c => c.value !== cat.value);
+                            else expenseCategories = expenseCategories.filter(c => c.value !== cat.value);
+                            saveUserPreferences(); renderCustomCategoryLists(); populateCategories(); applyMainFilter();
+                        }
+                    };
+                    li.appendChild(deleteButton);
+                } else {
+                    const lockIcon = document.createElement('span');
+                    lockIcon.innerHTML = ` <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-lock-fill inline-block ml-2 text-gray-400" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>`;
+                    li.appendChild(lockIcon);
+                }
+                listElement.appendChild(li);
+            });
+        }
+
+        function renderCustomCategoryLists() {
+            renderCategoryList(incomeCategoryListAdminEl, incomeCategories, 'income');
+            renderCategoryList(expenseCategoryListAdminEl, expenseCategories, 'expense');
+        }
+
+        function addCategory(name, type) {
+            if (!name || name.trim() === '') { showMessage('Tên hạng mục không được để trống.', 'error'); return false; }
+            const newCategoryValue = name.trim();
+            const newCategory = { value: newCategoryValue, text: newCategoryValue };
+            if (type === 'income') {
+                if (incomeCategories.some(cat => cat.value.toLowerCase() === newCategoryValue.toLowerCase())) { showMessage('Hạng mục thu này đã tồn tại.', 'error'); return false; }
+                incomeCategories.push(newCategory);
+            } else {
+                if (expenseCategories.some(cat => cat.value.toLowerCase() === newCategoryValue.toLowerCase())) { showMessage('Hạng mục chi này đã tồn tại.', 'error'); return false; }
+                expenseCategories.push(newCategory);
+            }
+            saveUserPreferences(); renderCustomCategoryLists(); populateCategories();
+            showMessage(`Đã thêm hạng mục "${newCategory.text}"!`, 'success'); return true;
+        }
+
+        function populateAccountDropdowns() {
+            if (!accountInput || !toAccountInput) return;
+            const currentFromAccount = accountInput.value; const currentToAccount = toAccountInput.value;
+            accountInput.innerHTML = ''; toAccountInput.innerHTML = '';
+            if (!accounts || accounts.length === 0) accounts = [...defaultAccounts];
+            accounts.forEach(acc => {
+                accountInput.add(new Option(acc.text, acc.value));
+                toAccountInput.add(new Option(acc.text, acc.value));
+            });
+            if (accounts.some(acc => acc.value === currentFromAccount)) accountInput.value = currentFromAccount;
+            else if (accounts.length > 0) accountInput.value = accounts[0].value;
+            if (accounts.some(acc => acc.value === currentToAccount)) toAccountInput.value = currentToAccount;
+            else if (accounts.length > 1) toAccountInput.value = accounts[1].value;
+            else if (accounts.length > 0) toAccountInput.value = accounts[0].value;
         }
 
         function populateCategories() {
+            if (!categoryInput) return;
             const selectedTypeRadio = document.querySelector('input[name="type"]:checked');
             const selectedType = selectedTypeRadio ? selectedTypeRadio.value : 'Chi';
-            const currentCategoryValue = categoryInput.value;
-            categoryInput.innerHTML = '';
+            const currentCategoryValue = categoryInput.value; categoryInput.innerHTML = '';
             let categoriesToPopulate = (selectedType === 'Thu') ? incomeCategories : expenseCategories;
-
-            categoriesToPopulate.forEach(category => {
-                const option = document.createElement('option');
-                option.value = category.value;
-                option.textContent = category.text;
-                categoryInput.appendChild(option);
-            });
-             if (categoriesToPopulate.some(cat => cat.value === currentCategoryValue)) {
-                 categoryInput.value = currentCategoryValue;
-             } else if (categoriesToPopulate.length > 0) {
-                 categoryInput.value = categoriesToPopulate[0].value;
-             }
-        }
-
-        function getISOWeekNumber(date) {
-            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-        }
-
-         function getWeekIdFromDateTime(dateTimeStr) {
-            if (!dateTimeStr) return null;
-            try {
-                const date = new Date(dateTimeStr);
-                 if (isNaN(date.getTime())) return null;
-                const utcDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-                const weekYear = new Date(Date.UTC(utcDate.getFullYear(), utcDate.getMonth(), utcDate.getDate() + 4 - (utcDate.getUTCDay()||7))).getUTCFullYear();
-                const weekNum = getISOWeekNumber(date);
-                return `${weekYear}-W${String(weekNum).padStart(2, '0')}`;
-            } catch (e) {
-                 console.error("Error getting week ID from datetime:", e, "Input:", dateTimeStr);
-                 return null;
+            categoriesToPopulate = categoriesToPopulate.filter(cat => cat.value !== TRANSFER_CATEGORY_IN && cat.value !== TRANSFER_CATEGORY_OUT);
+            if (!categoriesToPopulate || categoriesToPopulate.length === 0) {
+                 const defaultCats = (selectedType === 'Thu') ? [...defaultIncomeCategories] : [...defaultExpenseCategories];
+                 categoriesToPopulate = defaultCats.filter(cat => cat.value !== TRANSFER_CATEGORY_IN && cat.value !== TRANSFER_CATEGORY_OUT);
             }
+            categoriesToPopulate.forEach(category => categoryInput.add(new Option(category.text, category.value)));
+            if (categoriesToPopulate.some(cat => cat.value === currentCategoryValue)) categoryInput.value = currentCategoryValue;
+            else if (categoriesToPopulate.length > 0) categoryInput.value = categoriesToPopulate[0].value;
         }
 
-        function getStartDateOfISOWeek(year, week) {
-            const simple = new Date(Date.UTC(year, 0, 1 + (week - 1) * 7));
-            const dow = simple.getUTCDay();
-            const ISOweekStart = new Date(simple);
-            if (dow <= 4) {
-                ISOweekStart.setUTCDate(simple.getUTCDate() - simple.getUTCDay() + 1);
+        function toggleFormFields() {
+            const selectedTypeRadio = document.querySelector('input[name="type"]:checked');
+            const selectedType = selectedTypeRadio ? selectedTypeRadio.value : 'Chi';
+            transactionForm.dataset.transactionMode = selectedType;
+            if (selectedType === 'Transfer') {
+                accountLabel.textContent = 'Từ Tài khoản:'; categoryInput.removeAttribute('required'); toAccountInput.setAttribute('required', '');
             } else {
-                ISOweekStart.setUTCDate(simple.getUTCDate() + 8 - simple.getUTCDay());
-            }
-            return ISOweekStart;
-        }
-
-        function getWeekDates(weekId) {
-            if (!weekId || !weekId.includes('-W')) return { start: null, end: null };
-            const [yearStr, weekNumStr] = weekId.split('-W');
-            const year = parseInt(yearStr, 10);
-            const week = parseInt(weekNumStr, 10);
-            if (isNaN(year) || isNaN(week) || week < 1 || week > 53) return { start: null, end: null };
-
-            const startDate = getStartDateOfISOWeek(year, week);
-            const endDate = new Date(startDate);
-            endDate.setUTCDate(startDate.getUTCDate() + 6);
-
-            const formatDate = (d) => d.toISOString().split('T')[0];
-            return { start: formatDate(startDate), end: formatDate(endDate) };
-        }
-        function getNumberOfISOWeeks(year) {
-            const dec28 = new Date(Date.UTC(year, 11, 28));
-            return getISOWeekNumber(dec28);
-        }
-        function getAllWeekIdsInYear(year) {
-            const weekIds = [];
-            const numWeeks = getNumberOfISOWeeks(year);
-            for (let i = 1; i <= numWeeks; i++) {
-                weekIds.push(`${year}-W${String(i).padStart(2, '0')}`);
-            }
-            return weekIds;
-        }
-        function getPreviousWeekId(weekId) {
-            if (!weekId || !weekId.includes('-W')) return null;
-            const [yearStr, weekNumStr] = weekId.split('-W');
-            let year = parseInt(yearStr, 10);
-            let week = parseInt(weekNumStr, 10);
-
-            if (week === 1) {
-                year -= 1;
-                week = getNumberOfISOWeeks(year);
-            } else {
-                week -= 1;
-            }
-            return `${year}-W${String(week).padStart(2, '0')}`;
-        }
-
-        /**
-         * Renders the list of transactions in the table.
-         * @param {Array} filteredTransactions - The transactions to display.
-         */
-        function renderMainTransactions(filteredTransactions = transactions) {
-            transactionList.innerHTML = ''; // Clear existing rows
-            noTransactionsMessage.style.display = filteredTransactions.length === 0 ? 'block' : 'none';
-
-             if (filteredTransactions.length === 0 && transactions.length > 0 && filterMonthSelect.value !== 'all') {
-                 noTransactionsMessage.textContent = 'Không có giao dịch nào cho tháng đã chọn.';
-            } else if (transactions.length === 0) {
-                noTransactionsMessage.textContent = 'Chưa có giao dịch nào.';
-            }
-
-            filteredTransactions.forEach(transaction => {
-                const row = transactionList.insertRow();
-                const transactionIdForButton = Number(transaction.id);
-                row.innerHTML = `
-                    <td>${formatDisplayDateTime(transaction.datetime)}</td> <td>${transaction.description || ''}</td>
-                    <td>${transaction.category}</td>
-                    <td class="${transaction.type === 'Thu' ? 'text-green-600' : 'text-red-600'}">${formatCurrency(transaction.amount)}</td>
-                    <td>${transaction.type}</td>
-                    <td>${transaction.account}</td>
-                    <td>
-                        <button class="btn-edit" onclick="loadTransactionForEdit(${transactionIdForButton})">
-                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>
-                             Sửa
-                        </button>
-                        <button class="btn-delete" onclick="deleteTransaction(${transactionIdForButton})">
-                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
-                             Xóa
-                        </button>
-                    </td>
-                `;
-            });
-            updateAllSummariesAndCharts(filteredTransactions);
-            populateMonthFilter();
-        }
-
-        /**
-         * Deletes a transaction after confirmation.
-         * @param {number} transactionId - The ID of the transaction to delete.
-         */
-        window.deleteTransaction = function(transactionId) { // Make it global
-            const idToDelete = Number(transactionId);
-            if (isNaN(idToDelete)) {
-                 showMessage('Lỗi: ID giao dịch không hợp lệ để xóa.', 'error');
-                 return;
-            }
-
-            const transactionToDelete = transactions.find(t => t.id === idToDelete);
-            if (!transactionToDelete) {
-                showMessage(`Lỗi: Không tìm thấy giao dịch với ID ${idToDelete} để xóa.`, 'error');
-                return;
-            }
-
-            // Confirmation dialog
-            if (confirm(`Bạn có chắc chắn muốn xóa giao dịch "${transactionToDelete.description || 'Không có nội dung'}" vào ngày ${formatDisplayDateTime(transactionToDelete.datetime)} không? Thao tác này không thể hoàn tác.`)) {
-                try {
-                    // Filter out the transaction to delete
-                    transactions = transactions.filter(t => t.id !== idToDelete);
-                    localStorage.setItem('transactions_v2', JSON.stringify(transactions)); // Update localStorage
-                    applyMainFilter(); // Re-render the UI
-                    populateComparisonWeekFilter();
-                    updateWeeklyComparisonDisplay();
-                    showMessage('Đã xóa giao dịch thành công!', 'success');
-                } catch (error) {
-                     console.error('Lỗi khi xóa giao dịch:', error);
-                     showMessage('Đã xảy ra lỗi khi xóa giao dịch.', 'error');
-                }
-            } else {
-                showMessage('Đã hủy thao tác xóa.', 'info');
-            }
-        }
-
-
-        function updateAllSummariesAndCharts(transactionsToAnalyze = transactions) {
-             updateMainSummaryAndChart(transactionsToAnalyze);
-             renderExpenseCategoryChartAndList(transactionsToAnalyze);
-             updateAccountBalances();
-             renderLast7DaysChart();
-             renderMonthComparisonChart();
-        }
-
-        function updateMainSummaryAndChart(summaryTransactions = transactions) {
-            const income = summaryTransactions.filter(t => t.type === 'Thu').reduce((sum, t) => sum + t.amount, 0);
-            const expenses = summaryTransactions.filter(t => t.type === 'Chi').reduce((sum, t) => sum + t.amount, 0);
-
-            totalIncomeEl.textContent = formatCurrency(income);
-            totalExpensesEl.textContent = formatCurrency(expenses);
-            currentBalanceEl.textContent = formatCurrency(income - expenses);
-
-            renderOrUpdateMainChart(income, expenses);
-        }
-
-        function renderOrUpdateMainChart(income, expenses) {
-             try {
-                const total = income + expenses;
-                const data = {
-                    labels: ['Tổng Thu', 'Tổng Chi'],
-                    datasets: [{
-                        label: `Số tiền (VNĐ)`,
-                        data: [income, expenses],
-                        backgroundColor: ['rgba(75, 192, 192, 0.7)', 'rgba(255, 99, 132, 0.7)'],
-                        borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
-                        borderWidth: 1
-                    }]
-                };
-
-                const options = {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'top' },
-                        title: { display: true, text: 'Biểu Đồ Thu vs Chi (Tháng Lọc - VNĐ)' },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    const value = context.parsed;
-                                    label += formatCurrency(value);
-                                    if (total > 0) {
-                                        const percentage = (value / total * 100).toFixed(1);
-                                        label += ` (${percentage}%)`;
-                                    }
-                                    return label;
-                                }
-                            }
-                        },
-                        datalabels: {
-                            formatter: (value, context) => {
-                                if (total === 0) return '0%';
-                                const percentage = (value / total * 100).toFixed(1) + '%';
-                                return percentage;
-                            },
-                            color: '#fff',
-                            font: {
-                                weight: 'bold'
-                            }
-                        }
-                    }
-                };
-
-                if (incomeExpenseChart) {
-                    incomeExpenseChart.data = data;
-                    incomeExpenseChart.options = options;
-                    incomeExpenseChart.update();
-                } else {
-                    incomeExpenseChart = new Chart(incomeExpenseChartCanvas, {
-                        type: 'pie',
-                        data: data,
-                        options: options
-                    });
-                }
-             } catch (error) {
-                 console.error("Error rendering/updating main income/expense chart:", error);
-                 showMessage("Lỗi khi vẽ biểu đồ thu chi.", "error");
-             }
-        }
-
-        function renderExpenseCategoryChartAndList(transactionsToAnalyze = transactions) {
-            const expensesByCategory = {};
-            let totalExpenses = 0;
-
-            transactionsToAnalyze
-                .filter(t => t.type === 'Chi')
-                .forEach(t => {
-                    expensesByCategory[t.category] = (expensesByCategory[t.category] || 0) + t.amount;
-                    totalExpenses += t.amount;
-                });
-
-            const categories = Object.keys(expensesByCategory);
-            const amounts = Object.values(expensesByCategory);
-
-            expenseCategoryListContainerEl.innerHTML = '';
-
-            if (categories.length === 0 || totalExpenses === 0) {
-                if(noExpenseDataEl) noExpenseDataEl.style.display = 'block';
-                else console.warn("noExpenseDataEl not found");
-
-                if (expenseCategoryChart) {
-                    expenseCategoryChart.destroy();
-                    expenseCategoryChart = null;
-                }
-                if(expenseCategoryChartCanvas) expenseCategoryChartCanvas.style.display = 'none';
-                else console.warn("expenseCategoryChartCanvas not found");
-                return;
-            }
-
-            if(noExpenseDataEl) noExpenseDataEl.style.display = 'none';
-            if(expenseCategoryChartCanvas) expenseCategoryChartCanvas.style.display = 'block';
-
-
-            const chartData = {
-                labels: categories,
-                datasets: [{
-                    label: 'Chi tiêu theo hạng mục',
-                    data: amounts,
-                    backgroundColor: categories.map((_, index) => categoryColors[index % categoryColors.length]),
-                    borderColor: '#fff',
-                    borderWidth: 1
-                }]
-            };
-
-            if (expenseCategoryChart) {
-                expenseCategoryChart.data = chartData;
-                expenseCategoryChart.update();
-            } else {
-                if(expenseCategoryChartCanvas){
-                    expenseCategoryChart = new Chart(expenseCategoryChartCanvas, {
-                        type: 'doughnut',
-                        data: chartData,
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'bottom',
-                                    labels: { padding: 15, boxWidth: 12 }
-                                },
-                                title: { display: false },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(context) {
-                                            let label = context.label || '';
-                                            if (label) { label += ': '; }
-                                            const value = context.parsed;
-                                            const percentage = totalExpenses > 0 ? (value / totalExpenses * 100).toFixed(1) : 0;
-                                            label += formatCurrency(value) + ` (${percentage}%)`;
-                                            return label;
-                                        }
-                                    }
-                                },
-                                datalabels: {
-                                    formatter: (value, context) => {
-                                        if (totalExpenses === 0) return '0%';
-                                        const percentage = (value / totalExpenses * 100).toFixed(1) + '%';
-                                        return percentage;
-                                    },
-                                    color: '#fff',
-                                    font: {
-                                        weight: 'bold',
-                                        size: 10
-                                    },
-                                    display: function(context) {
-                                        return (context.dataset.data[context.dataIndex] / totalExpenses * 100) > 5;
-                                    }
-                                }
-                            }
-                        }
-                    });
-                } else {
-                    console.error("expenseCategoryChartCanvas is not available to create new chart.");
-                }
-            }
-
-            categories.forEach((category, index) => {
-                const amount = expensesByCategory[category];
-                const percentage = totalExpenses > 0 ? (amount / totalExpenses * 100).toFixed(1) : 0;
-                const color = categoryColors[index % categoryColors.length];
-
-                const itemEl = document.createElement('div');
-                itemEl.className = 'expense-category-item';
-                itemEl.innerHTML = `
-                    <div>
-                        <span class="category-color-swatch" style="background-color: ${color};"></span>
-                        <span class="category-name">${category}</span>
-                    </div>
-                    <div class="flex items-center">
-                        <span class="category-percentage">${percentage}%</span>
-                        <span class="category-amount text-red-600">${formatCurrency(amount)}</span>
-                    </div>
-                `;
-                expenseCategoryListContainerEl.appendChild(itemEl);
-            });
-            const totalItemEl = document.createElement('div');
-            totalItemEl.className = 'expense-category-item font-semibold mt-2 pt-2 border-t border-gray-300';
-            totalItemEl.innerHTML = `
-                <span>Tổng chi tiêu</span>
-                <span class="text-red-600">${formatCurrency(totalExpenses)}</span>
-            `;
-            expenseCategoryListContainerEl.appendChild(totalItemEl);
-        }
-
-        function updateAccountBalances() {
-            const accountBalances = {};
-            const uniqueAccounts = [...new Set(transactions.map(t => t.account))];
-            uniqueAccounts.forEach(account => { accountBalances[account] = 0; });
-
-            transactions.forEach(t => {
-                if (accountBalances.hasOwnProperty(t.account)) {
-                    accountBalances[t.account] += (t.type === 'Thu' ? t.amount : -t.amount);
-                }
-            });
-
-            if (accountBalanceListEl) {
-                accountBalanceListEl.innerHTML = '<h3>Số Dư Theo Tài Khoản (Tổng thể - VNĐ):</h3>';
-                if (uniqueAccounts.length === 0) {
-                     accountBalanceListEl.innerHTML += '<p class="text-gray-500 text-sm">Chưa có tài khoản nào được sử dụng.</p>';
-                } else {
-                    uniqueAccounts.sort().forEach(account => {
-                        const balance = accountBalances[account];
-                        const balanceColor = balance >= 0 ? 'text-blue-600' : 'text-red-600';
-                        accountBalanceListEl.innerHTML += `
-                            <div class="summary-item text-sm">
-                                <span>${account}:</span>
-                                <span class="${balanceColor} font-medium">${formatCurrency(balance)}</span>
-                            </div>
-                        `;
-                    });
-                }
-            } else {
-                console.error("Element with ID 'account-balance-list' not found.");
-            }
-        }
-
-        function renderLast7DaysChart() {
-             try {
-                const today = new Date();
-                const daysData = [];
-
-                for (let i = 6; i >= 0; i--) {
-                    const date = new Date();
-                    date.setDate(today.getDate() - i);
-                    const dateString = formatDateTimeLocalInput(date).split('T')[0];
-                    const dateLabel = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}`;
-                    daysData.push({ date: dateString, label: dateLabel, expense: 0 });
-                }
-
-                transactions.forEach(t => {
-                    if (t.type === 'Chi' && t.datetime) {
-                        try {
-                            const transactionDate = new Date(t.datetime);
-                             if (!isNaN(transactionDate.getTime())) {
-                                const transactionDateString = formatDateTimeLocalInput(transactionDate).split('T')[0];
-                                const dayEntry = daysData.find(d => d.date === transactionDateString);
-                                if (dayEntry) {
-                                    dayEntry.expense += t.amount;
-                                }
-                             } else {
-                                 console.warn("Invalid datetime found in transaction for 7-day chart:", t);
-                             }
-                        } catch (dateError) {
-                             console.error("Error processing datetime for 7-day chart transaction:", t, dateError);
-                        }
-                    }
-                });
-
-
-                const chartLabels = daysData.map(d => d.label);
-                const chartDataPoints = daysData.map(d => d.expense);
-
-                const data = {
-                    labels: chartLabels,
-                    datasets: [{
-                        label: `Chi tiêu (VNĐ)`,
-                        data: chartDataPoints,
-                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
-                        borderColor: 'rgba(220, 38, 38, 1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.1
-                    }]
-                };
-
-                if (last7DaysChart) {
-                    last7DaysChart.destroy();
-                }
-                last7DaysChart = new Chart(last7DaysChartCanvas, {
-                    type: 'line',
-                    data: data,
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    callback: function(value) { return formatCurrency(value); }
-                                }
-                            }
-                        },
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                callbacks: {
-                                     label: function(context) {
-                                        let label = context.dataset.label || '';
-                                        if (label) { label += ': '; }
-                                        if (context.parsed.y !== null) {
-                                            label += formatCurrency(context.parsed.y);
-                                        }
-                                        return label;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-
-            } catch (error) {
-                console.error("Error rendering/updating last 7 days chart:", error);
-                showMessage("Lỗi khi vẽ biểu đồ 7 ngày qua.", "error");
-            }
-        }
-        function renderMonthComparisonChart() {
-             try {
-                let currentMonthFilter = filterMonthSelect.value;
-                let currentYear, currentMonth;
-
-                if (currentMonthFilter === 'all') {
-                    const today = new Date();
-                    currentYear = today.getFullYear();
-                    currentMonth = today.getMonth() + 1;
-                    currentMonthFilter = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
-                } else {
-                    [currentYear, currentMonth] = currentMonthFilter.split('-').map(Number);
-                }
-
-                let prevYear = currentYear;
-                let prevMonth = currentMonth - 1;
-                if (prevMonth === 0) {
-                    prevMonth = 12;
-                    prevYear -= 1;
-                }
-                const prevMonthFilter = `${prevYear}-${String(prevMonth).padStart(2, '0')}`;
-
-                const currentMonthTransactions = transactions.filter(t => t.datetime && t.datetime.startsWith(currentMonthFilter));
-                const prevMonthTransactions = transactions.filter(t => t.datetime && t.datetime.startsWith(prevMonthFilter));
-
-                const currentMonthIncome = currentMonthTransactions.filter(t => t.type === 'Thu').reduce((sum, t) => sum + t.amount, 0);
-                const currentMonthExpenses = currentMonthTransactions.filter(t => t.type === 'Chi').reduce((sum, t) => sum + t.amount, 0);
-                const prevMonthIncome = prevMonthTransactions.filter(t => t.type === 'Thu').reduce((sum, t) => sum + t.amount, 0);
-                const prevMonthExpenses = prevMonthTransactions.filter(t => t.type === 'Chi').reduce((sum, t) => sum + t.amount, 0);
-
-                const labels = [`Tháng ${prevMonth}/${prevYear}`, `Tháng ${currentMonth}/${currentYear}`];
-                const data = {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Tổng Thu',
-                            data: [prevMonthIncome, currentMonthIncome],
-                            backgroundColor: 'rgba(75, 192, 192, 0.7)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Tổng Chi',
-                            data: [prevMonthExpenses, currentMonthExpenses],
-                            backgroundColor: 'rgba(255, 99, 132, 0.7)',
-                            borderColor: 'rgba(255, 99, 132, 1)',
-                            borderWidth: 1
-                        }
-                    ]
-                };
-
-                if (monthComparisonChart) {
-                    monthComparisonChart.data = data;
-                    monthComparisonChart.update();
-                } else {
-                    monthComparisonChart = new Chart(monthComparisonChartCanvas, {
-                        type: 'bar',
-                        data: data,
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: { callback: function(value) { return formatCurrency(value); } }
-                                }
-                            },
-                            plugins: {
-                                title: {
-                                    display: true,
-                                    text: 'So Sánh Thu Chi Tháng Này và Tháng Trước (VNĐ)'
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                         label: function(context) {
-                                            let label = context.dataset.label || '';
-                                            if (label) { label += ': '; }
-                                            if (context.parsed.y !== null) {
-                                                label += formatCurrency(context.parsed.y);
-                                            }
-                                            return label;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-             } catch (error) {
-                 console.error("Error rendering/updating month comparison chart:", error);
-                 showMessage("Lỗi khi vẽ biểu đồ so sánh tháng.", "error");
-             }
-        }
-
-        window.loadTransactionForEdit = function(transactionId) {
-            const idToEdit = Number(transactionId);
-            if (isNaN(idToEdit)) {
-                showMessage('Lỗi: ID giao dịch không hợp lệ để sửa.', 'error');
-                return;
-            }
-
-            const transactionToEdit = transactions.find(t => t.id === idToEdit);
-            if (transactionToEdit) {
-                datetimeInput.value = transactionToEdit.datetime;
-                const typeRadioToSelect = document.querySelector(`input[name="type"][value="${transactionToEdit.type}"]`);
-                if (typeRadioToSelect) typeRadioToSelect.checked = true;
-
+                accountLabel.textContent = 'Tài khoản:'; categoryInput.setAttribute('required', ''); toAccountInput.removeAttribute('required');
                 populateCategories();
-                categoryInput.value = transactionToEdit.category;
-                // Display the stored VND amount divided by 1000 for easier editing
-                amountTextInput.value = transactionToEdit.amount / 1000;
-                descriptionInput.value = transactionToEdit.description || '';
-                accountInput.value = transactionToEdit.account;
-                formCurrencySelector.value = 'VND'; // Default to VND for editing
-
-                editingTransactionId = idToEdit;
-                formTitleEl.textContent = "Sửa Giao Dịch";
-                submitButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 inline-block mr-1"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg> Cập Nhật Giao Dịch`;
-                submitButton.classList.remove('btn-primary');
-                submitButton.classList.add('btn-edit');
-                transactionForm.scrollIntoView({ behavior: 'smooth' });
-            } else {
-                showMessage('Lỗi: Không tìm thấy giao dịch để sửa (ID: ' + idToEdit + ').', 'error');
-                console.error("Transaction not found for ID:", idToEdit, "Available IDs:", transactions.map(t=>t.id));
             }
-         }
-
-        /**
-         * Parses the amount input from text, handling potential commas and converting based on selected currency.
-         * @param {string} amountStr - The input string from the amount field.
-         * @param {string} currency - The selected currency ('VND' or 'USD').
-         * @returns {number | null} - The parsed numeric amount in VND or null if invalid.
-         */
-        function parseAmountInput(amountStr, currency) {
-            if (!amountStr) return null;
-            // Replace comma with dot for decimal parsing, remove other non-numeric except dot
-            const cleanedAmountStr = amountStr.replace(/,/g, '.').replace(/[^\d.]/g, '');
-            const numericAmount = parseFloat(cleanedAmountStr);
-
-            if (isNaN(numericAmount) || numericAmount < 0) {
-                return null; // Invalid number or negative
-            }
-
-            let amountInVND;
-            if (currency === 'USD') {
-                amountInVND = numericAmount * USD_TO_VND_RATE;
-            } else { // Assume VND
-                amountInVND = numericAmount * 1000; // Multiply by 1000 if VND is selected
-            }
-
-            // Ensure amountInVND is a valid number after potential conversion/multiplication
-            if (isNaN(amountInVND)) {
-                 return null;
-            }
-
-            return amountInVND;
         }
 
+        function parseAmountInput(amountStr, currency) {
+            if (!amountStr) return 0;
+            let val = parseFloat(amountStr.replace(/,/g, ''));
+            if (isNaN(val)) return 0;
+            if (currency === 'USD') val = val * USD_TO_VND_RATE;
+            else if (currency === 'VND') val = val * 1000;
+            return Math.round(val);
+        }
 
         function handleTransactionSubmit(e) {
             e.preventDefault();
+            const datetimeValue = datetimeInput.value;
+            const typeRadio = document.querySelector('input[name="type"]:checked');
+            const type = typeRadio ? typeRadio.value : null;
+            const amountRaw = amountTextInput.value;
+            const currency = formCurrencySelector.value;
+            let categoryValue = (type !== 'Transfer') ? categoryInput.value : null;
+            const accountValue = accountInput.value;
+            const toAccountValue = (type === 'Transfer') ? toAccountInput.value : null;
+            const descriptionValue = descriptionInput.value.trim();
 
-            const currentDateTime = datetimeInput.value;
-            const currentDescription = descriptionInput.value.trim();
-            const currentCategory = categoryInput.value;
-            const selectedTypeRadio = document.querySelector('input[name="type"]:checked');
-            const currentType = selectedTypeRadio ? selectedTypeRadio.value : null;
-            const currentAccount = accountInput.value;
-            const amountStr = amountTextInput.value; // Get value from text input
-            const selectedFormCurrency = formCurrencySelector.value;
+            if (!datetimeValue || !type || !amountRaw || !accountValue) { showMessage('Vui lòng điền đầy đủ các trường bắt buộc.', 'error'); return; }
+            if (type !== 'Transfer' && !categoryValue) { showMessage('Vui lòng chọn hạng mục.', 'error'); return; }
+            if (type === 'Transfer' && !toAccountValue) { showMessage('Vui lòng chọn tài khoản nhận cho giao dịch chuyển tiền.', 'error'); return; }
+            if (type === 'Transfer' && accountValue === toAccountValue) { showMessage('Tài khoản chuyển và tài khoản nhận không được trùng nhau.', 'error'); return; }
 
-            const amountInVND = parseAmountInput(amountStr, selectedFormCurrency); // Use parsing function
+            let amount = parseAmountInput(amountRaw, currency);
+            if (isNaN(amount) || amount <= 0) { showMessage('Số tiền không hợp lệ hoặc phải lớn hơn 0.', 'error'); return; }
+            const transactionDateTime = formatIsoDateTime(new Date(datetimeValue));
 
-            // Validation
-            if (!currentDateTime || !currentCategory || amountInVND === null || !currentType || !currentAccount) {
-                showMessage('Vui lòng điền đầy đủ Ngày & Giờ, Hạng mục, Số tiền hợp lệ, Tài khoản và chọn Loại giao dịch.', 'error');
-                console.log("Validation failed:", {currentDateTime, currentCategory, amountEntered: amountStr, amountInVND, currentType, currentAccount});
-                return;
-            }
-             if (amountInVND <= 0) {
-                 showMessage('Số tiền cuối cùng (sau quy đổi/nhân) phải lớn hơn 0.', 'error');
-                 return;
-             }
-
-
-            if (editingTransactionId !== null) {
-                const idBeingEdited = Number(editingTransactionId);
-                const transactionIndex = transactions.findIndex(t => t.id === idBeingEdited);
-                if (transactionIndex !== -1) {
-                    transactions[transactionIndex] = {
-                        ...transactions[transactionIndex],
-                        datetime: currentDateTime,
-                        type: currentType,
-                        category: currentCategory,
-                        amount: amountInVND, // Store the final VND amount
-                        description: currentDescription,
-                        account: currentAccount,
-                        lastModified: formatIsoDateTime(new Date())
-                    };
-                    showMessage('Cập nhật giao dịch thành công!', 'success');
+            if (editingTransactionId) {
+                const existingTransactionIndex = transactions.findIndex(t => t.id === editingTransactionId || (t.isTransfer && (t.id.startsWith(editingTransactionId) || t.transferPairId.startsWith(editingTransactionId))));
+                if (existingTransactionIndex === -1 && type !== 'Transfer') { showMessage('Lỗi: Giao dịch gốc để sửa không tìm thấy.', 'error'); editingTransactionId = null; return; }
+                if (transactions.find(t => t.id.startsWith(editingTransactionId) && t.isTransfer) || type === 'Transfer') {
+                    transactions = transactions.filter(t => !t.id.startsWith(editingTransactionId) && !(t.transferPairId && t.transferPairId.startsWith(editingTransactionId)));
+                } else if (existingTransactionIndex !== -1) { transactions.splice(existingTransactionIndex, 1); }
+                const baseId = editingTransactionId;
+                if (type === 'Transfer') {
+                    categoryValue = null;
+                    const transferOutId = baseId + "_out_edited_" + Date.now(); const transferInId = baseId + "_in_edited_" + Date.now();
+                    transactions.push({ id: transferOutId, datetime: transactionDateTime, description: descriptionValue || `Chuyển tiền từ ${accountValue} đến ${toAccountValue}`, category: TRANSFER_CATEGORY_OUT, amount, type: 'Chi', account: accountValue, currency: 'VND', isTransfer: true, transferPairId: transferInId, originalAmount: parseFloat(amountRaw), originalCurrency: currency });
+                    transactions.push({ id: transferInId, datetime: transactionDateTime, description: descriptionValue || `Nhận tiền từ ${accountValue} vào ${toAccountValue}`, category: TRANSFER_CATEGORY_IN, amount, type: 'Thu', account: toAccountValue, currency: 'VND', isTransfer: true, transferPairId: transferOutId, originalAmount: parseFloat(amountRaw), originalCurrency: currency });
+                    showMessage('Giao dịch chuyển tiền đã được cập nhật!', 'success');
                 } else {
-                    showMessage('Lỗi: Không tìm thấy giao dịch để cập nhật (ID: ' + idBeingEdited + ').', 'error');
-                    editingTransactionId = null;
+                    transactions.push({ id: baseId, datetime: transactionDateTime, description: descriptionValue, category: categoryValue, amount, type, account: accountValue, currency: 'VND', isTransfer: false, transferPairId: null, originalAmount: parseFloat(amountRaw), originalCurrency: currency });
+                    showMessage(`Giao dịch ${type === 'Thu' ? 'thu' : 'chi'} đã được cập nhật!`, 'success');
                 }
+                editingTransactionId = null;
             } else {
-                const newTransaction = {
-                    id: Number(Date.now()),
-                    datetime: currentDateTime,
-                    description: currentDescription,
-                    category: currentCategory,
-                    amount: amountInVND, // Store the final VND amount
-                    type: currentType,
-                    account: currentAccount,
-                    createdAt: formatIsoDateTime(new Date())
-                };
-                transactions.push(newTransaction);
-                showMessage('Thêm giao dịch thành công!', 'success');
+                const newIdBase = Date.now().toString();
+                if (type === 'Transfer') {
+                    const transferOutId = newIdBase + "_out"; const transferInId = newIdBase + "_in";
+                    transactions.push({ id: transferOutId, datetime: transactionDateTime, description: descriptionValue || `Chuyển tiền từ ${accountValue} đến ${toAccountValue}`, category: TRANSFER_CATEGORY_OUT, amount, type: 'Chi', account: accountValue, currency: 'VND', isTransfer: true, transferPairId: transferInId, originalAmount: parseFloat(amountRaw), originalCurrency: currency });
+                    transactions.push({ id: transferInId, datetime: transactionDateTime, description: descriptionValue || `Nhận tiền từ ${accountValue} vào ${toAccountValue}`, category: TRANSFER_CATEGORY_IN, amount, type: 'Thu', account: toAccountValue, currency: 'VND', isTransfer: true, transferPairId: transferOutId, originalAmount: parseFloat(amountRaw), originalCurrency: currency });
+                    showMessage('Giao dịch chuyển tiền đã được thêm!', 'success');
+                } else {
+                    transactions.push({ id: newIdBase, datetime: transactionDateTime, description: descriptionValue, category: categoryValue, amount, type, account: accountValue, currency: 'VND', isTransfer: false, transferPairId: null, originalAmount: parseFloat(amountRaw), originalCurrency: currency });
+                    showMessage(`Giao dịch ${type === 'Thu' ? 'thu' : 'chi'} đã được thêm!`, 'success');
+                }
             }
-
-            transactions.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
-            localStorage.setItem('transactions_v2', JSON.stringify(transactions));
-
-            applyMainFilter();
-            populateComparisonWeekFilter();
-            updateWeeklyComparisonDisplay();
-
-            editingTransactionId = null;
-            formTitleEl.textContent = "Thêm Giao Dịch Mới";
-            submitButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 inline-block mr-1"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg> Thêm Giao Dịch`;
-            submitButton.classList.remove('btn-edit');
-            submitButton.classList.add('btn-primary');
-            transactionForm.reset();
-            setDefaultDateTime();
-            document.getElementById('type-chi').checked = true;
-            populateCategories();
-            formCurrencySelector.value = 'VND'; // Reset form currency selector to VND
-         }
-
-        function populateMonthFilter() {
-            const currentFilterValue = filterMonthSelect.value;
-            const months = new Set(transactions.map(t => t.datetime ? t.datetime.substring(0, 7) : ''));
-            filterMonthSelect.innerHTML = '<option value="all">Tất cả các tháng</option>';
-
-            Array.from(months)
-                .filter(m => m)
-                .sort()
-                .reverse()
-                .forEach(month => {
-                    const [year, monthNum] = month.split('-');
-                    filterMonthSelect.add(new Option(`Tháng ${monthNum}, Năm ${year}`, month));
-                });
-            filterMonthSelect.value = months.has(currentFilterValue) ? currentFilterValue : 'all';
-         }
-
-        function filterTransactionsByMonth() {
-            const selectedMonth = filterMonthSelect.value;
-            const filtered = selectedMonth === "all"
-                ? transactions
-                : transactions.filter(t => t.datetime && t.datetime.startsWith(selectedMonth));
-            renderMainTransactions(filtered);
-         }
-
-        function applyMainFilter() {
-            filterTransactionsByMonth();
+            saveTransactions(); applyMainFilter(); resetForm();
         }
 
-        function populateComparisonWeekFilter() {
-            const year = parseInt(filterComparisonYearInput.value, 10);
-            filterComparisonWeekSelect.innerHTML = '<option value="none">-- Chọn tuần --</option>';
-            if (isNaN(year) || year < 2000 || year > 2100) {
-                noComparisonDataEl.textContent = "Vui lòng chọn một năm hợp lệ.";
-                noComparisonDataEl.style.display = 'block';
-                weeklyComparisonContentEl.style.display = 'none';
-                return;
-            }
+        function resetForm() {
+            transactionForm.reset(); setDefaultDateTime(); formCurrencySelector.value = 'VND';
+            document.getElementById('type-chi').checked = true; editingTransactionId = null;
+            formTitleEl.textContent = 'Thêm Giao Dịch Mới';
+            submitButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>Thêm Giao Dịch`;
+            toggleFormFields(); populateAccountDropdowns();
+        }
 
-            const weekIds = getAllWeekIdsInYear(year);
-            weekIds.reverse().forEach(weekId => {
-                const { start, end } = getWeekDates(weekId);
-                if (start && end) {
-                    const option = document.createElement('option');
-                    option.value = weekId;
-                    const startDateDisplay = formatDisplayDateTime(start + "T00:00").split(' ')[0]; // Show YYYY-MM-DD
-                    const endDateDisplay = formatDisplayDateTime(end + "T23:59").split(' ')[0]; // Show YYYY-MM-DD
-                    option.textContent = `${weekId} (${startDateDisplay} - ${endDateDisplay})`;
-                    filterComparisonWeekSelect.appendChild(option);
+        window.loadTransactionForEdit = function(transactionId) {
+            let transactionToEdit = transactions.find(t => t.id === transactionId);
+            if (!transactionToEdit) {
+                 transactionToEdit = transactions.find(t => t.isTransfer && (t.id.startsWith(transactionId) || t.transferPairId.startsWith(transactionId)));
+                 if (transactionToEdit && transactionToEdit.isTransfer) {
+                    const baseId = transactionToEdit.id.split('_')[0];
+                    const outTransaction = transactions.find(t => t.id.startsWith(baseId) && t.type === 'Chi' && t.isTransfer);
+                    const inTransaction = transactions.find(t => t.id.startsWith(baseId) && t.type === 'Thu' && t.isTransfer);
+                    if (outTransaction && inTransaction) {
+                        datetimeInput.value = formatDateTimeLocalInput(new Date(outTransaction.datetime));
+                        document.getElementById('type-transfer').checked = true;
+                        amountTextInput.value = outTransaction.originalCurrency === 'VND' ? outTransaction.originalAmount / 1000 : outTransaction.originalAmount;
+                        formCurrencySelector.value = outTransaction.originalCurrency;
+                        descriptionInput.value = outTransaction.description.startsWith("Chuyển tiền từ") ? outTransaction.description : (inTransaction.description.startsWith("Nhận tiền từ") ? inTransaction.description : outTransaction.description);
+                        accountInput.value = outTransaction.account; toAccountInput.value = inTransaction.account;
+                        editingTransactionId = baseId;
+                    } else { showMessage('Lỗi: Không tìm thấy đủ thông tin giao dịch chuyển tiền.', 'error'); return; }
+                 } else { showMessage('Lỗi: Không tìm thấy giao dịch.', 'error'); return; }
+            } else {
+                datetimeInput.value = formatDateTimeLocalInput(new Date(transactionToEdit.datetime));
+                document.querySelector(`input[name="type"][value="${transactionToEdit.type}"]`).checked = true;
+                amountTextInput.value = transactionToEdit.originalCurrency === 'VND' ? transactionToEdit.originalAmount / 1000 : transactionToEdit.originalAmount;
+                formCurrencySelector.value = transactionToEdit.originalCurrency;
+                descriptionInput.value = transactionToEdit.description; accountInput.value = transactionToEdit.account;
+                if (transactionToEdit.type !== 'Transfer') categoryInput.value = transactionToEdit.category;
+                editingTransactionId = transactionId;
+            }
+            formTitleEl.textContent = 'Sửa Giao Dịch';
+            submitButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>Lưu Thay Đổi`;
+            toggleFormFields(); populateAccountDropdowns();
+             if (document.querySelector('input[name="type"]:checked').value !== 'Transfer') {
+                populateCategories();
+                if(transactionToEdit && transactionToEdit.type !== 'Transfer') categoryInput.value = transactionToEdit.category;
+            }
+            const formSection = document.querySelector('.form-section .collapsible-header');
+            if(formSection && !formSection.classList.contains('active')) formSection.click();
+            formSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        window.deleteTransaction = function(transactionId) {
+            if (!confirm('Bạn có chắc muốn xóa giao dịch này?')) return;
+            const transactionToDelete = transactions.find(t => t.id === transactionId);
+            if (transactionToDelete && transactionToDelete.isTransfer) {
+                transactions = transactions.filter(t => t.id !== transactionToDelete.id && t.transferPairId !== transactionToDelete.id);
+            } else {
+                const baseIdMatch = transactionId.match(/^(\d+)(_out|_in)?$/);
+                if(baseIdMatch && baseIdMatch[1]){
+                    const baseId = baseIdMatch[1];
+                    transactions = transactions.filter(t => !t.id.startsWith(baseId) && !(t.transferPairId && t.transferPairId.startsWith(baseId)));
+                } else { transactions = transactions.filter(t => t.id !== transactionId); }
+            }
+            saveTransactions(); applyMainFilter(); showMessage('Đã xóa giao dịch.', 'success');
+        }
+
+        function renderMainTransactions(txsToRender = transactions) {
+            transactionList.innerHTML = '';
+            if (txsToRender.length === 0) { noTransactionsMessage.style.display = 'block'; return; }
+            noTransactionsMessage.style.display = 'none';
+            txsToRender.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+            txsToRender.forEach(tx => {
+                const row = transactionList.insertRow();
+                row.insertCell().textContent = formatDisplayDateTime(tx.datetime);
+                let displayDescription = tx.description; let displayCategory = tx.category;
+                let displayAccount = accounts.find(a => a.value === tx.account)?.text || tx.account;
+                if (tx.isTransfer) {
+                    const pair = transactions.find(p => p.id === tx.transferPairId);
+                    const pairAccountName = pair ? (accounts.find(a => a.value === pair.account)?.text || pair.account) : 'N/A';
+                    if (tx.type === 'Chi') displayDescription = displayDescription || `Chuyển đến ${pairAccountName}`;
+                    else displayDescription = displayDescription || `Nhận từ ${pairAccountName}`;
+                }
+                row.insertCell().textContent = displayDescription; row.insertCell().textContent = displayCategory;
+                const amountCell = row.insertCell(); amountCell.textContent = formatCurrency(tx.amount);
+                amountCell.classList.add(tx.type === 'Thu' ? 'text-green-600' : 'text-red-600');
+                row.insertCell().textContent = tx.type === 'Thu' ? 'Thu Nhập' : (tx.type === 'Chi' ? 'Chi Tiêu' : 'Chuyển Tiền');
+                row.insertCell().textContent = displayAccount;
+                const actionsCell = row.insertCell(); actionsCell.classList.add('text-center');
+                const editBtn = document.createElement('button');
+                editBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square mr-1" viewBox="0 0 16 16"> <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/> <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/> </svg>Sửa`;
+                editBtn.classList.add('btn-edit');
+                const editId = tx.isTransfer ? tx.id.split('_')[0] : tx.id;
+                editBtn.onclick = () => loadTransactionForEdit(editId);
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/> </svg>Xóa`;
+                deleteBtn.classList.add('btn-delete');
+                const deleteId = tx.isTransfer ? tx.id.split('_')[0] : tx.id;
+                deleteBtn.onclick = () => deleteTransaction(deleteId);
+                actionsCell.appendChild(editBtn); actionsCell.appendChild(deleteBtn);
+            });
+        }
+
+        function updateAllSummariesAndCharts(transactionsToAnalyze = transactions) {
+            updateMainSummaryAndChart(transactionsToAnalyze);
+            renderExpenseCategoryChartAndList(transactionsToAnalyze);
+            updateAccountBalances(); renderLast7DaysChart(); renderMonthComparisonChart();
+        }
+
+        function updateMainSummaryAndChart(summaryTransactions = transactions) {
+            let totalIncome = 0; let totalExpenses = 0;
+            summaryTransactions.forEach(tx => {
+                if (tx.type === 'Thu') totalIncome += tx.amount;
+                else if (tx.type === 'Chi') totalExpenses += tx.amount;
+            });
+            totalIncomeEl.textContent = formatCurrency(totalIncome); totalExpensesEl.textContent = formatCurrency(totalExpenses);
+            currentBalanceEl.textContent = formatCurrency(totalIncome - totalExpenses);
+            currentBalanceEl.className = (totalIncome - totalExpenses >= 0) ? 'text-blue-600 font-bold' : 'text-red-600 font-bold';
+            renderOrUpdateMainChart(totalIncome, totalExpenses);
+        }
+
+        function renderOrUpdateMainChart(income, expenses) {
+            const data = { labels: ['Tổng Thu', 'Tổng Chi'], datasets: [{ label: 'Số tiền (VNĐ)', data: [income, expenses], backgroundColor: [categoryColors[1], categoryColors[0]], }] };
+            if (incomeExpenseChart) { incomeExpenseChart.data = data; incomeExpenseChart.update(); }
+            else { incomeExpenseChart = new Chart(incomeExpenseChartCanvas, { type: 'bar', data, options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false } } } }); }
+        }
+
+        function renderExpenseCategoryChartAndList(transactionsToAnalyze = transactions) {
+            const expenseData = {}; let totalExpenses = 0;
+            transactionsToAnalyze.filter(tx => tx.type === 'Chi').forEach(tx => { expenseData[tx.category] = (expenseData[tx.category] || 0) + tx.amount; totalExpenses += tx.amount; });
+            if (totalExpenses === 0) {
+                noExpenseDataEl.style.display = 'block'; expenseCategoryListContainerEl.innerHTML = '';
+                if(expenseCategoryChart) expenseCategoryChart.destroy(); expenseCategoryChart = null;
+                document.getElementById('expenseCategoryChart').style.display = 'none'; return;
+            }
+            noExpenseDataEl.style.display = 'none'; document.getElementById('expenseCategoryChart').style.display = 'block';
+            const labels = Object.keys(expenseData); const dataValues = Object.values(expenseData);
+            const backgroundColors = labels.map((_, i) => categoryColors[i % categoryColors.length]);
+            const chartData = { labels, datasets: [{ data: dataValues, backgroundColor: backgroundColors }] };
+            if (expenseCategoryChart) { expenseCategoryChart.data = chartData; expenseCategoryChart.update(); }
+            else { expenseCategoryChart = new Chart(expenseCategoryChartCanvas, { type: 'doughnut', data: chartData, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } }, tooltip: { callbacks: { label: ctx => `${ctx.label}: ${formatCurrency(ctx.raw)} (${((ctx.raw / totalExpenses) * 100).toFixed(1)}%)` } }, datalabels: { formatter: (value, ctx) => { const percentage = (value / totalExpenses) * 100; return percentage > 5 ? percentage.toFixed(0) + '%' : ''; }, color: '#fff', font: { weight: 'bold' } } } } }); }
+            expenseCategoryListContainerEl.innerHTML = '';
+            labels.forEach((label, index) => {
+                const amount = expenseData[label]; const percentage = totalExpenses > 0 ? ((amount / totalExpenses) * 100).toFixed(1) : "0.0";
+                const itemEl = document.createElement('div'); itemEl.classList.add('expense-category-item');
+                itemEl.innerHTML = `<div><span class="category-color-swatch" style="background-color: ${backgroundColors[index]}"></span><span class="category-name">${label}</span></div><div class="flex items-center"><span class="category-amount">${formatCurrency(amount)}</span><span class="category-percentage">${percentage}%</span></div>`;
+                expenseCategoryListContainerEl.appendChild(itemEl);
+            });
+        }
+
+        function updateAccountBalances() {
+            accountBalanceListEl.innerHTML = '<h3>Số Dư Theo Tài Khoản (Tổng thể - VNĐ):</h3>';
+            const balances = {}; accounts.forEach(acc => balances[acc.value] = 0);
+            transactions.forEach(tx => {
+                if (balances[tx.account] !== undefined) {
+                    if (tx.type === 'Thu') balances[tx.account] += tx.amount;
+                    else if (tx.type === 'Chi') balances[tx.account] -= tx.amount;
                 }
             });
-             const todayDateTimeStr = formatDateTimeLocalInput(new Date());
-             const currentWeekId = getWeekIdFromDateTime(todayDateTimeStr);
-            if (currentWeekId && weekIds.includes(currentWeekId)) {
-                filterComparisonWeekSelect.value = currentWeekId;
-            } else if (weekIds.length > 0) {
-                 filterComparisonWeekSelect.value = weekIds[0];
-             }
+            Object.keys(balances).forEach(accValue => {
+                const acc = accounts.find(a => a.value === accValue);
+                if (acc) {
+                    const balanceItem = document.createElement('div'); balanceItem.classList.add('summary-item');
+                    balanceItem.innerHTML = `<span>${acc.text}:</span><span class="${balances[accValue] >= 0 ? 'text-green-600' : 'text-red-600'}">${formatCurrency(balances[accValue])}</span>`;
+                    accountBalanceListEl.appendChild(balanceItem);
+                }
+            });
+        }
+        
+        function getPastDate(daysAgo) { const date = new Date(); date.setDate(date.getDate() - daysAgo); date.setHours(0, 0, 0, 0); return date; }
+
+        function renderLast7DaysChart() {
+            const today = new Date(); today.setHours(23,59,59,999); const sevenDaysAgo = getPastDate(6); 
+            const dailyExpenses = {}; const labels = [];
+            for (let i = 0; i < 7; i++) { const d = new Date(sevenDaysAgo); d.setDate(d.getDate() + i); const dateString = d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }); labels.push(dateString); dailyExpenses[dateString] = 0; }
+            transactions.filter(tx => { const txDate = new Date(tx.datetime); return tx.type === 'Chi' && txDate >= sevenDaysAgo && txDate <= today; }).forEach(tx => { const dateString = new Date(tx.datetime).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }); if (dailyExpenses[dateString] !== undefined) dailyExpenses[dateString] += tx.amount; });
+            const dataValues = labels.map(label => dailyExpenses[label]);
+            const data = { labels: labels, datasets: [{ label: 'Chi tiêu hàng ngày (VNĐ)', data: dataValues, borderColor: categoryColors[3], backgroundColor: 'transparent', tension: 0.1, fill: false }] };
+            if (last7DaysChart) { last7DaysChart.data = data; last7DaysChart.update(); }
+            else { last7DaysChart = new Chart(last7DaysChartCanvas, { type: 'line', data, options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false } } } }); }
         }
 
-        function calculateWeeklyStats(transactionsInPeriod, weekStartDateStr) {
-            const income = transactionsInPeriod.filter(t => t.type === 'Thu').reduce((sum, t) => sum + t.amount, 0);
-            const expenses = transactionsInPeriod.filter(t => t.type === 'Chi').reduce((sum, t) => sum + t.amount, 0);
-            const netChange = income - expenses;
+        function renderMonthComparisonChart() {
+            const currentMonthFilter = filterMonthSelect.value; if (!currentMonthFilter || currentMonthFilter === 'all') return;
+            const [currentYear, currentMonthNum] = currentMonthFilter.split('-').map(Number);
+            let prevYear = currentYear; let prevMonthNum = currentMonthNum - 1;
+            if (prevMonthNum === 0) { prevMonthNum = 12; prevYear--; }
+            const prevMonthFilter = `${prevYear}-${String(prevMonthNum).padStart(2, '0')}`;
+            let currentMonthIncome = 0, currentMonthExpenses = 0, prevMonthIncome = 0, prevMonthExpenses = 0;
+            transactions.forEach(tx => {
+                const txMonth = tx.datetime.substring(0, 7);
+                if (txMonth === currentMonthFilter) { if (tx.type === 'Thu') currentMonthIncome += tx.amount; else if (tx.type === 'Chi') currentMonthExpenses += tx.amount; }
+                else if (txMonth === prevMonthFilter) { if (tx.type === 'Thu') prevMonthIncome += tx.amount; else if (tx.type === 'Chi') prevMonthExpenses += tx.amount; }
+            });
+            const data = { labels: ['Tháng Trước', 'Tháng Này'], datasets: [ { label: 'Tổng Thu', data: [prevMonthIncome, currentMonthIncome], backgroundColor: categoryColors[1] }, { label: 'Tổng Chi', data: [prevMonthExpenses, currentMonthExpenses], backgroundColor: categoryColors[0] } ] };
+            if (monthComparisonChart) { monthComparisonChart.data = data; monthComparisonChart.update(); }
+            else { monthComparisonChart = new Chart(monthComparisonChartCanvas, { type: 'bar', data, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'x', plugins: { datalabels: { display: false } } } }); }
+        }
+        
+        function populateMonthFilter() {
+            const months = new Set(); transactions.forEach(tx => months.add(tx.datetime.substring(0, 7)));
+            const sortedMonths = Array.from(months).sort().reverse();
+            filterMonthSelect.innerHTML = '<option value="all">Tất cả các tháng</option>';
+            sortedMonths.forEach(monthStr => { const [year, month] = monthStr.split('-'); filterMonthSelect.add(new Option(`Tháng ${month}/${year}`, monthStr)); });
+            const currentMonthFormatted = new Date().toISOString().substring(0, 7);
+            if (sortedMonths.includes(currentMonthFormatted)) filterMonthSelect.value = currentMonthFormatted;
+            else if (sortedMonths.length > 0) filterMonthSelect.value = sortedMonths[0];
+            else filterMonthSelect.value = "all";
+        }
 
-            let startBalance = 0;
-            if (weekStartDateStr) {
-                 startBalance = transactions
-                    .filter(t => t.datetime && t.datetime < weekStartDateStr + "T00:00:00")
-                    .reduce((balance, t) => balance + (t.type === 'Thu' ? t.amount : -t.amount), 0);
-            }
-            return { income, expenses, netChange, startBalance };
+        function filterTransactionsByMonth() { applyMainFilter(); }
+        
+        function applyMainFilter() {
+            const selectedMonth = filterMonthSelect.value;
+            let filteredTransactions = (selectedMonth === 'all') ? [...transactions] : transactions.filter(tx => tx.datetime.startsWith(selectedMonth));
+            renderMainTransactions(filteredTransactions); updateAllSummariesAndCharts(filteredTransactions);
+        }
+
+        function getISOWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7)); const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); return Math.ceil((((d - yearStart) / 86400000) + 1) / 7); }
+        function getWeekIdFromDateTime(dateTimeStr) { if (!dateTimeStr) return null; const date = new Date(dateTimeStr); if (isNaN(date.getTime())) return null; const year = date.getFullYear(); const weekNumber = getISOWeekNumber(date); return `${year}-W${String(weekNumber).padStart(2, '0')}`; }
+        function getStartDateOfISOWeek(year, week) { const simple = new Date(year, 0, 1 + (week - 1) * 7); const dow = simple.getDay(); const ISOweekStart = simple; if (dow <= 4) ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1); else ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay()); ISOweekStart.setHours(0,0,0,0); return ISOweekStart; }
+        function getWeekDates(weekId) { if (!weekId || !weekId.includes('-W')) return { start: null, end: null }; const [yearStr, weekNumStr] = weekId.split('-W'); const year = parseInt(yearStr); const week = parseInt(weekNumStr, 10); if (isNaN(year) || isNaN(week)) return { start: null, end: null }; const startDate = getStartDateOfISOWeek(year, week); const endDate = new Date(startDate); endDate.setDate(startDate.getDate() + 6); endDate.setHours(23, 59, 59, 999); return { start: startDate, end: endDate }; }
+        function getNumberOfISOWeeks(year) { const date = new Date(year, 11, 28); return getISOWeekNumber(date); }
+        function getAllWeekIdsInYear(year) { if (isNaN(year) || year < 1900 || year > 2200) return []; const numWeeks = getNumberOfISOWeeks(year); const weekIds = []; for (let i = 1; i <= numWeeks; i++) weekIds.push(`${year}-W${String(i).padStart(2, '0')}`); return weekIds; }
+        function getPreviousWeekId(weekId) { if (!weekId || !weekId.includes('-W')) return null; let [yearStr, weekNumStr] = weekId.split('-W'); let year = parseInt(yearStr); let week = parseInt(weekNumStr); if (week > 1) return `${year}-W${String(week - 1).padStart(2, '0')}`; else { year--; const numWeeksInPrevYear = getNumberOfISOWeeks(year); return `${year}-W${String(numWeeksInPrevYear).padStart(2, '0')}`; } }
+        
+        function populateComparisonWeekFilter() {
+            const year = parseInt(filterComparisonYearInput.value); if (isNaN(year)) { filterComparisonWeekSelect.innerHTML = '<option value="none">-- Chọn năm hợp lệ --</option>'; return; }
+            const weekIds = getAllWeekIdsInYear(year).reverse(); filterComparisonWeekSelect.innerHTML = '<option value="none">-- Chọn tuần --</option>';
+            weekIds.forEach(id => { const {start, end} = getWeekDates(id); const optionText = `${id.replace(year + "-W","Tuần ")} (${start.toLocaleDateString('vi-VN')} - ${end.toLocaleDateString('vi-VN')})`; filterComparisonWeekSelect.add(new Option(optionText, id)); });
+        }
+
+        function calculateWeeklyStats(transactionsInPeriod, weekStartDate) {
+            let income = 0, expenses = 0, startBalance = 0;
+            const allSortedTransactions = [...transactions].sort((a,b) => new Date(a.datetime) - new Date(b.datetime));
+            for (const tx of allSortedTransactions) { const txDate = new Date(tx.datetime); if (txDate < weekStartDate) { if (tx.type === 'Thu') startBalance += tx.amount; else if (tx.type === 'Chi') startBalance -= tx.amount; } else break; }
+            transactionsInPeriod.forEach(tx => { if (tx.type === 'Thu') income += tx.amount; else if (tx.type === 'Chi') expenses += tx.amount; });
+            return { startBalance, income, expenses, netChange: income - expenses };
         }
 
         function updateWeeklyComparisonDisplay() {
-            const selectedWeekId = filterComparisonWeekSelect.value;
-            const selectedYear = parseInt(filterComparisonYearInput.value, 10);
-
-            if (selectedWeekId === 'none' || isNaN(selectedYear)) {
-                weeklyComparisonContentEl.style.display = 'none';
-                noComparisonDataEl.textContent = "Chọn một năm và tuần để xem thống kê.";
-                noComparisonDataEl.style.display = 'block';
-                return;
-            }
-
-            const { start: currentWeekStart, end: currentWeekEnd } = getWeekDates(selectedWeekId);
-            if (!currentWeekStart || !currentWeekEnd) {
-                weeklyComparisonContentEl.style.display = 'none';
-                noComparisonDataEl.textContent = "Dữ liệu tuần không hợp lệ.";
-                noComparisonDataEl.style.display = 'block';
-                return;
-            }
-
-            const currentWeekTransactions = transactions.filter(t => {
-                if (!t.datetime) return false;
-                const transactionDate = t.datetime.split('T')[0];
-                return transactionDate >= currentWeekStart && transactionDate <= currentWeekEnd;
-            });
-            const currentWeekStats = calculateWeeklyStats(currentWeekTransactions, currentWeekStart);
-
-            const previousWeekId = getPreviousWeekId(selectedWeekId);
-            let previousWeekExpenses = 0;
-            let prevWeekDisplay = "Không có";
-            if (previousWeekId) {
-                const { start: prevWeekStart, end: prevWeekEnd } = getWeekDates(previousWeekId);
-                if (prevWeekStart && prevWeekEnd) {
-                    const prevWeekTransactions = transactions.filter(t => {
-                         if (!t.datetime) return false;
-                        const transactionDate = t.datetime.split('T')[0];
-                        return transactionDate >= prevWeekStart && transactionDate <= prevWeekEnd;
-                    });
-                    const prevWeekStats = calculateWeeklyStats(prevWeekTransactions, prevWeekStart);
-                    previousWeekExpenses = prevWeekStats.expenses;
-                    prevWeekDisplay = `${previousWeekId.split('-W')[1]} (${formatDisplayDateTime(prevWeekStart+"T00:00").split(' ')[0]})`;
-                }
-            }
-
-            selectedWeekDisplayEl.textContent = `${selectedWeekId.split('-W')[1]} (${formatDisplayDateTime(currentWeekStart+"T00:00").split(' ')[0]})`;
-            currentWeekStartBalanceEl.textContent = formatCurrency(currentWeekStats.startBalance);
-            currentWeekIncomeEl.textContent = formatCurrency(currentWeekStats.income);
-            currentWeekExpensesEl.textContent = formatCurrency(currentWeekStats.expenses);
-            currentWeekNetChangeEl.textContent = formatCurrency(currentWeekStats.netChange);
+            const selectedWeekId = filterComparisonWeekSelect.value; if (selectedWeekId === 'none') { weeklyComparisonContentEl.style.display = 'none'; noComparisonDataEl.style.display = 'block'; return; }
+            weeklyComparisonContentEl.style.display = 'grid'; noComparisonDataEl.style.display = 'none';
+            const currentWeekDates = getWeekDates(selectedWeekId); if (!currentWeekDates.start) { weeklyComparisonContentEl.style.display = 'none'; noComparisonDataEl.style.display = 'block'; noComparisonDataEl.textContent = 'Tuần không hợp lệ.'; return; }
+            const currentWeekTransactions = transactions.filter(tx => { const txDate = new Date(tx.datetime); return txDate >= currentWeekDates.start && txDate <= currentWeekDates.end; });
+            const currentWeekStats = calculateWeeklyStats(currentWeekTransactions, currentWeekDates.start);
+            selectedWeekDisplayEl.textContent = `${selectedWeekId.replace(filterComparisonYearInput.value + "-W","Tuần ")} (${currentWeekDates.start.toLocaleDateString('vi-VN')} - ${currentWeekDates.end.toLocaleDateString('vi-VN')})`;
+            currentWeekStartBalanceEl.textContent = formatCurrency(currentWeekStats.startBalance); currentWeekIncomeEl.textContent = formatCurrency(currentWeekStats.income);
+            currentWeekExpensesEl.textContent = formatCurrency(currentWeekStats.expenses); currentWeekNetChangeEl.textContent = formatCurrency(currentWeekStats.netChange);
             currentWeekNetChangeEl.className = currentWeekStats.netChange >= 0 ? 'font-bold text-green-600' : 'font-bold text-red-600';
-
-            previousWeekDisplayEl.textContent = prevWeekDisplay;
-            previousWeekExpensesEl.textContent = formatCurrency(previousWeekExpenses);
-
-            const spendingDiff = currentWeekStats.expenses - previousWeekExpenses;
-            spendingDifferenceEl.textContent = formatCurrency(spendingDiff);
-            spendingDifferenceEl.className = spendingDiff > 0 ? 'font-bold text-red-600' : (spendingDiff < 0 ? 'font-bold text-green-600' : 'font-bold');
-
-            weeklyComparisonContentEl.style.display = 'grid';
-            noComparisonDataEl.style.display = 'none';
+            const prevWeekId = getPreviousWeekId(selectedWeekId);
+            if (prevWeekId) { const prevWeekDates = getWeekDates(prevWeekId); if(prevWeekDates.start) { const prevWeekTransactions = transactions.filter(tx => { const txDate = new Date(tx.datetime); return txDate >= prevWeekDates.start && txDate <= prevWeekDates.end; }); const prevWeekStats = calculateWeeklyStats(prevWeekTransactions, prevWeekDates.start); previousWeekDisplayEl.textContent = `${prevWeekId.replace(filterComparisonYearInput.value + "-W","Tuần ")} (${prevWeekDates.start.toLocaleDateString('vi-VN')} - ${prevWeekDates.end.toLocaleDateString('vi-VN')})`; previousWeekExpensesEl.textContent = formatCurrency(prevWeekStats.expenses); const difference = currentWeekStats.expenses - prevWeekStats.expenses; spendingDifferenceEl.textContent = formatCurrency(difference); spendingDifferenceEl.className = difference >= 0 ? 'font-bold text-red-600' : 'font-bold text-green-600'; } else { previousWeekDisplayEl.textContent = "N/A"; previousWeekExpensesEl.textContent = formatCurrency(0); spendingDifferenceEl.textContent = formatCurrency(0); } }
+            else { previousWeekDisplayEl.textContent = "N/A"; previousWeekExpensesEl.textContent = formatCurrency(0); spendingDifferenceEl.textContent = formatCurrency(0); }
         }
 
-        // --- Export Data Function ---
-        function exportData() {
-            if (transactions.length === 0) {
-                showMessage('Không có dữ liệu để xuất.', 'error');
-                return;
+        function escapeCSVValue(value) {
+            if (value == null) return '';
+            value = String(value);
+            if (value.includes(',') || value.includes('\n') || value.includes('"')) {
+                value = value.replace(/"/g, '""');
+                return `"${value}"`;
             }
-            try {
-                const jsonData = JSON.stringify(transactions, null, 2);
-                const blob = new Blob([jsonData], { type: 'application/json' });
+            return value;
+        }
+
+        function exportToCSV() {
+            if (transactions.length === 0) { showMessage('Không có dữ liệu giao dịch để xuất.', 'error'); return; }
+            const headers = [ 'ID Giao Dịch', 'Ngày Giờ (YYYY-MM-DD HH:mm:ss)', 'Nội dung', 'Hạng mục', 'Loại (Thu/Chi)', 'Số Tiền (VNĐ)', 'Tài khoản', 'Là Chuyển Khoản?', 'ID Liên Kết CK', 'Số Tiền Gốc', 'Đơn Vị Gốc' ];
+            const rows = transactions.map(tx => {
+                const accountName = accounts.find(acc => acc.value === tx.account)?.text || tx.account;
+                return [
+                    tx.id, formatDateTimeForCSV(tx.datetime), tx.description, tx.category, tx.type, tx.amount,
+                    accountName, tx.isTransfer ? 'Có' : 'Không', tx.isTransfer ? tx.transferPairId : '',
+                    tx.originalAmount, tx.originalCurrency
+                ].map(escapeCSVValue);
+            });
+            let csvContent = "\ufeff"; 
+            csvContent += headers.join(',') + '\n';
+            rows.forEach(rowArray => { csvContent += rowArray.join(',') + '\n'; });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            if (link.download !== undefined) {
                 const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                const timestamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-                link.download = `so-tai-chinh-data-${timestamp}.json`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-                showMessage('Xuất dữ liệu thành công!', 'success');
-            } catch (error) {
-                console.error('Lỗi khi xuất dữ liệu:', error);
-                showMessage('Đã xảy ra lỗi khi xuất dữ liệu.', 'error');
-            }
+                link.setAttribute('href', url);
+                link.setAttribute('download', `transactions_${new Date().toISOString().slice(0,10)}.csv`);
+                link.style.visibility = 'hidden'; document.body.appendChild(link); link.click();
+                document.body.removeChild(link); URL.revokeObjectURL(url);
+                showMessage('Dữ liệu đã được xuất ra CSV!', 'success');
+            } else { showMessage('Trình duyệt của bạn không hỗ trợ tải file trực tiếp.', 'error'); }
         }
 
-        // --- Import Data Function ---
+        function exportData() {
+            const dataToExport = { transactions, incomeCategories, expenseCategories, accounts };
+            const dataStr = JSON.stringify(dataToExport, null, 2);
+            const blob = new Blob([dataStr], {type: "application/json"});
+            const url = URL.createObjectURL(blob); const a = document.createElement('a');
+            a.href = url; a.download = `financial_data_${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+            showMessage('Dữ liệu đã được xuất!', 'success');
+        }
+
         function handleImportFile(event) {
-            const file = event.target.files[0];
-            if (!file) {
-                return;
-            }
+            const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const importedData = JSON.parse(e.target.result);
-
-                    if (!Array.isArray(importedData)) {
-                        throw new Error('File không chứa định dạng dữ liệu hợp lệ (không phải là một mảng).');
-                    }
-
-                    const isValidStructure = importedData.every(item =>
-                        typeof item === 'object' && item !== null &&
-                        'id' in item && 'datetime' in item && 'amount' in item && 'type' in item && 'category' in item && 'account' in item
-                    );
-
-                    if (!isValidStructure) {
-                         console.warn('Dữ liệu nhập vào có cấu trúc không hoàn toàn khớp, nhưng vẫn thử nhập.');
-                    }
-
-                    if (confirm(`Bạn có chắc muốn nhập ${importedData.length} giao dịch từ file này? Dữ liệu hiện tại sẽ bị ghi đè.`)) {
-                        transactions = importedData;
-                        localStorage.setItem('transactions_v2', JSON.stringify(transactions));
-                        applyMainFilter();
-                        populateComparisonWeekFilter();
-                        updateWeeklyComparisonDisplay();
-                        showMessage('Nhập dữ liệu thành công!', 'success');
-                    } else {
-                        showMessage('Đã hủy thao tác nhập dữ liệu.', 'info');
-                    }
-
-                } catch (error) {
-                    console.error('Lỗi khi nhập dữ liệu:', error);
-                    showMessage(`Lỗi khi đọc hoặc xử lý file: ${error.message}`, 'error');
-                } finally {
-                    importFileInput.value = null;
-                }
-            };
-            reader.onerror = function() {
-                showMessage('Đã xảy ra lỗi khi đọc file.', 'error');
-                 importFileInput.value = null;
+                    if (importedData.transactions && importedData.incomeCategories && importedData.expenseCategories && importedData.accounts) {
+                        if (!confirm('Nhập dữ liệu sẽ ghi đè toàn bộ dữ liệu hiện tại. Bạn có chắc chắn muốn tiếp tục?')) { importFileInput.value = ''; return; }
+                        transactions = importedData.transactions; incomeCategories = importedData.incomeCategories;
+                        expenseCategories = importedData.expenseCategories; accounts = importedData.accounts;
+                        saveTransactions(); saveUserPreferences(); initializeApp();
+                        showMessage('Dữ liệu đã được nhập thành công!', 'success');
+                    } else { showMessage('Lỗi: Định dạng file không hợp lệ.', 'error'); }
+                } catch (error) { showMessage(`Lỗi khi nhập file: ${error.message}`, 'error'); console.error("Import error:", error); }
+                finally { importFileInput.value = ''; }
             };
             reader.readAsText(file);
         }
 
-
-        // --- Initial Load ---
         function initializeApp() {
-            formCurrencySelector.value = 'VND'; // Default form selector to VND
-            setDefaultDateTime();
-            setDefaultComparisonYear();
+            loadUserPreferences(); formCurrencySelector.value = 'VND'; setDefaultDateTime(); setDefaultComparisonYear();
             document.getElementById('type-chi').checked = true;
-            populateCategories();
-            populateMonthFilter();
-            applyMainFilter(); // Renders everything in VND
-            populateComparisonWeekFilter();
-            updateWeeklyComparisonDisplay(); // Displays weekly comparison in VND
+            populateAccountDropdowns(); toggleFormFields(); renderCustomCategoryLists();
+            populateMonthFilter(); applyMainFilter();
+            populateComparisonWeekFilter(); updateWeeklyComparisonDisplay();
+            const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
+            collapsibleHeaders.forEach(header => {
+                const contentId = header.dataset.collapsibleTarget; const content = document.getElementById(contentId); if (!content) return;
+                const storedState = localStorage.getItem(`collapsibleState_${contentId}`);
+                const defaultOpen = content.classList.contains('active');
+                if (storedState === 'expanded' || (storedState === null && defaultOpen)) { content.classList.add('active'); header.classList.add('active'); }
+                else if (storedState === 'collapsed' || (storedState === null && !defaultOpen)) { content.classList.remove('active'); header.classList.remove('active'); }
+                header.addEventListener('click', () => { const isActive = content.classList.contains('active'); localStorage.setItem(`collapsibleState_${contentId}`, !isActive ? 'expanded' : 'collapsed'); content.classList.toggle('active'); header.classList.toggle('active'); });
+            });
         }
 
-        // Event Listeners
         transactionForm.addEventListener('submit', handleTransactionSubmit);
         filterMonthSelect.addEventListener('change', filterTransactionsByMonth);
-        typeRadioButtons.forEach(radio => {
-            radio.addEventListener('change', populateCategories);
-        });
-        filterComparisonYearInput.addEventListener('change', () => {
-            populateComparisonWeekFilter();
-            updateWeeklyComparisonDisplay();
-        });
-        filterComparisonYearInput.addEventListener('input', () => {
-             populateComparisonWeekFilter();
-        });
+        typeRadioButtons.forEach(radio => radio.addEventListener('change', toggleFormFields));
+        filterComparisonYearInput.addEventListener('change', () => { populateComparisonWeekFilter(); updateWeeklyComparisonDisplay(); });
+        filterComparisonYearInput.addEventListener('input', populateComparisonWeekFilter);
         filterComparisonWeekSelect.addEventListener('change', updateWeeklyComparisonDisplay);
         exportButton.addEventListener('click', exportData);
+        if (exportCsvButton) exportCsvButton.addEventListener('click', exportToCSV); // Gán sự kiện cho nút CSV
         importButton.addEventListener('click', () => importFileInput.click());
         importFileInput.addEventListener('change', handleImportFile);
+        addIncomeCategoryButton.addEventListener('click', () => { if (addCategory(newIncomeCategoryNameInput.value, 'income')) newIncomeCategoryNameInput.value = ''; });
+        addExpenseCategoryButton.addEventListener('click', () => { if (addCategory(newExpenseCategoryNameInput.value, 'expense')) newExpenseCategoryNameInput.value = ''; });
 
-        initializeApp(); // Run initialization
-
+        initializeApp();
     </script>
 </body>
 </html>
