@@ -455,6 +455,52 @@
             </div>
         </div>
 
+		<div class="section statistics-table-section">
+			<h2 class="section-header collapsible-header active" data-collapsible-target="statistics-table-content">
+				<div class="header-text-icon">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 1.5rem; height: 1.5rem; margin-right: 0.5rem; color: #3b82f6;">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+					</svg>
+					Thống Kê Chi Tiết <span id="stats-table-month-display">(Tháng Lọc)</span>
+				</div>
+				<svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+			</h2>
+			<div class="collapsible-content active" id="statistics-table-content">
+				<table class="w-full mt-3"> {/* Thêm class mt-3 để có khoảng cách với header section */}
+					<tbody id="detailed-stats-tbody">
+						<tr>
+							<td class="py-2 px-4 border-b border-gray-200 font-medium text-gray-700">Tổng Thu Nhập:</td>
+							<td class="py-2 px-4 border-b border-gray-200 text-right font-semibold text-green-600" id="stats-total-income">0</td>
+						</tr>
+						<tr>
+							<td class="py-2 px-4 border-b border-gray-200 font-medium text-gray-700">Tổng Chi Tiêu:</td>
+							<td class="py-2 px-4 border-b border-gray-200 text-right font-semibold text-red-600" id="stats-total-expense">0</td>
+						</tr>
+						<tr>
+							<td class="py-2 px-4 border-b border-gray-200 font-medium text-gray-700">Dòng tiền ròng (Thu - Chi):</td>
+							<td class="py-2 px-4 border-b border-gray-200 text-right font-bold" id="stats-net-cashflow">0</td>
+						</tr>
+						<tr>
+							<td class="py-2 px-4 border-b border-gray-200 font-medium text-gray-700">Số lượng giao dịch Thu:</td>
+							<td class="py-2 px-4 border-b border-gray-200 text-right" id="stats-income-tx-count">0</td>
+						</tr>
+						<tr>
+							<td class="py-2 px-4 border-b border-gray-200 font-medium text-gray-700">Số lượng giao dịch Chi:</td>
+							<td class="py-2 px-4 border-b border-gray-200 text-right" id="stats-expense-tx-count">0</td>
+						</tr>
+						<tr>
+							<td class="py-2 px-4 border-b border-gray-200 font-medium text-gray-700">Hạng mục chi nhiều nhất:</td>
+							<td class="py-2 px-4 border-b border-gray-200 text-right" id="stats-top-expense-cat">-</td>
+						</tr>
+						<tr>
+							<td class="py-2 px-4 font-medium text-gray-700">Số tiền (Hạng mục chi nhiều nhất):</td>
+							<td class="py-2 px-4 text-right text-red-600 font-semibold" id="stats-top-expense-cat-amount">0</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		
         <div class="section chart-section">
             <h2 class="section-header collapsible-header" data-collapsible-target="charts-grid-content">
                 <div class="header-text-icon">
@@ -1202,6 +1248,61 @@
             if (monthComparisonChart) { monthComparisonChart.data = data; monthComparisonChart.update(); }
             else { monthComparisonChart = new Chart(monthComparisonChartCanvas, { type: 'bar', data, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'x', plugins: { datalabels: { display: false } } } }); }
         }
+
+		function updateDetailedStatisticsTable(transactionsToAnalyze) {
+			let totalIncome = 0;
+			let totalExpense = 0;
+			let incomeTxCount = 0;
+			let expenseTxCount = 0;
+			const expenseByCategory = {};
+
+			transactionsToAnalyze.forEach(tx => {
+				if (tx.type === 'Thu') {
+					totalIncome += tx.amount;
+					incomeTxCount++;
+				} else if (tx.type === 'Chi') {
+					totalExpense += tx.amount;
+					expenseTxCount++;
+					if (tx.category) { // Chỉ tính nếu có hạng mục
+						expenseByCategory[tx.category] = (expenseByCategory[tx.category] || 0) + tx.amount;
+					}
+				}
+			});
+
+			const netCashflow = totalIncome - totalExpense;
+
+			let topExpenseCategoryName = '-';
+			let topExpenseCategoryAmount = 0;
+
+			if (Object.keys(expenseByCategory).length > 0) {
+				topExpenseCategoryName = Object.keys(expenseByCategory).reduce((a, b) => expenseByCategory[a] > expenseByCategory[b] ? a : b);
+				topExpenseCategoryAmount = expenseByCategory[topExpenseCategoryName];
+			}
+
+			// Cập nhật DOM
+			document.getElementById('stats-total-income').textContent = formatCurrency(totalIncome);
+			document.getElementById('stats-total-expense').textContent = formatCurrency(totalExpense);
+
+			const statsNetCashflowEl = document.getElementById('stats-net-cashflow');
+			statsNetCashflowEl.textContent = formatCurrency(netCashflow);
+			// Cập nhật class màu cho dòng tiền ròng
+			statsNetCashflowEl.classList.remove('text-blue-600', 'text-red-600'); // Xóa class màu cũ
+			statsNetCashflowEl.classList.add(netCashflow >= 0 ? 'text-blue-600' : 'text-red-600');
+
+
+			document.getElementById('stats-income-tx-count').textContent = incomeTxCount;
+			document.getElementById('stats-expense-tx-count').textContent = expenseTxCount;
+			document.getElementById('stats-top-expense-cat').textContent = topExpenseCategoryName;
+			document.getElementById('stats-top-expense-cat-amount').textContent = formatCurrency(topExpenseCategoryAmount);
+
+			// Cập nhật tiêu đề tháng của bảng thống kê
+			const selectedMonthForStatsTitle = filterMonthSelect.value; // Lấy tháng đang được chọn từ bộ lọc chính
+			const statsTableMonthDisplayText = getMonthDisplayText(selectedMonthForStatsTitle, false); // false để không có dấu ngoặc
+			const statsTableMonthDisplayEl = document.getElementById('stats-table-month-display');
+			if (statsTableMonthDisplayEl) {
+				 statsTableMonthDisplayEl.textContent = `(${statsTableMonthDisplayText})`; // Hiển thị dạng (Tháng MM/YYYY) hoặc (Tất cả)
+			}
+		}
         
         function populateMonthFilter() {
             const months = new Set(); transactions.forEach(tx => months.add(tx.datetime.substring(0, 7)));
@@ -1218,27 +1319,26 @@
         
 		function applyMainFilter() {
 			const selectedMonth = filterMonthSelect.value;
-			let filteredTransactions = (selectedMonth === 'all') ? [...transactions] : transactions.filter(tx => tx.datetime.startsWith(selectedMonth));
+			let filteredTransactions = (selectedMonth === 'all') ? [...transactions] : transactions.filter(tx => tx.datetime && tx.datetime.startsWith(selectedMonth));
 
-			// Lấy văn bản hiển thị cho tháng, không có dấu ngoặc đơn, dùng cho tiêu đề
 			const monthDisplayForTitles = getMonthDisplayText(selectedMonth, false); 
 
-			// Cập nhật tiêu đề phần "Phân Loại Chi Tiêu"
 			const expenseBreakdownTitleTextEl = document.getElementById('expense-breakdown-title-text');
 			if (expenseBreakdownTitleTextEl) {
 				expenseBreakdownTitleTextEl.textContent = `Phân Loại Chi Tiêu ${monthDisplayForTitles} - VNĐ`;
 			}
 
-			// Cập nhật tiêu đề biểu đồ "Thu vs Chi"
 			const incomeExpenseChartTitleEl = document.getElementById('income-expense-chart-title');
 			if (incomeExpenseChartTitleEl) {
 				incomeExpenseChartTitleEl.textContent = `Biểu Đồ Thu vs Chi ${monthDisplayForTitles} - VNĐ`;
 			}
 
-			// Các dòng còn lại của hàm applyMainFilter giữ nguyên
 			renderMainTransactions(filteredTransactions);
 			updateAllSummariesAndCharts(filteredTransactions); // Hàm này sẽ gọi updateMainSummaryAndChart
-			renderMonthComparisonChart(); // Gọi lại để cập nhật biểu đồ so sánh tháng nếu cần
+			// Nếu bạn đã thêm các biểu đồ xu hướng ở bước trước, các lệnh gọi render của chúng cũng nằm trong updateAllSummariesAndCharts
+
+			// GỌI HÀM CẬP NHẬT BẢNG THỐNG KÊ CHI TIẾT MỚI
+			updateDetailedStatisticsTable(filteredTransactions); 
 		}
 
         function getISOWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7)); const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); return Math.ceil((((d - yearStart) / 86400000) + 1) / 7); }
@@ -1344,24 +1444,78 @@
         }
 
 		function initializeApp() {
-			// ... (các mã khởi tạo khác) ...
+			// Tải các thiết lập và dữ liệu đã lưu
 			loadUserPreferences(); 
 			formCurrencySelector.value = 'VND'; 
 			setDefaultDateTime(); 
 			setDefaultComparisonYear();
-			document.getElementById('type-chi').checked = true;
+			document.getElementById('type-chi').checked = true; // Mặc định chọn "Chi"
 			
+			// Điền dữ liệu vào các dropdown và cài đặt form ban đầu
 			populateAccountDropdowns(); 
-			toggleFormFields(); 
+			toggleFormFields(); // Quan trọng: gọi sau khi radio button 'type' đã được set
 			renderCustomCategoryLists();
 			
-			populateMonthFilter(); // Quan trọng: gọi populateMonthFilter trước khi applyMainFilter
-			applyMainFilter();     // Đảm bảo dòng này được gọi để cập nhật giao diện ban đầu
+			populateMonthFilter(); // Tạo danh sách tháng cho bộ lọc chính
+			applyMainFilter();     // Áp dụng bộ lọc và cập nhật tất cả giao diện, bao gồm cả bảng thống kê mới
 
 			populateComparisonWeekFilter(); 
 			updateWeeklyComparisonDisplay();
 			
-			// ... (xử lý collapsible headers) ...
+			// XỬ LÝ CHO CÁC MỤC CÓ THỂ ĐÓNG/MỞ (COLLAPSIBLE HEADERS)
+			const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
+			collapsibleHeaders.forEach(header => {
+				const contentId = header.dataset.collapsibleTarget;
+				const content = document.getElementById(contentId);
+
+				// Kiểm tra quan trọng: Nếu không tìm thấy phần tử nội dung, báo lỗi và bỏ qua
+				if (!content) {
+					console.error(`Lỗi: Không tìm thấy phần tử nội dung với ID '${contentId}' cho header:`, header);
+					return; 
+				}
+
+				const storedState = localStorage.getItem(`collapsibleState_${contentId}`);
+				// Lấy trạng thái mở mặc định từ class 'active' của chính thẻ header trong HTML
+				const defaultOpen = header.classList.contains('active'); 
+
+				let shouldBeActive; // Biến để xác định trạng thái cuối cùng nên là active hay không
+
+				if (storedState === 'expanded') {
+					shouldBeActive = true;
+				} else if (storedState === 'collapsed') {
+					shouldBeActive = false;
+				} else { 
+					// Nếu không có trạng thái nào được lưu trong localStorage, dùng trạng thái mặc định từ HTML
+					shouldBeActive = defaultOpen;
+				}
+
+				// Áp dụng trạng thái (active/inactive) cho cả header và content
+				if (shouldBeActive) {
+					content.classList.add('active');
+					header.classList.add('active'); // Đảm bảo header cũng có class 'active'
+				} else {
+					content.classList.remove('active');
+					header.classList.remove('active'); // Đảm bảo header không có class 'active'
+				}
+
+				// Gắn sự kiện click cho header
+				header.addEventListener('click', () => {
+					const isActive = content.classList.contains('active'); // Kiểm tra trạng thái hiện tại của content
+					
+					// Lưu trạng thái mới vào localStorage
+					localStorage.setItem(`collapsibleState_${contentId}`, !isActive ? 'expanded' : 'collapsed');
+					
+					// Toggle class 'active' cho cả header và content để thay đổi hiển thị
+					content.classList.toggle('active');
+					header.classList.toggle('active'); 
+					// console.log(`Đã nhấp: ${contentId}, trạng thái mới: ${!isActive ? 'expanded' : 'collapsed'}`); // Dòng này để debug nếu cần
+				});
+			});
+
+			// Các trình nghe sự kiện (event listeners) khác của bạn sẽ nằm ngoài hàm initializeApp
+			// nhưng được gọi sau khi initializeApp() đã chạy.
+			// Ví dụ: transactionForm.addEventListener('submit', handleTransactionSubmit);
+			// Các dòng này đã có sẵn ở cuối file của bạn.
 		}
 
         transactionForm.addEventListener('submit', handleTransactionSubmit);
