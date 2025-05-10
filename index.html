@@ -3,9 +3,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sổ Theo Dõi Tài Chính Cá Nhân</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="apple-touch-icon" sizes="180x180" href="Logo Finance.png">
@@ -15,123 +18,9 @@
     <link rel="icon" type="image/png" sizes="16x16" href="Logo Finance.png">
     <link rel="shortcut icon" href="Logo Finance.png" type="image/png">
 
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
-        .container { max-width: 1000px; margin: 20px auto; padding: 20px; background-color: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .section { margin-bottom: 30px; padding: 20px; border: 1px solid #e5e7eb; border-radius: 10px; }
-        .section-header { font-size: 24px; font-weight: 600; color: #1f2937; margin-bottom: 0; border-bottom: 2px solid #60a5fa; padding-bottom: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
-        .section-header .header-text-icon { display: flex; align-items: center; }
-        .section-header svg:not(.toggle-icon) { width: 24px; height: 24px; margin-right: 8px; color: #3b82f6; }
-        .collapsible-content { display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb; }
-        .collapsible-content.active { display: block; }
-        .toggle-icon { transition: transform 0.3s ease; width: 20px; height: 20px; color: #374151; }
-        .section-header.active .toggle-icon { transform: rotate(180deg); }
-        label { font-weight: 500; color: #374151; display: block; margin-bottom: 5px; }
-        input[type="text"], input[type="datetime-local"], input[type="date"], select, input[type="number"] { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; transition: border-color 0.3s; }
-        input[type="text"]:focus, input[type="datetime-local"]:focus, input[type="date"]:focus, select:focus, input[type="number"]:focus { border-color: #3b82f6; outline: none; }
-        .radio-group { margin-top: 5px; margin-bottom: 15px; }
-        .radio-group label { margin-right: 15px; cursor: pointer; display: inline-block; margin-bottom: 0; }
-        .radio-group input[type="radio"] { margin-right: 5px; accent-color: #3b82f6; }
-        .amount-currency-group { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
-        .amount-currency-group input[type="text"] { flex-grow: 1; margin-bottom: 0; }
-        .amount-currency-group select { width: auto; margin-bottom: 0; padding: 10px 8px; }
-        button { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; transition: background-color 0.3s; display: inline-flex; align-items: center; justify-content: center; }
-        button svg { width: 20px; height: 20px; margin-right: 6px; }
-        .btn-primary { background-color: #3b82f6; color: white; }
-        .btn-primary:hover { background-color: #2563eb; }
-        .btn-secondary { background-color: #6b7280; color: white; }
-        .btn-secondary:hover { background-color: #4b5563; }
-        .btn-edit { background-color: #f59e0b; color: white; padding: 4px 8px; font-size: 13px; margin-right: 4px; }
-        .btn-edit svg { width: 14px; height: 14px; margin-right: 2px; }
-        .btn-edit:hover { background-color: #d97706; }
-        .btn-delete { background-color: #ef4444; color: white; padding: 4px 8px; font-size: 13px; }
-        .btn-delete svg { width: 14px; height: 14px; margin-right: 2px; }
-        .btn-delete:hover { background-color: #dc2626; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #e5e7eb; padding: 12px; text-align: left; font-size: 14px; }
-        th:last-child, td:last-child { width: 130px; text-align: center; }
-        th { background-color: #f9fafb; font-weight: 600; color: #1f2937; }
-        .summary-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #e5e7eb; font-size: 15px; }
-        .summary-item:last-child { border-bottom: none; }
-        .summary-item span:first-child { font-weight: 500; color: #374151; }
-        .summary-item span:last-child { font-weight: 600; }
-        .account-balance-list { margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb; }
-        .account-balance-list h3 { font-size: 18px; font-weight: 600; color: #4b5563; margin-bottom: 10px; }
-        .text-green-600 { color: #059669; } .text-red-600 { color: #dc2626; } .text-blue-600 { color: #2563eb; } .text-purple-600 { color: #7c3aed; }
-        .filter-container { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; margin-bottom: 20px; }
-        .filter-container label { margin-bottom: 0; margin-right: 5px;}
-        .filter-container input[type="number"], .filter-container select { margin-bottom: 0; flex-grow: 1; }
-        #message-box { padding: 15px; margin-bottom: 20px; border-radius: 8px; font-weight: 500; text-align: center; }
-        .message-success { background-color: #d1fae5; color: #065f46; } .message-error { background-color: #fee2e2; color: #991b1b; }
-        .chart-container { position: relative; height: 300px; width: 100%; max-width: 600px; margin: 20px auto; }
-        .expense-breakdown-section .chart-container { max-width: 350px; height: 350px; }
-        .expense-category-list { margin-top: 20px; }
-        .expense-category-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f3f4f6; }
-        .expense-category-item:last-child { border-bottom: none; }
-        .category-color-swatch { width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; display: inline-block; }
-        .category-name { flex-grow: 1; }
-        .category-percentage { width: 50px; text-align: right; color: #6b7280; margin-left: 10px; }
-        .category-amount { width: 100px; text-align: right; font-weight: 500; margin-left: 10px; }
-        .comparison-section .grid > div { background-color: #f9fafb; padding: 15px; border-radius: 8px; }
-        .comparison-section h3 { border-bottom: 1px solid #d1d5db; padding-bottom: 5px; margin-top: 0; }
-        .table-actions { display: flex; justify-content: flex-end; margin-bottom: 20px; }
-        .data-io-section .button-group { display: flex; gap: 20px; flex-wrap: wrap; }
-        .form-field-transfer { display: none; } .form-field-normal { display: block; }
-        form[data-transaction-mode="Transfer"] .form-field-transfer { display: block; }
-        form[data-transaction-mode="Transfer"] .form-field-normal { display: none; }
-        .category-customization-section .category-management { display: grid; grid-template-columns: 1fr; gap: 32px; }
-        @media (min-width: 768px) { .category-customization-section .category-management { grid-template-columns: repeat(2, 1fr); gap: 24px; } }
-        @media (min-width: 1024px) { .category-customization-section .category-management { grid-template-columns: repeat(3, 1fr); } }
-        .category-customization-section .category-list { list-style: none; padding: 0; }
-        .category-customization-section .category-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; }
-        .category-customization-section .category-list li:last-child { border-bottom: none; }
-        .category-customization-section input[type="text"] { margin-bottom: 8px; }
-        .category-customization-section .btn-add-category { width: 100%; margin-top: 8px; }
-        .category-customization-section h3 { font-size: 18px; font-weight: 600; color: #4b5563; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid #e5e7eb; }
-        /* CSS CHO DARK MODE TOGGLE SWITCH */
-        .theme-switch-wrapper { position: fixed; top: 20px; left: 20px; z-index: 1000; }
-        .theme-switch { display: inline-block; height: 26px; width: 50px; position: relative; }
-        .theme-switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 26px; display: flex; align-items: center; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #4A5568; }
-        input:checked + .slider:before { transform: translateX(24px); }
-        .slider .sun-icon, .slider .moon-icon { position: absolute; width: 16px; height: 16px; transition: opacity 0.3s ease, visibility 0.3s ease; }
-        .slider .sun-icon { left: 5px; opacity: 1; visibility: visible; color: #f59e0b; }
-        .slider .moon-icon { right: 5px; opacity: 0; visibility: hidden; color: #e2e8f0; }
-        input:checked + .slider .sun-icon { opacity: 0; visibility: hidden; }
-        input:checked + .slider .moon-icon { opacity: 1; visibility: visible; }
-        /* DARK MODE STYLES */
-        body.dark-mode { background-color: #111827; color: #d1d5db; }
-        body.dark-mode .container { background-color: #1f2937; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
-        body.dark-mode .section { background-color: #374151; border-color: #4b5563; }
-        body.dark-mode .section-header { color: #f3f4f6; border-bottom-color: #4b5568; }
-        body.dark-mode .section-header svg:not(.toggle-icon), body.dark-mode svg[style*="color: #3b82f6"] { color: #60a5fa !important; }
-        body.dark-mode .toggle-icon { color: #9ca3af; }
-        body.dark-mode label { color: #d1d5db; }
-        body.dark-mode input[type="text"], body.dark-mode input[type="datetime-local"], body.dark-mode input[type="date"], body.dark-mode select, body.dark-mode input[type="number"] { background-color: #1f2937; color: #f3f4f6; border-color: #4b5563; }
-        body.dark-mode input[type="text"]:focus, body.dark-mode input[type="datetime-local"]:focus, body.dark-mode input[type="date"]:focus, body.dark-mode select:focus, body.dark-mode input[type="number"]:focus { border-color: #60a5fa; }
-        body.dark-mode input::placeholder { color: #6b7280; } body.dark-mode input:-ms-input-placeholder { color: #6b7280; } body.dark-mode input::-ms-input-placeholder { color: #6b7280; }
-        body.dark-mode th { background-color: #374151; color: #f3f4f6; }
-        body.dark-mode td, body.dark-mode th { border-color: #4b5563; }
-        body.dark-mode .summary-item span:first-child { color: #d1d5db; } body.dark-mode .summary-item { border-bottom-color: #4b5563; }
-        body.dark-mode .account-balance-list h3 { color: #e5e7eb; } body.dark-mode .account-balance-list { border-top-color: #4b5563; }
-        body.dark-mode .text-gray-600 { color: #9ca3af !important; } body.dark-mode .text-gray-500 { color: #6b7280 !important; }
-        body.dark-mode .text-green-600 { color: #34d399 !important; } body.dark-mode .text-red-600 { color: #f87171 !important; }
-        body.dark-mode .text-blue-600 { color: #60a5fa !important; } body.dark-mode .text-purple-600 { color: #a78bfa !important; }
-        body.dark-mode .btn-primary { background-color: #2b6cb0; color: #ffffff; } body.dark-mode .btn-primary:hover { background-color: #2c5282; }
-        body.dark-mode .btn-secondary { background-color: #4a5563; color: #e5e7eb; } body.dark-mode .btn-secondary:hover { background-color: #6b7280; }
-        body.dark-mode #darkModeToggle { background-color: #374151; color: #d1d5db; border-color: #4b5563; }
-        body.dark-mode #darkModeToggle:hover { background-color: #4b5563; }
-        #darkModeToggle { border: 1px solid #d1d5db; background-color: #f9fafb; color: #374151; }
-        body.dark-mode .category-customization-section h3 { color: #e5e7eb; border-bottom-color: #4b5563; }
-        body.dark-mode .category-customization-section .category-list li { border-bottom-color: #374151; }
-        body.dark-mode .expense-category-item { border-bottom-color: #374151; }
-        body.dark-mode .category-name { color: #d1d5db; } body.dark-mode .category-percentage { color: #9ca3af; } body.dark-mode .category-amount { color: #f3f4f6; }
-        body.dark-mode .message-success { background-color: #064e3b; color: #a7f3d0; border: 1px solid #059669;}
-        body.dark-mode .message-error { background-color: #7f1d1d; color: #fecaca; border: 1px solid #ef4444;}
-    </style>
-</head>
+    <link rel="stylesheet" href="styles.css">
+
+    </head>
 <body>
     <div class="theme-switch-wrapper">
         <label class="theme-switch" for="darkModeToggleCheckbox">
@@ -142,6 +31,7 @@
             </div>
         </label>
     </div>
+
     <div class="container">
         <header class="text-center mb-8">
             <h1 class="text-3xl font-bold text-blue-600">Sổ Theo Dõi Tài Chính Cá Nhân</h1>
@@ -171,10 +61,42 @@
                             <label for="type-transfer"><input type="radio" id="type-transfer" name="type" value="Transfer" required> Chuyển tiền</label>
                         </div>
                     </div>
-                    <div class="form-field-normal"><label for="category">Hạng mục:</label><select id="category" required></select></div>
-                    <div><label for="account" id="account-label">Tài khoản:</label><select id="account" required></select></div>
-                    <div class="form-field-transfer"><label for="to-account">Đến Tài khoản:</label><select id="to-account"></select></div>
-                    <div><label for="amount-input">Số tiền:</label><div class="amount-currency-group"><input type="text" inputmode="decimal" id="amount-input" placeholder="Nhập số (VD: 22.5 cho 22.500)" required><select id="form-currency-selector"><option value="VND">VNĐ (x1000)</option><option value="USD">USD (quy đổi)</option></select></div></div>
+					
+					<div class="form-field-normal">
+						<label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hạng mục:</label>
+						<select id="category" required
+								class="block w-full h-11 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300"> {/* Thêm h-11, có thể bỏ py-2 */}
+						</select>
+					</div>
+					
+					<div>
+						<label for="account" id="account-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tài khoản:</label>
+						<select id="account" required
+								class="block w-full h-11 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300 appearance-none">
+								{/* Thêm appearance-none để có thể tùy chỉnh mũi tên select nếu muốn sau này,
+									đồng thời giúp việc tính toán chiều cao của trình duyệt đồng nhất hơn.
+									Tailwind CSS thường reset appearance cho select. */}
+						</select>
+					</div>
+					
+                    <div class="form-field-transfer">
+						<label for="to-account" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Đến Tài khoản:</label>
+						<select id="to-account" required
+								class="block w-full h-11 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300"> {/* Thêm h-11, có thể bỏ py-2 */}
+						</select>
+					</div>
+                    
+                    <div>
+                        <label for="amount-input">Số tiền:</label>
+                        <div class="amount-currency-group">
+                            <input type="text" inputmode="decimal" id="amount-input" placeholder="Nhập số tiền (VD: 22500)" required>
+                            <select id="form-currency-selector">
+                                <option value="VND">VNĐ</option> <option value="USD">USD (quy đổi)</option>
+                            </select>
+                        </div>
+                        <button type="button" id="add-triple-zero-button" class="btn-secondary py-2 px-3 mt-2 text-sm rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Thêm 000</button>
+                    </div>
+                    
                     <div><label for="description">Nội dung chi tiết:</label><input type="text" id="description" placeholder="VD: Chuyển tiền học, Ăn trưa"></div>
                     <div class="md:col-span-2 mt-4"><button type="submit" id="submit-transaction-button" class="btn-primary w-full"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>Thêm Giao Dịch</button></div>
                 </form>
@@ -182,7 +104,7 @@
         </div>
 
         <div class="section table-section">
-            <h2 class="section-header collapsible-header active" data-collapsible-target="table-content">
+             <h2 class="section-header collapsible-header active" data-collapsible-target="table-content">
                 <div class="header-text-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5M3.375 19.5l1.95-1.95M12.375 19.5h8.875M12.375 19.5l-1.95-1.95M20.625 19.5a1.125 1.125 0 001.125-1.125M20.625 19.5l-1.95-1.95M3.75 4.5h16.5M3.75 4.5a2.25 2.25 0 00-2.25 2.25v11.25c0 1.24 1.01 2.25 2.25 2.25h16.5c1.24 0 2.25-1.01 2.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25M3.75 4.5v.75m16.5-.75v.75m0 0a2.25 2.25 0 01-2.25 2.25h-5.25a2.25 2.25 0 01-2.25-2.25m-5.25 0h5.25m-5.25 0a2.25 2.25 0 01-2.25-2.25M3.75 7.5v.75m16.5-.75v.75" /></svg>
                     Danh Sách Giao Dịch
@@ -201,7 +123,7 @@
         <div class="section summary-section">
             <h2 class="section-header collapsible-header active" data-collapsible-target="summary-content-wrapper">
                 <div class="header-text-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0l.879-.659M18 10.2F18 6.57 15.314 4 12 4s-6 2.57-6 6.2c0 1.707.673 3.293 1.758 4.45l.149.149A6.086 6.086 0 0012 20.25a6.086 6.086 0 004.093-1.45l.149-.149A5.99 5.99 0 0018 10.2z" /></svg>
+                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0l.879-.659M18 10.2F18 6.57 15.314 4 12 4s-6 2.57-6 6.2c0 1.707.673 3.293 1.758 4.45l.149.149A6.086 6.086 0 0012 20.25a6.086 6.086 0 004.093-1.45l.149-.149A5.99 5.99 0 0018 10.2z" /></svg>
                     Tóm Tắt Tài Chính (VNĐ)
                 </div>
                 <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
@@ -216,46 +138,82 @@
             </div>
         </div>
 
-        <div class="section expense-breakdown-section">
-            <h2 class="section-header collapsible-header" data-collapsible-target="expense-breakdown-content">
-                <div class="header-text-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 100 15 7.5 7.5 0 000-15z" /> <path stroke-linecap="round" stroke-linejoin="round" d="M12 10.5v.01M15.088 11.129l.793-.793a.75.75 0 011.06 1.06l-.792.792a3.751 3.751 0 01-5.304 0L8.12 9.364a.75.75 0 011.06-1.06l.793.793" /> <path stroke-linecap="round" stroke-linejoin="round" d="M12 12a3.752 3.752 0 00-2.716 1.116l-.79.79a.75.75 0 001.06 1.06l.79-.79A2.252 2.252 0 0112 13.5a2.252 2.252 0 011.588.656l.79.79a.75.75 0 101.06-1.06l-.79-.79A3.752 3.752 0 0012 12z" /></svg>
-                    <span id="expense-breakdown-title-text">Phân Loại Chi Tiêu (Tháng Lọc - VNĐ)</span>
-                </div>
-                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
-            </h2>
-            <div class="collapsible-content" id="expense-breakdown-content">
-                <div class="md:flex md:gap-6">
-                    <div class="chart-container md:w-1/2"><canvas id="expenseCategoryChart"></canvas></div>
-                    <div id="expense-category-list-container" class="expense-category-list md:w-1/2"><p id="no-expense-data" class="text-center text-gray-500 mt-4">Không có dữ liệu chi tiêu để hiển thị.</p></div>
-                </div>
-            </div>
-        </div>
+		<div class="section expense-breakdown-section">
+			<h2 class="section-header collapsible-header" data-collapsible-target="expense-breakdown-content">
+				<span id="expense-breakdown-title-text">Phân Loại Chi Tiêu (Tháng Lọc - VNĐ)</span>
+				</h2>
+			<div class="collapsible-content" id="expense-breakdown-content">
+				<div class="md:flex md:gap-6">
+					<div class="md:w-1/2"> <div class="mb-4"> <label for="expenseChartTypeSelector" class="mr-2 font-medium">Kiểu biểu đồ:</label>
+							<select id="expenseChartTypeSelector" class="p-2 border rounded-md">
+								<option value="pie" selected>Biểu đồ tròn</option>
+								<option value="bar">Biểu đồ cột</option>
+							</select>
+						</div>
 
-        <div class="section statistics-table-section">
-            <h2 class="section-header collapsible-header active" data-collapsible-target="statistics-table-content">
-                <div class="header-text-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px; margin-right: 8px; color: #3b82f6;">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                    </svg>
-                    Thống Kê Chi Tiết <span id="stats-table-month-display">(Tháng Lọc)</span>
-                </div>
-                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
-            </h2>
-            <div class="collapsible-content active" id="statistics-table-content">
-                <table class="w-full mt-3">
-                    <tbody id="detailed-stats-tbody">
-                        <tr> <td class="py-2 px-4 border-b border-gray-200 font-medium text-gray-700">Tổng Thu Nhập:</td> <td class="py-2 px-4 border-b border-gray-200 text-right font-semibold text-green-600" id="stats-total-income">0</td> </tr>
-                        <tr> <td class="py-2 px-4 border-b border-gray-200 font-medium text-gray-700">Tổng Chi Tiêu:</td> <td class="py-2 px-4 border-b border-gray-200 text-right font-semibold text-red-600" id="stats-total-expense">0</td> </tr>
-                        <tr> <td class="py-2 px-4 border-b border-gray-200 font-medium text-gray-700">Dòng tiền ròng (Thu - Chi):</td> <td class="py-2 px-4 border-b border-gray-200 text-right font-bold" id="stats-net-cashflow">0</td> </tr>
-                        <tr> <td class="py-2 px-4 border-b border-gray-200 font-medium text-gray-700">Số lượng giao dịch Thu:</td> <td class="py-2 px-4 border-b border-gray-200 text-right" id="stats-income-tx-count">0</td> </tr>
-                        <tr> <td class="py-2 px-4 border-b border-gray-200 font-medium text-gray-700">Số lượng giao dịch Chi:</td> <td class="py-2 px-4 border-b border-gray-200 text-right" id="stats-expense-tx-count">0</td> </tr>
-                        <tr> <td class="py-2 px-4 border-b border-gray-200 font-medium text-gray-700">Hạng mục chi nhiều nhất:</td> <td class="py-2 px-4 border-b border-gray-200 text-right" id="stats-top-expense-cat">-</td> </tr>
-                        <tr> <td class="py-2 px-4 font-medium text-gray-700">Số tiền (Hạng mục chi nhiều nhất):</td> <td class="py-2 px-4 text-right text-red-600 font-semibold" id="stats-top-expense-cat-amount">0</td> </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+						<div id="expensePieChartContainer" class="chart-container">
+							<canvas id="expenseCategoryChart"></canvas>
+						</div>
+
+						<div id="expenseBarChartContainer" class="chart-container" style="display: none;">
+							<canvas id="expenseCategoryBarChart"></canvas> </div>
+						<p id="no-expense-data-chart" class="text-center text-gray-500 mt-4" style="display: none;">Không có dữ liệu chi tiêu để vẽ biểu đồ.</p>
+
+					</div>
+
+					<div id="expense-category-list-container" class="expense-category-list md:w-1/2">
+						<p id="no-expense-data-list" class="text-center text-gray-500 mt-4">Không có dữ liệu chi tiêu để hiển thị.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="section statistics-table-section">
+			<h2 class="section-header collapsible-header active" data-collapsible-target="statistics-table-content">
+				<div class="header-text-icon">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px; margin-right: 8px;" class="text-blue-600 dark:text-blue-400">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+					</svg>
+					Thống Kê Chi Tiết <span id="stats-table-month-display">(Tất cả)</span>
+				</div>
+				<svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+				</svg>
+			</h2>
+			<div class="collapsible-content active" id="statistics-table-content">
+				<table class="w-full mt-3">
+					<tbody id="detailed-stats-tbody">
+						<tr>
+							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 font-medium text-gray-700 dark:text-gray-300">Tổng Thu Nhập:</td>
+							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right font-semibold text-green-600 dark:text-green-400" id="stats-total-income">0</td>
+						</tr>
+						<tr>
+							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 font-medium text-gray-700 dark:text-gray-300">Tổng Chi Tiêu:</td>
+							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right font-semibold text-red-600 dark:text-red-400" id="stats-total-expense">0</td>
+						</tr>
+						<tr>
+							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 font-medium text-gray-700 dark:text-gray-300">Dòng tiền ròng (Thu - Chi):</td>
+							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right font-bold text-blue-600 dark:text-blue-400" id="stats-net-cashflow">0</td>
+						</tr>
+						<tr>
+							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 font-medium text-gray-700 dark:text-gray-300">Số lượng giao dịch Thu:</td>
+							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right text-gray-800 dark:text-gray-200" id="stats-income-tx-count">0</td>
+						</tr>
+						<tr>
+							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 font-medium text-gray-700 dark:text-gray-300">Số lượng giao dịch Chi:</td>
+							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right text-gray-800 dark:text-gray-200" id="stats-expense-tx-count">0</td>
+						</tr>
+						<tr>
+							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 font-medium text-gray-700 dark:text-gray-300">Hạng mục chi nhiều nhất:</td>
+							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right text-gray-800 dark:text-gray-200" id="stats-top-expense-cat">-</td>
+						</tr>
+						<tr>
+							<td class="py-2 px-4 font-medium text-gray-700 dark:text-gray-300">Số tiền (Hạng mục chi nhiều nhất):</td> <td class="py-2 px-4 text-right text-red-600 dark:text-red-400 font-semibold" id="stats-top-expense-cat-amount">0</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
 
         <div class="section chart-section">
             <h2 class="section-header collapsible-header" data-collapsible-target="charts-grid-content">
@@ -313,25 +271,62 @@
             </h2>
             <div class="collapsible-content" id="category-customization-content">
                 <div class="category-management">
-                    <div><h3>Hạng Mục Thu</h3>
-                        <div class="mb-4"><label for="new-income-category-name">Tên hạng mục thu mới:</label><input type="text" id="new-income-category-name" placeholder="VD: Tiền cho thuê nhà"><button id="add-income-category-button" class="btn-primary btn-add-category"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>Thêm Hạng Mục Thu</button></div><h4>Danh sách hạng mục thu:</h4><ul id="income-category-list-admin" class="category-list"></ul>
-                    </div>
-                    <div><h3>Hạng Mục Chi</h3>
-                        <div class="mb-4"><label for="new-expense-category-name">Tên hạng mục chi mới:</label><input type="text" id="new-expense-category-name" placeholder="VD: Du lịch"><button id="add-expense-category-button" class="btn-primary btn-add-category"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>Thêm Hạng Mục Chi</button></div><h4>Danh sách hạng mục chi:</h4><ul id="expense-category-list-admin" class="category-list"></ul>
-                    </div>
-                    <div> <h3>Quản Lý Tài Khoản</h3>
-                        <div class="mb-4">
-                            <label for="new-account-name">Tên tài khoản mới:</label>
-                            <input type="text" id="new-account-name" placeholder="VD: Ví ShopeePay, Tiết kiệm Ngân hàng X" class="p-2 border rounded-md w-full mb-2">
-                            <button id="add-account-button" class="btn-primary btn-add-category">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:20px; height:20px; margin-right:6px;">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                                </svg>
-                                Thêm Tài Khoản
-                            </button>
-                        </div>
-                        <h4>Danh sách tài khoản hiện có:</h4>
-                        <ul id="account-list-admin" class="category-list"></ul>
+					<div> <h3>Hạng Mục Thu</h3>
+						<div class="mb-4"> <label for="new-income-category-name">Tên hạng mục thu mới:</label>
+							<input type="text" id="new-income-category-name" placeholder="VD: Tiền cho thuê nhà">
+							<button id="add-income-category-button" class="btn-primary btn-add-category">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+								Thêm Hạng Mục Thu
+							</button>
+						</div>
+
+                        <h4 class="collapsible-list-header active" data-collapsible-target="income-category-list-admin">
+                            <span>Danh sách hạng mục thu:</span>
+                            <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 16px; height: 16px; margin-left: auto;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                            </svg>
+                        </h4>
+                        <ul id="income-category-list-admin" class="category-list collapsible-list-content active">
+                            </ul>
+						</div>
+					<div> <h3>Hạng Mục Chi</h3>
+						<div class="mb-4"> <label for="new-expense-category-name">Tên hạng mục chi mới:</label>
+							<input type="text" id="new-expense-category-name" placeholder="VD: Du lịch">
+							<button id="add-expense-category-button" class="btn-primary btn-add-category">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+								Thêm Hạng Mục Chi
+							</button>
+						</div>
+
+						<h4 class="collapsible-list-header active" data-collapsible-target="expense-category-list-admin">
+							<span>Danh sách hạng mục chi:</span>
+							<svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 16px; height: 16px; margin-left: auto;">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+							</svg>
+						</h4>
+						<ul id="expense-category-list-admin" class="category-list collapsible-list-content active">
+							</ul>
+						</div>
+					<div> <h3>Quản Lý Tài Khoản</h3>
+						<div class="mb-4"> <label for="new-account-name">Tên tài khoản mới:</label>
+							<input type="text" id="new-account-name" placeholder="VD: Ví ShopeePay, Tiết kiệm Ngân hàng X" class="p-2 border rounded-md w-full mb-2">
+							<button id="add-account-button" class="btn-primary btn-add-category">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:20px; height:20px; margin-right:6px;">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+								</svg>
+								Thêm Tài Khoản
+							</button>
+						</div>
+
+						<h4 class="collapsible-list-header active" data-collapsible-target="account-list-admin">
+							<span>Danh sách tài khoản hiện có:</span>
+							<svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 16px; height: 16px; margin-left: auto;">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+							</svg>
+						</h4>
+						<ul id="account-list-admin" class="category-list collapsible-list-content active">
+							</ul>
+						</div>
                     </div>
                 </div>
             </div>
@@ -360,14 +355,85 @@
                 <p class="text-sm text-gray-500 mt-3">Lưu ý: Nhập dữ liệu sẽ ghi đè toàn bộ dữ liệu hiện tại.</p>
             </div>
         </div>
-    </div>
+		
+		    </div> <div id="virtualNumericKeyboard" class="fixed bottom-0 left-0 right-0 bg-gray-200 dark:bg-gray-800 p-2 shadow-lg z-50" style="display: none;">
+        <div class="grid grid-cols-4 gap-1 text-center">
+            <button data-key="1" class="virtual-key">1</button>
+            <button data-key="2" class="virtual-key">2</button>
+            <button data-key="3" class="virtual-key">3</button>
+            <button data-key="backspace" class="virtual-key key-action row-span-2 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M5.83 5.146a.5.5 0 0 0 0 .708L7.975 8l-2.147 2.146a.5.5 0 0 0 .707.708L8.683 8.707l2.147 2.147a.5.5 0 0 0 .707-.708L9.39 8l2.147-2.146a.5.5 0 0 0-.707-.708L8.683 7.293 6.536 5.146a.5.5 0 0 0-.707 0z"/>
+                    <path d="M13.683 1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-7.08a2 2 0 0 1-1.519-.698L.241 8.65a1 1 0 0 1 0-1.302L5.084 1.7A2 2 0 0 1 6.603 1h7.08zm-7.08 1a1 1 0 0 0-.76.35L1 7.35a.5.5 0 0 0 0 .65l4.284 4.284a1 1 0 0 0 .759.35h7.08a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1h-7.08z"/>
+                </svg>
+            </button>
 
-    <script>
+            <button data-key="4" class="virtual-key">4</button>
+            <button data-key="5" class="virtual-key">5</button>
+            <button data-key="6" class="virtual-key">6</button>
+            
+            <button data-key="7" class="virtual-key">7</button>
+            <button data-key="8" class="virtual-key">8</button>
+            <button data-key="9" class="virtual-key">9</button>
+            <button data-key="done" class="virtual-key key-done row-span-2 flex items-center justify-center">Tiếp</button>
+
+            <button data-key="000" class="virtual-key key-action">000</button>
+            <button data-key="0" class="virtual-key">0</button>
+            <button data-key="." class="virtual-key key-action">.</button>
+        </div>
+    </div> 
+	<script>
+	
         Chart.register(ChartDataLabels);
-        const USD_TO_VND_RATE = 25000;
+        const USD_TO_VND_RATE = 25000; // Giữ nguyên hoặc cho phép người dùng cấu hình nếu muốn
         const TRANSFER_CATEGORY_OUT = "Chuyển tiền đi";
         const TRANSFER_CATEGORY_IN = "Nhận tiền chuyển";
 
+        function migrateOriginalAmountsForOldVNDTransactions() {
+            const MIGRATION_KEY_ORIGINAL_AMOUNT_VND = 'migration_original_amount_vnd_v1_done';
+            if (localStorage.getItem(MIGRATION_KEY_ORIGINAL_AMOUNT_VND)) {
+                console.log("Di chuyển originalAmount cho giao dịch VNĐ cũ đã được thực hiện trước đó.");
+                return;
+            }
+
+            let transactions = JSON.parse(localStorage.getItem('transactions_v2') || '[]');
+            let changed = false;
+            if (transactions.length > 0) {
+                console.log("Bắt đầu kiểm tra và di chuyển originalAmount cho giao dịch VNĐ cũ...");
+                transactions.forEach(tx => {
+                    if (tx.originalCurrency === 'VND' && typeof tx.originalAmount === 'number' && typeof tx.amount === 'number') {
+                        // Heuristic: Nếu amount gần bằng originalAmount * 1000 VÀ originalAmount có vẻ là số "nhỏ" (có thể chứa thập phân)
+                        // thì originalAmount này có thể là giá trị "base" từ thời x1000.
+                        // Chúng ta muốn originalAmount bây giờ phản ánh giá trị đầy đủ sẽ được hiển thị trong form.
+                        const isLikelyOldScaledVnd = Math.abs(tx.amount - (tx.originalAmount * 1000)) < 1 && // amount ~ originalAmount * 1000
+                                                  tx.originalAmount.toString().includes('.'); // originalAmount có dạng thập phân
+
+                        if (isLikelyOldScaledVnd) {
+                            console.log(`Di chuyển originalAmount cho giao dịch ID ${tx.id}: từ ${tx.originalAmount} thành ${tx.amount}`);
+                            tx.originalAmount = tx.amount; // Giờ originalAmount sẽ là giá trị đầy đủ
+                            changed = true;
+                        }
+                    }
+                });
+
+                if (changed) {
+                    localStorage.setItem('transactions_v2', JSON.stringify(transactions));
+                    console.log("Hoàn tất di chuyển originalAmount. Dữ liệu đã được cập nhật.");
+                } else {
+                    console.log("Không có originalAmount nào cần di chuyển hoặc đã ở định dạng mới.");
+                }
+                localStorage.setItem(MIGRATION_KEY_ORIGINAL_AMOUNT_VND, 'true');
+            }
+        }
+        // BẠN CÓ THỂ GỌI HÀM NÀY MỘT LẦN KHI ỨNG DỤNG KHỞI ĐỘNG, TRƯỚC KHI loadUserPreferences
+        // migrateOriginalAmountsForOldVNDTransactions(); 
+        // SAU KHI CHẮC CHẮN NÓ HOẠT ĐỘNG ĐÚNG VÀ CHỈ CHẠY MỘT LẦN, BẠN CÓ THỂ XÓA HOẶC VÔ HIỆU HÓA LỜI GỌI NÀY.
+        // --------------------------------------------------------------------
+        // KẾT THÚC PHẦN CẢNH BÁO DI CHUYỂN DỮ LIỆU
+        // --------------------------------------------------------------------
+
+
+        // --- CÁC BIẾN DOM (Giữ nguyên hoặc điều chỉnh nếu ID thay đổi) ---
         const darkModeToggleCheckbox = document.getElementById('darkModeToggleCheckbox');
         const DARK_MODE_CLASS = 'dark-mode';
         const THEME_STORAGE_KEY = 'themePreference';
@@ -382,13 +448,13 @@
         const accountBalanceListEl = document.getElementById('account-balance-list');
         const datetimeInput = document.getElementById('datetime-input');
         const categoryInput = document.getElementById('category');
-        const categoryContainer = categoryInput.parentElement;
-        const amountTextInput = document.getElementById('amount-input');
+        // const categoryContainer = categoryInput.parentElement; // Dòng này bạn có dùng không?
+        const amountTextInput = document.getElementById('amount-input'); // QUAN TRỌNG CHO NÚT "000"
         const formCurrencySelector = document.getElementById('form-currency-selector');
         const descriptionInput = document.getElementById('description');
         const accountInput = document.getElementById('account');
         const accountLabel = document.getElementById('account-label');
-        const toAccountContainer = document.querySelector('.form-field-transfer');
+        // const toAccountContainer = document.querySelector('.form-field-transfer'); // Dòng này bạn có dùng không?
         const toAccountInput = document.getElementById('to-account');
         const noTransactionsMessage = document.getElementById('no-transactions');
         const filterMonthSelect = document.getElementById('filter-month');
@@ -400,6 +466,21 @@
         const noExpenseDataEl = document.getElementById('no-expense-data');
         const last7DaysChartCanvas = document.getElementById('last7DaysChart').getContext('2d');
         const monthComparisonChartCanvas = document.getElementById('monthComparisonChart').getContext('2d');
+		// ... các biến hiện có ...
+		const expenseCategoryBarCtx = document.getElementById('expenseCategoryBarChart').getContext('2d');
+
+
+		const expenseChartTypeSelector = document.getElementById('expenseChartTypeSelector');
+		const expensePieChartContainer = document.getElementById('expensePieChartContainer');
+		const expenseBarChartContainer = document.getElementById('expenseBarChartContainer');
+	
+		// const noExpenseDataEl = document.getElementById('no-expense-data-list'); // Đổi tên hoặc giữ nguyên nếu bạn đã có cho list
+
+		// Các element hiển thị thông báo "không có dữ liệu"
+		// (Đảm bảo ID trong HTML của bạn khớp với các ID này)
+		const noExpenseDataChartEl = document.getElementById('no-expense-data-chart'); // MỚI (cho khu vực biểu đồ)
+		const noExpenseDataListEl = document.getElementById('no-expense-data-list');   // ID này bạn đã cập nhật trong HTML cho phần danh sách
+
 
         const filterComparisonYearInput = document.getElementById('filter-comparison-year');
         const filterComparisonWeekSelect = document.getElementById('filter-comparison-week');
@@ -430,9 +511,14 @@
         const addAccountButton = document.getElementById('add-account-button');
         const accountListAdminEl = document.getElementById('account-list-admin');
 
+        // Nút mới
+        const addTripleZeroButton = document.getElementById('add-triple-zero-button');
+
+
         let transactions = [];
         let incomeExpenseChart;
         let expenseCategoryChart;
+		let expenseCategoryBarChart; // Biến cho instance biểu đồ cột
         let last7DaysChart;
         let monthComparisonChart;
         let editingTransactionId = null;
@@ -446,44 +532,28 @@
         const defaultAccounts = [ { value: "Tiền mặt", text: "Tiền mặt" }, { value: "Momo", text: "Momo" }, { value: "Thẻ tín dụng A", text: "Thẻ tín dụng A" }, { value: "Techcombank", text: "Techcombank" }, { value: "BIDV", text: "BIDV" }, { value: "Khác", text: "Khác" } ];
         const categoryColors = [ '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF', '#8366FF', '#289F40', '#D26384', '#3C64C8', '#C89632' ];
 
+        // --- HÀM TIỆN ÍCH (Giữ nguyên các hàm tiện ích của bạn) ---
         function showMessage(message, type = 'success') { messageBox.textContent = message; messageBox.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'message-success' : 'message-error'}`; messageBox.style.display = 'block'; setTimeout(() => { messageBox.style.display = 'none'; }, 3000); }
-		function formatCurrency(amount, currencyCode = 'VND') {
-			// Quyết định số chữ số thập phân cho VNĐ
-			// Dựa theo ví dụ ".111" của bạn, chúng ta sẽ dùng 3.
-			// Bạn có thể đổi thành 0 nếu không muốn thấy ".000" cho các số nguyên.
-			const vndDecimalPlaces = 3;
+        
+        function formatCurrency(amount, currencyCode = 'VND') {
+            const options = { style: 'currency', currency: currencyCode };
+            const locale = 'vi-VN'; 
+            // Với việc bỏ x1000, bạn có thể muốn hiển thị số lẻ cho VNĐ nếu cần
+            if (currencyCode === 'VND') {
+                options.minimumFractionDigits = 0; // Hoặc 2 nếu muốn 2 số lẻ
+                options.maximumFractionDigits = 0; // Hoặc 2 nếu muốn 2 số lẻ
+            } else if (currencyCode === 'USD') {
+                options.minimumFractionDigits = 2;
+                options.maximumFractionDigits = 2;
+            } else { // Mặc định cho các loại tiền tệ khác
+                options.minimumFractionDigits = 0;
+                options.maximumFractionDigits = 2;
+            }
+            if (isNaN(amount) || amount === null) amount = 0;
+            return new Intl.NumberFormat(locale, options).format(amount);
+        }
 
-			const options = {
-				style: 'currency',
-				currency: currencyCode,
-				// Cài đặt số chữ số thập phân dựa trên currencyCode
-				minimumFractionDigits: (currencyCode === 'VND') ? vndDecimalPlaces : ((currencyCode === 'USD') ? 2 : 0),
-				maximumFractionDigits: (currencyCode === 'VND') ? vndDecimalPlaces : ((currencyCode === 'USD') ? 2 : 0)
-			};
-
-			if (isNaN(amount) || amount === null) {
-				amount = 0;
-			}
-
-			if (currencyCode === 'VND') {
-				const numberFormatter_en_US = new Intl.NumberFormat('en-US', { // Dùng 'en-US' để có dấu ',' hàng nghìn và '.' thập phân
-					minimumFractionDigits: vndDecimalPlaces,
-					maximumFractionDigits: vndDecimalPlaces
-				});
-				const numberPartFormatted = numberFormatter_en_US.format(amount); // Ví dụ: "12,345.678" hoặc "22,222,111.000"
-				const currencySymbolWithSpace = ' ₫';
-				return numberPartFormatted + currencySymbolWithSpace;
-
-			} else if (currencyCode === 'USD') {
-				// Cho USD, dùng 'en-US' locale sẽ cho định dạng chuẩn ($1,234.56)
-				return new Intl.NumberFormat('en-US', options).format(amount);
-			}
-
-			// Fallback cho các loại tiền tệ khác (nếu có)
-			return new Intl.NumberFormat('vi-VN', options).format(amount); // Dùng 'vi-VN' làm mặc định
-		}
-
-        function formatDateTimeLocalInput(date) {
+        function formatDateTimeLocalInput(date) { /* ... mã gốc của bạn ... */ 
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
@@ -491,8 +561,7 @@
             const minutes = String(date.getMinutes()).padStart(2, '0');
             return `${year}-${month}-${day}T${hours}:${minutes}`;
         }
-
-        function formatIsoDateTime(date) {
+        function formatIsoDateTime(date) { /* ... mã gốc của bạn ... */ 
             if (!date || isNaN(new Date(date).getTime())) date = new Date();
             else date = new Date(date);
             const year = date.getFullYear();
@@ -503,12 +572,11 @@
             const seconds = String(date.getSeconds()).padStart(2, '0');
             return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
         }
-
-        function formatDisplayDateTime(isoString) {
-            if (!isoString) return '';
+        function formatDisplayDateTime(isoString) { /* ... mã gốc của bạn ... */ 
+             if (!isoString) return '';
             try {
                 let date = new Date(isoString);
-                if (isNaN(date.getTime())) return isoString;
+                if (isNaN(date.getTime())) return isoString; 
                 const year = date.getFullYear();
                 const month = String(date.getMonth() + 1).padStart(2, '0');
                 const day = String(date.getDate()).padStart(2, '0');
@@ -520,192 +588,414 @@
                 return isoString;
             }
         }
-
-        function formatDateTimeForCSV(isoString) {
+        function formatDateTimeForCSV(isoString) { /* ... mã gốc của bạn ... */
             if (!isoString) return '';
             try {
                 const d = new Date(isoString);
                 if (isNaN(d.getTime())) return isoString;
                 return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
-            } catch (e) {
-                return isoString;
-            }
+            } catch (e) { return isoString; }
         }
 
+        // --- HÀM NORMALIZEAMOUNTSTRING (CẬP NHẬT) ---
 		function normalizeAmountString(amountStr) {
 			if (typeof amountStr !== 'string' || !amountStr.trim()) {
 				return "";
 			}
 			let str = amountStr.trim();
-
 			const hasComma = str.includes(',');
 			const hasPeriod = str.includes('.');
 
 			if (hasComma && hasPeriod) {
-				// Trường hợp có cả dấu phẩy và dấu chấm (ví dụ: "1.234,56" hoặc "1,234.56")
-				// Dấu nào xuất hiện cuối cùng có khả năng cao là dấu thập phân.
-				if (str.lastIndexOf(',') > str.lastIndexOf('.')) {
-					// Dấu phẩy là thập phân, dấu chấm là phân cách hàng nghìn (kiểu châu Âu, ví dụ: "1.234,56")
-					str = str.replace(/\./g, ''); // Xóa tất cả dấu chấm
+				if (str.lastIndexOf(',') > str.lastIndexOf('.')) { // Kiểu châu Âu: 1.234,56
+					str = str.replace(/\./g, ''); // Xóa dấu chấm phân cách hàng nghìn
 					str = str.replace(',', '.');  // Chuyển dấu phẩy thập phân thành dấu chấm
-				} else {
-					// Dấu chấm là thập phân, dấu phẩy là phân cách hàng nghìn (kiểu Mỹ, ví dụ: "1,234.56")
-					str = str.replace(/,/g, ''); // Xóa tất cả dấu phẩy
+				} else { // Kiểu Mỹ: 1,234.56
+					str = str.replace(/,/g, ''); // Xóa dấu phẩy phân cách hàng nghìn
 				}
 			} else if (hasComma) { // Chỉ có dấu phẩy
-				// Nếu có nhiều dấu phẩy, coi tất cả là phân cách hàng nghìn.
-				// Nếu chỉ có một dấu phẩy, kiểm tra xem nó có giống dấu thập phân không.
 				const commaCount = (str.match(/,/g) || []).length;
 				if (commaCount === 1) {
-					// Giả sử "123,45" là "123.45", còn "1,234" sẽ bỏ dấu phẩy đi.
-					// Kiểm tra xem phần sau dấu phẩy có phải là phần thập phân hợp lệ không (1-3 chữ số thường lệ).
 					const decimalPart = str.substring(str.lastIndexOf(',') + 1);
-					if (/^\d+$/.test(decimalPart) && decimalPart.length > 0 && decimalPart.length <= 3 && str.lastIndexOf(',') > 0) {
-						 // Thêm kiểm tra để đảm bảo phần trước dấu phẩy cũng là số hoặc rỗng
-						const integerPart = str.substring(0, str.lastIndexOf(','));
-						if (/^\d*$/.test(integerPart.replace(/,/g, ''))) { // Loại bỏ các dấu phẩy khác (nếu có) ở phần nguyên
+					const integerPartStr = str.substring(0, str.lastIndexOf(','));
+					if (/^\d*$/.test(integerPartStr.replace(/,/g, '')) && /^\d+$/.test(decimalPart) && str.lastIndexOf(',') > 0 && decimalPart.length > 0) {
+						 if (decimalPart.length <= 3) { // Ưu tiên là thập phân nếu phần sau dấu phẩy ngắn
 							str = str.replace(',', '.');
-						} else { // Nếu phần trước không hợp lệ, coi tất cả là phân cách nghìn
+						 } else { // Ví dụ "1,2345" -> có thể là 12345
 							str = str.replace(/,/g, '');
-						}
-					} else { // Nếu không rõ ràng là thập phân (ví dụ "1,234" hoặc "1,2345")
-						str = str.replace(/,/g, ''); // Coi tất cả dấu phẩy là phân cách hàng nghìn
+						 }
+					} else { // Cấu trúc không rõ ràng là thập phân
+						str = str.replace(/,/g, '');
 					}
 				} else { // Nhiều dấu phẩy
-					str = str.replace(/,/g, ''); // Coi tất cả dấu phẩy là phân cách hàng nghìn
+					str = str.replace(/,/g, ''); // Coi tất cả là phân cách hàng nghìn
 				}
 			} else if (hasPeriod) { // Chỉ có dấu chấm
-				// Nếu có nhiều dấu chấm, giả sử chúng là phân cách hàng nghìn,
-				// và dấu chấm cuối cùng có thể là dấu thập phân.
-				// Ví dụ: "1.234.567" -> "1234.567" (để parseFloat hiểu đúng theo logic app "22.5" -> 22.5 * 1000)
-				// "100.000" -> "100.000" (parseFloat sẽ là 100)
 				const periodCount = (str.match(/\./g) || []).length;
 				if (periodCount > 1) {
 					// Xóa tất cả các dấu chấm ngoại trừ dấu chấm cuối cùng
-					// Ví dụ: "1.234.567" thành "1234.567"
-					// Ví dụ: "1.000.000" thành "1000.000" (parseFloat sẽ là 1000)
+					// Ví dụ: "1.234.567" -> "1234.567"
+					// Ví dụ: "1.000.000" -> "1000.000" (để parseFloat ra 1000)
 					str = str.replace(/\.(?=.*\.)/g, '');
 				}
-				// Nếu periodCount là 1 (ví dụ: "123.45" hoặc "1.234"), parseFloat sẽ tự xử lý.
+				// Nếu chỉ có 1 dấu chấm (ví dụ "22.5"), nó sẽ được giữ nguyên cho parseFloat.
 			}
-			// Trường hợp không có dấu phân cách nào thì giữ nguyên.
-
 			return str;
 		}
-        function applyTheme(theme) { if (theme === 'dark') { document.body.classList.add(DARK_MODE_CLASS); if (darkModeToggleCheckbox) darkModeToggleCheckbox.checked = true; localStorage.setItem(THEME_STORAGE_KEY, 'dark'); } else { document.body.classList.remove(DARK_MODE_CLASS); if (darkModeToggleCheckbox) darkModeToggleCheckbox.checked = false; localStorage.setItem(THEME_STORAGE_KEY, 'light'); } updateAllChartColorsForTheme(theme); }
-        function toggleTheme() { applyTheme(darkModeToggleCheckbox.checked ? 'dark' : 'light'); }
-        function loadThemePreference() { const savedTheme = localStorage.getItem(THEME_STORAGE_KEY); const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches; if (savedTheme) { applyTheme(savedTheme); } else if (prefersDarkScheme) { applyTheme('dark'); } else { applyTheme('light'); } }
-        function updateAllChartColorsForTheme(theme) { const isDarkMode = theme === 'dark'; const gridColor = isDarkMode ? 'rgba(107, 114, 128, 0.2)' : 'rgba(209, 213, 219, 0.5)'; const ticksColor = isDarkMode ? '#9ca3af' : '#6b7280'; const legendColor = isDarkMode ? '#d1d5db' : '#374151'; const titleColor = isDarkMode ? '#e5e7eb' : '#1f2937'; const charts = [incomeExpenseChart, expenseCategoryChart, last7DaysChart, monthComparisonChart]; charts.forEach(chart => { if (chart && chart.options) { if (chart.options.scales) { Object.keys(chart.options.scales).forEach(scaleKey => { if (chart.options.scales[scaleKey]) { if (chart.options.scales[scaleKey].grid) { chart.options.scales[scaleKey].grid.color = gridColor; chart.options.scales[scaleKey].grid.borderColor = gridColor;} if (chart.options.scales[scaleKey].ticks) { chart.options.scales[scaleKey].ticks.color = ticksColor;} if (chart.options.scales[scaleKey].title && chart.options.scales[scaleKey].title.display) {chart.options.scales[scaleKey].title.color = titleColor;} } }); } if (chart.options.plugins && chart.options.plugins.legend && chart.options.plugins.legend.labels) { chart.options.plugins.legend.labels.color = legendColor; } if (chart.options.plugins && chart.options.plugins.title && chart.options.plugins.title.display) { chart.options.plugins.title.color = titleColor; } chart.update(); } }); }
+
+
+        function parseAmountInput(amountStr, currency) {
+            if (!amountStr) return 0;
+            
+            const normalizedStr = normalizeAmountString(amountStr); 
+            let val = parseFloat(normalizedStr);
+
+            if (isNaN(val)) {
+                console.warn(`NormalizeAmountString failed or produced NaN for input: '${amountStr}'. Normalized string was: '${normalizedStr}'. Attempting direct parsing.`);
+                let directParseStr = String(amountStr).trim();
+                if (directParseStr.includes(',') && !directParseStr.includes('.')) {
+                    directParseStr = directParseStr.replace(/,/g, '.');
+                } else { 
+                    directParseStr = directParseStr.replace(/[^0-9.]/g, (match, offset, fullString) => {
+                        return (match === '.' && fullString.indexOf('.') === offset) ? '.' : '';
+                    });
+                }
+                val = parseFloat(directParseStr);
+            }
+            
+            if (isNaN(val)) return 0;
+
+            if (currency === 'USD') {
+                val = val * USD_TO_VND_RATE; 
+            } 
+
+            return Math.round(val); // VNĐ giờ sẽ là số nguyên sau khi làm tròn
+        }
+		
+		function toggleExpenseChartDisplay() {
+			if (!expenseChartTypeSelector || !expensePieChartContainer || !expenseBarChartContainer || !noExpenseDataChartEl) {
+				// console.error("toggleExpenseChartDisplay: DOM elements for chart toggling are missing.");
+				return;
+			}
+
+			const selectedType = expenseChartTypeSelector.value;
+			// Kiểm tra xem có dữ liệu không (dựa vào việc một trong hai biểu đồ đã được khởi tạo và có dữ liệu)
+			const chartsHaveData = (expenseCategoryChart && expenseCategoryChart.data.labels && expenseCategoryChart.data.labels.length > 0) ||
+								   (expenseCategoryBarChart && expenseCategoryBarChart.data.labels && expenseCategoryBarChart.data.labels.length > 0);
+
+			if (!chartsHaveData && totalExpenses === 0) { // Kiểm tra thêm totalExpenses từ renderExpenseCategoryChartAndList (cần truyền vào hoặc dùng biến global)
+														// Hoặc đơn giản hơn là dựa vào trạng thái của noExpenseDataChartEl được set trong renderExpenseCategoryChartAndList
+				expensePieChartContainer.style.display = 'none';
+				expenseBarChartContainer.style.display = 'none';
+				noExpenseDataChartEl.style.display = 'block';
+				return;
+			}
+			
+			// Nếu hàm render đã ẩn/hiện noExpenseDataChartEl rồi thì không cần dòng này nữa
+			// noExpenseDataChartEl.style.display = 'none'; 
+
+			if (selectedType === 'pie') {
+				expensePieChartContainer.style.display = 'block';
+				expenseBarChartContainer.style.display = 'none';
+			} else if (selectedType === 'bar') {
+				expensePieChartContainer.style.display = 'none';
+				expenseBarChartContainer.style.display = 'block';
+			}
+		}
+
+        // --- DARK MODE LOGIC (Giữ nguyên) ---
+		function applyTheme(theme) {
+			// console.log('Applying theme:', theme);
+			if (theme === 'dark') {
+				document.body.classList.add(DARK_MODE_CLASS);
+				if (darkModeToggleCheckbox) darkModeToggleCheckbox.checked = true;
+				localStorage.setItem(THEME_STORAGE_KEY, 'dark');
+			} else {
+				document.body.classList.remove(DARK_MODE_CLASS);
+				if (darkModeToggleCheckbox) darkModeToggleCheckbox.checked = false;
+				localStorage.setItem(THEME_STORAGE_KEY, 'light');
+			}
+			updateAllChartColorsForTheme(theme); // Gọi hàm cập nhật màu biểu đồ
+		}
+
+		function toggleTheme() {
+			// console.log('toggleTheme called. Checkbox checked:', darkModeToggleCheckbox ? darkModeToggleCheckbox.checked : 'checkbox not found');
+			if (!darkModeToggleCheckbox) {
+				console.error("darkModeToggleCheckbox not found in toggleTheme");
+				return;
+			}
+			applyTheme(darkModeToggleCheckbox.checked ? 'dark' : 'light');
+		}
+		
+		function loadThemePreference() {
+			// console.log('loadThemePreference called'); // Thêm để kiểm tra
+			const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+			const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+			if (savedTheme) {
+				applyTheme(savedTheme);
+			} else if (prefersDarkScheme) {
+				applyTheme('dark');
+			} else {
+				applyTheme('light'); // Mặc định là light nếu không có gì được lưu và không có ưu tiên hệ thống
+			}
+		}
+		
+		function updateAllChartColorsForTheme(theme) {
+			const isDarkMode = theme === 'dark';
+			const gridColor = isDarkMode ? 'rgba(107, 114, 128, 0.2)' : 'rgba(209, 213, 219, 0.5)';
+			const ticksColor = isDarkMode ? '#9ca3af' : '#6b7280';
+			const axisLineColor = isDarkMode ? '#4b5563' : '#d1d5db';
+			const legendAndAxisTitleColor = isDarkMode ? '#d1d5db' : '#374151';
+			const chartMainTitleColor = isDarkMode ? '#e5e7eb' : '#1f2937';
+			let pieSliceBorderColor = isDarkMode ? (window.getComputedStyle(document.body).backgroundColor || '#374151') : '#ffffff';
+			const datalabelPieColor = '#ffffff';
+			const datalabelGeneralColor = isDarkMode ? '#e0e0e0' : '#333333';
+
+			const charts = [
+				incomeExpenseChart, expenseCategoryChart, last7DaysChart,
+				monthComparisonChart, expenseCategoryBarChart // Đã bao gồm biểu đồ cột
+			].filter(c => c && c.ctx && typeof c.update === 'function');
+
+			charts.forEach(chart => {
+				if (!chart.options) return;
+				try {
+					if (chart.options.plugins) {
+						if (chart.options.plugins.legend && chart.options.plugins.legend.labels) {
+							chart.options.plugins.legend.labels.color = legendAndAxisTitleColor;
+						}
+						if (chart.options.plugins.title && chart.options.plugins.title.display) {
+							chart.options.plugins.title.color = chartMainTitleColor;
+						}
+					}
+
+					if (chart.options.scales) {
+						Object.keys(chart.options.scales).forEach(scaleKey => {
+							const scale = chart.options.scales[scaleKey];
+							if (scale) {
+								if (scale.grid) scale.grid.color = gridColor;
+								if (typeof scale.borderColor !== 'undefined') scale.borderColor = axisLineColor;
+								if (scale.ticks) scale.ticks.color = ticksColor;
+								if (scale.title && scale.title.display) scale.title.color = legendAndAxisTitleColor;
+							}
+						});
+					}
+
+					if (chart.options.plugins && chart.options.plugins.datalabels) {
+						chart.options.plugins.datalabels.color = (chart === expenseCategoryChart) ? datalabelPieColor : datalabelGeneralColor;
+					}
+					
+					if (chart === expenseCategoryChart && chart.data.datasets && chart.data.datasets.length > 0) {
+						chart.data.datasets[0].borderColor = pieSliceBorderColor;
+					}
+					
+					chart.update();
+				} catch (e) {
+					console.error("[Theme] Error updating chart colors:", chart.config ? chart.config.type : 'Unknown Chart', e);
+				}
+			});
+		}
+
         function setDefaultDateTime() { if(datetimeInput) datetimeInput.value = formatDateTimeLocalInput(new Date()); }
         function setDefaultComparisonYear() { if(filterComparisonYearInput) filterComparisonYearInput.value = new Date().getFullYear(); }
-        function loadUserPreferences() { const storedTransactions = localStorage.getItem('transactions_v2'); transactions = storedTransactions ? JSON.parse(storedTransactions) : []; const storedIncomeCategories = localStorage.getItem('customIncomeCategories_v2'); incomeCategories = storedIncomeCategories ? JSON.parse(storedIncomeCategories) : [...defaultIncomeCategories]; if (!Array.isArray(incomeCategories) || incomeCategories.length === 0 || !incomeCategories.find(c => c.value === TRANSFER_CATEGORY_IN)) { incomeCategories = [...defaultIncomeCategories]; } const storedExpenseCategories = localStorage.getItem('customExpenseCategories_v2'); expenseCategories = storedExpenseCategories ? JSON.parse(storedExpenseCategories) : [...defaultExpenseCategories]; if (!Array.isArray(expenseCategories) || expenseCategories.length === 0 || !expenseCategories.find(c => c.value === TRANSFER_CATEGORY_OUT)) { expenseCategories = [...defaultExpenseCategories]; } const storedAccounts = localStorage.getItem('customAccounts_v2'); accounts = storedAccounts ? JSON.parse(storedAccounts) : [...defaultAccounts]; if (!Array.isArray(accounts) || accounts.length === 0) accounts = [...defaultAccounts]; }
+		function loadUserPreferences() {
+			// Ví dụ cho transactions (giữ nguyên cách bạn đã làm hoặc cải thiện)
+			const storedTransactions = localStorage.getItem('transactions_v2');
+			transactions = [];
+			if (storedTransactions) {
+				try {
+					transactions = JSON.parse(storedTransactions);
+					console.log("Loaded transactions_v2:", transactions); // KIỂM TRA TRANSACTIONS
+					if (!Array.isArray(transactions)) {
+						console.warn("Dữ liệu transactions_v2 từ localStorage không phải là mảng, đặt lại thành mảng rỗng.");
+						transactions = [];
+					}
+				} catch (error) {
+					console.error("Lỗi khi parse transactions_v2 từ localStorage:", error);
+					transactions = [];
+					showMessage('Có lỗi khi tải dữ liệu giao dịch. Dữ liệu có thể đã bị hỏng.', 'error');
+				}
+			} else {
+				console.log("Không tìm thấy transactions_v2 trong localStorage, sử dụng mảng rỗng.");
+				transactions = []; // Đảm bảo transactions luôn là một mảng
+			}
+
+			// --- LÀM TƯƠNG TỰ CHO incomeCategories ---
+			const storedIncomeCategories = localStorage.getItem('customIncomeCategories_v2');
+			incomeCategories = []; // Khởi tạo
+			if (storedIncomeCategories) {
+				try {
+					incomeCategories = JSON.parse(storedIncomeCategories);
+					console.log("Loaded customIncomeCategories_v2:", incomeCategories); // KIỂM TRA incomeCategories
+					if (!Array.isArray(incomeCategories)) {
+						console.warn("customIncomeCategories_v2 không phải mảng, dùng giá trị mặc định.");
+						incomeCategories = [...defaultIncomeCategories]; // Sử dụng default nếu lỗi
+						console.log("Fell back to defaultIncomeCategories (not array):", incomeCategories);
+					} else if (incomeCategories.length === 0 || !incomeCategories.find(c => c.value === TRANSFER_CATEGORY_IN)) {
+						console.warn("customIncomeCategories_v2 rỗng hoặc thiếu hạng mục chuyển tiền cần thiết, dùng giá trị mặc định.");
+						incomeCategories = [...defaultIncomeCategories];
+						console.log("Fell back to defaultIncomeCategories (empty or missing transfer):", incomeCategories);
+					}
+				} catch (error) {
+					console.error("Lỗi khi parse customIncomeCategories_v2:", error);
+					incomeCategories = [...defaultIncomeCategories];
+					console.log("Fell back to defaultIncomeCategories (parse error):", incomeCategories);
+				}
+			} else { // Nếu không có gì trong localStorage, dùng default
+				 console.log("Không tìm thấy customIncomeCategories_v2, sử dụng defaultIncomeCategories.");
+				 incomeCategories = [...defaultIncomeCategories];
+			}
+
+			// --- LÀM TƯƠNG TỰ CHO expenseCategories --- (đoạn này bạn đã có, chỉ để tham khảo cấu trúc)
+			const storedExpenseCategories = localStorage.getItem('customExpenseCategories_v2');
+			expenseCategories = [];
+			if (storedExpenseCategories) {
+				try {
+					expenseCategories = JSON.parse(storedExpenseCategories);
+					console.log("Loaded customExpenseCategories_v2:", expenseCategories); // KIỂM TRA expenseCategories
+					if (!Array.isArray(expenseCategories)) {
+						console.warn("customExpenseCategories_v2 không phải mảng, dùng giá trị mặc định.");
+						expenseCategories = [...defaultExpenseCategories];
+						console.log("Fell back to defaultExpenseCategories (not array):", expenseCategories);
+					} else if (expenseCategories.length === 0 || !expenseCategories.find(c => c.value === TRANSFER_CATEGORY_OUT)) {
+						 console.warn("customExpenseCategories_v2 rỗng hoặc thiếu hạng mục chuyển tiền cần thiết, dùng giá trị mặc định.");
+						expenseCategories = [...defaultExpenseCategories];
+						console.log("Fell back to defaultExpenseCategories (empty or missing transfer):", expenseCategories);
+					}
+				} catch (error) {
+					console.error("Lỗi khi parse customExpenseCategories_v2:", error);
+					expenseCategories = [...defaultExpenseCategories];
+					console.log("Fell back to defaultExpenseCategories (parse error):", expenseCategories);
+				}
+			} else {
+				 console.log("Không tìm thấy customExpenseCategories_v2, sử dụng defaultExpenseCategories.");
+				 expenseCategories = [...defaultExpenseCategories];
+			}
+
+			// --- LÀM TƯƠNG TỰ CHO accounts ---
+			const storedAccounts = localStorage.getItem('customAccounts_v2');
+			accounts = []; // Khởi tạo
+			if (storedAccounts) {
+				try {
+					accounts = JSON.parse(storedAccounts);
+					console.log("Loaded customAccounts_v2:", accounts); // KIỂM TRA accounts
+					if (!Array.isArray(accounts) || accounts.length === 0) {
+						console.warn("customAccounts_v2 không phải mảng hoặc rỗng, dùng giá trị mặc định.");
+						accounts = [...defaultAccounts];
+						console.log("Fell back to defaultAccounts (not array or empty):", accounts);
+					}
+				} catch (error) {
+					console.error("Lỗi khi parse customAccounts_v2:", error);
+					accounts = [...defaultAccounts];
+					console.log("Fell back to defaultAccounts (parse error):", accounts);
+				}
+			} else {
+				 console.log("Không tìm thấy customAccounts_v2, sử dụng defaultAccounts.");
+				 accounts = [...defaultAccounts];
+			}
+
+			// Sau khi đã tải hoặc đặt lại tất cả, log ra trạng thái cuối cùng
+			console.log("Dữ liệu cuối cùng sau khi tải (loadUserPreferences):", { transactions, incomeCategories, expenseCategories, accounts });
+		}
+
         function saveUserPreferences() { localStorage.setItem('customIncomeCategories_v2', JSON.stringify(incomeCategories)); localStorage.setItem('customExpenseCategories_v2', JSON.stringify(expenseCategories)); localStorage.setItem('customAccounts_v2', JSON.stringify(accounts)); }
         function saveTransactions() { localStorage.setItem('transactions_v2', JSON.stringify(transactions)); }
+        
+        // --- CÁC HÀM RENDER (Giữ nguyên cấu trúc, logic hiển thị sẽ tự điều chỉnh theo giá trị số tiền mới) ---
         function renderAccountListAdmin() { if (!accountListAdminEl) return; accountListAdminEl.innerHTML = ''; accounts.forEach(acc => { const li = document.createElement('li'); li.textContent = acc.text; const deleteButton = document.createElement('button'); deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/> </svg>Xóa`; deleteButton.classList.add('btn-delete', 'text-xs', 'px-2', 'py-1', 'ml-2'); deleteButton.onclick = () => { if (confirm(`Bạn có chắc muốn xóa tài khoản "${acc.text}" không? Lưu ý: Các giao dịch cũ liên quan đến tài khoản này sẽ không tự động cập nhật.`)) { accounts = accounts.filter(a => a.value !== acc.value); saveUserPreferences(); renderAccountListAdmin(); populateAccountDropdowns(); updateAccountBalances(); showMessage(`Đã xóa tài khoản "${acc.text}".`, 'success'); } }; li.appendChild(deleteButton); accountListAdminEl.appendChild(li); }); }
-        function renderCategoryList(listElement, categoriesArray, type) { if (!listElement) return; listElement.innerHTML = ''; categoriesArray.forEach(cat => { const isSpecialTransferCategory = (cat.value === TRANSFER_CATEGORY_IN || cat.value === TRANSFER_CATEGORY_OUT); const li = document.createElement('li'); li.textContent = cat.text; if (!isSpecialTransferCategory) { const deleteButton = document.createElement('button'); deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/> </svg>Xóa`; deleteButton.classList.add('btn-delete', 'text-xs', 'px-2', 'py-1', 'ml-2'); deleteButton.onclick = () => { if (confirm(`Bạn có chắc muốn xóa hạng mục "${cat.text}" không?`)) { if (type === 'income') incomeCategories = incomeCategories.filter(c => c.value !== cat.value); else expenseCategories = expenseCategories.filter(c => c.value !== cat.value); saveUserPreferences(); renderCustomCategoryLists(); populateCategories(); applyMainFilter(); } }; li.appendChild(deleteButton); } else { const lockIcon = document.createElement('span'); lockIcon.innerHTML = ` <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-lock-fill inline-block ml-2 text-gray-400" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>`; li.appendChild(lockIcon); } listElement.appendChild(li); }); }
+		function renderCategoryList(listElement, categoriesArray, type) { if (!listElement) return; listElement.innerHTML = ''; categoriesArray.forEach(cat => { const isSpecialTransferCategory = (cat.value === TRANSFER_CATEGORY_IN || cat.value === TRANSFER_CATEGORY_OUT); const li = document.createElement('li'); li.textContent = cat.text; if (!isSpecialTransferCategory) { const deleteButton = document.createElement('button'); deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/> </svg>Xóa`; deleteButton.classList.add('btn-delete', 'text-xs', 'px-2', 'py-1', 'ml-2'); deleteButton.onclick = () => { if (confirm(`Bạn có chắc muốn xóa hạng mục "${cat.text}" không?`)) { if (type === 'income') incomeCategories = incomeCategories.filter(c => c.value !== cat.value); else expenseCategories = expenseCategories.filter(c => c.value !== cat.value); saveUserPreferences(); renderCustomCategoryLists(); populateCategories(); applyMainFilter(); } }; li.appendChild(deleteButton); } else { const lockIcon = document.createElement('span'); lockIcon.innerHTML = ` <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-lock-fill inline-block ml-2 text-gray-400" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>`; li.appendChild(lockIcon); } listElement.appendChild(li); }); }
         function renderCustomCategoryLists() { renderCategoryList(incomeCategoryListAdminEl, incomeCategories, 'income'); renderCategoryList(expenseCategoryListAdminEl, expenseCategories, 'expense'); }
         function addCategory(name, type) { if (!name || name.trim() === '') { showMessage('Tên hạng mục không được để trống.', 'error'); return false; } const newCategoryValue = name.trim(); const newCategory = { value: newCategoryValue, text: newCategoryValue }; if (type === 'income') { if (incomeCategories.some(cat => cat.value.toLowerCase() === newCategoryValue.toLowerCase())) { showMessage('Hạng mục thu này đã tồn tại.', 'error'); return false; } incomeCategories.push(newCategory); } else { if (expenseCategories.some(cat => cat.value.toLowerCase() === newCategoryValue.toLowerCase())) { showMessage('Hạng mục chi này đã tồn tại.', 'error'); return false; } expenseCategories.push(newCategory); } saveUserPreferences(); renderCustomCategoryLists(); populateCategories(); showMessage(`Đã thêm hạng mục "${newCategory.text}"!`, 'success'); return true; }
         function addAccount(name) { if (!name || name.trim() === '') { showMessage('Tên tài khoản không được để trống.', 'error'); return false; } const newAccountName = name.trim(); if (accounts.some(acc => acc.value.toLowerCase() === newAccountName.toLowerCase() || acc.text.toLowerCase() === newAccountName.toLowerCase())) { showMessage('Tài khoản này đã tồn tại.', 'error'); return false; } const newAccount = { value: newAccountName, text: newAccountName }; accounts.push(newAccount); saveUserPreferences(); renderAccountListAdmin(); populateAccountDropdowns(); updateAccountBalances(); showMessage(`Đã thêm tài khoản "${newAccount.text}"!`, 'success'); return true; }
         function populateAccountDropdowns() { if (!accountInput || !toAccountInput) return; const currentFromAccount = accountInput.value; const currentToAccount = toAccountInput.value; accountInput.innerHTML = ''; toAccountInput.innerHTML = ''; if (!accounts || accounts.length === 0) accounts = [...defaultAccounts]; accounts.forEach(acc => { accountInput.add(new Option(acc.text, acc.value)); toAccountInput.add(new Option(acc.text, acc.value)); }); if (accounts.some(acc => acc.value === currentFromAccount)) accountInput.value = currentFromAccount; else if (accounts.length > 0) accountInput.value = accounts[0].value; if (accounts.some(acc => acc.value === currentToAccount)) toAccountInput.value = currentToAccount; else if (accounts.length > 1) toAccountInput.value = accounts[1].value; else if (accounts.length > 0) toAccountInput.value = accounts[0].value; }
         function populateCategories() { if (!categoryInput) return; const selectedTypeRadio = document.querySelector('input[name="type"]:checked'); const selectedType = selectedTypeRadio ? selectedTypeRadio.value : 'Chi'; const currentCategoryValue = categoryInput.value; categoryInput.innerHTML = ''; let categoriesToPopulate = (selectedType === 'Thu') ? incomeCategories : expenseCategories; categoriesToPopulate = categoriesToPopulate.filter(cat => cat.value !== TRANSFER_CATEGORY_IN && cat.value !== TRANSFER_CATEGORY_OUT); if (!categoriesToPopulate || categoriesToPopulate.length === 0) { const defaultCats = (selectedType === 'Thu') ? [...defaultIncomeCategories] : [...defaultExpenseCategories]; categoriesToPopulate = defaultCats.filter(cat => cat.value !== TRANSFER_CATEGORY_IN && cat.value !== TRANSFER_CATEGORY_OUT); } categoriesToPopulate.forEach(category => categoryInput.add(new Option(category.text, category.value))); if (categoriesToPopulate.some(cat => cat.value === currentCategoryValue)) categoryInput.value = currentCategoryValue; else if (categoriesToPopulate.length > 0) categoryInput.value = categoriesToPopulate[0].value; }
         function toggleFormFields() { const selectedTypeRadio = document.querySelector('input[name="type"]:checked'); const selectedType = selectedTypeRadio ? selectedTypeRadio.value : 'Chi'; transactionForm.dataset.transactionMode = selectedType; if (selectedType === 'Transfer') { accountLabel.textContent = 'Từ Tài khoản:'; categoryInput.removeAttribute('required'); toAccountInput.setAttribute('required', ''); } else { accountLabel.textContent = 'Tài khoản:'; categoryInput.setAttribute('required', ''); toAccountInput.removeAttribute('required'); populateCategories(); } }
-		function parseAmountInput(amountStr, currency) { // currency ở đây là giá trị từ form selector
-			if (!amountStr) return 0;
-			// Giả sử bạn đã có hàm normalizeAmountString tốt (ví dụ: normalizeAmountString_final từ lần trước)
-			const normalizedStr = normalizeAmountString(amountStr);
-			let val = parseFloat(normalizedStr);
 
-			if (isNaN(val)) {
-				showMessage('Số tiền không hợp lệ. Vui lòng kiểm tra lại.', 'error');
-				return null; // Trả về null hoặc throw lỗi để dừng xử lý nếu không hợp lệ
-			}
-			if (val < 0) {
-				showMessage('Số tiền không được là số âm.', 'error');
-				return null;
-			}
-
-			// Kiểm tra đơn vị tiền tệ được chọn trên form
-			const selectedCurrencyOnForm = formCurrencySelector.value; // Biến này cần được định nghĩa và trỏ đúng tới select element
-
-			if (selectedCurrencyOnForm === 'USD') {
-				// Nếu nhập USD, thì 'val' là USD.
-				// Giả sử bạn muốn lưu giá trị gốc USD và giá trị quy đổi VND.
-				// Ở đây, hàm này có thể trả về giá trị đã quy đổi sang VND để lưu vào 'amount'.
-				// Hoặc, bạn có thể xử lý việc quy đổi ở nơi khác và hàm này chỉ parse số.
-				// Dựa theo code gốc, có vẻ bạn quy đổi ở đây:
-				val = val * USD_TO_VND_RATE; // USD_TO_VND_RATE cần được định nghĩa
-				// Math.round() sẽ bị bỏ ở cuối
-			} else if (selectedCurrencyOnForm === 'VND') {
-				val = val * 1000; // Áp dụng logic x1000
-				// Math.round() sẽ bị bỏ ở cuối
-			}
-			// Bỏ Math.round(val) để giữ lại phần thập phân (nếu có) sau phép nhân.
-			// Ví dụ: nếu input là 0.0225 (nghìn VND) -> 0.0225 * 1000 = 22.5 VND. Ta muốn giữ 22.5.
-			return val;
-		}
-
+        // --- HÀM XỬ LÝ SUBMIT GIAO DỊCH (CẬP NHẬT CÁCH LƯU originalAmount) ---
         function handleTransactionSubmit(e) {
             e.preventDefault();
             const datetimeValue = datetimeInput.value;
             const typeRadio = document.querySelector('input[name="type"]:checked');
             const type = typeRadio ? typeRadio.value : null;
-            const amountRaw = amountTextInput.value;
-            const currency = formCurrencySelector.value;
+            const amountRaw = amountTextInput.value; // Giá trị thô từ ô input
+            const currency = formCurrencySelector.value; // Đơn vị tiền tệ người dùng chọn
             let categoryValue = (type !== 'Transfer') ? categoryInput.value : null;
             const accountValue = accountInput.value;
             const toAccountValue = (type === 'Transfer') ? toAccountInput.value : null;
             const descriptionValue = descriptionInput.value.trim();
-            const normalizedAmountForOriginal = normalizeAmountString(amountRaw);
-
+            
+            // --- Các kiểm tra đầu vào giữ nguyên ---
             if (!datetimeValue || !type || !amountRaw || !accountValue) { showMessage('Vui lòng điền đầy đủ các trường bắt buộc.', 'error'); return; }
             if (type !== 'Transfer' && !categoryValue) { showMessage('Vui lòng chọn hạng mục.', 'error'); return; }
             if (type === 'Transfer' && !toAccountValue) { showMessage('Vui lòng chọn tài khoản nhận cho giao dịch chuyển tiền.', 'error'); return; }
             if (type === 'Transfer' && accountValue === toAccountValue) { showMessage('Tài khoản chuyển và tài khoản nhận không được trùng nhau.', 'error'); return; }
 
-            let amount = parseAmountInput(amountRaw, currency);
-            if (isNaN(amount) || amount <= 0) { showMessage('Số tiền không hợp lệ hoặc phải lớn hơn 0.', 'error'); return; }
+            // parseAmountInput giờ sẽ trả về giá trị đầy đủ, không còn x1000
+            let amount = parseAmountInput(amountRaw, currency); 
+            if (isNaN(amount) || amount <= 0 && !(type === 'Transfer' && amount === 0) /*Cho phép chuyển 0đ nếu cần*/) { 
+                // Điều chỉnh lại điều kiện amount <=0 nếu muốn cho phép giao dịch 0 đồng
+                // Hiện tại đang là phải > 0
+                 if (amount <= 0 && type !== 'Transfer') { // Chỉ cho phép chuyển tiền 0 đồng, thu/chi phải >0
+                    showMessage('Số tiền không hợp lệ hoặc phải lớn hơn 0.', 'error'); return;
+                 } else if (amount < 0) { // Không cho phép số tiền âm
+                    showMessage('Số tiền không được là số âm.', 'error'); return;
+                 }
+            }
 
             const transactionDateTime = formatIsoDateTime(new Date(datetimeValue));
-            const persistedTransactionType = type;
+            const persistedTransactionType = type; // Loại giao dịch thực tế (Thu/Chi/Transfer)
+
+            // Giá trị số hóa từ ô input, trước khi quy đổi USD (nếu có)
+            // Sẽ được lưu vào originalAmount
+            const rawNumericValue = parseFloat(normalizeAmountString(amountRaw)); 
+            if(isNaN(rawNumericValue)){
+                showMessage('Số tiền nhập vào không hợp lệ.', 'error'); return;
+            }
+
 
             if (editingTransactionId) {
+                // ... (Phần logic sửa giao dịch của bạn giữ nguyên cấu trúc)
+                // Chỉ cần đảm bảo các trường amount, originalAmount, originalCurrency được cập nhật đúng
                 const existingTransactionIndex = transactions.findIndex(t => t.id === editingTransactionId || (t.isTransfer && (t.id.startsWith(editingTransactionId) || t.transferPairId.startsWith(editingTransactionId))));
                 if (existingTransactionIndex === -1 && type !== 'Transfer') { showMessage('Lỗi: Giao dịch gốc để sửa không tìm thấy.', 'error'); editingTransactionId = null; return; }
+                
+                // Xóa giao dịch cũ để thêm lại bản cập nhật
                 if (transactions.find(t => t.id.startsWith(editingTransactionId) && t.isTransfer) || type === 'Transfer') { transactions = transactions.filter(t => !t.id.startsWith(editingTransactionId) && !(t.transferPairId && t.transferPairId.startsWith(editingTransactionId))); } else if (existingTransactionIndex !== -1) { transactions.splice(existingTransactionIndex, 1); }
-                const baseId = editingTransactionId;
+                
+                const baseId = editingTransactionId; // Giữ lại ID gốc nếu là sửa
                 if (type === 'Transfer') {
                     categoryValue = null;
                     const transferOutId = `${baseId}_out_edited_${Date.now()}`;
                     const transferInId = `${baseId}_in_edited_${Date.now()}`;
-                    transactions.push({ id: transferOutId, datetime: transactionDateTime, description: descriptionValue || `Chuyển tiền từ ${accountValue} đến ${toAccountValue}`, category: TRANSFER_CATEGORY_OUT, amount, type: 'Chi', account: accountValue, currency: 'VND', isTransfer: true, transferPairId: transferInId, originalAmount: parseFloat(normalizedAmountForOriginal), originalCurrency: currency });
-                    transactions.push({ id: transferInId, datetime: transactionDateTime, description: descriptionValue || `Nhận tiền từ ${accountValue} vào ${toAccountValue}`, category: TRANSFER_CATEGORY_IN, amount, type: 'Thu', account: toAccountValue, currency: 'VND', isTransfer: true, transferPairId: transferOutId, originalAmount: parseFloat(normalizedAmountForOriginal), originalCurrency: currency });
+                    transactions.push({ id: transferOutId, datetime: transactionDateTime, description: descriptionValue || `Chuyển tiền từ ${accountValue} đến ${toAccountValue}`, category: TRANSFER_CATEGORY_OUT, amount, type: 'Chi', account: accountValue, currency: 'VND', isTransfer: true, transferPairId: transferInId, originalAmount: rawNumericValue, originalCurrency: currency });
+                    transactions.push({ id: transferInId, datetime: transactionDateTime, description: descriptionValue || `Nhận tiền từ ${accountValue} vào ${toAccountValue}`, category: TRANSFER_CATEGORY_IN, amount, type: 'Thu', account: toAccountValue, currency: 'VND', isTransfer: true, transferPairId: transferOutId, originalAmount: rawNumericValue, originalCurrency: currency });
                     showMessage('Giao dịch chuyển tiền đã được cập nhật!', 'success');
                 } else {
-                    transactions.push({ id: baseId, datetime: transactionDateTime, description: descriptionValue, category: categoryValue, amount, type, account: accountValue, currency: 'VND', isTransfer: false, transferPairId: null, originalAmount: parseFloat(normalizedAmountForOriginal), originalCurrency: currency });
+                    transactions.push({ id: baseId, datetime: transactionDateTime, description: descriptionValue, category: categoryValue, amount, type, account: accountValue, currency: 'VND', isTransfer: false, transferPairId: null, originalAmount: rawNumericValue, originalCurrency: currency });
                     showMessage(`Giao dịch ${type === 'Thu' ? 'thu' : 'chi'} đã được cập nhật!`, 'success');
                 }
                 editingTransactionId = null;
-            } else {
+            } else { // Thêm giao dịch mới
                 const newIdBase = Date.now().toString();
                 if (type === 'Transfer') {
                     const transferOutId = `${newIdBase}_out`;
                     const transferInId = `${newIdBase}_in`;
-                    transactions.push({ id: transferOutId, datetime: transactionDateTime, description: descriptionValue || `Chuyển tiền từ ${accountValue} đến ${toAccountValue}`, category: TRANSFER_CATEGORY_OUT, amount, type: 'Chi', account: accountValue, currency: 'VND', isTransfer: true, transferPairId: transferInId, originalAmount: parseFloat(normalizedAmountForOriginal), originalCurrency: currency });
-                    transactions.push({ id: transferInId, datetime: transactionDateTime, description: descriptionValue || `Nhận tiền từ ${accountValue} vào ${toAccountValue}`, category: TRANSFER_CATEGORY_IN, amount, type: 'Thu', account: toAccountValue, currency: 'VND', isTransfer: true, transferPairId: transferOutId, originalAmount: parseFloat(normalizedAmountForOriginal), originalCurrency: currency });
+                    transactions.push({ id: transferOutId, datetime: transactionDateTime, description: descriptionValue || `Chuyển tiền từ ${accountValue} đến ${toAccountValue}`, category: TRANSFER_CATEGORY_OUT, amount, type: 'Chi', account: accountValue, currency: 'VND', isTransfer: true, transferPairId: transferInId, originalAmount: rawNumericValue, originalCurrency: currency });
+                    transactions.push({ id: transferInId, datetime: transactionDateTime, description: descriptionValue || `Nhận tiền từ ${accountValue} vào ${toAccountValue}`, category: TRANSFER_CATEGORY_IN, amount, type: 'Thu', account: toAccountValue, currency: 'VND', isTransfer: true, transferPairId: transferOutId, originalAmount: rawNumericValue, originalCurrency: currency });
                     showMessage('Giao dịch chuyển tiền đã được thêm!', 'success');
                 } else {
-                    transactions.push({ id: newIdBase, datetime: transactionDateTime, description: descriptionValue, category: categoryValue, amount, type, account: accountValue, currency: 'VND', isTransfer: false, transferPairId: null, originalAmount: parseFloat(normalizedAmountForOriginal), originalCurrency: currency });
+                    transactions.push({ id: newIdBase, datetime: transactionDateTime, description: descriptionValue, category: categoryValue, amount, type, account: accountValue, currency: 'VND', isTransfer: false, transferPairId: null, originalAmount: rawNumericValue, originalCurrency: currency });
                     showMessage(`Giao dịch ${type === 'Thu' ? 'thu' : 'chi'} đã được thêm!`, 'success');
                 }
             }
             saveTransactions();
-            populateMonthFilter();
-            applyMainFilter();
-            resetForm(persistedTransactionType);
+            populateMonthFilter(); // Cập nhật bộ lọc tháng (nếu có tháng mới)
+            applyMainFilter();     // Áp dụng lại bộ lọc và render lại tất cả
+            resetForm(persistedTransactionType); // Reset form, giữ lại loại giao dịch vừa chọn
         }
-
+        
+        // --- HÀM RESET FORM (Giữ nguyên) ---
         function resetForm(persistedType = null) { transactionForm.reset(); setDefaultDateTime(); formCurrencySelector.value = 'VND'; if (persistedType) { const radioToSelect = document.querySelector(`input[name="type"][value="${persistedType}"]`); if (radioToSelect) { radioToSelect.checked = true; } } editingTransactionId = null; formTitleEl.textContent = 'Thêm Giao Dịch Mới'; submitButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>Thêm Giao Dịch'; toggleFormFields(); populateAccountDropdowns(); }
-
         function getMonthDisplayText(selectedMonthValue, withParentheses = true) {
             let text;
             if (selectedMonthValue === 'all' || !selectedMonthValue) {
@@ -722,7 +1012,64 @@
             return withParentheses ? `(${text})` : text;
         }
 
-        window.loadTransactionForEdit = function(transactionId) { let transactionToEdit = transactions.find(t => t.id === transactionId); if (!transactionToEdit) { transactionToEdit = transactions.find(t => t.isTransfer && (t.id.startsWith(transactionId) || t.transferPairId.startsWith(transactionId))); if (transactionToEdit && transactionToEdit.isTransfer) { const baseId = transactionToEdit.id.split('_')[0]; const outTransaction = transactions.find(t => t.id.startsWith(baseId) && t.type === 'Chi' && t.isTransfer); const inTransaction = transactions.find(t => t.id.startsWith(baseId) && t.type === 'Thu' && t.isTransfer); if (outTransaction && inTransaction) { datetimeInput.value = formatDateTimeLocalInput(new Date(outTransaction.datetime)); document.getElementById('type-transfer').checked = true; amountTextInput.value = String(outTransaction.originalAmount); formCurrencySelector.value = outTransaction.originalCurrency; descriptionInput.value = outTransaction.description.startsWith("Chuyển tiền từ") ? outTransaction.description : (inTransaction.description.startsWith("Nhận tiền từ") ? inTransaction.description : outTransaction.description); accountInput.value = outTransaction.account; toAccountInput.value = inTransaction.account; editingTransactionId = baseId; } else { showMessage('Lỗi: Không tìm thấy đủ thông tin giao dịch chuyển tiền.', 'error'); return; } } else { showMessage('Lỗi: Không tìm thấy giao dịch.', 'error'); return; } } else { datetimeInput.value = formatDateTimeLocalInput(new Date(transactionToEdit.datetime)); document.querySelector(`input[name="type"][value="${transactionToEdit.type}"]`).checked = true; amountTextInput.value = String(transactionToEdit.originalAmount); formCurrencySelector.value = transactionToEdit.originalCurrency; descriptionInput.value = transactionToEdit.description; accountInput.value = transactionToEdit.account; if (transactionToEdit.type !== 'Transfer') categoryInput.value = transactionToEdit.category; editingTransactionId = transactionId; } formTitleEl.textContent = 'Sửa Giao Dịch'; submitButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>Lưu Thay Đổi`; toggleFormFields(); populateAccountDropdowns(); if (document.querySelector('input[name="type"]:checked').value !== 'Transfer') { populateCategories(); if(transactionToEdit && transactionToEdit.type !== 'Transfer') categoryInput.value = transactionToEdit.category; } const formSection = document.querySelector('.form-section .collapsible-header'); if(formSection && !formSection.classList.contains('active')) formSection.click(); formSection.scrollIntoView({ behavior: 'smooth' }); }
+        // --- HÀM SỬA GIAO DỊCH (CẬP NHẬT CÁCH ĐIỀN `amountTextInput`) ---
+        window.loadTransactionForEdit = function(transactionId) {
+            let transactionToEdit = transactions.find(t => t.id === transactionId);
+            let baseIdForEdit = transactionId; // ID cơ sở để chỉnh sửa
+
+            if (!transactionToEdit) { // Có thể là một phần của giao dịch chuyển tiền
+                const transferPart = transactions.find(t => t.isTransfer && (t.id === transactionId || t.transferPairId === transactionId));
+                if (transferPart) {
+                    baseIdForEdit = transferPart.id.split('_')[0]; // Lấy ID gốc của cặp chuyển tiền
+                    // Tìm cả hai phần của giao dịch chuyển tiền dựa trên baseIdForEdit
+                    const outTx = transactions.find(t => t.id.startsWith(baseIdForEdit) && t.type === 'Chi' && t.isTransfer);
+                    const inTx = transactions.find(t => t.id.startsWith(baseIdForEdit) && t.type === 'Thu' && t.isTransfer);
+                    if (outTx && inTx) {
+                        transactionToEdit = outTx; // Dùng outTx làm cơ sở để điền form, vì nó chứa tài khoản nguồn
+                        datetimeInput.value = formatDateTimeLocalInput(new Date(outTx.datetime));
+                        document.getElementById('type-transfer').checked = true;
+                        
+                        // QUAN TRỌNG: Điền vào ô input số tiền giá trị originalAmount (là giá trị thô người dùng đã nhập)
+                        amountTextInput.value = String(outTx.originalAmount); 
+                        formCurrencySelector.value = outTx.originalCurrency; // Đơn vị tiền tệ gốc khi nhập
+
+                        descriptionInput.value = outTx.description.startsWith("Chuyển tiền từ") ? outTx.description : (inTx.description.startsWith("Nhận tiền từ") ? inTx.description : outTx.description);
+                        accountInput.value = outTx.account;
+                        toAccountInput.value = inTx.account;
+                    } else {
+                        showMessage('Lỗi: Không tìm thấy đủ thông tin giao dịch chuyển tiền để sửa.', 'error'); return;
+                    }
+                } else {
+                    showMessage('Lỗi: Không tìm thấy giao dịch.', 'error'); return;
+                }
+            } else { // Giao dịch thu/chi thông thường
+                datetimeInput.value = formatDateTimeLocalInput(new Date(transactionToEdit.datetime));
+                document.querySelector(`input[name="type"][value="${transactionToEdit.type}"]`).checked = true;
+                
+                // QUAN TRỌNG: Điền vào ô input số tiền giá trị originalAmount
+                amountTextInput.value = String(transactionToEdit.originalAmount);
+                formCurrencySelector.value = transactionToEdit.originalCurrency;
+
+                descriptionInput.value = transactionToEdit.description;
+                accountInput.value = transactionToEdit.account;
+                if (transactionToEdit.type !== 'Transfer') categoryInput.value = transactionToEdit.category;
+            }
+
+            editingTransactionId = baseIdForEdit; // Lưu ID cơ sở để submit biết là đang sửa
+            formTitleEl.textContent = 'Sửa Giao Dịch';
+            submitButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>Lưu Thay Đổi`;
+            toggleFormFields(); // Quan trọng để hiện/ẩn đúng trường cho loại giao dịch
+            populateAccountDropdowns(); // Tải lại danh sách tài khoản
+            if (document.querySelector('input[name="type"]:checked').value !== 'Transfer') {
+                populateCategories(); // Tải lại danh mục nếu không phải chuyển tiền
+                if(transactionToEdit && transactionToEdit.type !== 'Transfer') categoryInput.value = transactionToEdit.category;
+            }
+            const formSection = document.querySelector('.form-section .collapsible-header');
+            if(formSection && !formSection.classList.contains('active')) formSection.click();
+            formSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- CÁC HÀM RENDER, UPDATE CHARTS, FILTER (Giữ nguyên logic, chúng sẽ dùng giá trị `amount` đã đúng) ---
         window.deleteTransaction = function(transactionId) { if (!confirm('Bạn có chắc muốn xóa giao dịch này?')) return; const transactionToDelete = transactions.find(t => t.id === transactionId); if (transactionToDelete && transactionToDelete.isTransfer) { transactions = transactions.filter(t => t.id !== transactionToDelete.id && t.transferPairId !== transactionToDelete.id); } else { const baseIdMatch = transactionId.match(/^(\d+)(_out|_in)?$/); if(baseIdMatch && baseIdMatch[1]){ const baseId = baseIdMatch[1]; transactions = transactions.filter(t => !t.id.startsWith(baseId) && !(t.transferPairId && t.transferPairId.startsWith(baseId))); } else { transactions = transactions.filter(t => t.id !== transactionId); } } saveTransactions(); applyMainFilter(); showMessage('Đã xóa giao dịch.', 'success'); }
 
         function renderMainTransactions(txsToRender = transactions) {
@@ -775,25 +1122,181 @@
         function updateMainSummaryAndChart(summaryTransactions = transactions) { let totalIncome = 0; let totalExpenses = 0; summaryTransactions.forEach(tx => { if (tx.type === 'Thu') totalIncome += tx.amount; else if (tx.type === 'Chi') totalExpenses += tx.amount; }); const selectedMonthValue = filterMonthSelect.value; const monthDisplayTextForLabels = getMonthDisplayText(selectedMonthValue, true); const summaryIncomeMonthDisplayEl = document.getElementById('summary-income-month-display'); if (summaryIncomeMonthDisplayEl) summaryIncomeMonthDisplayEl.textContent = monthDisplayTextForLabels; const summaryExpenseMonthDisplayEl = document.getElementById('summary-expense-month-display'); if (summaryExpenseMonthDisplayEl) summaryExpenseMonthDisplayEl.textContent = monthDisplayTextForLabels; const summaryBalanceMonthDisplayEl = document.getElementById('summary-balance-month-display'); if (summaryBalanceMonthDisplayEl) summaryBalanceMonthDisplayEl.textContent = monthDisplayTextForLabels; totalIncomeEl.textContent = formatCurrency(totalIncome); totalExpensesEl.textContent = formatCurrency(totalExpenses); currentBalanceEl.textContent = formatCurrency(totalIncome - totalExpenses); currentBalanceEl.className = (totalIncome - totalExpenses >= 0) ? 'text-blue-600 font-bold' : 'text-red-600 font-bold'; renderOrUpdateMainChart(totalIncome, totalExpenses); }
         function renderOrUpdateMainChart(income, expenses) { const data = { labels: ['Tổng Thu', 'Tổng Chi'], datasets: [{ label: 'Số tiền (VNĐ)', data: [income, expenses], backgroundColor: [categoryColors[1], categoryColors[0]], }] }; if (incomeExpenseChart) { incomeExpenseChart.data = data; incomeExpenseChart.update(); } else { incomeExpenseChart = new Chart(incomeExpenseChartCanvas, { type: 'bar', data, options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false } } } }); } }
 
-        function renderExpenseCategoryChartAndList(transactionsToAnalyze = transactions) {
-            const expenseData = {}; let totalExpenses = 0;
-            transactionsToAnalyze.filter(tx => tx.type === 'Chi').forEach(tx => { expenseData[tx.category] = (expenseData[tx.category] || 0) + tx.amount; totalExpenses += tx.amount; });
-            if (totalExpenses === 0) { noExpenseDataEl.style.display = 'block'; expenseCategoryListContainerEl.innerHTML = ''; if(expenseCategoryChart) { expenseCategoryChart.destroy(); expenseCategoryChart = null; } document.getElementById('expenseCategoryChart').style.display = 'none'; return; }
-            noExpenseDataEl.style.display = 'none'; document.getElementById('expenseCategoryChart').style.display = 'block';
-            const labels = Object.keys(expenseData); const dataValues = Object.values(expenseData); const backgroundColors = labels.map((_, i) => categoryColors[i % categoryColors.length]);
-            const chartData = { labels, datasets: [{ data: dataValues, backgroundColor: backgroundColors }] };
-            if (expenseCategoryChart) { expenseCategoryChart.data = chartData; expenseCategoryChart.update(); }
-            else { expenseCategoryChart = new Chart(expenseCategoryChartCanvas, { type: 'doughnut', data: chartData, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } }, tooltip: { callbacks: { label: ctx => `${ctx.label}: ${formatCurrency(ctx.raw)} (${((ctx.raw / totalExpenses) * 100).toFixed(1)}%)` } }, datalabels: { formatter: (value, ctx) => { const percentage = (value / totalExpenses) * 100; return percentage > 5 ? percentage.toFixed(0) + '%' : ''; }, color: '#fff', font: { weight: 'bold' } } } } }); }
-            expenseCategoryListContainerEl.innerHTML = '';
-            labels.forEach((label, index) => {
-                const amount = expenseData[label];
-                const percentage = totalExpenses > 0 ? ((amount / totalExpenses) * 100).toFixed(1) : "0.0";
-                const itemEl = document.createElement('div');
-                itemEl.classList.add('expense-category-item');
-                itemEl.innerHTML = `<div><span class="category-color-swatch" style="background-color: ${backgroundColors[index]}"></span><span class="category-name">${label}</span></div><div class="flex items-center"><span class="category-amount">${formatCurrency(amount)}</span><span class="category-percentage">${percentage}%</span></div>`;
-                expenseCategoryListContainerEl.appendChild(itemEl);
-            });
-        }
+		function renderExpenseCategoryChartAndList(transactionsToAnalyze = transactions) {
+			const expenseTransactions = transactionsToAnalyze.filter(t => t.type === 'Chi' && !t.isTransfer);
+			const expenseByCategory = {};
+			let totalExpensesInFilteredPeriod = 0; // Đổi tên biến để rõ ràng hơn
+
+			expenseTransactions.forEach(tx => {
+				const category = tx.category || "Chưa phân loại"; // Xử lý hạng mục null/undefined
+				expenseByCategory[category] = (expenseByCategory[category] || 0) + tx.amount;
+				totalExpensesInFilteredPeriod += tx.amount;
+			});
+
+			// Xử lý khi không có dữ liệu chi tiêu để vẽ biểu đồ
+			if (totalExpensesInFilteredPeriod === 0) {
+				if (expensePieChartContainer) expensePieChartContainer.style.display = 'none';
+				if (expenseBarChartContainer) expenseBarChartContainer.style.display = 'none';
+				if (noExpenseDataChartEl) noExpenseDataChartEl.style.display = 'block';
+
+				if (expenseCategoryChart) { expenseCategoryChart.destroy(); expenseCategoryChart = null; }
+				if (expenseCategoryBarChart) { expenseCategoryBarChart.destroy(); expenseCategoryBarChart = null; }
+
+				// Xử lý danh sách chi tiết (có thể bạn đã có)
+				if (expenseCategoryListContainerEl) expenseCategoryListContainerEl.innerHTML = ''; // Hoặc hiển thị thông báo
+				if (noExpenseDataListEl) noExpenseDataListEl.style.display = 'block';
+				return;
+			}
+
+			// Nếu có dữ liệu, ẩn thông báo "không có dữ liệu"
+			if (noExpenseDataChartEl) noExpenseDataChartEl.style.display = 'none';
+			if (noExpenseDataListEl) noExpenseDataListEl.style.display = 'none';
+
+			const sortedCategoriesArray = Object.entries(expenseByCategory).sort(([, a], [, b]) => b - a);
+			const categoryLabels = sortedCategoriesArray.map(entry => entry[0]);
+			const categoryData = sortedCategoriesArray.map(entry => entry[1]);
+			const backgroundColors = categoryLabels.map((_, i) => categoryColors[i % categoryColors.length]);
+
+			// Lấy các giá trị màu sắc dựa trên theme hiện tại (nên được định nghĩa trong updateAllChartColorsForTheme và truyền vào hoặc lấy từ đó)
+			const currentThemeIsDark = document.body.classList.contains(DARK_MODE_CLASS);
+			const pieBorderColor = '#FFFFFF'; // <-- LUÔN LÀ MÀU TRẮNG
+			const legendAndTickColor = currentThemeIsDark ? '#9ca3af' : '#6b7280';
+			const gridLineColor = currentThemeIsDark ? 'rgba(107, 114, 128, 0.2)' : 'rgba(209, 213, 219, 0.5)';
+			const datalabelPieColor = '#ffffff';
+			const datalabelBarColor = currentThemeIsDark ? '#e0e0e0' : '#333333';
+
+			// 1. BIỂU ĐỒ TRÒN (PIE/DOUGHNUT)
+			const pieChartData = {
+				labels: categoryLabels,
+				datasets: [{
+					data: categoryData,
+					backgroundColor: backgroundColors,
+					borderColor: pieBorderColor, // <--- THUỘC TÍNH CẦN THAY ĐỔI
+					borderWidth: 2 // Bạn có thể điều chỉnh độ dày của viền ở đây
+				}]
+			};
+			
+			const pieChartOptions = {
+				responsive: true, maintainAspectRatio: false,
+				plugins: {
+					legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15, color: legendAndTickColor } },
+					tooltip: {
+						callbacks: {
+							label: function(context) {
+								let label = context.label || '';
+								if (label) { label += ': '; }
+								const value = context.raw;
+								label += formatCurrency(value, 'VND');
+								if (totalExpensesInFilteredPeriod > 0) {
+									const percentage = (value / totalExpensesInFilteredPeriod * 100).toFixed(1);
+									label += ` (${percentage}%)`;
+								}
+								return label;
+							}
+						}
+					},
+					datalabels: {
+						formatter: (value, ctx) => {
+							if (totalExpensesInFilteredPeriod === 0) return '';
+							const percentage = (value / totalExpensesInFilteredPeriod) * 100;
+							return percentage > 5 ? percentage.toFixed(0) + '%' : '';
+						},
+						color: datalabelPieColor, font: { weight: 'bold' }
+					}
+				}
+			};
+
+			if (expenseCategoryChart) {
+				expenseCategoryChart.data = pieChartData;
+				expenseCategoryChart.options.plugins.legend.labels.color = legendAndTickColor;
+				expenseCategoryChart.data.datasets[0].borderColor = pieBorderColor; // Quan trọng khi theme thay đổi
+				expenseCategoryChart.options.plugins.datalabels.color = datalabelPieColor; // Cập nhật màu datalabel
+				expenseCategoryChart.update();
+			} else {
+				if (expenseCategoryChartCanvas) { // Chỉ tạo nếu canvas tồn tại
+					 expenseCategoryChart = new Chart(expenseCategoryChartCanvas, { type: 'doughnut', data: pieChartData, options: pieChartOptions, plugins: [ChartDataLabels] });
+				} else {
+					console.error("Canvas for expenseCategoryChart not found!");
+				}
+			}
+
+			// 2. BIỂU ĐỒ CỘT NGANG (BAR)
+			const barChartData = {
+				labels: categoryLabels,
+				datasets: [{
+					label: 'Số tiền chi', data: categoryData, backgroundColor: backgroundColors,
+					borderColor: backgroundColors, // Hoặc màu đậm hơn: backgroundColors.map(c => Chart.helpers.color(c).darken(0.1).rgbString()) - API cũ
+					borderWidth: 1
+				}]
+			};
+			const barChartOptions = {
+				indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+				scales: {
+					x: {
+						beginAtZero: true, title: { display: true, text: 'Số tiền (VNĐ)', color: legendAndTickColor },
+						ticks: { callback: function(value) { return formatCurrency(value, 'VND').replace(/\s*VNĐ$/, ''); }, color: legendAndTickColor },
+						grid: { color: gridLineColor }
+					},
+					y: {
+						ticks: { color: legendAndTickColor },
+						grid: { display: false }
+					}
+				},
+				plugins: {
+					legend: { display: false },
+					tooltip: {
+						callbacks: { /* ... như trên ... */ }
+					},
+					datalabels: {
+						anchor: 'end', align: 'end', formatter: (value) => formatCurrency(value, 'VND'),
+						color: datalabelBarColor, font: { weight: 'bold', size: 10 }, padding: { left: 4 }
+					}
+				}
+			};
+
+			if (expenseCategoryBarChart) {
+				expenseCategoryBarChart.data = barChartData;
+				// Cập nhật các màu sắc options
+				expenseCategoryBarChart.options.scales.x.title.color = legendAndTickColor;
+				expenseCategoryBarChart.options.scales.x.ticks.color = legendAndTickColor;
+				expenseCategoryBarChart.options.scales.x.grid.color = gridLineColor;
+				expenseCategoryBarChart.options.scales.y.ticks.color = legendAndTickColor;
+				expenseCategoryBarChart.options.plugins.datalabels.color = datalabelBarColor;
+				expenseCategoryBarChart.update();
+			} else {
+				if (expenseCategoryBarCtx) { // Chỉ tạo nếu context tồn tại
+					expenseCategoryBarChart = new Chart(expenseCategoryBarCtx, { type: 'bar', data: barChartData, options: barChartOptions, plugins: [ChartDataLabels] });
+				} else {
+					console.error("Canvas context for expenseCategoryBarChart not found!");
+				}
+			}
+
+			// Cập nhật danh sách chi tiết (giữ nguyên logic của bạn, đảm bảo dùng sortedCategoriesArray)
+			if(expenseCategoryListContainerEl && totalExpensesInFilteredPeriod > 0) {
+				expenseCategoryListContainerEl.innerHTML = '';
+				let listHTML = '<ul class="space-y-2">';
+				sortedCategoriesArray.forEach(([label, amount], index) => {
+					const percentage = (amount / totalExpensesInFilteredPeriod * 100).toFixed(1);
+					const color = backgroundColors[index % backgroundColors.length];
+					listHTML += `<li class="flex justify-between items-center text-sm">
+									<div class="flex items-center">
+										<span class="inline-block w-3 h-3 rounded-full mr-2" style="background-color: ${color}"></span>
+										<span>${label}</span>
+									</div>
+									<div class="text-right">
+										<span class="font-semibold">${formatCurrency(amount)}</span>
+										<span class="text-gray-500 dark:text-gray-400 ml-2">(${percentage}%)</span>
+									</div>
+								 </li>`;
+				});
+				listHTML += '</ul>';
+				expenseCategoryListContainerEl.innerHTML = listHTML;
+			} else if (expenseCategoryListContainerEl) {
+				expenseCategoryListContainerEl.innerHTML = ''; // Xóa nếu không có data
+			}
+
+			toggleExpenseChartDisplay(); // Gọi để hiển thị đúng biểu đồ
+		}
 
         function updateAccountBalances() {
             accountBalanceListEl.innerHTML = '<h3>Số Dư Theo Tài Khoản (Tổng thể - VNĐ):</h3>'; const balances = {};
@@ -813,7 +1316,76 @@
         function getPastDate(daysAgo) { const date = new Date(); date.setDate(date.getDate() - daysAgo); date.setHours(0, 0, 0, 0); return date; }
         function renderLast7DaysChart() { const today = new Date(); today.setHours(23,59,59,999); const sevenDaysAgo = getPastDate(6); const dailyExpenses = {}; const labels = []; for (let i = 0; i < 7; i++) { const d = new Date(sevenDaysAgo); d.setDate(d.getDate() + i); const dateString = d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }); labels.push(dateString); dailyExpenses[dateString] = 0; } transactions.filter(tx => { const txDate = new Date(tx.datetime); return tx.type === 'Chi' && txDate >= sevenDaysAgo && txDate <= today; }).forEach(tx => { const dateString = new Date(tx.datetime).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }); if (dailyExpenses[dateString] !== undefined) dailyExpenses[dateString] += tx.amount; }); const dataValues = labels.map(label => dailyExpenses[label]); const data = { labels: labels, datasets: [{ label: 'Chi tiêu hàng ngày (VNĐ)', data: dataValues, borderColor: categoryColors[3], backgroundColor: 'transparent', tension: 0.1, fill: false }] }; if (last7DaysChart) { last7DaysChart.data = data; last7DaysChart.update(); } else { last7DaysChart = new Chart(last7DaysChartCanvas, { type: 'line', data, options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false } } } }); } }
         function renderMonthComparisonChart() { const currentMonthFilter = filterMonthSelect.value; if (!currentMonthFilter || currentMonthFilter === 'all') return; const [currentYear, currentMonthNum] = currentMonthFilter.split('-').map(Number); let prevYear = currentYear; let prevMonthNum = currentMonthNum - 1; if (prevMonthNum === 0) { prevMonthNum = 12; prevYear--; } const prevMonthFilter = `${prevYear}-${String(prevMonthNum).padStart(2, '0')}`; let currentMonthIncome = 0, currentMonthExpenses = 0, prevMonthIncome = 0, prevMonthExpenses = 0; transactions.forEach(tx => { const txMonth = tx.datetime.substring(0, 7); if (txMonth === currentMonthFilter) { if (tx.type === 'Thu') currentMonthIncome += tx.amount; else if (tx.type === 'Chi') currentMonthExpenses += tx.amount; } else if (txMonth === prevMonthFilter) { if (tx.type === 'Thu') prevMonthIncome += tx.amount; else if (tx.type === 'Chi') prevMonthExpenses += tx.amount; } }); const data = { labels: ['Tháng Trước', 'Tháng Này'], datasets: [ { label: 'Tổng Thu', data: [prevMonthIncome, currentMonthIncome], backgroundColor: categoryColors[1] }, { label: 'Tổng Chi', data: [prevMonthExpenses, currentMonthExpenses], backgroundColor: categoryColors[0] } ] }; if (monthComparisonChart) { monthComparisonChart.data = data; monthComparisonChart.update(); } else { monthComparisonChart = new Chart(monthComparisonChartCanvas, { type: 'bar', data, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'x', plugins: { datalabels: { display: false } } } }); } }
-        function updateDetailedStatisticsTable(transactionsToAnalyze) { let totalIncome = 0; let totalExpense = 0; let incomeTxCount = 0; let expenseTxCount = 0; const expenseByCategory = {}; transactionsToAnalyze.forEach(tx => { if (tx.type === 'Thu') { totalIncome += tx.amount; incomeTxCount++; } else if (tx.type === 'Chi') { totalExpense += tx.amount; expenseTxCount++; if (tx.category) { expenseByCategory[tx.category] = (expenseByCategory[tx.category] || 0) + tx.amount; } } }); const netCashflow = totalIncome - totalExpense; let topExpenseCategoryName = '-'; let topExpenseCategoryAmount = 0; if (Object.keys(expenseByCategory).length > 0) { topExpenseCategoryName = Object.keys(expenseByCategory).reduce((a, b) => expenseByCategory[a] > expenseByCategory[b] ? a : b); topExpenseCategoryAmount = expenseByCategory[topExpenseCategoryName]; } document.getElementById('stats-total-income').textContent = formatCurrency(totalIncome); document.getElementById('stats-total-expense').textContent = formatCurrency(totalExpense); const statsNetCashflowEl = document.getElementById('stats-net-cashflow'); statsNetCashflowEl.textContent = formatCurrency(netCashflow); statsNetCashflowEl.classList.remove('text-blue-600', 'text-red-600'); statsNetCashflowEl.classList.add(netCashflow >= 0 ? 'text-blue-600' : 'text-red-600'); document.getElementById('stats-income-tx-count').textContent = incomeTxCount; document.getElementById('stats-expense-tx-count').textContent = expenseTxCount; document.getElementById('stats-top-expense-cat').textContent = topExpenseCategoryName; document.getElementById('stats-top-expense-cat-amount').textContent = formatCurrency(topExpenseCategoryAmount); const selectedMonthForStatsTitle = filterMonthSelect.value; const statsTableMonthDisplayText = getMonthDisplayText(selectedMonthForStatsTitle, false); const statsTableMonthDisplayEl = document.getElementById('stats-table-month-display'); if (statsTableMonthDisplayEl) { statsTableMonthDisplayEl.textContent = `(${statsTableMonthDisplayText})`; } }
+		function updateDetailedStatisticsTable(transactionsToAnalyze) {
+			let totalIncome = 0;
+			let totalExpense = 0;
+			let incomeTxCount = 0;
+			let expenseTxCount = 0;
+			const nonTransferExpenseByCategory = {}; // Để tính hạng mục chi nhiều nhất không bao gồm chuyển tiền
+
+			transactionsToAnalyze.forEach(tx => {
+				if (tx.type === 'Thu') {
+					totalIncome += tx.amount;
+					incomeTxCount++;
+				} else if (tx.type === 'Chi') {
+					totalExpense += tx.amount; // Tổng chi vẫn tính cả tiền chuyển đi
+					expenseTxCount++;
+					// Chỉ tính vào nonTransferExpenseByCategory nếu đó là chi tiêu thực tế (không phải isTransfer)
+					if (tx.category && !tx.isTransfer) {
+						nonTransferExpenseByCategory[tx.category] = (nonTransferExpenseByCategory[tx.category] || 0) + tx.amount;
+					}
+				}
+			});
+
+			const netCashflow = totalIncome - totalExpense;
+
+			let topExpenseCategoryName = '-';
+			let topExpenseCategoryAmount = 0;
+
+			if (Object.keys(nonTransferExpenseByCategory).length > 0) {
+				topExpenseCategoryName = Object.keys(nonTransferExpenseByCategory).reduce((a, b) => nonTransferExpenseByCategory[a] > nonTransferExpenseByCategory[b] ? a : b);
+				topExpenseCategoryAmount = nonTransferExpenseByCategory[topExpenseCategoryName];
+			}
+
+			// Hàm nhỏ để cập nhật textContent an toàn
+			const setText = (id, value) => {
+				const el = document.getElementById(id);
+				if (el) el.textContent = value;
+				else console.warn(`Element with ID '${id}' not found for statistics table.`);
+			};
+
+			setText('stats-total-income', formatCurrency(totalIncome));
+			setText('stats-total-expense', formatCurrency(totalExpense));
+
+			const statsNetCashflowEl = document.getElementById('stats-net-cashflow');
+			if (statsNetCashflowEl) {
+				statsNetCashflowEl.textContent = formatCurrency(netCashflow);
+				// Xóa các class màu cũ của Tailwind trước khi thêm class mới
+				statsNetCashflowEl.classList.remove('text-blue-600', 'dark:text-blue-400', 'text-red-600', 'dark:text-red-400');
+				if (netCashflow >= 0) {
+					statsNetCashflowEl.classList.add('text-blue-600', 'dark:text-blue-400');
+				} else {
+					statsNetCashflowEl.classList.add('text-red-600', 'dark:text-red-400');
+				}
+			} else {
+				console.warn("Element with ID 'stats-net-cashflow' not found.");
+			}
+
+			setText('stats-income-tx-count', incomeTxCount);
+			setText('stats-expense-tx-count', expenseTxCount);
+			setText('stats-top-expense-cat', topExpenseCategoryName);
+			setText('stats-top-expense-cat-amount', formatCurrency(topExpenseCategoryAmount));
+
+			// Cập nhật tháng hiển thị trong tiêu đề bảng
+			const selectedMonthForStatsTitle = filterMonthSelect.value; // Đảm bảo filterMonthSelect đã được khai báo
+			const statsTableMonthDisplayText = getMonthDisplayText(selectedMonthForStatsTitle, false);
+			const statsTableMonthDisplayEl = document.getElementById('stats-table-month-display');
+			if (statsTableMonthDisplayEl) {
+				statsTableMonthDisplayEl.textContent = `(${statsTableMonthDisplayText})`;
+			} else {
+				console.warn("Element with ID 'stats-table-month-display' not found.");
+			}
+		}
         function populateMonthFilter() { const months = new Set(); transactions.forEach(tx => months.add(tx.datetime.substring(0, 7))); const sortedMonths = Array.from(months).sort().reverse(); filterMonthSelect.innerHTML = '<option value="all">Tất cả các tháng</option>'; sortedMonths.forEach(monthStr => { const [year, month] = monthStr.split('-'); filterMonthSelect.add(new Option(`Tháng ${month}/${year}`, monthStr)); }); const currentMonthFormatted = new Date().toISOString().substring(0, 7); if (sortedMonths.includes(currentMonthFormatted)) filterMonthSelect.value = currentMonthFormatted; else if (sortedMonths.length > 0) filterMonthSelect.value = sortedMonths[0]; else filterMonthSelect.value = "all"; }
         function filterTransactionsByMonth() { applyMainFilter(); }
         function applyMainFilter() { const selectedMonth = filterMonthSelect.value; let filteredTransactions = (selectedMonth === 'all') ? [...transactions] : transactions.filter(tx => tx.datetime && tx.datetime.startsWith(selectedMonth)); const monthDisplayForTitles = getMonthDisplayText(selectedMonth, false); const expenseBreakdownTitleTextEl = document.getElementById('expense-breakdown-title-text'); if (expenseBreakdownTitleTextEl) { expenseBreakdownTitleTextEl.textContent = `Phân Loại Chi Tiêu ${monthDisplayForTitles} - VNĐ`; } const incomeExpenseChartTitleEl = document.getElementById('income-expense-chart-title'); if (incomeExpenseChartTitleEl) { incomeExpenseChartTitleEl.textContent = `Biểu Đồ Thu vs Chi ${monthDisplayForTitles} - VNĐ`; } renderMainTransactions(filteredTransactions); updateAllSummariesAndCharts(filteredTransactions); updateDetailedStatisticsTable(filteredTransactions); }
@@ -873,64 +1445,168 @@
         function exportData() { const dataToExport = { transactions, incomeCategories, expenseCategories, accounts }; const dataStr = JSON.stringify(dataToExport, null, 2); const blob = new Blob([dataStr], {type: "application/json"}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `financial_data_${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); showMessage('Dữ liệu đã được xuất!', 'success'); }
         function handleImportFile(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const importedData = JSON.parse(e.target.result); if (importedData.transactions && importedData.incomeCategories && importedData.expenseCategories && importedData.accounts) { if (!confirm('Nhập dữ liệu sẽ ghi đè toàn bộ dữ liệu hiện tại. Bạn có chắc chắn muốn tiếp tục?')) { importFileInput.value = ''; return; } transactions = importedData.transactions; incomeCategories = importedData.incomeCategories; expenseCategories = importedData.expenseCategories; accounts = importedData.accounts; saveTransactions(); saveUserPreferences(); initializeApp(); showMessage('Dữ liệu đã được nhập thành công!', 'success'); } else { showMessage('Lỗi: Định dạng file không hợp lệ.', 'error'); } } catch (error) { showMessage(`Lỗi khi nhập file: ${error.message}`, 'error'); console.error("Import error:", error); } finally { importFileInput.value = ''; } }; reader.readAsText(file); }
 
-        function initializeApp() {
-            loadThemePreference();
-            loadUserPreferences();
-            formCurrencySelector.value = 'VND';
-            setDefaultDateTime();
-            setDefaultComparisonYear();
-            document.getElementById('type-chi').checked = true;
-            populateAccountDropdowns();
-            toggleFormFields();
-            renderCustomCategoryLists();
-            renderAccountListAdmin();
-            populateMonthFilter();
-            applyMainFilter();
-            populateComparisonWeekFilter();
-            updateWeeklyComparisonDisplay();
 
-            const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
-            collapsibleHeaders.forEach(header => {
-                const contentId = header.dataset.collapsibleTarget;
-                const content = document.getElementById(contentId);
-                if (!content) {
-                    console.error(`Lỗi: Không tìm thấy phần tử nội dung với ID '${contentId}' cho header:`, header);
-                    return;
-                }
-                const storedState = localStorage.getItem(`collapsibleState_${contentId}`);
-                const defaultOpen = header.classList.contains('active');
-                let shouldBeActive;
-                if (storedState === 'expanded') { shouldBeActive = true; }
-                else if (storedState === 'collapsed') { shouldBeActive = false; }
-                else { shouldBeActive = defaultOpen; }
+        // --- HÀM KHỞI TẠO ỨNG DỤNG ---
 
-                if (shouldBeActive) { content.classList.add('active'); header.classList.add('active'); }
-                else { content.classList.remove('active'); header.classList.remove('active'); }
+		function initializeApp() {
+			console.log("[Debug] initializeApp CALLED");
+			// migrateOriginalAmountsForOldVNDTransactions(); // Cân nhắc việc di chuyển dữ liệu
 
-                header.addEventListener('click', () => {
-                    const isActive = content.classList.contains('active');
-                    localStorage.setItem(`collapsibleState_${contentId}`, !isActive ? 'expanded' : 'collapsed');
-                    content.classList.toggle('active');
-                    header.classList.toggle('active');
-                });
-            });
-        }
+			// Quan trọng: loadThemePreference() phải được gọi RẤT SỚM,
+			// trước khi bất kỳ biểu đồ nào được khởi tạo hoặc DOM được thay đổi dựa trên theme.
+			loadThemePreference();
+			loadUserPreferences();
 
-        transactionForm.addEventListener('submit', handleTransactionSubmit);
-        filterMonthSelect.addEventListener('change', filterTransactionsByMonth);
-        typeRadioButtons.forEach(radio => radio.addEventListener('change', toggleFormFields));
-        filterComparisonYearInput.addEventListener('change', () => { populateComparisonWeekFilter(); updateWeeklyComparisonDisplay(); });
-        filterComparisonYearInput.addEventListener('input', populateComparisonWeekFilter);
-        filterComparisonWeekSelect.addEventListener('change', updateWeeklyComparisonDisplay);
-        exportButton.addEventListener('click', exportData);
-        if (exportCsvButton) exportCsvButton.addEventListener('click', exportToCSV);
-        importButton.addEventListener('click', () => importFileInput.click());
-        importFileInput.addEventListener('change', handleImportFile);
-        addIncomeCategoryButton.addEventListener('click', () => { if (addCategory(newIncomeCategoryNameInput.value, 'income')) newIncomeCategoryNameInput.value = ''; });
-        addExpenseCategoryButton.addEventListener('click', () => { if (addCategory(newExpenseCategoryNameInput.value, 'expense')) newExpenseCategoryNameInput.value = ''; });
-        if (addAccountButton) { addAccountButton.addEventListener('click', () => { if (addAccount(newAccountNameInput.value)) { newAccountNameInput.value = ''; } }); }
-        if (darkModeToggleCheckbox) { darkModeToggleCheckbox.addEventListener('change', toggleTheme); }
+			// Thiết lập các giá trị mặc định cho form
+			if(formCurrencySelector) formCurrencySelector.value = 'VND';
+			setDefaultDateTime();
+			setDefaultComparisonYear();
+			const typeChiRadio = document.getElementById('type-chi');
+			if (typeChiRadio) typeChiRadio.checked = true;
 
+			// Populate các dropdown và render list ban đầu
+			populateAccountDropdowns();
+			toggleFormFields(); // Hàm này có thể gọi populateCategories()
+			renderCustomCategoryLists();
+			renderAccountListAdmin();
+
+			populateMonthFilter();
+			// applyMainFilter sẽ gọi updateAllSummariesAndCharts,
+			// và updateAllSummariesAndCharts sẽ gọi renderExpenseCategoryChartAndList (bao gồm cả render 2 biểu đồ)
+			applyMainFilter();
+
+			populateComparisonWeekFilter();
+			updateWeeklyComparisonDisplay();
+
+			// XỬ LÝ COLLAPSIBLE CHO CÁC SECTION LỚN
+			const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
+			collapsibleHeaders.forEach(header => {
+				const contentId = header.dataset.collapsibleTarget;
+				const content = document.getElementById(contentId);
+				if (!content) {
+					console.error(`[Debug] Collapsible Error: Content not found for ID '${contentId}'`, header);
+					return;
+				}
+				const storedState = localStorage.getItem(`collapsibleState_${contentId}`);
+				const defaultOpen = header.classList.contains('active');
+				let shouldBeActive = (storedState === 'expanded') ? true : (storedState === 'collapsed') ? false : defaultOpen;
+
+				// Áp dụng trạng thái ban đầu cho section lớn (không có maxHeight animation trong ví dụ này)
+				if (shouldBeActive) {
+					content.classList.add('active');
+					header.classList.add('active');
+				} else {
+					content.classList.remove('active');
+					header.classList.remove('active');
+				}
+
+				header.addEventListener('click', () => {
+					const isCurrentlyActive = content.classList.contains('active');
+					localStorage.setItem(`collapsibleState_${contentId}`, isCurrentlyActive ? 'collapsed' : 'expanded');
+					content.classList.toggle('active');
+					header.classList.toggle('active');
+				});
+			});
+
+			// XỬ LÝ COLLAPSIBLE CHO CÁC DANH SÁCH TRONG "TÙY CHỈNH HẠNG MỤC" (với maxHeight animation)
+			const listHeaders = document.querySelectorAll('.collapsible-list-header');
+			listHeaders.forEach(header => {
+				const contentId = header.dataset.collapsibleTarget;
+				const contentList = document.getElementById(contentId);
+				if (!contentList) {
+					console.error(`[Debug] Collapsible List Error: Content UL not found for ID '${contentId}'`, header);
+					return;
+				}
+				if (header.classList.contains('active')) {
+					if (!contentList.classList.contains('active')) contentList.classList.add('active');
+					// Dùng setTimeout để đảm bảo DOM đã render và scrollHeight được tính đúng,
+					// nhất là khi section cha của nó cũng có thể đang collapsible.
+					setTimeout(() => {
+						if (contentList.classList.contains('active')) contentList.style.maxHeight = contentList.scrollHeight + "px";
+					}, 100); // Tăng nhẹ delay nếu cần
+				} else {
+					if (contentList.classList.contains('active')) contentList.classList.remove('active');
+					contentList.style.maxHeight = null;
+				}
+				header.addEventListener('click', () => {
+					header.classList.toggle('active');
+					contentList.classList.toggle('active');
+					if (contentList.classList.contains('active')) {
+						contentList.style.maxHeight = contentList.scrollHeight + "px";
+					} else {
+						contentList.style.maxHeight = null;
+					}
+				});
+			});
+
+			// SỰ KIỆN CHO BỘ CHỌN KIỂU BIỂU ĐỒ CHI TIÊU
+			if (expenseChartTypeSelector) {
+				expenseChartTypeSelector.addEventListener('change', toggleExpenseChartDisplay);
+				// Không cần gọi toggleExpenseChartDisplay() ở đây nữa,
+				// vì renderExpenseCategoryChartAndList sẽ được gọi thông qua applyMainFilter -> updateAllSummariesAndCharts
+				// và nó sẽ tự gọi toggleExpenseChartDisplay ở cuối.
+			} else {
+				console.warn("[Debug] expenseChartTypeSelector not found.");
+			}
+			
+			// NÚT THÊM 000
+			if (addTripleZeroButton && amountTextInput) {
+				addTripleZeroButton.addEventListener('click', function() {
+					const currentValue = amountTextInput.value.trim();
+					if (currentValue === "0") {
+						amountTextInput.value = "000";
+					} else if (currentValue === "" || !isNaN(parseFloat(normalizeAmountString(currentValue)))) {
+						amountTextInput.value = currentValue + '000';
+					}
+					amountTextInput.focus();
+				});
+			}
+
+			// ĐĂNG KÝ CÁC EVENT LISTENERS KHÁC
+			if(transactionForm) transactionForm.addEventListener('submit', handleTransactionSubmit);
+			if(filterMonthSelect) filterMonthSelect.addEventListener('change', filterTransactionsByMonth);
+			if(typeRadioButtons) typeRadioButtons.forEach(radio => {
+				radio.addEventListener('change', () => {
+					toggleFormFields(); 
+					if (document.querySelector('input[name="type"]:checked')?.value !== 'Transfer') {
+						populateCategories();
+					}
+				});
+			});
+			if(filterComparisonYearInput) {
+				filterComparisonYearInput.addEventListener('change', () => { populateComparisonWeekFilter(); updateWeeklyComparisonDisplay(); });
+				filterComparisonYearInput.addEventListener('input', populateComparisonWeekFilter);
+			}
+			if(filterComparisonWeekSelect) filterComparisonWeekSelect.addEventListener('change', updateWeeklyComparisonDisplay);
+			
+			const exportButton = document.getElementById('export-button');
+			if (exportButton) exportButton.addEventListener('click', exportData);
+			const exportCsvButton = document.getElementById('export-csv-button');
+			if (exportCsvButton) exportCsvButton.addEventListener('click', exportToCSV);
+			const importButton = document.getElementById('import-button');
+			const importFileInput = document.getElementById('import-file-input');
+			if (importButton && importFileInput) importButton.addEventListener('click', () => importFileInput.click());
+			if (importFileInput) importFileInput.addEventListener('change', handleImportFile);
+
+			const addIncomeCategoryButton = document.getElementById('add-income-category-button');
+			if (addIncomeCategoryButton && newIncomeCategoryNameInput) addIncomeCategoryButton.addEventListener('click', () => { if (addCategory(newIncomeCategoryNameInput.value, 'income')) newIncomeCategoryNameInput.value = ''; });
+			const addExpenseCategoryButton = document.getElementById('add-expense-category-button');
+			if (addExpenseCategoryButton && newExpenseCategoryNameInput) addExpenseCategoryButton.addEventListener('click', () => { if (addCategory(newExpenseCategoryNameInput.value, 'expense')) newExpenseCategoryNameInput.value = ''; });
+			const addAccountButton = document.getElementById('add-account-button');
+			if (addAccountButton && newAccountNameInput) { addAccountButton.addEventListener('click', () => { if (addAccount(newAccountNameInput.value)) { newAccountNameInput.value = ''; } }); }
+
+
+			// Quan trọng: Gán listener cho dark mode toggle CUỐI CÙNG, sau khi mọi thứ đã sẵn sàng
+			if (darkModeToggleCheckbox) {
+				console.log('[Debug] Attaching change listener to darkModeToggleCheckbox');
+				darkModeToggleCheckbox.addEventListener('change', toggleTheme);
+			} else {
+				console.error('[Debug] darkModeToggleCheckbox NOT FOUND during listener attachment!');
+			}
+			console.log("[Debug] initializeApp COMPLETED");
+		}
+
+        // KHỞI CHẠY ỨNG DỤNG
         initializeApp();
     </script>
 </body>
