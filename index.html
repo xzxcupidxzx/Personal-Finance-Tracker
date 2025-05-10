@@ -447,7 +447,41 @@
         const categoryColors = [ '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF', '#8366FF', '#289F40', '#D26384', '#3C64C8', '#C89632' ];
 
         function showMessage(message, type = 'success') { messageBox.textContent = message; messageBox.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'message-success' : 'message-error'}`; messageBox.style.display = 'block'; setTimeout(() => { messageBox.style.display = 'none'; }, 3000); }
-        function formatCurrency(amount, currencyCode = 'VND') { const options = { style: 'currency', currency: currencyCode }; const locale = 'vi-VN'; options.minimumFractionDigits = 0; options.maximumFractionDigits = (currencyCode === 'USD') ? 2 : 0; if (isNaN(amount) || amount === null) amount = 0; return new Intl.NumberFormat(locale, options).format(amount); }
+		function formatCurrency(amount, currencyCode = 'VND') {
+			// Quyết định số chữ số thập phân cho VNĐ
+			// Dựa theo ví dụ ".111" của bạn, chúng ta sẽ dùng 3.
+			// Bạn có thể đổi thành 0 nếu không muốn thấy ".000" cho các số nguyên.
+			const vndDecimalPlaces = 3;
+
+			const options = {
+				style: 'currency',
+				currency: currencyCode,
+				// Cài đặt số chữ số thập phân dựa trên currencyCode
+				minimumFractionDigits: (currencyCode === 'VND') ? vndDecimalPlaces : ((currencyCode === 'USD') ? 2 : 0),
+				maximumFractionDigits: (currencyCode === 'VND') ? vndDecimalPlaces : ((currencyCode === 'USD') ? 2 : 0)
+			};
+
+			if (isNaN(amount) || amount === null) {
+				amount = 0;
+			}
+
+			if (currencyCode === 'VND') {
+				const numberFormatter_en_US = new Intl.NumberFormat('en-US', { // Dùng 'en-US' để có dấu ',' hàng nghìn và '.' thập phân
+					minimumFractionDigits: vndDecimalPlaces,
+					maximumFractionDigits: vndDecimalPlaces
+				});
+				const numberPartFormatted = numberFormatter_en_US.format(amount); // Ví dụ: "12,345.678" hoặc "22,222,111.000"
+				const currencySymbolWithSpace = ' ₫';
+				return numberPartFormatted + currencySymbolWithSpace;
+
+			} else if (currencyCode === 'USD') {
+				// Cho USD, dùng 'en-US' locale sẽ cho định dạng chuẩn ($1,234.56)
+				return new Intl.NumberFormat('en-US', options).format(amount);
+			}
+
+			// Fallback cho các loại tiền tệ khác (nếu có)
+			return new Intl.NumberFormat('vi-VN', options).format(amount); // Dùng 'vi-VN' làm mặc định
+		}
 
         function formatDateTimeLocalInput(date) {
             const year = date.getFullYear();
@@ -498,7 +532,66 @@
             }
         }
 
-        function normalizeAmountString(amountStr) { if (!amountStr) return ""; let normalizedStr = String(amountStr).trim(); const lastComma = normalizedStr.lastIndexOf(','); const lastPeriod = normalizedStr.lastIndexOf('.'); if (lastComma > -1 && lastPeriod > -1) { if (lastComma > lastPeriod) { normalizedStr = normalizedStr.replace(/\./g, ''); normalizedStr = normalizedStr.replace(/,/g, '.'); } else { normalizedStr = normalizedStr.replace(/,/g, ''); } } else if (lastComma > -1) { const parts = normalizedStr.split(','); if (parts.length > 1) { const decimalPart = parts.pop(); normalizedStr = parts.join('') + '.' + decimalPart; } else { normalizedStr = normalizedStr.replace(/,/g, '.'); } } return normalizedStr; }
+		function normalizeAmountString(amountStr) {
+			if (typeof amountStr !== 'string' || !amountStr.trim()) {
+				return "";
+			}
+			let str = amountStr.trim();
+
+			const hasComma = str.includes(',');
+			const hasPeriod = str.includes('.');
+
+			if (hasComma && hasPeriod) {
+				// Trường hợp có cả dấu phẩy và dấu chấm (ví dụ: "1.234,56" hoặc "1,234.56")
+				// Dấu nào xuất hiện cuối cùng có khả năng cao là dấu thập phân.
+				if (str.lastIndexOf(',') > str.lastIndexOf('.')) {
+					// Dấu phẩy là thập phân, dấu chấm là phân cách hàng nghìn (kiểu châu Âu, ví dụ: "1.234,56")
+					str = str.replace(/\./g, ''); // Xóa tất cả dấu chấm
+					str = str.replace(',', '.');  // Chuyển dấu phẩy thập phân thành dấu chấm
+				} else {
+					// Dấu chấm là thập phân, dấu phẩy là phân cách hàng nghìn (kiểu Mỹ, ví dụ: "1,234.56")
+					str = str.replace(/,/g, ''); // Xóa tất cả dấu phẩy
+				}
+			} else if (hasComma) { // Chỉ có dấu phẩy
+				// Nếu có nhiều dấu phẩy, coi tất cả là phân cách hàng nghìn.
+				// Nếu chỉ có một dấu phẩy, kiểm tra xem nó có giống dấu thập phân không.
+				const commaCount = (str.match(/,/g) || []).length;
+				if (commaCount === 1) {
+					// Giả sử "123,45" là "123.45", còn "1,234" sẽ bỏ dấu phẩy đi.
+					// Kiểm tra xem phần sau dấu phẩy có phải là phần thập phân hợp lệ không (1-3 chữ số thường lệ).
+					const decimalPart = str.substring(str.lastIndexOf(',') + 1);
+					if (/^\d+$/.test(decimalPart) && decimalPart.length > 0 && decimalPart.length <= 3 && str.lastIndexOf(',') > 0) {
+						 // Thêm kiểm tra để đảm bảo phần trước dấu phẩy cũng là số hoặc rỗng
+						const integerPart = str.substring(0, str.lastIndexOf(','));
+						if (/^\d*$/.test(integerPart.replace(/,/g, ''))) { // Loại bỏ các dấu phẩy khác (nếu có) ở phần nguyên
+							str = str.replace(',', '.');
+						} else { // Nếu phần trước không hợp lệ, coi tất cả là phân cách nghìn
+							str = str.replace(/,/g, '');
+						}
+					} else { // Nếu không rõ ràng là thập phân (ví dụ "1,234" hoặc "1,2345")
+						str = str.replace(/,/g, ''); // Coi tất cả dấu phẩy là phân cách hàng nghìn
+					}
+				} else { // Nhiều dấu phẩy
+					str = str.replace(/,/g, ''); // Coi tất cả dấu phẩy là phân cách hàng nghìn
+				}
+			} else if (hasPeriod) { // Chỉ có dấu chấm
+				// Nếu có nhiều dấu chấm, giả sử chúng là phân cách hàng nghìn,
+				// và dấu chấm cuối cùng có thể là dấu thập phân.
+				// Ví dụ: "1.234.567" -> "1234.567" (để parseFloat hiểu đúng theo logic app "22.5" -> 22.5 * 1000)
+				// "100.000" -> "100.000" (parseFloat sẽ là 100)
+				const periodCount = (str.match(/\./g) || []).length;
+				if (periodCount > 1) {
+					// Xóa tất cả các dấu chấm ngoại trừ dấu chấm cuối cùng
+					// Ví dụ: "1.234.567" thành "1234.567"
+					// Ví dụ: "1.000.000" thành "1000.000" (parseFloat sẽ là 1000)
+					str = str.replace(/\.(?=.*\.)/g, '');
+				}
+				// Nếu periodCount là 1 (ví dụ: "123.45" hoặc "1.234"), parseFloat sẽ tự xử lý.
+			}
+			// Trường hợp không có dấu phân cách nào thì giữ nguyên.
+
+			return str;
+		}
         function applyTheme(theme) { if (theme === 'dark') { document.body.classList.add(DARK_MODE_CLASS); if (darkModeToggleCheckbox) darkModeToggleCheckbox.checked = true; localStorage.setItem(THEME_STORAGE_KEY, 'dark'); } else { document.body.classList.remove(DARK_MODE_CLASS); if (darkModeToggleCheckbox) darkModeToggleCheckbox.checked = false; localStorage.setItem(THEME_STORAGE_KEY, 'light'); } updateAllChartColorsForTheme(theme); }
         function toggleTheme() { applyTheme(darkModeToggleCheckbox.checked ? 'dark' : 'light'); }
         function loadThemePreference() { const savedTheme = localStorage.getItem(THEME_STORAGE_KEY); const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches; if (savedTheme) { applyTheme(savedTheme); } else if (prefersDarkScheme) { applyTheme('dark'); } else { applyTheme('light'); } }
@@ -516,7 +609,40 @@
         function populateAccountDropdowns() { if (!accountInput || !toAccountInput) return; const currentFromAccount = accountInput.value; const currentToAccount = toAccountInput.value; accountInput.innerHTML = ''; toAccountInput.innerHTML = ''; if (!accounts || accounts.length === 0) accounts = [...defaultAccounts]; accounts.forEach(acc => { accountInput.add(new Option(acc.text, acc.value)); toAccountInput.add(new Option(acc.text, acc.value)); }); if (accounts.some(acc => acc.value === currentFromAccount)) accountInput.value = currentFromAccount; else if (accounts.length > 0) accountInput.value = accounts[0].value; if (accounts.some(acc => acc.value === currentToAccount)) toAccountInput.value = currentToAccount; else if (accounts.length > 1) toAccountInput.value = accounts[1].value; else if (accounts.length > 0) toAccountInput.value = accounts[0].value; }
         function populateCategories() { if (!categoryInput) return; const selectedTypeRadio = document.querySelector('input[name="type"]:checked'); const selectedType = selectedTypeRadio ? selectedTypeRadio.value : 'Chi'; const currentCategoryValue = categoryInput.value; categoryInput.innerHTML = ''; let categoriesToPopulate = (selectedType === 'Thu') ? incomeCategories : expenseCategories; categoriesToPopulate = categoriesToPopulate.filter(cat => cat.value !== TRANSFER_CATEGORY_IN && cat.value !== TRANSFER_CATEGORY_OUT); if (!categoriesToPopulate || categoriesToPopulate.length === 0) { const defaultCats = (selectedType === 'Thu') ? [...defaultIncomeCategories] : [...defaultExpenseCategories]; categoriesToPopulate = defaultCats.filter(cat => cat.value !== TRANSFER_CATEGORY_IN && cat.value !== TRANSFER_CATEGORY_OUT); } categoriesToPopulate.forEach(category => categoryInput.add(new Option(category.text, category.value))); if (categoriesToPopulate.some(cat => cat.value === currentCategoryValue)) categoryInput.value = currentCategoryValue; else if (categoriesToPopulate.length > 0) categoryInput.value = categoriesToPopulate[0].value; }
         function toggleFormFields() { const selectedTypeRadio = document.querySelector('input[name="type"]:checked'); const selectedType = selectedTypeRadio ? selectedTypeRadio.value : 'Chi'; transactionForm.dataset.transactionMode = selectedType; if (selectedType === 'Transfer') { accountLabel.textContent = 'Từ Tài khoản:'; categoryInput.removeAttribute('required'); toAccountInput.setAttribute('required', ''); } else { accountLabel.textContent = 'Tài khoản:'; categoryInput.setAttribute('required', ''); toAccountInput.removeAttribute('required'); populateCategories(); } }
-        function parseAmountInput(amountStr, currency) { if (!amountStr) return 0; const normalizedStr = normalizeAmountString(amountStr); let val = parseFloat(normalizedStr); if (isNaN(val)) { val = parseFloat(String(amountStr).replace(/,/g, '')); } if (isNaN(val)) { val = parseFloat(String(amountStr).replace(/,/g, '.')); } if (isNaN(val)) return 0; if (currency === 'USD') val = val * USD_TO_VND_RATE; else if (currency === 'VND') val = val * 1000; return Math.round(val); }
+		function parseAmountInput(amountStr, currency) { // currency ở đây là giá trị từ form selector
+			if (!amountStr) return 0;
+			// Giả sử bạn đã có hàm normalizeAmountString tốt (ví dụ: normalizeAmountString_final từ lần trước)
+			const normalizedStr = normalizeAmountString(amountStr);
+			let val = parseFloat(normalizedStr);
+
+			if (isNaN(val)) {
+				showMessage('Số tiền không hợp lệ. Vui lòng kiểm tra lại.', 'error');
+				return null; // Trả về null hoặc throw lỗi để dừng xử lý nếu không hợp lệ
+			}
+			if (val < 0) {
+				showMessage('Số tiền không được là số âm.', 'error');
+				return null;
+			}
+
+			// Kiểm tra đơn vị tiền tệ được chọn trên form
+			const selectedCurrencyOnForm = formCurrencySelector.value; // Biến này cần được định nghĩa và trỏ đúng tới select element
+
+			if (selectedCurrencyOnForm === 'USD') {
+				// Nếu nhập USD, thì 'val' là USD.
+				// Giả sử bạn muốn lưu giá trị gốc USD và giá trị quy đổi VND.
+				// Ở đây, hàm này có thể trả về giá trị đã quy đổi sang VND để lưu vào 'amount'.
+				// Hoặc, bạn có thể xử lý việc quy đổi ở nơi khác và hàm này chỉ parse số.
+				// Dựa theo code gốc, có vẻ bạn quy đổi ở đây:
+				val = val * USD_TO_VND_RATE; // USD_TO_VND_RATE cần được định nghĩa
+				// Math.round() sẽ bị bỏ ở cuối
+			} else if (selectedCurrencyOnForm === 'VND') {
+				val = val * 1000; // Áp dụng logic x1000
+				// Math.round() sẽ bị bỏ ở cuối
+			}
+			// Bỏ Math.round(val) để giữ lại phần thập phân (nếu có) sau phép nhân.
+			// Ví dụ: nếu input là 0.0225 (nghìn VND) -> 0.0225 * 1000 = 22.5 VND. Ta muốn giữ 22.5.
+			return val;
+		}
 
         function handleTransactionSubmit(e) {
             e.preventDefault();
