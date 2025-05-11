@@ -1784,7 +1784,7 @@
 				});
 
 				// Gán sự kiện cho các nút trên bàn phím ảo
-				virtualKeyboardEl.addEventListener('click', function(event) {
+				virtualKeyboardEl.addEventListener('touchstart', function(event) {
 					if (!activeInputForVirtualKeyboard) {
 						console.warn("[Keyboard] Virtual keyboard key pressed, but no active input target.");
 						return;
