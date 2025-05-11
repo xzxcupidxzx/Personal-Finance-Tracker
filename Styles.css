@@ -793,14 +793,6 @@ body.dark-mode .message-error {
     user-select: none;
     transition: background-color 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-	touch-action: manipulation; /* Quan trọng: Ngăn chặn double-tap to zoom */
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0); /* Loại bỏ màu highlight khi chạm trên iOS/WebKit */
-    
-    /* Đảm bảo user-select có đủ tiền tố trình duyệt */
-    user-select: none;         /* Chuẩn */
-    -webkit-user-select: none; /* Safari, Chrome, Opera */
-    -moz-user-select: none;    /* Firefox */
-    -ms-user-select: none;     /* Internet Explorer/Edge */
 }
 
 .virtual-key:hover {
@@ -813,12 +805,10 @@ body.dark-mode .message-error {
 }
 
 .dark .virtual-key {
-    border-color: #4B5563;     /* Tailwind dark:border-gray-600 (gray-600) */
-    background-color: #374151; /* Tailwind dark:bg-gray-700 (gray-700) */
-    color: #E5E7EB;           /* Tailwind dark:text-gray-200 (gray-200) */
+    border-color: #4B5563;
+    background-color: #374151;
+    color: #E5E7EB;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.2);
-	touch-action: manipulation; /* Quan trọng: Ngăn chặn double-tap to zoom */
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0); /* Loại bỏ màu highlight khi chạm trên iOS/WebKit */
 }
 
 .dark .virtual-key:hover {
