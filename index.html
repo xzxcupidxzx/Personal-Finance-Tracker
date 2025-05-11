@@ -702,7 +702,7 @@
 
         // --- DARK MODE LOGIC (Giữ nguyên) ---
 		function applyTheme(theme) {
-			// console.log('Applying theme:', theme);
+			console.log('[THEME] Applying theme:', theme);
 			if (theme === 'dark') {
 				document.body.classList.add(DARK_MODE_CLASS);
 				if (darkModeToggleCheckbox) darkModeToggleCheckbox.checked = true;
@@ -712,8 +712,10 @@
 				if (darkModeToggleCheckbox) darkModeToggleCheckbox.checked = false;
 				localStorage.setItem(THEME_STORAGE_KEY, 'light');
 			}
-			updateAllChartColorsForTheme(theme); // Gọi hàm cập nhật màu biểu đồ
+			// console.log('[THEME] SKIPPING updateAllChartColorsForTheme FOR DEBUGGING'); // Ghi chú lại
+			// updateAllChartColorsForTheme(theme); // <--- TẠM THỜI COMMENT DÒNG NÀY
 		}
+
 
 		function toggleTheme() {
 			// console.log('toggleTheme called. Checkbox checked:', darkModeToggleCheckbox ? darkModeToggleCheckbox.checked : 'checkbox not found');
@@ -739,24 +741,39 @@
 		}
 		
 		function updateAllChartColorsForTheme(theme) {
+			console.log('[THEME] updateAllChartColorsForTheme CALLED with theme:', theme);
 			const isDarkMode = theme === 'dark';
+
+			// Định nghĩa các màu sắc (giữ nguyên như phiên bản trước bạn có)
 			const gridColor = isDarkMode ? 'rgba(107, 114, 128, 0.2)' : 'rgba(209, 213, 219, 0.5)';
 			const ticksColor = isDarkMode ? '#9ca3af' : '#6b7280';
 			const axisLineColor = isDarkMode ? '#4b5563' : '#d1d5db';
 			const legendAndAxisTitleColor = isDarkMode ? '#d1d5db' : '#374151';
 			const chartMainTitleColor = isDarkMode ? '#e5e7eb' : '#1f2937';
-			let pieSliceBorderColor = isDarkMode ? (window.getComputedStyle(document.body).backgroundColor || '#374151') : '#ffffff';
+			let bodyBgStyle = window.getComputedStyle(document.body).backgroundColor;
+			const pieSliceBorderColor = isDarkMode ? (bodyBgStyle && bodyBgStyle !== 'rgba(0, 0, 0, 0)' ? bodyBgStyle : '#374151') : (bodyBgStyle && bodyBgStyle !== 'rgba(0, 0, 0, 0)' ? bodyBgStyle : '#ffffff');
 			const datalabelPieColor = '#ffffff';
 			const datalabelGeneralColor = isDarkMode ? '#e0e0e0' : '#333333';
 
 			const charts = [
 				incomeExpenseChart, expenseCategoryChart, last7DaysChart,
-				monthComparisonChart, expenseCategoryBarChart // Đã bao gồm biểu đồ cột
-			].filter(c => c && c.ctx && typeof c.update === 'function');
+				monthComparisonChart, expenseCategoryBarChart
+			].filter(c => c && c.ctx && typeof c.update === 'function' && c.canvas); // Thêm c.canvas để đảm bảo canvas còn tồn tại
 
-			charts.forEach(chart => {
-				if (!chart.options) return;
+			console.log(`[THEME] Found ${charts.length} initialized charts to update colors for.`);
+
+			charts.forEach((chart, index) => {
+				// Thêm kiểm tra chart.config tồn tại trước khi truy cập type
+				const chartTypeForLog = chart.config ? chart.config.type : 'Unknown';
+				console.log(`[THEME] Updating chart index ${index}, type: ${chartTypeForLog}`);
+
+				if (!chart.options) {
+					console.warn(`[THEME] Chart (type: ${chartTypeForLog}, index: ${index}) has no options. Skipping color update for this chart.`);
+					return; // Bỏ qua biểu đồ này nếu không có options
+				}
+
 				try {
+					// Cập nhật Plugins chung
 					if (chart.options.plugins) {
 						if (chart.options.plugins.legend && chart.options.plugins.legend.labels) {
 							chart.options.plugins.legend.labels.color = legendAndAxisTitleColor;
@@ -766,31 +783,51 @@
 						}
 					}
 
+					// Cập nhật Scales
 					if (chart.options.scales) {
 						Object.keys(chart.options.scales).forEach(scaleKey => {
 							const scale = chart.options.scales[scaleKey];
 							if (scale) {
-								if (scale.grid) scale.grid.color = gridColor;
-								if (typeof scale.borderColor !== 'undefined') scale.borderColor = axisLineColor;
-								if (scale.ticks) scale.ticks.color = ticksColor;
-								if (scale.title && scale.title.display) scale.title.color = legendAndAxisTitleColor;
+								if (scale.grid) {
+									scale.grid.color = gridColor;
+								}
+								// Chỉ cập nhật borderColor nếu thuộc tính đó tồn tại trên scale object
+								if (Object.prototype.hasOwnProperty.call(scale, 'borderColor')) {
+									scale.borderColor = axisLineColor;
+								}
+								if (scale.ticks) {
+									scale.ticks.color = ticksColor;
+								}
+								if (scale.title && scale.title.display) {
+									scale.title.color = legendAndAxisTitleColor;
+								}
 							}
 						});
 					}
 
+					// Cập nhật datalabels và các thuộc tính dataset đặc thù
 					if (chart.options.plugins && chart.options.plugins.datalabels) {
-						chart.options.plugins.datalabels.color = (chart === expenseCategoryChart) ? datalabelPieColor : datalabelGeneralColor;
+						// Kiểm tra xem datalabels có thực sự được cấu hình cho biểu đồ này không
+						// (một số biểu đồ bạn có thể đã đặt display: false cho datalabels)
+						if (chart.options.plugins.datalabels.display !== false) {
+							 chart.options.plugins.datalabels.color = (chart === expenseCategoryChart) ? datalabelPieColor : datalabelGeneralColor;
+						}
 					}
 					
+					// Cập nhật màu viền cho biểu đồ tròn
 					if (chart === expenseCategoryChart && chart.data.datasets && chart.data.datasets.length > 0) {
 						chart.data.datasets[0].borderColor = pieSliceBorderColor;
 					}
 					
-					chart.update();
+					console.log(`[THEME] Attempting to update chart: ${chartTypeForLog}`);
+					chart.update('none'); // 'none' để không có animation khi chỉ đổi màu
+					console.log(`[THEME] Successfully updated chart: ${chartTypeForLog}`);
+
 				} catch (e) {
-					console.error("[Theme] Error updating chart colors:", chart.config ? chart.config.type : 'Unknown Chart', e);
+					console.error(`[THEME] Error updating colors for chart (type: ${chartTypeForLog}, index: ${index}):`, e);
 				}
 			});
+			console.log('[THEME] Chart color update process finished.');
 		}
 
         function setDefaultDateTime() { if(datetimeInput) datetimeInput.value = formatDateTimeLocalInput(new Date()); }
@@ -1693,9 +1730,10 @@
 			
 			// Quan trọng: Gán listener cho dark mode toggle
 			if (darkModeToggleCheckbox) {
+				console.log('[DEBUG] darkModeToggleCheckbox FOUND. Attaching "change" listener to toggleTheme.');
 				darkModeToggleCheckbox.addEventListener('change', toggleTheme);
 			} else {
-				console.error('[APP] darkModeToggleCheckbox NOT FOUND during listener attachment!');
+				console.error('[APP ERROR] darkModeToggleCheckbox element with ID "darkModeToggleCheckbox" WAS NOT FOUND in the DOM when trying to attach event listener!');
 			}
 			console.log("[APP] initializeApp COMPLETED");
 		}
