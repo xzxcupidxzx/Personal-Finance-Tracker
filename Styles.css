@@ -774,9 +774,18 @@ body.dark-mode .message-error {
 
 /* ===== Bắt đầu CSS cho Bàn phím số ảo ===== */
 #virtualNumericKeyboard {
+    /* Bạn có thể thêm style cho container bàn phím ở đây nếu cần */
+    /* Ví dụ:
+    padding: 8px;
+    background-color: #E5E7EB; 
+    */
 }
 
 .dark #virtualNumericKeyboard {
+    /* Style cho container bàn phím ở dark mode */
+    /* Ví dụ:
+    background-color: #1F2937;
+    */
 }
 
 .virtual-key {
@@ -785,38 +794,50 @@ body.dark-mode .message-error {
     font-size: 22px;
     font-weight: 500;
     text-align: center;
-    border: 1px solid #D1D5DB;
-    background-color: #F9FAFB;
-    color: #1F2937;
+    border: 1px solid #D1D5DB;  /* Tailwind gray-300 */
+    background-color: #F9FAFB; /* Tailwind gray-50 */
+    color: #1F2937;           /* Tailwind gray-800 */
     border-radius: 8px;
     cursor: pointer;
-    user-select: none;
     transition: background-color 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+
+    /* --- CẬP NHẬT ĐỂ SỬA LỖI ZOOM VÀ CẢI THIỆN TRẢI NGHIỆM CHẠM --- */
+    touch-action: manipulation; /* Quan trọng: Ngăn chặn double-tap to zoom */
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0); /* Loại bỏ màu highlight khi chạm trên iOS/WebKit */
+    
+    /* Đảm bảo user-select có đủ tiền tố trình duyệt */
+    user-select: none;         /* Chuẩn */
+    -webkit-user-select: none; /* Safari, Chrome, Opera */
+    -moz-user-select: none;    /* Firefox */
+    -ms-user-select: none;     /* Internet Explorer/Edge */
+    /* --- KẾT THÚC CẬP NHẬT --- */
 }
 
 .virtual-key:hover {
-    background-color: #F3F4F6;
+    background-color: #F3F4F6; /* Tailwind gray-100 */
 }
 
 .virtual-key:active {
-    background-color: #E5E7EB;
+    background-color: #E5E7EB; /* Tailwind gray-200 */
     box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
 }
 
 .dark .virtual-key {
-    border-color: #4B5563;
-    background-color: #374151;
-    color: #E5E7EB;
+    border-color: #4B5563;     /* Tailwind dark:border-gray-600 (gray-600) */
+    background-color: #374151; /* Tailwind dark:bg-gray-700 (gray-700) */
+    color: #E5E7EB;           /* Tailwind dark:text-gray-200 (gray-200) */
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.2);
+    /* touch-action và -webkit-tap-highlight-color đã được kế thừa từ .virtual-key, 
+       không cần thêm lại ở đây trừ khi bạn muốn ghi đè. */
 }
 
 .dark .virtual-key:hover {
-    background-color: #4B5563;
+    background-color: #4B5563; /* Tailwind dark:bg-gray-600 (gray-600) */
 }
 
 .dark .virtual-key:active {
-    background-color: #1F2937;
+    background-color: #1F2937; /* Tailwind dark:bg-gray-800 (gray-800) */
     box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.25);
 }
 
@@ -836,18 +857,18 @@ body.dark-mode .message-error {
 }
 
 .virtual-key.key-done {
-    background-color: #3B82F6;
+    background-color: #3B82F6; /* Tailwind blue-500 */
     color: white;
     font-weight: 600;
 }
 .dark .virtual-key.key-done {
-    background-color: #2563EB;
+    background-color: #2563EB; /* Tailwind blue-600 */
 }
 .virtual-key.key-done:hover {
-    background-color: #2563EB;
+    background-color: #2563EB; /* Tailwind blue-600 */
 }
 .dark .virtual-key.key-done:hover {
-    background-color: #1D4ED8;
+    background-color: #1D4ED8; /* Tailwind blue-700 */
 }
 
 #virtualNumericKeyboard .grid > button.virtual-key {
