@@ -685,111 +685,117 @@ body.dark-mode .message-error {
 }
 
 /* ===== Bắt đầu CSS cho Bàn phím số ảo ===== */
+/* --- Virtual Keyboard Styles --- */
 #virtualNumericKeyboard {
     /* Class Tailwind 'fixed bottom-0 left-0 right-0 p-2 shadow-lg z-50' đã xử lý vị trí và shadow */
-    /* Class Tailwind 'bg-gray-200 dark:bg-gray-800' đã xử lý nền */
-    /* Bạn có thể thêm border-top nếu muốn ngăn cách rõ hơn với nội dung bên trên */
-    /* Ví dụ: */
-    /* border-top: 1px solid #d1d5db; */ /* Light mode border */
+    /* Class Tailwind 'bg-gray-200 dark:bg-gray-800' đã xử lý nền hiện tại.
+       Chúng ta sẽ ghi đè hoặc điều chỉnh nó để giống ảnh hơn.
+       Màu nền trong ảnh có vẻ sáng hơn bg-gray-200 một chút cho light mode.
+    */
+    background-color: #E9EAED; /* Màu xám rất nhạt, gần giống iOS light mode keyboard background */
+    /* Hoặc bạn có thể dùng một class của Tailwind: bg-gray-100 hoặc bg-zinc-100 */
+    padding: 8px; /* Điều chỉnh padding cho toàn bộ bàn phím */
+    gap: 8px; /* Khoảng cách giữa các hàng phím nếu layout chính của keyboard là grid */
 }
 
 .dark #virtualNumericKeyboard {
-    /* border-top-color: #4b5563; */ /* Dark mode border */
+    background-color: #2C2C2E; /* Màu xám tối hơn cho nền dark mode, gần giống iOS dark */
+    /* border-top-color: #3A3A3C; */ /* Nếu bạn muốn có border top */
 }
 
-/* Style chính cho các nút trên bàn phím ảo */
+/* Style chính cho các nút số và các nút thường */
 .virtual-key {
-    /* Kích thước và Padding - Điều chỉnh các giá trị px này theo ý bạn */
-    padding-top: 12px;
-    padding-bottom: 12px;
-    /* Hoặc dùng height cố định và flex để căn giữa nếu muốn chiều cao tuyệt đối: */
-    /* height: 55px; */
-    /* display: flex; */
-    /* align-items: center; */
-    /* justify-content: center; */
-
-    font-size: 22px;      /* Kích thước chữ cho các số */
-    font-weight: 500;     /* Tương đương font-medium của Tailwind */
+    padding-top: 14px;    /* Tăng padding để phím cao hơn */
+    padding-bottom: 14px;
+    font-size: 24px;      /* Tăng kích thước chữ */
+    font-weight: 400;     /* Font weight normal hơn, giống iOS */
     text-align: center;
     
-    /* Viền và Nền - Light Mode */
-    border: 1px solid #D1D5DB;    /* Tailwind gray-300 */
-    background-color: #F9FAFB;    /* Tailwind gray-50 */
-    color: #1F2937;               /* Tailwind gray-800 */
-    border-radius: 8px;           /* Tương đương rounded-lg của Tailwind */
+    /* Viền và Nền - Light Mode (Giống phím số trong ảnh) */
+    border: none; /* iOS keys thường không có viền rõ ràng, hoặc viền rất nhẹ */
+    background-color: #FFFFFF;    /* Nền trắng cho phím */
+    color: #000000;               /* Chữ đen */
+    border-radius: 6px;           
     
     cursor: pointer;
-    user-select: none; /* Ngăn việc vô tình chọn text trên nút */
-    transition: background-color 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1); /* Shadow tương đương shadow-md */
-}
-
-.virtual-key:hover {
-    background-color: #F3F4F6; /* Tailwind gray-100 */
+    user-select: none; 
+    transition: background-color 0.1s ease-in-out;
+    /* Shadow nhẹ cho cảm giác nổi, giống iOS */
+    box-shadow: 0 1px 0px 0 rgba(0,0,0,0.15); 
 }
 
 .virtual-key:active {
-    background-color: #E5E7EB; /* Tailwind gray-200 */
-    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); /* Shadow lõm vào khi nhấn */
+    background-color: #D1D1D6; /* Màu xám nhạt khi nhấn (giống iOS) */
 }
 
-/* Dark Mode Styles cho .virtual-key */
+/* Dark Mode Styles cho .virtual-key (phím số) */
 .dark .virtual-key {
-    border-color: #4B5563;      /* Tailwind gray-600 */
-    background-color: #374151;  /* Tailwind gray-700 */
-    color: #E5E7EB;             /* Tailwind gray-200 */
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.2); /* Shadow tối hơn */
-}
-
-.dark .virtual-key:hover {
-    background-color: #4B5563;  /* Tailwind gray-600 */
+    background-color: #505054;  /* Nền xám đậm hơn cho phím số trong dark mode */
+    color: #FFFFFF;             /* Chữ trắng */
+    box-shadow: 0 1px 0px 0 rgba(0,0,0,0.3);
 }
 
 .dark .virtual-key:active {
-    background-color: #1F2937;  /* Tailwind gray-800 */
-    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.25);
+    background-color: #6E6E72;  /* Màu xám đậm hơn nữa khi nhấn */
 }
 
-/* Style cho các phím chức năng (Xóa, 000, .) - có màu nền hơi khác một chút */
+/* Style cho các phím chức năng (000, Dấu chấm) - có thể giống phím số hoặc hơi khác */
 .virtual-key.key-action {
-    background-color: #E5E7EB; /* Tailwind gray-200 (Light mode) */
-    font-weight: normal; /* Có thể làm chữ mảnh hơn cho phím chức năng */
+    /* Giữ nguyên style như .virtual-key nếu muốn chúng giống phím số */
+    /* Hoặc bạn có thể làm chúng hơi khác một chút nếu muốn */
+    /* Ví dụ: */
+    /* background-color: #F0F0F0; */ /* Hơi xám hơn phím số một chút trong light mode */
 }
 .dark .virtual-key.key-action {
-    background-color: #4B5563; /* Tailwind gray-600 (Dark mode) */
-    color: #9CA3AF; /* Tailwind gray-400 */
-}
-.virtual-key.key-action:hover {
-    background-color: #D1D5DB; /* Tailwind gray-300 */
-}
-.dark .virtual-key.key-action:hover {
-    background-color: #374151; /* Tailwind gray-700 */
+    /* background-color: #48484A; */ /* Hơi khác phím số trong dark mode */
 }
 
 
-/* Style cho phím "Tiếp" (Done) - làm nổi bật hơn */
-.virtual-key.key-done {
-    background-color: #3B82F6; /* Tailwind blue-500 */
-    color: white;
-    font-weight: 600; /* semibold */
+/* Style cho phím Xóa (Backspace) - giống trong ảnh */
+.virtual-key[data-key="backspace"] { /* Target cụ thể nút backspace */
+    background-color: #B0B4BC; /* Màu xám cho phím chức năng (light mode) */
+    color: #000000;
+}
+.dark .virtual-key[data-key="backspace"] {
+    background-color: #6E6E72; /* Màu xám đậm hơn cho phím chức năng (dark mode) */
+    color: #FFFFFF;
+}
+.virtual-key[data-key="backspace"]:active {
+    background-color: #8E939C; /* Màu khi nhấn (light mode) */
+}
+.dark .virtual-key[data-key="backspace"]:active {
+    background-color: #505054; /* Màu khi nhấn (dark mode) */
+}
+
+
+/* Style cho phím "Tiếp" (Done) - giống trong ảnh */
+.virtual-key.key-done { /* Hoặc target cụ thể: .virtual-key[data-key="done"] */
+    background-color: #B0B4BC; /* Màu xám cho phím chức năng (light mode) */
+    color: #000000;
+    font-weight: 500; /* Có thể làm chữ đậm hơn một chút */
 }
 .dark .virtual-key.key-done {
-    background-color: #2563EB; /* Tailwind blue-600 */
+    background-color: #6E6E72; /* Màu xám đậm hơn cho phím chức năng (dark mode) */
+    color: #FFFFFF;
 }
-.virtual-key.key-done:hover {
-    background-color: #2563EB; /* Tailwind blue-600 */
+.virtual-key.key-done:active {
+    background-color: #8E939C; /* Màu khi nhấn (light mode) */
 }
-.dark .virtual-key.key-done:hover {
-    background-color: #1D4ED8; /* Tailwind blue-700 */
+.dark .virtual-key.key-done:active {
+    background-color: #505054; /* Màu khi nhấn (dark mode) */
 }
 
-/* Đảm bảo các phím trong grid có chiều cao bằng nhau khi dùng padding */
-/* và cho các phím chiếm hết không gian của ô grid */
+
+/* Đảm bảo layout grid cho các nút */
+#virtualNumericKeyboard .grid {
+    /* Các class Tailwind gap-1 text-center đã có trong HTML */
+    /* Bạn có thể muốn điều chỉnh gap nếu cần */
+    /* gap: 6px; */ /* Ví dụ nếu bạn muốn khoảng cách lớn hơn một chút */
+}
 #virtualNumericKeyboard .grid > button.virtual-key {
     height: 100%; 
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%; /* Đảm bảo nút chiếm hết chiều rộng của ô grid */
+    width: 100%;
 }
-/* ===== Kết thúc CSS cho Bàn phím số ảo ===== */
