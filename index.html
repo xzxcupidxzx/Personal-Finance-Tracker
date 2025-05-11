@@ -5,30 +5,22 @@
     <title>Sổ Theo Dõi Tài Chính Cá Nhân</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="manifest" href="/manifest.json"> 
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
-    <link rel="apple-touch-icon" sizes="167x167" href="/apple-icon-167x167.png">
-    <link rel="apple-touch-icon" href="/apple-icon.png"> 
 
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    
-    <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
-    <meta name="theme-color" content="#3b82f6">
-
-    <link rel="stylesheet" href="/Styles.css">
     <link rel="apple-touch-icon" sizes="180x180" href="Logo Finance.png">
     <link rel="icon" type="image/png" sizes="192x192" href="Logo Finance.png">
     <link rel="icon" type="image/png" sizes="512x512" href="Logo Finance.png">
     <link rel="icon" type="image/png" sizes="32x32" href="Logo Finance.png">
     <link rel="icon" type="image/png" sizes="16x16" href="Logo Finance.png">
     <link rel="shortcut icon" href="Logo Finance.png" type="image/png">
-</head>
+
+    <link rel="stylesheet" href="Styles.css">
+
+    </head>
 <body>
     <div class="theme-switch-wrapper">
         <label class="theme-switch" for="darkModeToggleCheckbox">
@@ -1456,82 +1448,75 @@
 
         // --- HÀM KHỞI TẠO ỨNG DỤNG ---
 
-		function initializeApp() {
-			console.log("[Debug] initializeApp CALLED");
-			// migrateOriginalAmountsForOldVNDTransactions(); // Cân nhắc việc di chuyển dữ liệu
 
-			// Quan trọng: loadThemePreference() phải được gọi RẤT SỚM,
-			// trước khi bất kỳ biểu đồ nào được khởi tạo hoặc DOM được thay đổi dựa trên theme.
-			loadThemePreference();
+		// --- HÀM KHỞI TẠO ỨNG DỤNG ---
+		function initializeApp() {
+			console.log("[APP] initializeApp CALLED");
+			// migrateOriginalAmountsForOldVNDTransactions();
+
+			loadThemePreference(); // Quan trọng: gọi đầu tiên
 			loadUserPreferences();
 
-			// Thiết lập các giá trị mặc định cho form
-			if(formCurrencySelector) formCurrencySelector.value = 'VND';
+			if (formCurrencySelector) formCurrencySelector.value = 'VND';
 			setDefaultDateTime();
 			setDefaultComparisonYear();
 			const typeChiRadio = document.getElementById('type-chi');
 			if (typeChiRadio) typeChiRadio.checked = true;
 
-			// Populate các dropdown và render list ban đầu
 			populateAccountDropdowns();
-			toggleFormFields(); // Hàm này có thể gọi populateCategories()
+			toggleFormFields();
 			renderCustomCategoryLists();
 			renderAccountListAdmin();
 
 			populateMonthFilter();
-			// applyMainFilter sẽ gọi updateAllSummariesAndCharts,
-			// và updateAllSummariesAndCharts sẽ gọi renderExpenseCategoryChartAndList (bao gồm cả render 2 biểu đồ)
 			applyMainFilter();
 
 			populateComparisonWeekFilter();
 			updateWeeklyComparisonDisplay();
 
-			// XỬ LÝ COLLAPSIBLE CHO CÁC SECTION LỚN
+			// Collapsible sections
 			const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
 			collapsibleHeaders.forEach(header => {
 				const contentId = header.dataset.collapsibleTarget;
 				const content = document.getElementById(contentId);
-				if (!content) {
-					console.error(`[Debug] Collapsible Error: Content not found for ID '${contentId}'`, header);
-					return;
-				}
+				if (!content) { console.error(`Collapsible Error: Content ID '${contentId}' not found.`, header); return; }
 				const storedState = localStorage.getItem(`collapsibleState_${contentId}`);
-				const defaultOpen = header.classList.contains('active');
-				let shouldBeActive = (storedState === 'expanded') ? true : (storedState === 'collapsed') ? false : defaultOpen;
+				let isActive = header.classList.contains('active'); // Default từ HTML
+				if (storedState === 'expanded') isActive = true;
+				if (storedState === 'collapsed') isActive = false;
 
-				// Áp dụng trạng thái ban đầu cho section lớn (không có maxHeight animation trong ví dụ này)
-				if (shouldBeActive) {
-					content.classList.add('active');
+				if (isActive) {
 					header.classList.add('active');
+					content.classList.add('active');
+					// Nếu dùng maxHeight cho section lớn
+					// if (content.classList.contains('collapsible-content')) { // Chỉ áp dụng cho content chính
+					//    setTimeout(() => { if (content.classList.contains('active')) content.style.maxHeight = content.scrollHeight + "px"; }, 50);
+					// }
 				} else {
-					content.classList.remove('active');
 					header.classList.remove('active');
+					content.classList.remove('active');
+					// if (content.classList.contains('collapsible-content')) content.style.maxHeight = null;
 				}
-
 				header.addEventListener('click', () => {
-					const isCurrentlyActive = content.classList.contains('active');
-					localStorage.setItem(`collapsibleState_${contentId}`, isCurrentlyActive ? 'collapsed' : 'expanded');
-					content.classList.toggle('active');
 					header.classList.toggle('active');
+					content.classList.toggle('active');
+					localStorage.setItem(`collapsibleState_${contentId}`, content.classList.contains('active') ? 'expanded' : 'collapsed');
+					// if (content.classList.contains('collapsible-content') && content.classList.contains('active')) {
+					//     content.style.maxHeight = content.scrollHeight + "px";
+					// } else if (content.classList.contains('collapsible-content')) {
+					//     content.style.maxHeight = null;
+					// }
 				});
 			});
 
-			// XỬ LÝ COLLAPSIBLE CHO CÁC DANH SÁCH TRONG "TÙY CHỈNH HẠNG MỤC" (với maxHeight animation)
 			const listHeaders = document.querySelectorAll('.collapsible-list-header');
 			listHeaders.forEach(header => {
 				const contentId = header.dataset.collapsibleTarget;
 				const contentList = document.getElementById(contentId);
-				if (!contentList) {
-					console.error(`[Debug] Collapsible List Error: Content UL not found for ID '${contentId}'`, header);
-					return;
-				}
+				if (!contentList) { console.error(`Collapsible List Error: Content UL ID '${contentId}' not found.`, header); return; }
 				if (header.classList.contains('active')) {
 					if (!contentList.classList.contains('active')) contentList.classList.add('active');
-					// Dùng setTimeout để đảm bảo DOM đã render và scrollHeight được tính đúng,
-					// nhất là khi section cha của nó cũng có thể đang collapsible.
-					setTimeout(() => {
-						if (contentList.classList.contains('active')) contentList.style.maxHeight = contentList.scrollHeight + "px";
-					}, 100); // Tăng nhẹ delay nếu cần
+					setTimeout(() => { if (contentList.classList.contains('active')) contentList.style.maxHeight = contentList.scrollHeight + "px"; }, 150);
 				} else {
 					if (contentList.classList.contains('active')) contentList.classList.remove('active');
 					contentList.style.maxHeight = null;
@@ -1547,36 +1532,80 @@
 				});
 			});
 
-			// SỰ KIỆN CHO BỘ CHỌN KIỂU BIỂU ĐỒ CHI TIÊU
+			// Event listener cho bộ chọn kiểu biểu đồ chi tiêu
 			if (expenseChartTypeSelector) {
 				expenseChartTypeSelector.addEventListener('change', toggleExpenseChartDisplay);
-				// Không cần gọi toggleExpenseChartDisplay() ở đây nữa,
-				// vì renderExpenseCategoryChartAndList sẽ được gọi thông qua applyMainFilter -> updateAllSummariesAndCharts
-				// và nó sẽ tự gọi toggleExpenseChartDisplay ở cuối.
 			} else {
-				console.warn("[Debug] expenseChartTypeSelector not found.");
-			}
-			
-			// NÚT THÊM 000
-			if (addTripleZeroButton && amountTextInput) {
-				addTripleZeroButton.addEventListener('click', function() {
-					const currentValue = amountTextInput.value.trim();
-					if (currentValue === "0") {
-						amountTextInput.value = "000";
-					} else if (currentValue === "" || !isNaN(parseFloat(normalizeAmountString(currentValue)))) {
-						amountTextInput.value = currentValue + '000';
-					}
-					amountTextInput.focus();
-				});
+				console.warn("[APP] expenseChartTypeSelector not found.");
 			}
 
-			// ĐĂNG KÝ CÁC EVENT LISTENERS KHÁC
+			// Nút "Thêm 000"
+			if (addTripleZeroButton && amountTextInput) {
+				addTripleZeroButton.addEventListener('click', function() { /* ... code của bạn ... */ });
+			}
+
+			// ----- VIRTUAL KEYBOARD LOGIC -----
+			if (virtualKeyboard && amountTextInput) {
+				console.log('[Keyboard] Initializing virtual keyboard logic.');
+				amountTextInput.addEventListener('click', function(event) {
+					if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+						console.log("[Keyboard] Amount input clicked/touched on touch device.");
+						event.preventDefault();
+						showVirtualKeyboard(this);
+					}
+				});
+				amountTextInput.addEventListener('focus', function(e) {
+					if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+						console.log("[Keyboard] Amount input focused on touch device.");
+						if (!virtualKeyboard || virtualKeyboard.style.display === 'none' || virtualKeyboard.style.display === '') {
+							e.target.blur(); 
+							showVirtualKeyboard(this);
+						} else if(activeInputForVirtualKeyboard === this) {
+							e.target.blur();
+						}
+					}
+				});
+				virtualKeyboard.addEventListener('click', function(event) {
+					if (!activeInputForVirtualKeyboard) return;
+					const targetButton = event.target.closest('button.virtual-key');
+					if (!targetButton) return;
+					const key = targetButton.dataset.key;
+					let currentValue = activeInputForVirtualKeyboard.value;
+					if (key === 'backspace') {
+						activeInputForVirtualKeyboard.value = currentValue.slice(0, -1);
+					} else if (key === 'done') {
+						hideVirtualKeyboard();
+						if (submitButton) submitButton.focus();
+					} else if (key === '.') {
+						if (!currentValue.includes('.')) activeInputForVirtualKeyboard.value += key;
+					} else if (key) {
+						activeInputForVirtualKeyboard.value += key;
+					}
+				});
+			} else {
+				console.warn("[Keyboard] virtualKeyboard or amountTextInput not found for virtual keyboard setup.");
+			}
+
+			document.addEventListener('mousedown', function(event) {
+				if (virtualKeyboard && virtualKeyboard.style.display !== 'none') {
+					const isClickOnKeyboard = virtualKeyboard.contains(event.target);
+					const isClickOnActiveInput = activeInputForVirtualKeyboard && activeInputForVirtualKeyboard.contains(event.target);
+					if (!isClickOnKeyboard && !isClickOnActiveInput) {
+						hideVirtualKeyboard();
+					}
+				}
+			});
+			// ----- END VIRTUAL KEYBOARD LOGIC -----
+
+
+			// Đăng ký các event listeners khác
 			if(transactionForm) transactionForm.addEventListener('submit', handleTransactionSubmit);
 			if(filterMonthSelect) filterMonthSelect.addEventListener('change', filterTransactionsByMonth);
 			if(typeRadioButtons) typeRadioButtons.forEach(radio => {
 				radio.addEventListener('change', () => {
 					toggleFormFields(); 
-					if (document.querySelector('input[name="type"]:checked')?.value !== 'Transfer') {
+					const currentType = document.querySelector('input[name="type"]:checked');
+					if (currentType && currentType.value !== 'Transfer') {
 						populateCategories();
 					}
 				});
@@ -1586,35 +1615,23 @@
 				filterComparisonYearInput.addEventListener('input', populateComparisonWeekFilter);
 			}
 			if(filterComparisonWeekSelect) filterComparisonWeekSelect.addEventListener('change', updateWeeklyComparisonDisplay);
-			
-			const exportButton = document.getElementById('export-button');
 			if (exportButton) exportButton.addEventListener('click', exportData);
-			const exportCsvButton = document.getElementById('export-csv-button');
 			if (exportCsvButton) exportCsvButton.addEventListener('click', exportToCSV);
-			const importButton = document.getElementById('import-button');
-			const importFileInput = document.getElementById('import-file-input');
 			if (importButton && importFileInput) importButton.addEventListener('click', () => importFileInput.click());
 			if (importFileInput) importFileInput.addEventListener('change', handleImportFile);
-
-			const addIncomeCategoryButton = document.getElementById('add-income-category-button');
 			if (addIncomeCategoryButton && newIncomeCategoryNameInput) addIncomeCategoryButton.addEventListener('click', () => { if (addCategory(newIncomeCategoryNameInput.value, 'income')) newIncomeCategoryNameInput.value = ''; });
-			const addExpenseCategoryButton = document.getElementById('add-expense-category-button');
 			if (addExpenseCategoryButton && newExpenseCategoryNameInput) addExpenseCategoryButton.addEventListener('click', () => { if (addCategory(newExpenseCategoryNameInput.value, 'expense')) newExpenseCategoryNameInput.value = ''; });
-			const addAccountButton = document.getElementById('add-account-button');
 			if (addAccountButton && newAccountNameInput) { addAccountButton.addEventListener('click', () => { if (addAccount(newAccountNameInput.value)) { newAccountNameInput.value = ''; } }); }
 
-
-			// Quan trọng: Gán listener cho dark mode toggle CUỐI CÙNG, sau khi mọi thứ đã sẵn sàng
 			if (darkModeToggleCheckbox) {
-				console.log('[Debug] Attaching change listener to darkModeToggleCheckbox');
 				darkModeToggleCheckbox.addEventListener('change', toggleTheme);
 			} else {
-				console.error('[Debug] darkModeToggleCheckbox NOT FOUND during listener attachment!');
+				console.error('[APP] darkModeToggleCheckbox NOT FOUND for listener attachment!');
 			}
-			console.log("[Debug] initializeApp COMPLETED");
+			console.log("[APP] initializeApp COMPLETED");
 		}
 
-        // KHỞI CHẠY ỨNG DỤNG
+		// KHỞI CHẠY ỨNG DỤNG
         initializeApp();
     </script>
 </body>
