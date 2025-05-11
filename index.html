@@ -1833,25 +1833,17 @@
 			});
 			
 			document.querySelectorAll('.virtual-key').forEach(button => {
-				button.addEventListener('dblclick', function(event) {
-					event.preventDefault();
-					console.log("Double click prevented on virtual key");
-				});
-
-				// Có thể cần phải xử lý ở mức độ sự kiện chạm thấp hơn như 'touchend'
-				// để theo dõi thời gian giữa các lần chạm và ngăn chặn nếu quá nhanh.
-				// Ví dụ:
 				let lastTap = 0;
 				button.addEventListener('touchend', function(event) {
 					const currentTime = new Date().getTime();
 					const tapLength = currentTime - lastTap;
-					if (tapLength < 300 && tapLength > 0) { // Ngưỡng 300ms cho double tap
+					if (tapLength < 300 && tapLength > 0) { 
 						event.preventDefault();
-						console.log("Rapid touchend prevented on virtual key");
+						// console.log("Rapid touchend prevented on virtual key"); // Dòng log này có thể có hoặc không
 					}
 					lastTap = currentTime;
 				});
-			});			
+			});	
 
 			document.addEventListener('mousedown', function(event) {
 				if (virtualKeyboard && virtualKeyboard.style.display !== 'none') {
