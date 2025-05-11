@@ -1,15 +1,14 @@
-@@ -0,0 +1,795 @@
 /* Nội dung cho tệp styles.css */
 body {
     font-family: 'Inter', sans-serif;
-    background-color: #f3f4f6;
+    background-color: #f3f4f6; /* Màu nền xám rất nhạt cho body ở chế độ sáng */
 }
 
 .container {
     max-width: 1000px;
     margin: 20px auto;
     padding: 20px;
-    background-color: white;
+    background-color: white; /* Nền trắng cho container chính */
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
@@ -17,16 +16,16 @@ body {
 .section {
     margin-bottom: 30px;
     padding: 20px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #e5e7eb; /* Viền xám nhạt cho các section */
     border-radius: 10px;
 }
 
 .section-header {
     font-size: 24px;
     font-weight: 600;
-    color: #1f2937;
+    color: #1f2937; /* Màu chữ xám đậm cho tiêu đề section */
     margin-bottom: 0;
-    border-bottom: 2px solid #60a5fa;
+    border-bottom: 2px solid #60a5fa; /* Viền xanh dương cho tiêu đề section */
     padding-bottom: 8px;
     display: flex;
     align-items: center;
@@ -43,7 +42,7 @@ body {
     width: 24px;
     height: 24px;
     margin-right: 8px;
-    color: #3b82f6;
+    color: #3b82f6; /* Màu xanh dương cho icon tiêu đề */
 }
 
 .collapsible-content {
@@ -57,21 +56,18 @@ body {
     display: block;
 }
 
-.collapsible-list-content { /* Áp dụng cho các thẻ ul */
+.collapsible-list-content {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease-out;
     list-style: none;
     padding-left: 0;
-    /* margin-top: 5px; */
 }
 
 .collapsible-list-content.active {
     /* maxHeight sẽ được set bởi JavaScript */
-    /* padding-top: 5px; */ /* Thêm padding khi mở nếu cần */
 }
 
-/* CSS cho .collapsible-list-header và .toggle-icon giữ nguyên như trên */
 .collapsible-list-header {
     cursor: pointer;
     display: flex;
@@ -92,18 +88,20 @@ body {
     transition: transform 0.3s ease;
     width: 20px;
     height: 20px;
-    color: #374151;
+    color: #374151; /* Màu xám đậm cho icon gập/mở */
 }
 
 .section-header.active .toggle-icon {
     transform: rotate(180deg);
 }
 
+/* --- Kiểu cho Form Elements ở Chế độ Sáng (Mặc định) --- */
 label {
     font-weight: 500;
-    color: #374151;
+    color: #1f2937;
     display: block;
-    margin-bottom: 5px;
+    font-size: 14px;
+    margin-bottom: 4px;
 }
 
 input[type="text"],
@@ -113,11 +111,40 @@ select,
 input[type="number"] {
     width: 100%;
     padding: 10px;
-    margin-bottom: 15px;
+    margin-bottom: 0;
     border: 1px solid #d1d5db;
     border-radius: 6px;
     box-sizing: border-box;
     transition: border-color 0.3s;
+    background-color: #ffffff;
+    color: #111827;
+    font-size: 14px;
+    height: 44px;
+}
+
+select {
+    padding-right: 32px;
+}
+
+/* --- QUAN TRỌNG: Ghi đè màu cho select và label ở chế độ sáng của ứng dụng --- */
+body:not(.dark-mode) select,
+body:not(.dark-mode) input[type="text"],
+body:not(.dark-mode) input[type="datetime-local"],
+body:not(.dark-mode) input[type="date"],
+body:not(.dark-mode) input[type="number"] {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-color: #d1d5db !important;
+}
+
+body:not(.dark-mode) label {
+    color: #1f2937 !important;
+}
+/* --------------------------------------------------------------------------- */
+
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af;
 }
 
 input[type="text"]:focus,
@@ -127,11 +154,12 @@ select:focus,
 input[type="number"]:focus {
     border-color: #3b82f6;
     outline: none;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 .radio-group {
     margin-top: 5px;
-    margin-bottom: 15px;
+    margin-bottom: 0;
 }
 
 .radio-group label {
@@ -139,6 +167,9 @@ input[type="number"]:focus {
     cursor: pointer;
     display: inline-block;
     margin-bottom: 0;
+    color: #1f2937;
+    font-weight: normal;
+    font-size: 14px;
 }
 
 .radio-group input[type="radio"] {
@@ -150,7 +181,6 @@ input[type="number"]:focus {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 15px;
 }
 
 .amount-currency-group input[type="text"] {
@@ -161,7 +191,12 @@ input[type="number"]:focus {
 .amount-currency-group select {
     width: auto;
     margin-bottom: 0;
-    padding: 10px 8px;
+    padding-left: 8px;
+    padding-right: 32px;
+}
+
+#add-triple-zero-button {
+    margin-top: 8px;
 }
 
 button {
@@ -170,7 +205,7 @@ button {
     border-radius: 6px;
     cursor: pointer;
     font-weight: 500;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, box-shadow 0.3s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -185,19 +220,22 @@ button svg {
 .btn-primary {
     background-color: #3b82f6;
     color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .btn-primary:hover {
     background-color: #2563eb;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .btn-secondary {
-    background-color: #6b7280;
-    color: white;
+    background-color: #e5e7eb;
+    color: #374151;
+    border: 1px solid #d1d5db;
 }
 
 .btn-secondary:hover {
-    background-color: #4b5563;
+    background-color: #d1d5db;
 }
 
 .btn-edit {
@@ -243,7 +281,7 @@ table {
 
 th,
 td {
-    border: 1px solid #e5e7eb;
+    border: 1px solid #e5e7eb; /* Màu viền mặc định cho tất cả các bảng */
     padding: 12px;
     text-align: left;
     font-size: 14px;
@@ -260,6 +298,23 @@ th {
     font-weight: 600;
     color: #1f2937;
 }
+
+/* Styles for Thống Kê Chi Tiết table labels in light mode */
+body:not(.dark-mode) .statistics-table-section #detailed-stats-tbody td:first-child {
+    color: #1f2937 !important;
+    font-weight: 500;
+}
+
+/* Styles for Thống Kê Chi Tiết table plain values (that use text-gray-800) in light mode */
+body:not(.dark-mode) .statistics-table-section #detailed-stats-tbody td.text-gray-800 {
+    color: #000000 !important; /* Đổi thành màu đen tuyền cho dễ đọc hơn */
+}
+
+/* Styles for Thống Kê Chi Tiết table cell borders in light mode */
+body:not(.dark-mode) .statistics-table-section #detailed-stats-tbody td {
+    border-color: #000000 !important; /* Màu đen cho tất cả các cạnh của đường kẻ ô */
+}
+
 
 .summary-item {
     display: flex;
@@ -311,12 +366,17 @@ th {
 .filter-container label {
     margin-bottom: 0;
     margin-right: 5px;
+    color: #1f2937;
+    font-weight: normal;
+    font-size: 14px;
 }
 
 .filter-container input[type="number"],
 .filter-container select {
     margin-bottom: 0;
     flex-grow: 1;
+    font-size: 14px;
+    height: 44px;
 }
 
 #message-box {
@@ -588,7 +648,7 @@ body.dark-mode .toggle-icon {
 }
 
 body.dark-mode label {
-    color: #d1d5db;
+    color: #d1d5db !important;
 }
 
 body.dark-mode input[type="text"],
@@ -596,9 +656,9 @@ body.dark-mode input[type="datetime-local"],
 body.dark-mode input[type="date"],
 body.dark-mode select,
 body.dark-mode input[type="number"] {
-    background-color: #1f2937;
-    color: #f3f4f6;
-    border-color: #4b5563;
+    background-color: #1f2937 !important;
+    color: #f3f4f6 !important;
+    border-color: #4b5563 !important;
 }
 
 body.dark-mode input[type="text"]:focus,
@@ -606,12 +666,22 @@ body.dark-mode input[type="datetime-local"]:focus,
 body.dark-mode input[type="date"]:focus,
 body.dark-mode select:focus,
 body.dark-mode input[type="number"]:focus {
-    border-color: #60a5fa;
+    border-color: #60a5fa !important;
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2) !important;
 }
 
 body.dark-mode input::placeholder { color: #6b7280; }
 body.dark-mode input:-ms-input-placeholder { color: #6b7280; }
 body.dark-mode input::-ms-input-placeholder { color: #6b7280; }
+body.dark-mode textarea::placeholder { color: #6b7280; }
+
+body.dark-mode .radio-group label {
+    color: #d1d5db;
+}
+
+body.dark-mode .radio-group input[type="radio"] {
+    accent-color: #60a5fa;
+}
 
 body.dark-mode th {
     background-color: #374151;
@@ -620,8 +690,16 @@ body.dark-mode th {
 
 body.dark-mode td,
 body.dark-mode th {
-    border-color: #4b5563;
+    border-color: #4b5563; /* Viền mặc định cho bảng ở dark mode */
 }
+
+/* Styles for Thống Kê Chi Tiết table cell borders in dark mode */
+/* (Lớp .dark:border-gray-700 trên HTML td đã xử lý việc này,
+   nhưng nếu cần ghi đè mạnh hơn, bạn có thể bỏ comment dòng dưới) */
+/* body.dark-mode .statistics-table-section #detailed-stats-tbody td {
+    border-color: #4b5563 !important; /* Ví dụ: Tailwind gray-600 */
+/* } */
+
 
 body.dark-mode .summary-item span:first-child { color: #d1d5db; }
 body.dark-mode .summary-item { border-bottom-color: #4b5563; }
@@ -637,25 +715,34 @@ body.dark-mode .text-red-600 { color: #f87171 !important; }
 body.dark-mode .text-blue-600 { color: #60a5fa !important; }
 body.dark-mode .text-purple-600 { color: #a78bfa !important; }
 
-body.dark-mode .btn-primary { background-color: #2b6cb0; color: #ffffff; }
-body.dark-mode .btn-primary:hover { background-color: #2c5282; }
-
-body.dark-mode .btn-secondary { background-color: #4a5563; color: #e5e7eb; }
-body.dark-mode .btn-secondary:hover { background-color: #6b7280; }
-
-body.dark-mode #darkModeToggle { /* This ID was not in original style block, but from JS. Assuming general button styling for it */
-    background-color: #374151;
-    color: #d1d5db;
-    border-color: #4b5563;
+body.dark-mode .btn-primary {
+    background-color: #2563eb;
+    color: #ffffff;
 }
-body.dark-mode #darkModeToggle:hover { background-color: #4b5563; }
+body.dark-mode .btn-primary:hover {
+    background-color: #1d4ed8;
+}
 
-/* Styles for light mode dark mode toggle button - assuming this button exists and has id="darkModeToggle" */
+body.dark-mode .btn-secondary {
+    background-color: #4b5563;
+    color: #e5e7eb;
+    border-color: #6b7280;
+}
+body.dark-mode .btn-secondary:hover {
+    background-color: #6b7280;
+}
+
 #darkModeToggle {
     border: 1px solid #d1d5db;
     background-color: #f9fafb;
     color: #374151;
 }
+body.dark-mode #darkModeToggle {
+    background-color: #374151;
+    color: #d1d5db;
+    border-color: #4b5563;
+}
+body.dark-mode #darkModeToggle:hover { background-color: #4b5563; }
 
 body.dark-mode .category-customization-section h3 {
     color: #e5e7eb;
@@ -687,110 +774,87 @@ body.dark-mode .message-error {
 
 /* ===== Bắt đầu CSS cho Bàn phím số ảo ===== */
 #virtualNumericKeyboard {
-    /* Class Tailwind 'fixed bottom-0 left-0 right-0 p-2 shadow-lg z-50' đã xử lý vị trí và shadow */
-    /* Class Tailwind 'bg-gray-200 dark:bg-gray-800' đã xử lý nền */
-    /* Bạn có thể thêm border-top nếu muốn ngăn cách rõ hơn với nội dung bên trên */
-    /* Ví dụ: */
-    /* border-top: 1px solid #d1d5db; */ /* Light mode border */
 }
 
 .dark #virtualNumericKeyboard {
-    /* border-top-color: #4b5563; */ /* Dark mode border */
 }
 
-/* Style chính cho các nút trên bàn phím ảo */
 .virtual-key {
-    /* Kích thước và Padding - Điều chỉnh các giá trị px này theo ý bạn */
     padding-top: 12px;
     padding-bottom: 12px;
-    /* Hoặc dùng height cố định và flex để căn giữa nếu muốn chiều cao tuyệt đối: */
-    /* height: 55px; */
-    /* display: flex; */
-    /* align-items: center; */
-    /* justify-content: center; */
-
-    font-size: 22px;      /* Kích thước chữ cho các số */
-    font-weight: 500;     /* Tương đương font-medium của Tailwind */
+    font-size: 22px;
+    font-weight: 500;
     text-align: center;
-    
-    /* Viền và Nền - Light Mode */
-    border: 1px solid #D1D5DB;    /* Tailwind gray-300 */
-    background-color: #F9FAFB;    /* Tailwind gray-50 */
-    color: #1F2937;               /* Tailwind gray-800 */
-    border-radius: 8px;           /* Tương đương rounded-lg của Tailwind */
-    
+    border: 1px solid #D1D5DB;
+    background-color: #F9FAFB;
+    color: #1F2937;
+    border-radius: 8px;
     cursor: pointer;
-    user-select: none; /* Ngăn việc vô tình chọn text trên nút */
+    user-select: none;
     transition: background-color 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1); /* Shadow tương đương shadow-md */
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
 }
 
 .virtual-key:hover {
-    background-color: #F3F4F6; /* Tailwind gray-100 */
+    background-color: #F3F4F6;
 }
 
 .virtual-key:active {
-    background-color: #E5E7EB; /* Tailwind gray-200 */
-    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); /* Shadow lõm vào khi nhấn */
+    background-color: #E5E7EB;
+    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
 }
 
-/* Dark Mode Styles cho .virtual-key */
 .dark .virtual-key {
-    border-color: #4B5563;      /* Tailwind gray-600 */
-    background-color: #374151;  /* Tailwind gray-700 */
-    color: #E5E7EB;             /* Tailwind gray-200 */
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.2); /* Shadow tối hơn */
+    border-color: #4B5563;
+    background-color: #374151;
+    color: #E5E7EB;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.2);
 }
 
 .dark .virtual-key:hover {
-    background-color: #4B5563;  /* Tailwind gray-600 */
+    background-color: #4B5563;
 }
 
 .dark .virtual-key:active {
-    background-color: #1F2937;  /* Tailwind gray-800 */
+    background-color: #1F2937;
     box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.25);
 }
 
-/* Style cho các phím chức năng (Xóa, 000, .) - có màu nền hơi khác một chút */
 .virtual-key.key-action {
-    background-color: #E5E7EB; /* Tailwind gray-200 (Light mode) */
-    font-weight: normal; /* Có thể làm chữ mảnh hơn cho phím chức năng */
+    background-color: #E5E7EB;
+    font-weight: normal;
 }
 .dark .virtual-key.key-action {
-    background-color: #4B5563; /* Tailwind gray-600 (Dark mode) */
-    color: #9CA3AF; /* Tailwind gray-400 */
+    background-color: #4B5563;
+    color: #9CA3AF;
 }
 .virtual-key.key-action:hover {
-    background-color: #D1D5DB; /* Tailwind gray-300 */
+    background-color: #D1D5DB;
 }
 .dark .virtual-key.key-action:hover {
-    background-color: #374151; /* Tailwind gray-700 */
+    background-color: #374151;
 }
 
-
-/* Style cho phím "Tiếp" (Done) - làm nổi bật hơn */
 .virtual-key.key-done {
-    background-color: #3B82F6; /* Tailwind blue-500 */
+    background-color: #3B82F6;
     color: white;
-    font-weight: 600; /* semibold */
+    font-weight: 600;
 }
 .dark .virtual-key.key-done {
-    background-color: #2563EB; /* Tailwind blue-600 */
+    background-color: #2563EB;
 }
 .virtual-key.key-done:hover {
-    background-color: #2563EB; /* Tailwind blue-600 */
+    background-color: #2563EB;
 }
 .dark .virtual-key.key-done:hover {
-    background-color: #1D4ED8; /* Tailwind blue-700 */
+    background-color: #1D4ED8;
 }
 
-/* Đảm bảo các phím trong grid có chiều cao bằng nhau khi dùng padding */
-/* và cho các phím chiếm hết không gian của ô grid */
 #virtualNumericKeyboard .grid > button.virtual-key {
-    height: 100%; 
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%; /* Đảm bảo nút chiếm hết chiều rộng của ô grid */
+    width: 100%;
 }
 /* ===== Kết thúc CSS cho Bàn phím số ảo ===== */
