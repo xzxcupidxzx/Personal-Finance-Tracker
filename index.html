@@ -1442,37 +1442,32 @@
         function exportData() { const dataToExport = { transactions, incomeCategories, expenseCategories, accounts }; const dataStr = JSON.stringify(dataToExport, null, 2); const blob = new Blob([dataStr], {type: "application/json"}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `financial_data_${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); showMessage('Dữ liệu đã được xuất!', 'success'); }
         function handleImportFile(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const importedData = JSON.parse(e.target.result); if (importedData.transactions && importedData.incomeCategories && importedData.expenseCategories && importedData.accounts) { if (!confirm('Nhập dữ liệu sẽ ghi đè toàn bộ dữ liệu hiện tại. Bạn có chắc chắn muốn tiếp tục?')) { importFileInput.value = ''; return; } transactions = importedData.transactions; incomeCategories = importedData.incomeCategories; expenseCategories = importedData.expenseCategories; accounts = importedData.accounts; saveTransactions(); saveUserPreferences(); initializeApp(); showMessage('Dữ liệu đã được nhập thành công!', 'success'); } else { showMessage('Lỗi: Định dạng file không hợp lệ.', 'error'); } } catch (error) { showMessage(`Lỗi khi nhập file: ${error.message}`, 'error'); console.error("Import error:", error); } finally { importFileInput.value = ''; } }; reader.readAsText(file); }
 
-        // --- HÀM FUNCTION VIRTUAL KEYBOARD ---
-		let activeInputForVirtualKeyboard = null; // Biến theo dõi ô input đang active với bàn phím ảo
+		/ --- HÀM FUNCTION VIRTUAL KEYBOARD --- (Đặt các hàm này ở ngoài initializeApp hoặc đầu initializeApp)
+		// let activeInputForVirtualKeyboard = null; // Đã khai báo toàn cục trong code bạn gửi
 
 		function showVirtualKeyboard(inputElement) {
-			const virtualKeyboardEl = document.getElementById('virtualNumericKeyboard'); // Lấy element ở đây
-			if (virtualKeyboardEl && inputElement) {
+			const virtualKeyboardElement = document.getElementById('virtualNumericKeyboard'); // Sử dụng tên biến nhất quán
+			if (virtualKeyboardElement && inputElement) {
 				console.log("[Keyboard] Showing virtual keyboard for:", inputElement.id);
-				virtualKeyboardEl.style.display = 'grid'; // Hoặc 'block' tùy theo CSS layout bàn phím
+				virtualKeyboardElement.style.display = 'grid';
 				activeInputForVirtualKeyboard = inputElement;
-				// Không dùng readonly ở đây nữa, sẽ xử lý bằng blur và preventDefault
 			} else {
-				console.error("[Keyboard] Cannot show virtual keyboard. virtualKeyboardEl or inputElement is missing.");
+				console.error("[Keyboard] Cannot show virtual keyboard. Elements missing.");
 			}
 		}
 
 		function hideVirtualKeyboard() {
-			const virtualKeyboardEl = document.getElementById('virtualNumericKeyboard'); // Lấy element ở đây
-			if (virtualKeyboardEl) {
+			const virtualKeyboardElement = document.getElementById('virtualNumericKeyboard');
+			if (virtualKeyboardElement) {
 				console.log("[Keyboard] Hiding virtual keyboard");
-				virtualKeyboardEl.style.display = 'none';
-				if (activeInputForVirtualKeyboard) {
-					// Cân nhắc có nên activeInputForVirtualKeyboard.blur(); ở đây không
-					// Nếu người dùng nhấn "Done", focus sẽ chuyển sang nút submit
-				}
+				virtualKeyboardElement.style.display = 'none';
 				activeInputForVirtualKeyboard = null;
 			}
 		}
 		
 		// --- HÀM KHỞI TẠO ỨNG DỤNG ---
 		function initializeApp() {
-			console.log("[Debug] initializeApp CALLED")
+			console.log("[Debug] initializeApp CALLED");
 			console.log("[APP] initializeApp CALLED");
 			// migrateOriginalAmountsForOldVNDTransactions();
 
@@ -1566,105 +1561,106 @@
 				addTripleZeroButton.addEventListener('click', function() { /* ... code của bạn ... */ });
 			}
 
-			// ----- VIRTUAL KEYBOARD LOGIC -----
-			const virtualKeyboardEl = document.getElementById('virtualNumericKeyboard');
-			const amountInputForKeyboard = document.getElementById('amount-input'); // Đổi tên biến để tránh nhầm lẫn với amountTextInput toàn cục nếu có
+			// --- HÀM FUNCTION VIRTUAL KEYBOARD --- (Đặt các hàm này ở ngoài initializeApp hoặc đầu initializeApp)
+			// let activeInputForVirtualKeyboard = null; // Đã khai báo toàn cục trong code bạn gửi
 
-			if (amountInputForKeyboard && virtualKeyboardEl) {
-				console.log('[Keyboard] Initializing event listeners for virtual keyboard.');
-
-				// Sử dụng 'click' để có kiểm soát tốt hơn trên mobile và ngăn bàn phím OS
-				amountInputForKeyboard.addEventListener('click', function(event) {
-					// Chỉ kích hoạt bàn phím ảo trên thiết bị cảm ứng
-					if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-						console.log("[Keyboard] Amount input CLICKED on touch device.");
-						event.preventDefault(); // QUAN TRỌNG: Ngăn hành vi mặc định (mở bàn phím OS)
-						
-						// Nếu bàn phím ảo đang ẩn hoặc chưa được hiển thị cho input này, thì hiện nó
-						if (virtualKeyboardEl.style.display === 'none' || virtualKeyboardEl.style.display === '' || activeInputForVirtualKeyboard !== this) {
-							showVirtualKeyboard(this);
-						}
-						// Ngăn việc focus thực sự vào input để tránh bàn phím OS tự động bật lên sau đó
-						this.blur(); 
-					}
-				});
-
-				// Xử lý khi focus vào input (ví dụ bằng phím Tab trên desktop)
-				// Trên mobile, chúng ta muốn click là chính, focus có thể gây ra hiện bàn phím OS không mong muốn
-				amountInputForKeyboard.addEventListener('focus', function(e) {
-					if ('ontouchstart' in window || navigator.maxTouchPoints > 0) { // Nếu là thiết bị cảm ứng
-						console.log("[Keyboard] Amount input FOCUSED on touch device - attempting to blur and show virtual.");
-						e.target.blur(); // LUÔN BLUR ngay để ngăn bàn phím OS
-						// Sau đó, nếu bàn phím ảo đang ẩn, hiện nó.
-						if (virtualKeyboardEl.style.display === 'none' || virtualKeyboardEl.style.display === '') {
-							showVirtualKeyboard(this);
-						}
-					} else {
-						// Trên desktop, cho phép focus bình thường, không hiện bàn phím ảo tự động khi focus
-						console.log("[Keyboard] Amount input FOCUSED on non-touch device.");
-					}
-				});
-
-				// Gán sự kiện cho các nút trên bàn phím ảo
-				virtualKeyboardEl.addEventListener('click', function(event) {
-					if (!activeInputForVirtualKeyboard) {
-						console.warn("[Keyboard] Virtual keyboard key pressed, but no active input target.");
-						return;
-					}
-
-					const targetButton = event.target.closest('button.virtual-key');
-					if (!targetButton) return; // Chỉ xử lý nếu click vào nút có class 'virtual-key'
-
-					const key = targetButton.dataset.key;
-					console.log("[Keyboard] Virtual key pressed:", key);
-
-					let currentValue = activeInputForVirtualKeyboard.value;
-
-					if (key === 'backspace') {
-						activeInputForVirtualKeyboard.value = currentValue.slice(0, -1);
-					} else if (key === 'done') {
-						hideVirtualKeyboard();
-						// Tùy chọn: chuyển focus sang nút submit hoặc một hành động khác
-						if (submitButton) submitButton.focus();
-					} else if (key === '.') {
-						if (!currentValue.includes('.')) { // Chỉ cho phép một dấu chấm
-							activeInputForVirtualKeyboard.value += key;
-						}
-					} else if (key) { // Các phím số (0-9) và '000'
-						activeInputForVirtualKeyboard.value += key;
-					}
-					// Không nên gọi activeInputForVirtualKeyboard.focus() ở đây vì có thể kích hoạt lại bàn phím OS
-				});
-			} else {
-				if (!virtualKeyboardEl) console.warn("[Keyboard] Virtual keyboard element with ID 'virtualNumericKeyboard' not found.");
-				if (!amountInputForKeyboard) console.warn("[Keyboard] Amount input element with ID 'amount-input' not found for virtual keyboard.");
+			function showVirtualKeyboard(inputElement) {
+				const virtualKeyboardElement = document.getElementById('virtualNumericKeyboard'); // Sử dụng tên biến nhất quán
+				if (virtualKeyboardElement && inputElement) {
+					console.log("[Keyboard] Showing virtual keyboard for:", inputElement.id);
+					virtualKeyboardElement.style.display = 'grid';
+					activeInputForVirtualKeyboard = inputElement;
+				} else {
+					console.error("[Keyboard] Cannot show virtual keyboard. Elements missing.");
+				}
 			}
 
-			// Xử lý click ra ngoài để ẩn bàn phím ảo
-			document.addEventListener('mousedown', function(event) {
-				if (virtualKeyboardEl && virtualKeyboardEl.style.display !== 'none') {
-					const isClickOnKeyboard = virtualKeyboardEl.contains(event.target);
-					// activeInputForVirtualKeyboard có thể là null nếu bàn phím vừa được ẩn
-					const isClickOnActiveInput = activeInputForVirtualKeyboard && activeInputForVirtualKeyboard.contains(event.target);
-
-					if (!isClickOnKeyboard && !isClickOnActiveInput) {
-						console.log("[Keyboard] Clicked outside, hiding virtual keyboard.");
-						hideVirtualKeyboard();
-					}
+			function hideVirtualKeyboard() {
+				const virtualKeyboardElement = document.getElementById('virtualNumericKeyboard');
+				if (virtualKeyboardElement) {
+					console.log("[Keyboard] Hiding virtual keyboard");
+					virtualKeyboardElement.style.display = 'none';
+					activeInputForVirtualKeyboard = null;
 				}
-			});
+			}
 
+			// --- HÀM KHỞI TẠO ỨNG DỤNG ---
+			function initializeApp() {
+				console.log("[Debug] initializeApp CALLED");
+				// ... (code khởi tạo khác của bạn) ...
 
-			document.addEventListener('mousedown', function(event) {
-				if (virtualKeyboard && virtualKeyboard.style.display !== 'none') {
-					const isClickOnKeyboard = virtualKeyboard.contains(event.target);
-					const isClickOnActiveInput = activeInputForVirtualKeyboard && activeInputForVirtualKeyboard.contains(event.target);
-					if (!isClickOnKeyboard && !isClickOnActiveInput) {
-						hideVirtualKeyboard();
-					}
+				// ----- VIRTUAL KEYBOARD LOGIC -----
+				const virtualKeyboardElement = document.getElementById('virtualNumericKeyboard'); 
+				// Sử dụng amountTextInput đã được khai báo ở đầu script của bạn
+				// const amountInputForKeyboard = document.getElementById('amount-input'); 
+
+				if (amountTextInput && virtualKeyboardElement) { // Kiểm tra amountTextInput và virtualKeyboardElement
+					console.log('[Keyboard] Initializing event listeners for virtual keyboard.');
+
+					amountTextInput.addEventListener('click', function(event) {
+						if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+							console.log("[Keyboard] Amount input CLICKED on touch device.");
+							event.preventDefault(); 
+							if (virtualKeyboardElement.style.display === 'none' || virtualKeyboardElement.style.display === '' || activeInputForVirtualKeyboard !== this) {
+								showVirtualKeyboard(this);
+							}
+							this.blur(); 
+						}
+					});
+
+					amountTextInput.addEventListener('focus', function(e) {
+						if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+							console.log("[Keyboard] Amount input FOCUSED on touch device - attempting to blur and show virtual.");
+							e.target.blur(); 
+							if (virtualKeyboardElement.style.display === 'none' || virtualKeyboardElement.style.display === '') {
+								showVirtualKeyboard(this);
+							}
+						} else {
+							console.log("[Keyboard] Amount input FOCUSED on non-touch device.");
+						}
+					});
+
+					virtualKeyboardElement.addEventListener('click', function(event) {
+						if (!activeInputForVirtualKeyboard) {
+							console.warn("[Keyboard] Virtual keyboard key pressed, but no active input target.");
+							return;
+						}
+						const targetButton = event.target.closest('button.virtual-key');
+						if (!targetButton) return;
+						const key = targetButton.dataset.key;
+						console.log("[Keyboard] Virtual key pressed:", key);
+						let currentValue = activeInputForVirtualKeyboard.value;
+						if (key === 'backspace') {
+							activeInputForVirtualKeyboard.value = currentValue.slice(0, -1);
+						} else if (key === 'done') {
+							hideVirtualKeyboard();
+							if (submitButton) submitButton.focus();
+						} else if (key === '.') {
+							if (!currentValue.includes('.')) {
+								activeInputForVirtualKeyboard.value += key;
+							}
+						} else if (key) {
+							activeInputForVirtualKeyboard.value += key;
+						}
+					});
+				} else {
+					if (!virtualKeyboardElement) console.warn("[Keyboard] Virtual keyboard element with ID 'virtualNumericKeyboard' not found.");
+					if (!amountTextInput) console.warn("[Keyboard] Amount input element with ID 'amount-input' not found for virtual keyboard.");
 				}
-			});
-			// ----- END VIRTUAL KEYBOARD LOGIC -----
+
+				// Chỉ cần MỘT event listener này cho document
+				document.addEventListener('mousedown', function(event) {
+					// Sử dụng virtualKeyboardElement đã khai báo ở trên
+					if (virtualKeyboardElement && virtualKeyboardElement.style.display !== 'none') { 
+						const isClickOnKeyboard = virtualKeyboardElement.contains(event.target);
+						const isClickOnActiveInput = activeInputForVirtualKeyboard && activeInputForVirtualKeyboard.contains(event.target);
+						if (!isClickOnKeyboard && !isClickOnActiveInput) {
+							console.log("[Keyboard] Clicked outside, hiding virtual keyboard.");
+							hideVirtualKeyboard();
+						}
+					}
+				});
+				// ----- END VIRTUAL KEYBOARD LOGIC -----
 
 
 			// Đăng ký các event listeners khác
