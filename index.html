@@ -50,46 +50,74 @@
                 <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
             </h2>
             <div class="collapsible-content active" id="form-content">
-                <form id="transaction-form" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3" data-transaction-mode="Chi">
-                    <div><label for="datetime-input">Ngày &amp; Giờ:</label><input type="datetime-local" id="datetime-input" required=""></div>
-                    <div>
-                        <label>Loại giao dịch:</label>
-                        <div class="radio-group">
-                            <label for="type-thu"><input type="radio" id="type-thu" name="type" value="Thu" required=""> Thu</label>
-                            <label for="type-chi"><input type="radio" id="type-chi" name="type" value="Chi" checked="" required=""> Chi</label>
-                            <label for="type-transfer"><input type="radio" id="type-transfer" name="type" value="Transfer" required=""> Chuyển tiền</label>
-                        </div>
-                    </div>
-					
+				<form id="transaction-form" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3" data-transaction-mode="Chi">
+					<div>
+						<label for="datetime-input">Ngày &amp; Giờ:</label>
+						<input type="datetime-local" id="datetime-input" required="">
+					</div>
+
+					<div>
+						<label>Loại giao dịch:</label>
+						<div class="radio-group">
+							<label for="type-thu"><input type="radio" id="type-thu" name="type" value="Thu" required=""> Thu</label>
+							<label for="type-chi"><input type="radio" id="type-chi" name="type" value="Chi" checked="" required=""> Chi</label>
+							<label for="type-transfer"><input type="radio" id="type-transfer" name="type" value="Transfer" required=""> Chuyển tiền</label>
+						</div>
+					</div>
+
 					<div class="form-field-normal">
 						<label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hạng mục:</label>
-						<select id="category" required="" class="block w-full h-11 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300"><option value="Ăn uống">Ăn uống</option><option value="Đi lại">Đi lại</option><option value="Nhà ở">Nhà ở</option><option value="Hóa đơn">Hóa đơn (Điện, nước, internet)</option><option value="Mua sắm">Mua sắm (Quần áo, đồ dùng)</option><option value="Giải trí">Giải trí</option><option value="Sức khỏe">Sức khỏe</option><option value="Giáo dục">Giáo dục</option><option value="Chi cho đầu tư">Chi cho đầu tư</option><option value="Trả nợ">Trả nợ (cho người khác)</option><option value="Chi phí khác">Chi phí khác (chung)</option></select>
+						<select id="category" required="" class="block w-full h-11 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300">
+							</select>
+					</div>
+
+					<div>
+						<label for="account" id="account-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tài khoản:</label>
+						<select id="account" required="" class="block w-full h-11 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300 appearance-none">
+							</select>
+					</div>
+					
+					<div class="form-field-transfer" style="display: none;"> <label for="to-account" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Đến Tài khoản:</label>
+						<select id="to-account" class="block w-full h-11 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300">
+							</select>
 					</div>
 					
 					<div>
-						<label for="account" id="account-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tài khoản:</label>
-						<select id="account" required="" class="block w-full h-11 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300 appearance-none"><option value="Tiền mặt">Tiền mặt</option><option value="Momo">Momo</option><option value="Thẻ tín dụng A">Thẻ tín dụng A</option><option value="Techcombank">Techcombank</option><option value="BIDV">BIDV</option><option value="Khác">Khác</option><option value="Sacombank">Sacombank</option></select>
+						<label for="amount-input">Số tiền:</label>
+						<div class="amount-currency-group">
+							<input type="text" inputmode="decimal" id="amount-input" placeholder="Nhập số tiền (VD: 22500)" required="">
+							<select id="form-currency-selector">
+								<option value="VND">VNĐ</option>
+								<option value="USD">USD (quy đổi)</option>
+							</select>
+						</div>
+						<button type="button" id="add-triple-zero-button" class="btn-secondary py-2 px-3 mt-2 text-sm rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Thêm 000</button>
 					</div>
 					
-                    <div class="form-field-transfer">
-						<label for="to-account" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Đến Tài khoản:</label>
-						<select id="to-account" class="block w-full h-11 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300"><option value="Tiền mặt">Tiền mặt</option><option value="Momo">Momo</option><option value="Thẻ tín dụng A">Thẻ tín dụng A</option><option value="Techcombank">Techcombank</option><option value="BIDV">BIDV</option><option value="Khác">Khác</option><option value="Sacombank">Sacombank</option></select>
+					<div>
+						<label for="description">Nội dung chi tiết:</label>
+						<input type="text" id="description" placeholder="VD: Chuyển tiền học, Ăn trưa" list="description-suggestions">
+						<datalist id="description-suggestions">
+							</datalist>
 					</div>
-                    
-                    <div>
-                        <label for="amount-input">Số tiền:</label>
-                        <div class="amount-currency-group">
-                            <input type="text" inputmode="decimal" id="amount-input" placeholder="Nhập số tiền (VD: 22500)" required="">
-                            <select id="form-currency-selector">
-                                <option value="VND">VNĐ</option> <option value="USD">USD (quy đổi)</option>
-                            </select>
-                        </div>
-                        <button type="button" id="add-triple-zero-button" class="btn-secondary py-2 px-3 mt-2 text-sm rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Thêm 000</button>
-                    </div>
-                    
-                    <div><label for="description">Nội dung chi tiết:</label><input type="text" id="description" placeholder="VD: Chuyển tiền học, Ăn trưa"></div>
-                    <div class="md:col-span-2 mt-4"><button type="submit" id="submit-transaction-button" class="btn-primary w-full"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>Thêm Giao Dịch</button></div>
-                </form>
+
+					<div id="transaction-suggestion-area" class="mt-3 mb-2 md:col-span-2" style="display: none;">
+						<p class="text-sm text-gray-600 dark:text-gray-400">
+							Gợi ý từ giao dịch cũ: 
+							<span id="suggested-description" class="font-semibold"></span> 
+							- <span id="suggested-amount" class="font-semibold"></span>
+							<button type="button" id="apply-suggestion-button" class="ml-2 text-sm btn-secondary-outline">Áp dụng</button>
+							<button type="button" id="dismiss-suggestion-button" class="ml-1 text-xs text-gray-500 hover:text-red-500">&times;</button>
+						</p>
+					</div>
+					
+					<div class="md:col-span-2 mt-4">
+						<button type="submit" id="submit-transaction-button" class="btn-primary w-full">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>
+							Thêm Giao Dịch
+						</button>
+					</div>
+				</form>
             </div>
         </div>
 
@@ -441,6 +469,14 @@
         const categoryInput = document.getElementById('category');
 		
 		// >>> THÊM 3 DÒNG MỚI CỦA BẠN VÀO ĐÂY:
+		const transactionSuggestionAreaEl = document.getElementById('transaction-suggestion-area');
+		const suggestedDescriptionEl = document.getElementById('suggested-description');
+		const suggestedAmountEl = document.getElementById('suggested-amount');
+		const applySuggestionButtonEl = document.getElementById('apply-suggestion-button');
+		const dismissSuggestionButtonEl = document.getElementById('dismiss-suggestion-button');
+		let currentSuggestedTransaction = null; // Để lưu trữ giao dịch được gợi ý
+		
+		// >>> THÊM 3 DÒNG MỚI CỦA BẠN VÀO ĐÂY:
         const summaryIncomeMonthDisplayEl = document.getElementById('summary-income-month-display');
         const summaryExpenseMonthDisplayEl = document.getElementById('summary-expense-month-display');
         const summaryBalanceMonthDisplayEl = document.getElementById('summary-balance-month-display');
@@ -699,7 +735,77 @@
 				expenseBarChartContainer.style.display = 'block';
 			}
 		}
+		// --- Luu bo nho ---
+		function findAndDisplayTransactionSuggestion() {
+			if (!transactionForm || editingTransactionId) { // Không gợi ý khi đang sửa
+				hideTransactionSuggestion();
+				return;
+			}
 
+			const typeRadio = document.querySelector('input[name="type"]:checked');
+			const currentType = typeRadio ? typeRadio.value : null;
+			const currentCategory = categoryInput.value;
+			const currentAccount = accountInput.value; // Có thể thêm điều kiện này
+
+			if (!currentType || !currentCategory) {
+				hideTransactionSuggestion();
+				return;
+			}
+
+			// Tìm kiếm giao dịch gần nhất khớp với loại và hạng mục (và tài khoản nếu muốn)
+			// Ưu tiên các giao dịch gần đây hơn
+			const recentTransactions = [...transactions].sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+
+			currentSuggestedTransaction = recentTransactions.find(tx => 
+				tx.type === currentType && 
+				tx.category === currentCategory &&
+				// tx.account === currentAccount && // Bỏ comment dòng này nếu muốn khớp cả tài khoản
+				!tx.isTransfer // Thường không cần gợi ý cho giao dịch chuyển tiền theo cách này
+			);
+
+			if (currentSuggestedTransaction) {
+				if (suggestedDescriptionEl) suggestedDescriptionEl.textContent = currentSuggestedTransaction.description || "(không có mô tả)";
+				if (suggestedAmountEl) {
+					// Hiển thị số tiền gốc nếu có và khác VNĐ, nếu không thì hiển thị số tiền đã quy đổi
+					if (currentSuggestedTransaction.originalCurrency && currentSuggestedTransaction.originalCurrency !== 'VND' && typeof currentSuggestedTransaction.originalAmount === 'number') {
+						suggestedAmountEl.textContent = formatCurrency(currentSuggestedTransaction.originalAmount, currentSuggestedTransaction.originalCurrency);
+					} else {
+						suggestedAmountEl.textContent = formatCurrency(currentSuggestedTransaction.amount, 'VND');
+					}
+				}
+				if (transactionSuggestionAreaEl) transactionSuggestionAreaEl.style.display = 'block';
+			} else {
+				hideTransactionSuggestion();
+			}
+		}
+
+		function hideTransactionSuggestion() {
+			if (transactionSuggestionAreaEl) transactionSuggestionAreaEl.style.display = 'none';
+			currentSuggestedTransaction = null;
+		}
+
+		function applyTransactionSuggestion() {
+			if (currentSuggestedTransaction) {
+				// Điền số tiền (giá trị gốc) và đơn vị tiền tệ gốc
+				if (currentSuggestedTransaction.originalCurrency && typeof currentSuggestedTransaction.originalAmount === 'number') {
+					amountTextInput.value = String(currentSuggestedTransaction.originalAmount); // Điền giá trị gốc
+					formCurrencySelector.value = currentSuggestedTransaction.originalCurrency;
+				} else { // Fallback nếu không có thông tin tiền tệ gốc rõ ràng
+					amountTextInput.value = String(currentSuggestedTransaction.amount); // Điền giá trị đã quy đổi
+					formCurrencySelector.value = 'VND'; 
+				}
+
+				descriptionInput.value = currentSuggestedTransaction.description || "";
+
+				// Tùy chọn: có thể điền cả tài khoản nếu logic tìm kiếm của bạn bao gồm tài khoản
+				// accountInput.value = currentSuggestedTransaction.account;
+
+				showMessage('Đã áp dụng gợi ý từ giao dịch cũ.', 'info');
+				hideTransactionSuggestion();
+				amountTextInput.focus(); // Chuyển focus để người dùng có thể sửa nhanh nếu cần
+			}
+		}		
+		
         // --- DARK MODE LOGIC (Giữ nguyên) ---
 		function applyTheme(theme) {
 			// console.log('Applying theme:', theme);
@@ -992,7 +1098,69 @@
         }
         
         // --- HÀM RESET FORM (Giữ nguyên) ---
-        function resetForm(persistedType = null) { transactionForm.reset(); setDefaultDateTime(); formCurrencySelector.value = 'VND'; if (persistedType) { const radioToSelect = document.querySelector(`input[name="type"][value="${persistedType}"]`); if (radioToSelect) { radioToSelect.checked = true; } } editingTransactionId = null; formTitleEl.textContent = 'Thêm Giao Dịch Mới'; submitButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>Thêm Giao Dịch'; toggleFormFields(); populateAccountDropdowns(); }
+		function resetForm(persistedType = null) {
+			// 1. Reset tất cả các trường của form về giá trị mặc định của HTML
+			if (transactionForm) { // Kiểm tra transactionForm tồn tại
+				transactionForm.reset(); 
+			} else {
+				console.error("[resetForm] transactionForm element not found!");
+				return; // Không thể tiếp tục nếu không có form
+			}
+
+			// 2. Đặt lại các giá trị mặc định cụ thể
+			setDefaultDateTime(); // Đặt lại ngày giờ về hiện tại
+			if (formCurrencySelector) formCurrencySelector.value = 'VND'; // Đặt lại đơn vị tiền tệ
+
+			// 3. Khôi phục loại giao dịch (nếu được truyền vào) hoặc đảm bảo loại mặc định được chọn
+			const typeChiRadio = document.getElementById('type-chi'); // Radio button cho "Chi"
+
+			if (persistedType) {
+				const radioToSelect = document.querySelector(`input[name="type"][value="${persistedType}"]`);
+				if (radioToSelect) {
+					radioToSelect.checked = true;
+				} else if (typeChiRadio) { // Fallback về "Chi" nếu persistedType không hợp lệ
+					typeChiRadio.checked = true;
+				}
+			} else {
+				// Nếu không có persistedType (ví dụ: hủy sửa), đảm bảo "Chi" được chọn (HTML nên có 'checked' cho type-chi)
+				// transactionForm.reset() thường sẽ khôi phục trạng thái 'checked' từ HTML.
+				// Nếu typeChiRadio không checked vì lý do nào đó, ta ép nó checked.
+				if (typeChiRadio && !typeChiRadio.checked) {
+					 // Kiểm tra xem có radio nào khác đang checked không, nếu không thì mới check 'Chi'
+					 const anyChecked = document.querySelector('input[name="type"]:checked');
+					 if (!anyChecked && typeChiRadio) {
+						typeChiRadio.checked = true;
+					 }
+				}
+			}
+
+    // 4. Đặt lại trạng thái chỉnh sửa
+    editingTransactionId = null;
+
+    // 5. Đặt lại tiêu đề form và nút submit
+    if (formTitleEl) formTitleEl.textContent = 'Thêm Giao Dịch Mới';
+    if (submitButton) {
+        submitButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>Thêm Giao Dịch';
+    }
+
+    // 6. Ẩn khu vực gợi ý giao dịch (nếu bạn đã triển khai tính năng này)
+    if (typeof hideTransactionSuggestion === 'function') {
+        hideTransactionSuggestion();
+    }
+
+    // 7. Cập nhật lại các trường hiển thị có điều kiện (như Hạng mục vs. Đến tài khoản)
+    // và điền lại danh sách hạng mục/tài khoản nếu cần
+    toggleFormFields(); // Hàm này nên gọi populateCategories() nếu loại không phải là 'Transfer'
+    
+    // 8. Điền lại danh sách tài khoản (thường không cần thiết mỗi lần reset nếu không có thay đổi, nhưng không gây hại)
+    // Nếu populateAccountDropdowns chỉ điền options mà không thay đổi value đã chọn thì ổn.
+    populateAccountDropdowns(); 
+
+    // 9. (Tùy chọn) Di chuyển focus về trường đầu tiên nếu muốn
+    // if (datetimeInput) datetimeInput.focus();
+}
+
+
         function getMonthDisplayText(selectedMonthValue, withParentheses = true) {
             let text;
             if (selectedMonthValue === 'all' || !selectedMonthValue) {
@@ -1855,7 +2023,28 @@
 				}
 			});
 			// ----- END VIRTUAL KEYBOARD LOGIC -----
+		    const fieldsForSuggestion = [
+				...document.querySelectorAll('input[name="type"]'), // Tất cả các radio button loại
+				categoryInput, 
+				// accountInput // Thêm accountInput nếu muốn nó cũng kích hoạt gợi ý
+			];
 
+			fieldsForSuggestion.forEach(field => {
+				if (field) { // Kiểm tra field tồn tại
+					field.addEventListener('change', findAndDisplayTransactionSuggestion);
+				}
+			});
+
+			// Gán sự kiện cho các nút trong khu vực gợi ý
+			if (applySuggestionButtonEl) {
+				applySuggestionButtonEl.addEventListener('click', applyTransactionSuggestion);
+			}
+			if (dismissSuggestionButtonEl) {
+				dismissSuggestionButtonEl.addEventListener('click', hideTransactionSuggestion);
+			}
+
+			// Khi reset form, cũng ẩn gợi ý
+			transactionForm.addEventListener('reset', hideTransactionSuggestion);	
 
 			// Đăng ký các event listeners khác
 			if(transactionForm) transactionForm.addEventListener('submit', handleTransactionSubmit);
