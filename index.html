@@ -1097,69 +1097,66 @@
             resetForm(persistedTransactionType); // Reset form, giữ lại loại giao dịch vừa chọn
         }
         
-        // --- HÀM RESET FORM (Giữ nguyên) ---
-		function resetForm(persistedType = null) {
-			// 1. Reset tất cả các trường của form về giá trị mặc định của HTML
-			if (transactionForm) { // Kiểm tra transactionForm tồn tại
-				transactionForm.reset(); 
-			} else {
-				console.error("[resetForm] transactionForm element not found!");
-				return; // Không thể tiếp tục nếu không có form
-			}
-
-			// 2. Đặt lại các giá trị mặc định cụ thể
-			setDefaultDateTime(); // Đặt lại ngày giờ về hiện tại
-			if (formCurrencySelector) formCurrencySelector.value = 'VND'; // Đặt lại đơn vị tiền tệ
-
-			// 3. Khôi phục loại giao dịch (nếu được truyền vào) hoặc đảm bảo loại mặc định được chọn
-			const typeChiRadio = document.getElementById('type-chi'); // Radio button cho "Chi"
-
-			if (persistedType) {
-				const radioToSelect = document.querySelector(`input[name="type"][value="${persistedType}"]`);
-				if (radioToSelect) {
-					radioToSelect.checked = true;
-				} else if (typeChiRadio) { // Fallback về "Chi" nếu persistedType không hợp lệ
-					typeChiRadio.checked = true;
-				}
-			} else {
-				// Nếu không có persistedType (ví dụ: hủy sửa), đảm bảo "Chi" được chọn (HTML nên có 'checked' cho type-chi)
-				// transactionForm.reset() thường sẽ khôi phục trạng thái 'checked' từ HTML.
-				// Nếu typeChiRadio không checked vì lý do nào đó, ta ép nó checked.
-				if (typeChiRadio && !typeChiRadio.checked) {
-					 // Kiểm tra xem có radio nào khác đang checked không, nếu không thì mới check 'Chi'
-					 const anyChecked = document.querySelector('input[name="type"]:checked');
-					 if (!anyChecked && typeChiRadio) {
-						typeChiRadio.checked = true;
-					 }
-				}
-			}
-
-    // 4. Đặt lại trạng thái chỉnh sửa
-    editingTransactionId = null;
-
-    // 5. Đặt lại tiêu đề form và nút submit
-    if (formTitleEl) formTitleEl.textContent = 'Thêm Giao Dịch Mới';
-    if (submitButton) {
-        submitButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>Thêm Giao Dịch';
-    }
-
-    // 6. Ẩn khu vực gợi ý giao dịch (nếu bạn đã triển khai tính năng này)
-    if (typeof hideTransactionSuggestion === 'function') {
-        hideTransactionSuggestion();
-    }
-
-    // 7. Cập nhật lại các trường hiển thị có điều kiện (như Hạng mục vs. Đến tài khoản)
-    // và điền lại danh sách hạng mục/tài khoản nếu cần
-    toggleFormFields(); // Hàm này nên gọi populateCategories() nếu loại không phải là 'Transfer'
-    
-    // 8. Điền lại danh sách tài khoản (thường không cần thiết mỗi lần reset nếu không có thay đổi, nhưng không gây hại)
-    // Nếu populateAccountDropdowns chỉ điền options mà không thay đổi value đã chọn thì ổn.
-    populateAccountDropdowns(); 
-
-    // 9. (Tùy chọn) Di chuyển focus về trường đầu tiên nếu muốn
-    // if (datetimeInput) datetimeInput.focus();
-}
-
+	// --- HÀM RESET FORM (Cập nhật để giữ lại lựa chọn tài khoản) ---
+	function resetForm(persistedType = null) {
+	    // Lưu lại giá trị tài khoản đã chọn trước khi reset
+	    const previousAccountValue = accountInput.value;
+	    const previousToAccountValue = toAccountInput.value; // Sẽ là '' nếu không phải transfer
+	
+	    transactionForm.reset(); // Reset các trường input cơ bản
+	    setDefaultDateTime();    // Đặt lại ngày giờ về hiện tại
+	    formCurrencySelector.value = 'VND'; // Đặt lại đơn vị tiền tệ
+	
+	    // Khôi phục loại giao dịch (Thu/Chi/Transfer) nếu được truyền vào
+	    if (persistedType) {
+	        const radioToSelect = document.querySelector(`input[name="type"][value="${persistedType}"]`);
+	        if (radioToSelect) {
+	            radioToSelect.checked = true;
+	        }
+	    } else {
+	        // Mặc định chọn "Chi" nếu không có persistedType
+	        const typeChiRadio = document.getElementById('type-chi');
+	        if (typeChiRadio) typeChiRadio.checked = true;
+	    }
+	
+	    editingTransactionId = null; // Reset ID đang sửa
+	    // Cập nhật tiêu đề form và nút submit về trạng thái "Thêm mới"
+	    if (formTitleEl) formTitleEl.textContent = 'Thêm Giao Dịch Mới';
+	    if (submitButton) {
+	        submitButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>Thêm Giao Dịch';
+	    }
+	
+	    toggleFormFields(); // Cập nhật hiển thị các trường dựa trên loại giao dịch
+	    
+	    // Điền lại danh sách tài khoản và cố gắng khôi phục lựa chọn trước đó
+	    populateAccountDropdowns(); // Hàm này sẽ điền các options
+	
+	    // Cố gắng khôi phục giá trị tài khoản đã chọn
+	    if (accountInput && Array.from(accountInput.options).some(opt => opt.value === previousAccountValue)) {
+	        accountInput.value = previousAccountValue;
+	    }
+	    // Nếu là giao dịch chuyển tiền và giá trị "Đến tài khoản" trước đó hợp lệ
+	    if (document.querySelector('input[name="type"]:checked')?.value === 'Transfer' && 
+	        toAccountInput && 
+	        Array.from(toAccountInput.options).some(opt => opt.value === previousToAccountValue)) {
+	        toAccountInput.value = previousToAccountValue;
+	    }
+	
+	
+	    // Điền lại danh mục nếu không phải là giao dịch chuyển tiền
+	    // và giữ lại lựa chọn hạng mục nếu có thể (tùy thuộc vào việc bạn có muốn giữ lại hạng mục không)
+	    // Hiện tại, populateCategories sẽ chọn hạng mục đầu tiên của loại giao dịch mới.
+	    // Nếu bạn muốn giữ lại hạng mục, cần logic tương tự như giữ lại tài khoản.
+	    const currentTransactionType = document.querySelector('input[name="type"]:checked');
+	    if (currentTransactionType && currentTransactionType.value !== 'Transfer') {
+	        populateCategories(); // Điều này sẽ chọn hạng mục đầu tiên cho loại Thu/Chi
+	    }
+	    
+	    // Đặt lại focus vào trường đầu tiên hoặc trường số tiền (tùy chọn)
+	    // datetimeInput.focus(); 
+	    // Hoặc
+	    // amountTextInput.focus();
+	}
 
         function getMonthDisplayText(selectedMonthValue, withParentheses = true) {
             let text;
