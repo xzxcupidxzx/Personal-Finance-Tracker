@@ -77,7 +77,8 @@
 							</select>
 					</div>
 					
-					<div class="form-field-transfer" style="display: none;"> <label for="to-account" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Đến Tài khoản:</label>
+					<div class="form-field-transfer" style="display: none;"> 
+						<label for="to-account" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Đến Tài khoản:</label>
 						<select id="to-account" class="block w-full h-11 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300">
 							</select>
 					</div>
@@ -1012,8 +1013,56 @@
         function addAccount(name) { if (!name || name.trim() === '') { showMessage('Tên tài khoản không được để trống.', 'error'); return false; } const newAccountName = name.trim(); if (accounts.some(acc => acc.value.toLowerCase() === newAccountName.toLowerCase() || acc.text.toLowerCase() === newAccountName.toLowerCase())) { showMessage('Tài khoản này đã tồn tại.', 'error'); return false; } const newAccount = { value: newAccountName, text: newAccountName }; accounts.push(newAccount); saveUserPreferences(); renderAccountListAdmin(); populateAccountDropdowns(); updateAccountBalances(); showMessage(`Đã thêm tài khoản "${newAccount.text}"!`, 'success'); return true; }
         function populateAccountDropdowns() { if (!accountInput || !toAccountInput) return; const currentFromAccount = accountInput.value; const currentToAccount = toAccountInput.value; accountInput.innerHTML = ''; toAccountInput.innerHTML = ''; if (!accounts || accounts.length === 0) accounts = [...defaultAccounts]; accounts.forEach(acc => { accountInput.add(new Option(acc.text, acc.value)); toAccountInput.add(new Option(acc.text, acc.value)); }); if (accounts.some(acc => acc.value === currentFromAccount)) accountInput.value = currentFromAccount; else if (accounts.length > 0) accountInput.value = accounts[0].value; if (accounts.some(acc => acc.value === currentToAccount)) toAccountInput.value = currentToAccount; else if (accounts.length > 1) toAccountInput.value = accounts[1].value; else if (accounts.length > 0) toAccountInput.value = accounts[0].value; }
         function populateCategories() { if (!categoryInput) return; const selectedTypeRadio = document.querySelector('input[name="type"]:checked'); const selectedType = selectedTypeRadio ? selectedTypeRadio.value : 'Chi'; const currentCategoryValue = categoryInput.value; categoryInput.innerHTML = ''; let categoriesToPopulate = (selectedType === 'Thu') ? incomeCategories : expenseCategories; categoriesToPopulate = categoriesToPopulate.filter(cat => cat.value !== TRANSFER_CATEGORY_IN && cat.value !== TRANSFER_CATEGORY_OUT); if (!categoriesToPopulate || categoriesToPopulate.length === 0) { const defaultCats = (selectedType === 'Thu') ? [...defaultIncomeCategories] : [...defaultExpenseCategories]; categoriesToPopulate = defaultCats.filter(cat => cat.value !== TRANSFER_CATEGORY_IN && cat.value !== TRANSFER_CATEGORY_OUT); } categoriesToPopulate.forEach(category => categoryInput.add(new Option(category.text, category.value))); if (categoriesToPopulate.some(cat => cat.value === currentCategoryValue)) categoryInput.value = currentCategoryValue; else if (categoriesToPopulate.length > 0) categoryInput.value = categoriesToPopulate[0].value; }
-        function toggleFormFields() { const selectedTypeRadio = document.querySelector('input[name="type"]:checked'); const selectedType = selectedTypeRadio ? selectedTypeRadio.value : 'Chi'; transactionForm.dataset.transactionMode = selectedType; if (selectedType === 'Transfer') { accountLabel.textContent = 'Từ Tài khoản:'; categoryInput.removeAttribute('required'); toAccountInput.setAttribute('required', ''); } else { accountLabel.textContent = 'Tài khoản:'; categoryInput.setAttribute('required', ''); toAccountInput.removeAttribute('required'); populateCategories(); } }
+		function toggleFormFields() {
+			const selectedTypeRadio = document.querySelector('input[name="type"]:checked');
+			const selectedType = selectedTypeRadio ? selectedTypeRadio.value : 'Chi'; // Mặc định là 'Chi' nếu không có gì được chọn
 
+			// Lấy các element DOM của các container field
+			// Đảm bảo rằng các class này tồn tại trong HTML của bạn
+			const categoryFieldContainer = document.querySelector('.form-field-normal'); 
+			const toAccountFieldContainer = document.querySelector('.form-field-transfer');
+
+			// Kiểm tra xem các container có thực sự được tìm thấy không (để tránh lỗi)
+			if (!categoryFieldContainer) {
+				console.error("Lỗi: Không tìm thấy container cho trường Hạng mục (class 'form-field-normal').");
+			}
+			if (!toAccountFieldContainer) {
+				console.error("Lỗi: Không tìm thấy container cho trường Đến Tài khoản (class 'form-field-transfer').");
+			}
+
+			// Cập nhật dataset trên form (đã có)
+			if (transactionForm) { // Giả sử transactionForm là biến global trỏ đến form
+			  transactionForm.dataset.transactionMode = selectedType;
+			}
+
+
+			if (selectedType === 'Transfer') {
+				// Cập nhật label (đã có)
+				if (accountLabel) accountLabel.textContent = 'Từ Tài khoản:'; // Giả sử accountLabel là biến global
+
+				// Ẩn trường Hạng mục và bỏ yêu cầu
+				if (categoryFieldContainer) categoryFieldContainer.style.display = 'none';
+				if (categoryInput) categoryInput.removeAttribute('required'); // Giả sử categoryInput là biến global
+
+				// Hiển thị trường Đến Tài khoản và đặt là bắt buộc
+				if (toAccountFieldContainer) toAccountFieldContainer.style.display = 'block'; // Hoặc 'grid', 'flex' tùy theo layout của bạn
+				if (toAccountInput) toAccountInput.setAttribute('required', ''); // Giả sử toAccountInput là biến global
+				
+			} else { // Cho 'Thu' hoặc 'Chi'
+				// Cập nhật label (đã có)
+				if (accountLabel) accountLabel.textContent = 'Tài khoản:';
+
+				// Hiển thị trường Hạng mục và đặt là bắt buộc
+				if (categoryFieldContainer) categoryFieldContainer.style.display = 'block'; // Hoặc 'grid', 'flex'
+				if (categoryInput) categoryInput.setAttribute('required', '');
+
+				// Ẩn trường Đến Tài khoản và bỏ yêu cầu
+				if (toAccountFieldContainer) toAccountFieldContainer.style.display = 'none';
+				if (toAccountInput) toAccountInput.removeAttribute('required');
+				
+				populateCategories(); // Gọi hàm điền lại danh mục cho Thu/Chi
+			}
+		}
         // --- HÀM XỬ LÝ SUBMIT GIAO DỊCH (CẬP NHẬT CÁCH LƯU originalAmount) ---
         function handleTransactionSubmit(e) {
             e.preventDefault();
