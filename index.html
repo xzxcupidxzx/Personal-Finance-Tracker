@@ -139,21 +139,6 @@
 					<button id="clear-date-filter-button" class="btn-secondary py-2 px-3 text-sm rounded-md" title="Hiển thị tất cả các ngày trong tháng đã chọn">Tất cả ngày</button>
 				</div>
 				<div class="overflow-x-auto">
-					<table id="transaction-table">
-						<thead>
-							<tr>
-								<th>Ngày &amp; Giờ</th>
-								<th>Nội dung</th>
-								<th>Hạng mục</th>
-								<th>Số tiền (VNĐ)</th>
-								<th>Loại</th>
-								<th>Tài khoản</th>
-								<th>Thao tác</th>
-							</tr>
-						</thead>
-						<tbody id="transaction-list">
-							</tbody>
-					</table>
 				</div>		
                 <div class="overflow-x-auto"><table id="transaction-table"><thead><tr><th>Ngày &amp; Giờ</th><th>Nội dung</th><th>Hạng mục</th><th>Số tiền (VNĐ)</th><th>Loại</th><th>Tài khoản</th><th>Thao tác</th></tr></thead><tbody id="transaction-list"><tr><td>11/05/2025 02:23</td><td></td><td>Ăn uống</td><td class="text-red-600">22.500&nbsp;₫</td><td>Chi Tiêu</td><td>Tiền mặt</td><td class="text-center"><button class="btn-edit"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square mr-1" viewBox="0 0 16 16"> <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path> <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"></path> </svg>Sửa</button><button class="btn-delete"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></td></tr></tbody></table></div>
                 <p id="no-transactions" class="text-center text-gray-500 mt-4" style="display: none;">Chưa có giao dịch nào.</p>
@@ -1739,43 +1724,49 @@
         function filterTransactionsByMonth() { applyMainFilter(); }
 		function applyMainFilter() {
 			const selectedMonth = filterMonthSelect ? filterMonthSelect.value : 'all';
-			const selectedSpecificDate = filterSpecificDateInput ? filterSpecificDateInput.value : ""; 
-			console.log(`Applying filters: Month='<span class="math-inline">\{selectedMonth\}', SpecificDate\='</span>{selectedSpecificDate}'`);
+			const selectedSpecificDate = filterSpecificDateInput ? filterSpecificDateInput.value : "";
+			console.log(`Applying filters: Month='<span class="math-inline">\{selectedMonth\}', SpecificDate\='</span>{selectedSpecificDate}'`); // Giữ lại để kiểm tra
 
 			let filteredTransactions = [...transactions];
 
-			// 1. Lọc theo tháng (từ bộ lọc chính #filter-month)
 			if (selectedMonth !== 'all') {
-				filteredTransactions = filteredTransactions.filter(tx => tx.datetime && tx.datetime.startsWith(selectedMonth));
+				filteredTransactions = filteredTransactions.filter(tx => {
+					return tx.datetime && tx.datetime.startsWith(selectedMonth);
+				});
 			}
 
-			// 2. Lọc tiếp theo ngày cụ thể (nếu có ngày được chọn trong #filter-specific-date)
-			if (selectedSpecificDate) { 
-				filteredTransactions = filteredTransactions.filter(tx => tx.datetime && tx.datetime.startsWith(selectedSpecificDate));
-			}
+			if (selectedSpecificDate) {
+				console.log(`Filtering for specific date: '${selectedSpecificDate}'`); // Thêm log
+				filteredTransactions = filteredTransactions.filter(tx => {
+					if (!tx.datetime) return false;
+					// Trích xuất phần YYYY-MM-DD từ tx.datetime
+					const transactionDatePart = tx.datetime.substring(0, 10);
+					const matches = (transactionDatePart === selectedSpecificDate);
 
-			// Cập nhật giao diện
+					// Log chi tiết cho việc gỡ lỗi (bạn có thể xóa sau khi đã sửa được)
+					if (tx.datetime.includes('2025-05-11')) { // Hoặc một phần ngày của giao dịch lỗi
+						 console.log(`Checking problematic transaction: ID=<span class="math-inline">\{tx\.id\}, FullDateTime\='</span>{tx.datetime}', TxDatePart='<span class="math-inline">\{transactionDatePart\}', SelectedDate\='</span>{selectedSpecificDate}', Matches=${matches}`);
+					}
+					return matches;
+				});
+			}
+			console.log("Transactions to be rendered:", JSON.stringify(filteredTransactions.map(tx => ({id: tx.id, datetime: tx.datetime, description: tx.description})), null, 2));
 			renderMainTransactions(filteredTransactions);
-			updateSummarySectionText(filteredTransactions, selectedMonth); // Dùng selectedMonth cho label tháng của tóm tắt
-			updateAllSummariesAndCharts(filteredTransactions); 
+			updateSummarySectionText(filteredTransactions, selectedMonth);
+			updateAllSummariesAndCharts(filteredTransactions);
 			updateDetailedStatisticsTable(filteredTransactions);
 
-			// Cập nhật tiêu đề cho các biểu đồ và bảng thống kê
+			// ... (phần cập nhật tiêu đề biểu đồ giữ nguyên)
 			let effectiveFilterDisplay = getMonthDisplayText(selectedMonth, false);
 			if (selectedSpecificDate) {
-				const dateParts = selectedSpecificDate.split('-'); // YYYY-MM-DD
-				const displayDate = `<span class="math-inline">\{dateParts\[2\]\}/</span>{dateParts[1]}/${dateParts[0]}`; // dd/MM/YYYY
-
+				const dateParts = selectedSpecificDate.split('-');
+				const displayDate = `<span class="math-inline">\{dateParts\[2\]\}/</span>{dateParts[1]}/${dateParts[0]}`;
 				if (selectedMonth === 'all' || effectiveFilterDisplay === "Tất cả") {
 					effectiveFilterDisplay = `Ngày ${displayDate}`;
 				} else {
-					 // Nếu đã có tháng cụ thể, có thể chỉ hiển thị ngày cho ngắn gọn, hoặc cả hai
-					 effectiveFilterDisplay += `, ngày ${dateParts[2]}`; 
-					 // Hoặc: effectiveFilterDisplay = `${effectiveFilterDisplay} & Ngày ${displayDate}`;
+					effectiveFilterDisplay += `, ngày ${dateParts[2]}`;
 				}
 			}
-
-			// Đảm bảo các element tiêu đề tồn tại trước khi cập nhật
 			const expenseBreakdownTitleTextEl = document.getElementById('expense-breakdown-title-text');
 			if (expenseBreakdownTitleTextEl) {
 				expenseBreakdownTitleTextEl.textContent = `Phân Loại Chi Tiêu ${effectiveFilterDisplay || 'Tổng Quan'} - VNĐ`;
