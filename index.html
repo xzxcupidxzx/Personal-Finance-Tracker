@@ -2211,9 +2211,11 @@
 							activeInputForVirtualKeyboard.value += key;
 						}
 					} else if (key) { // Các phím số (0-9) và '000'
-						activeInputForVirtualKeyboard.value += key;
+						activeInputForVirtualKeyboard.value += key;'
+						formatAndPreserveCursor(activeInputForVirtualKeyboard, activeInputForVirtualKeyboard.value);
 					}
 					// Không nên gọi activeInputForVirtualKeyboard.focus() ở đây vì có thể kích hoạt lại bàn phím OS
+					
 				});
 			} else {
 				if (!virtualKeyboardEl) console.warn("[Keyboard] Virtual keyboard element with ID 'virtualNumericKeyboard' not found.");
