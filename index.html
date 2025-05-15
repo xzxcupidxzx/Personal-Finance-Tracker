@@ -569,23 +569,41 @@
         // --- HÀM TIỆN ÍCH (Giữ nguyên các hàm tiện ích của bạn) ---
         function showMessage(message, type = 'success') { messageBox.textContent = message; messageBox.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'message-success' : 'message-error'}`; messageBox.style.display = 'block'; setTimeout(() => { messageBox.style.display = 'none'; }, 3000); }
         
-        function formatCurrency(amount, currencyCode = 'VND') {
-            const options = { style: 'currency', currency: currencyCode };
-            const locale = 'vi-VN'; 
-            // Với việc bỏ x1000, bạn có thể muốn hiển thị số lẻ cho VNĐ nếu cần
-            if (currencyCode === 'VND') {
-                options.minimumFractionDigits = 0; // Hoặc 2 nếu muốn 2 số lẻ
-                options.maximumFractionDigits = 0; // Hoặc 2 nếu muốn 2 số lẻ
-            } else if (currencyCode === 'USD') {
-                options.minimumFractionDigits = 2;
-                options.maximumFractionDigits = 2;
-            } else { // Mặc định cho các loại tiền tệ khác
-                options.minimumFractionDigits = 0;
-                options.maximumFractionDigits = 2;
-            }
-            if (isNaN(amount) || amount === null) amount = 0;
-            return new Intl.NumberFormat(locale, options).format(amount);
-        }
+		function formatCurrency(amount, currencyCode = 'VND') {
+					if (isNaN(amount) || amount === null) amount = 0;
+
+					if (currencyCode === 'VND') {
+						// Sử dụng 'en-US' để định dạng số có dấu phẩy hàng nghìn
+						const numberFormatter = new Intl.NumberFormat('en-US', {
+							style: 'decimal', // Chỉ định dạng số, không kèm ký hiệu tiền tệ từ bước này
+							minimumFractionDigits: 0,
+							maximumFractionDigits: 0
+						});
+						// Thêm ký hiệu '₫' và một khoảng trắng không ngắt dòng (\u00A0)
+						return numberFormatter.format(amount) + '\u00A0₫';
+					} else if (currencyCode === 'USD') {
+						// Giữ nguyên định dạng chuẩn cho USD (đã dùng dấu phẩy hàng nghìn)
+						return new Intl.NumberFormat('en-US', {
+							style: 'currency',
+							currency: 'USD',
+							minimumFractionDigits: 2,
+							maximumFractionDigits: 2
+						}).format(amount);
+					} else {
+						// Đối với các loại tiền tệ khác, bạn có thể giữ nguyên logic cũ
+						// sử dụng locale 'vi-VN' hoặc chọn một locale khác như 'en-US'
+						// để có dấu phẩy hàng nghìn nếu muốn.
+						// Dưới đây là logic gốc cho các loại tiền tệ khác:
+						const options = {
+							style: 'currency',
+							currency: currencyCode,
+							minimumFractionDigits: 0, // Theo code gốc của bạn
+							maximumFractionDigits: 2  // Theo code gốc của bạn
+						};
+						const locale = 'vi-VN'; // Locale gốc của bạn cho các trường hợp khác
+						return new Intl.NumberFormat(locale, options).format(amount);
+					}
+				}
 
         function formatDateTimeLocalInput(date) { /* ... mã gốc của bạn ... */ 
             const year = date.getFullYear();
@@ -1381,6 +1399,8 @@
 			//     currentBalanceEl.className = (totalIncome - totalExpenses >= 0) ? 'text-blue-600 font-bold' : 'text-red-600 font-bold';
 			// }
 		}
+		
+
 		function updateSummarySectionText(summaryTransactions, monthForDisplay) {
 			let totalIncome = 0;
 			let totalExpenses = 0;
