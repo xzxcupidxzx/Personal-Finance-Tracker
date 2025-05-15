@@ -2212,6 +2212,7 @@
 						}
 					} else if (key) { // Các phím số (0-9) và '000'
 						activeInputForVirtualKeyboard.value += key;'
+					if (activeInputForVirtualKeyboard.id === 'amount-input') { // Chỉ định dạng cho ô số tiền
 						formatAndPreserveCursor(activeInputForVirtualKeyboard, activeInputForVirtualKeyboard.value);
 					}
 					// Không nên gọi activeInputForVirtualKeyboard.focus() ở đây vì có thể kích hoạt lại bàn phím OS
