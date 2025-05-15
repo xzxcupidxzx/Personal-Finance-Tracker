@@ -122,20 +122,17 @@
             </div>
         </div>
 
-        <div class="section table-section">
-             <h2 class="section-header collapsible-header active" data-collapsible-target="table-content">
-                <div class="header-text-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5M3.375 19.5l1.95-1.95M12.375 19.5h8.875M12.375 19.5l-1.95-1.95M20.625 19.5a1.125 1.125 0 001.125-1.125M20.625 19.5l-1.95-1.95M3.75 4.5h16.5M3.75 4.5a2.25 2.25 0 00-2.25 2.25v11.25c0 1.24 1.01 2.25 2.25 2.25h16.5c1.24 0 2.25-1.01 2.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25M3.75 4.5v.75m16.5-.75v.75m0 0a2.25 2.25 0 01-2.25 2.25h-5.25a2.25 2.25 0 01-2.25-2.25m-5.25 0h5.25m-5.25 0a2.25 2.25 0 01-2.25-2.25M3.75 7.5v.75m16.5-.75v.75"></path></svg>
-                    Danh Sách Giao Dịch
-                </div>
-                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
-            </h2>
-            <div class="collapsible-content active" id="table-content">
-                <div class="table-actions">
-                    <div class="filter-container"><label for="filter-month">Lọc theo tháng:</label><select id="filter-month" class="p-2 border rounded-md"><option value="all">Tất cả các tháng</option><option value="2025-05">Tháng 05/2025</option></select></div>
-                </div>
-                <div class="overflow-x-auto"><table id="transaction-table"><thead><tr><th>Ngày &amp; Giờ</th><th>Nội dung</th><th>Hạng mục</th><th>Số tiền (VNĐ)</th><th>Loại</th><th>Tài khoản</th><th>Thao tác</th></tr></thead><tbody id="transaction-list"><tr><td>11/05/2025 02:23</td><td></td><td>Ăn uống</td><td class="text-red-600">22.500&nbsp;₫</td><td>Chi Tiêu</td><td>Tiền mặt</td><td class="text-center"><button class="btn-edit"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square mr-1" viewBox="0 0 16 16"> <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path> <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"></path> </svg>Sửa</button><button class="btn-delete"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></td></tr></tbody></table></div>
-                <p id="no-transactions" class="text-center text-gray-500 mt-4" style="display: none;">Chưa có giao dịch nào.</p>
+        <div class="table-actions flex items-center space-x-4">
+			<div class="filter-container">
+                <label for="filter-month">Lọc theo tháng:</label> <select id="filter-month" class="p-2 border rounded-md">
+                    <option value="all">Tất cả các tháng</option>
+                    </select>
+			</div>
+			<div class="filter-container" id="filter-day-container" style="display: none;"> 
+				<label for="filter-day">Lọc theo ngày:</label>
+				<select id="filter-day" class="p-2 border rounded-md">
+					<option value="all-in-month">Tất cả ngày trong tháng</option>
+                </select>
             </div>
         </div>
 
@@ -492,6 +489,8 @@
         const toAccountInput = document.getElementById('to-account');
         const noTransactionsMessage = document.getElementById('no-transactions');
         const filterMonthSelect = document.getElementById('filter-month');
+		const filterDaySelect = document.getElementById('filter-day');
+		const filterDayContainer = document.getElementById('filter-day-container');
         const messageBox = document.getElementById('message-box');
 
         const incomeExpenseChartCanvas = document.getElementById('incomeExpenseChart').getContext('2d');
@@ -569,41 +568,76 @@
         // --- HÀM TIỆN ÍCH (Giữ nguyên các hàm tiện ích của bạn) ---
         function showMessage(message, type = 'success') { messageBox.textContent = message; messageBox.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'message-success' : 'message-error'}`; messageBox.style.display = 'block'; setTimeout(() => { messageBox.style.display = 'none'; }, 3000); }
         
-		function formatCurrency(amount, currencyCode = 'VND') {
-					if (isNaN(amount) || amount === null) amount = 0;
+function formatCurrency(amount, currencyCode = 'VND') {
+    if (isNaN(amount) || amount === null) amount = 0;
 
-					if (currencyCode === 'VND') {
-						// Sử dụng 'en-US' để định dạng số có dấu phẩy hàng nghìn
-						const numberFormatter = new Intl.NumberFormat('en-US', {
-							style: 'decimal', // Chỉ định dạng số, không kèm ký hiệu tiền tệ từ bước này
-							minimumFractionDigits: 0,
-							maximumFractionDigits: 0
-						});
-						// Thêm ký hiệu '₫' và một khoảng trắng không ngắt dòng (\u00A0)
-						return numberFormatter.format(amount) + '\u00A0₫';
-					} else if (currencyCode === 'USD') {
-						// Giữ nguyên định dạng chuẩn cho USD (đã dùng dấu phẩy hàng nghìn)
-						return new Intl.NumberFormat('en-US', {
-							style: 'currency',
-							currency: 'USD',
-							minimumFractionDigits: 2,
-							maximumFractionDigits: 2
-						}).format(amount);
-					} else {
-						// Đối với các loại tiền tệ khác, bạn có thể giữ nguyên logic cũ
-						// sử dụng locale 'vi-VN' hoặc chọn một locale khác như 'en-US'
-						// để có dấu phẩy hàng nghìn nếu muốn.
-						// Dưới đây là logic gốc cho các loại tiền tệ khác:
-						const options = {
-							style: 'currency',
-							currency: currencyCode,
-							minimumFractionDigits: 0, // Theo code gốc của bạn
-							maximumFractionDigits: 2  // Theo code gốc của bạn
-						};
-						const locale = 'vi-VN'; // Locale gốc của bạn cho các trường hợp khác
-						return new Intl.NumberFormat(locale, options).format(amount);
-					}
+    if (currencyCode === 'VND') {
+        const numberFormatter = new Intl.NumberFormat('en-US', {
+            style: 'decimal',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        });
+        return numberFormatter.format(amount) + '\u00A0₫';
+    } else if (currencyCode === 'USD') {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount);
+    } else {
+        // Fallback cho các loại tiền tệ khác (sử dụng logic gốc của bạn)
+        const options = {
+            style: 'currency',
+            currency: currencyCode,
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
+        };
+        const locale = 'vi-VN';
+        return new Intl.NumberFormat(locale, options).format(amount);
+    }
+}
+
+		function normalizeAmountString(amountStr) {
+			if (typeof amountStr !== 'string' || !amountStr.trim()) {
+				return "";
+			}
+			let str = amountStr.trim();
+			const hasComma = str.includes(',');
+			const hasPeriod = str.includes('.');
+
+			if (hasComma && hasPeriod) {
+				if (str.lastIndexOf(',') > str.lastIndexOf('.')) { // Kiểu châu Âu: 1.234,56
+					str = str.replace(/\./g, '');
+					str = str.replace(',', '.');
+				} else { // Kiểu Mỹ: 1,234.56
+					str = str.replace(/,/g, '');
 				}
+			} else if (hasComma) {
+				const commaCount = (str.match(/,/g) || []).length;
+				if (commaCount === 1) {
+					const decimalPart = str.substring(str.lastIndexOf(',') + 1);
+					const integerPartStr = str.substring(0, str.lastIndexOf(','));
+					if (/^\d*$/.test(integerPartStr.replace(/,/g, '')) && /^\d+$/.test(decimalPart) && str.lastIndexOf(',') > 0 && decimalPart.length > 0) {
+						 if (decimalPart.length <= 3) {
+							str = str.replace(',', '.');
+						 } else {
+							str = str.replace(/,/g, '');
+						 }
+					} else {
+						str = str.replace(/,/g, '');
+					}
+				} else {
+					str = str.replace(/,/g, '');
+				}
+			} else if (hasPeriod) {
+				const periodCount = (str.match(/\./g) || []).length;
+				if (periodCount > 1) {
+					str = str.replace(/\.(?=.*\.)/g, '');
+				}
+			}
+			return str;
+		}
 
         function formatDateTimeLocalInput(date) { /* ... mã gốc của bạn ... */ 
             const year = date.getFullYear();
@@ -696,33 +730,37 @@
 		}
 
 
-        function parseAmountInput(amountStr, currency) {
-            if (!amountStr) return 0;
-            
-            const normalizedStr = normalizeAmountString(amountStr); 
-            let val = parseFloat(normalizedStr);
+		function parseAmountInput(amountStr, currency) {
+			if (!amountStr) return 0;
+			
+			// Loại bỏ dấu phẩy hàng nghìn trước khi chuẩn hóa và parse
+			// Điều này quan trọng nếu amountStr được lấy từ ô input đã được live-formatting
+			const cleanedAmountStr = String(amountStr).replace(/,/g, '');
 
-            if (isNaN(val)) {
-                console.warn(`NormalizeAmountString failed or produced NaN for input: '${amountStr}'. Normalized string was: '${normalizedStr}'. Attempting direct parsing.`);
-                let directParseStr = String(amountStr).trim();
-                if (directParseStr.includes(',') && !directParseStr.includes('.')) {
-                    directParseStr = directParseStr.replace(/,/g, '.');
-                } else { 
-                    directParseStr = directParseStr.replace(/[^0-9.]/g, (match, offset, fullString) => {
-                        return (match === '.' && fullString.indexOf('.') === offset) ? '.' : '';
-                    });
-                }
-                val = parseFloat(directParseStr);
-            }
-            
-            if (isNaN(val)) return 0;
+			const normalizedStr = normalizeAmountString(cleanedAmountStr); 
+			let val = parseFloat(normalizedStr);
 
-            if (currency === 'USD') {
-                val = val * USD_TO_VND_RATE; 
-            } 
+			if (isNaN(val)) {
+				console.warn(`NormalizeAmountString/parseFloat failed for input: '${amountStr}' (cleaned: '${cleanedAmountStr}', normalized: '${normalizedStr}'). Attempting direct parsing.`);
+				let directParseStr = String(cleanedAmountStr).trim(); // Dùng cleanedAmountStr
+				if (directParseStr.includes(',') && !directParseStr.includes('.')) { // Bước này có thể không cần nếu cleanedAmountStr đã loại bỏ hết dấu phẩy
+					directParseStr = directParseStr.replace(/,/g, '.');
+				} else { 
+					directParseStr = directParseStr.replace(/[^0-9.]/g, (match, offset, fullString) => {
+						return (match === '.' && fullString.indexOf('.') === offset) ? '.' : '';
+					});
+				}
+				val = parseFloat(directParseStr);
+			}
+			
+			if (isNaN(val)) return 0;
 
-            return Math.round(val); // VNĐ giờ sẽ là số nguyên sau khi làm tròn
-        }
+			if (currency === 'USD') {
+				val = val * USD_TO_VND_RATE; 
+			} 
+
+			return Math.round(val);
+		}
 		
 		function toggleExpenseChartDisplay() {
 			if (!expenseChartTypeSelector || !expensePieChartContainer || !expenseBarChartContainer || !noExpenseDataChartEl) {
@@ -921,13 +959,14 @@
         function setDefaultDateTime() { if(datetimeInput) datetimeInput.value = formatDateTimeLocalInput(new Date()); }
         function setDefaultComparisonYear() { if(filterComparisonYearInput) filterComparisonYearInput.value = new Date().getFullYear(); }
 		function loadUserPreferences() {
-			// Ví dụ cho transactions (giữ nguyên cách bạn đã làm hoặc cải thiện)
+			console.log("[loadUserPreferences] Bắt đầu tải cài đặt người dùng...");
+
+			// Tải transactions
 			const storedTransactions = localStorage.getItem('transactions_v2');
-			transactions = [];
+			transactions = []; // Khởi tạo lại để đảm bảo sạch sẽ
 			if (storedTransactions) {
 				try {
 					transactions = JSON.parse(storedTransactions);
-					console.log("Loaded transactions_v2:", transactions); // KIỂM TRA TRANSACTIONS
 					if (!Array.isArray(transactions)) {
 						console.warn("Dữ liệu transactions_v2 từ localStorage không phải là mảng, đặt lại thành mảng rỗng.");
 						transactions = [];
@@ -935,90 +974,82 @@
 				} catch (error) {
 					console.error("Lỗi khi parse transactions_v2 từ localStorage:", error);
 					transactions = [];
-					showMessage('Có lỗi khi tải dữ liệu giao dịch. Dữ liệu có thể đã bị hỏng.', 'error');
+					if(typeof showMessage === 'function') showMessage('Có lỗi khi tải dữ liệu giao dịch. Dữ liệu có thể đã bị hỏng.', 'error');
 				}
 			} else {
 				console.log("Không tìm thấy transactions_v2 trong localStorage, sử dụng mảng rỗng.");
-				transactions = []; // Đảm bảo transactions luôn là một mảng
+				// transactions đã được khởi tạo là mảng rỗng ở trên
 			}
+			console.log("[loadUserPreferences] Giao dịch đã tải:", JSON.parse(JSON.stringify(transactions)));
 
-			// --- LÀM TƯƠNG TỰ CHO incomeCategories ---
+			// Tải incomeCategories
 			const storedIncomeCategories = localStorage.getItem('customIncomeCategories_v2');
-			incomeCategories = []; // Khởi tạo
+			incomeCategories = []; // Khởi tạo lại
 			if (storedIncomeCategories) {
 				try {
-					incomeCategories = JSON.parse(storedIncomeCategories);
-					console.log("Loaded customIncomeCategories_v2:", incomeCategories); // KIỂM TRA incomeCategories
-					if (!Array.isArray(incomeCategories)) {
-						console.warn("customIncomeCategories_v2 không phải mảng, dùng giá trị mặc định.");
-						incomeCategories = [...defaultIncomeCategories]; // Sử dụng default nếu lỗi
-						console.log("Fell back to defaultIncomeCategories (not array):", incomeCategories);
-					} else if (incomeCategories.length === 0 || !incomeCategories.find(c => c.value === TRANSFER_CATEGORY_IN)) {
-						console.warn("customIncomeCategories_v2 rỗng hoặc thiếu hạng mục chuyển tiền cần thiết, dùng giá trị mặc định.");
+					const parsedIncomeCategories = JSON.parse(storedIncomeCategories);
+					if (Array.isArray(parsedIncomeCategories) && parsedIncomeCategories.length > 0 && parsedIncomeCategories.find(c => c.value === TRANSFER_CATEGORY_IN)) {
+						incomeCategories = parsedIncomeCategories;
+					} else {
+						console.warn("customIncomeCategories_v2 không hợp lệ, rỗng hoặc thiếu hạng mục chuyển tiền. Sử dụng giá trị mặc định.");
 						incomeCategories = [...defaultIncomeCategories];
-						console.log("Fell back to defaultIncomeCategories (empty or missing transfer):", incomeCategories);
 					}
 				} catch (error) {
 					console.error("Lỗi khi parse customIncomeCategories_v2:", error);
 					incomeCategories = [...defaultIncomeCategories];
-					console.log("Fell back to defaultIncomeCategories (parse error):", incomeCategories);
 				}
-			} else { // Nếu không có gì trong localStorage, dùng default
-				 console.log("Không tìm thấy customIncomeCategories_v2, sử dụng defaultIncomeCategories.");
-				 incomeCategories = [...defaultIncomeCategories];
+			} else {
+				console.log("Không tìm thấy customIncomeCategories_v2, sử dụng defaultIncomeCategories.");
+				incomeCategories = [...defaultIncomeCategories];
 			}
+			console.log("[loadUserPreferences] Danh mục Thu đã tải:", JSON.parse(JSON.stringify(incomeCategories)));
 
-			// --- LÀM TƯƠNG TỰ CHO expenseCategories --- (đoạn này bạn đã có, chỉ để tham khảo cấu trúc)
+			// Tải expenseCategories
 			const storedExpenseCategories = localStorage.getItem('customExpenseCategories_v2');
-			expenseCategories = [];
+			expenseCategories = []; // Khởi tạo lại
 			if (storedExpenseCategories) {
 				try {
-					expenseCategories = JSON.parse(storedExpenseCategories);
-					console.log("Loaded customExpenseCategories_v2:", expenseCategories); // KIỂM TRA expenseCategories
-					if (!Array.isArray(expenseCategories)) {
-						console.warn("customExpenseCategories_v2 không phải mảng, dùng giá trị mặc định.");
+					const parsedExpenseCategories = JSON.parse(storedExpenseCategories);
+					if (Array.isArray(parsedExpenseCategories) && parsedExpenseCategories.length > 0 && parsedExpenseCategories.find(c => c.value === TRANSFER_CATEGORY_OUT)) {
+						expenseCategories = parsedExpenseCategories;
+					} else {
+						console.warn("customExpenseCategories_v2 không hợp lệ, rỗng hoặc thiếu hạng mục chuyển tiền. Sử dụng giá trị mặc định.");
 						expenseCategories = [...defaultExpenseCategories];
-						console.log("Fell back to defaultExpenseCategories (not array):", expenseCategories);
-					} else if (expenseCategories.length === 0 || !expenseCategories.find(c => c.value === TRANSFER_CATEGORY_OUT)) {
-						 console.warn("customExpenseCategories_v2 rỗng hoặc thiếu hạng mục chuyển tiền cần thiết, dùng giá trị mặc định.");
-						expenseCategories = [...defaultExpenseCategories];
-						console.log("Fell back to defaultExpenseCategories (empty or missing transfer):", expenseCategories);
 					}
 				} catch (error) {
 					console.error("Lỗi khi parse customExpenseCategories_v2:", error);
 					expenseCategories = [...defaultExpenseCategories];
-					console.log("Fell back to defaultExpenseCategories (parse error):", expenseCategories);
 				}
 			} else {
-				 console.log("Không tìm thấy customExpenseCategories_v2, sử dụng defaultExpenseCategories.");
-				 expenseCategories = [...defaultExpenseCategories];
+				console.log("Không tìm thấy customExpenseCategories_v2, sử dụng defaultExpenseCategories.");
+				expenseCategories = [...defaultExpenseCategories];
 			}
+			console.log("[loadUserPreferences] Danh mục Chi đã tải:", JSON.parse(JSON.stringify(expenseCategories)));
 
-			// --- LÀM TƯƠNG TỰ CHO accounts ---
+			// Tải accounts
 			const storedAccounts = localStorage.getItem('customAccounts_v2');
-			accounts = []; // Khởi tạo
+			accounts = []; // Khởi tạo lại
 			if (storedAccounts) {
 				try {
-					accounts = JSON.parse(storedAccounts);
-					console.log("Loaded customAccounts_v2:", accounts); // KIỂM TRA accounts
-					if (!Array.isArray(accounts) || accounts.length === 0) {
+					const parsedAccounts = JSON.parse(storedAccounts);
+					if (Array.isArray(parsedAccounts) && parsedAccounts.length > 0) {
+						accounts = parsedAccounts;
+					} else {
 						console.warn("customAccounts_v2 không phải mảng hoặc rỗng, dùng giá trị mặc định.");
 						accounts = [...defaultAccounts];
-						console.log("Fell back to defaultAccounts (not array or empty):", accounts);
 					}
 				} catch (error) {
 					console.error("Lỗi khi parse customAccounts_v2:", error);
 					accounts = [...defaultAccounts];
-					console.log("Fell back to defaultAccounts (parse error):", accounts);
 				}
 			} else {
-				 console.log("Không tìm thấy customAccounts_v2, sử dụng defaultAccounts.");
-				 accounts = [...defaultAccounts];
+				console.log("Không tìm thấy customAccounts_v2, sử dụng defaultAccounts.");
+				accounts = [...defaultAccounts];
 			}
-
-			// Sau khi đã tải hoặc đặt lại tất cả, log ra trạng thái cuối cùng
-			console.log("Dữ liệu cuối cùng sau khi tải (loadUserPreferences):", { transactions, incomeCategories, expenseCategories, accounts });
+			console.log("[loadUserPreferences] Tài khoản đã tải:", JSON.parse(JSON.stringify(accounts)));
+			console.log("[loadUserPreferences] Hoàn tất tải cài đặt người dùng.");
 		}
+
 
         function saveUserPreferences() { localStorage.setItem('customIncomeCategories_v2', JSON.stringify(incomeCategories)); localStorage.setItem('customExpenseCategories_v2', JSON.stringify(expenseCategories)); localStorage.setItem('customAccounts_v2', JSON.stringify(accounts)); }
         function saveTransactions() { localStorage.setItem('transactions_v2', JSON.stringify(transactions)); }
@@ -1030,7 +1061,86 @@
         function addCategory(name, type) { if (!name || name.trim() === '') { showMessage('Tên hạng mục không được để trống.', 'error'); return false; } const newCategoryValue = name.trim(); const newCategory = { value: newCategoryValue, text: newCategoryValue }; if (type === 'income') { if (incomeCategories.some(cat => cat.value.toLowerCase() === newCategoryValue.toLowerCase())) { showMessage('Hạng mục thu này đã tồn tại.', 'error'); return false; } incomeCategories.push(newCategory); } else { if (expenseCategories.some(cat => cat.value.toLowerCase() === newCategoryValue.toLowerCase())) { showMessage('Hạng mục chi này đã tồn tại.', 'error'); return false; } expenseCategories.push(newCategory); } saveUserPreferences(); renderCustomCategoryLists(); populateCategories(); showMessage(`Đã thêm hạng mục "${newCategory.text}"!`, 'success'); return true; }
         function addAccount(name) { if (!name || name.trim() === '') { showMessage('Tên tài khoản không được để trống.', 'error'); return false; } const newAccountName = name.trim(); if (accounts.some(acc => acc.value.toLowerCase() === newAccountName.toLowerCase() || acc.text.toLowerCase() === newAccountName.toLowerCase())) { showMessage('Tài khoản này đã tồn tại.', 'error'); return false; } const newAccount = { value: newAccountName, text: newAccountName }; accounts.push(newAccount); saveUserPreferences(); renderAccountListAdmin(); populateAccountDropdowns(); updateAccountBalances(); showMessage(`Đã thêm tài khoản "${newAccount.text}"!`, 'success'); return true; }
         function populateAccountDropdowns() { if (!accountInput || !toAccountInput) return; const currentFromAccount = accountInput.value; const currentToAccount = toAccountInput.value; accountInput.innerHTML = ''; toAccountInput.innerHTML = ''; if (!accounts || accounts.length === 0) accounts = [...defaultAccounts]; accounts.forEach(acc => { accountInput.add(new Option(acc.text, acc.value)); toAccountInput.add(new Option(acc.text, acc.value)); }); if (accounts.some(acc => acc.value === currentFromAccount)) accountInput.value = currentFromAccount; else if (accounts.length > 0) accountInput.value = accounts[0].value; if (accounts.some(acc => acc.value === currentToAccount)) toAccountInput.value = currentToAccount; else if (accounts.length > 1) toAccountInput.value = accounts[1].value; else if (accounts.length > 0) toAccountInput.value = accounts[0].value; }
-        function populateCategories() { if (!categoryInput) return; const selectedTypeRadio = document.querySelector('input[name="type"]:checked'); const selectedType = selectedTypeRadio ? selectedTypeRadio.value : 'Chi'; const currentCategoryValue = categoryInput.value; categoryInput.innerHTML = ''; let categoriesToPopulate = (selectedType === 'Thu') ? incomeCategories : expenseCategories; categoriesToPopulate = categoriesToPopulate.filter(cat => cat.value !== TRANSFER_CATEGORY_IN && cat.value !== TRANSFER_CATEGORY_OUT); if (!categoriesToPopulate || categoriesToPopulate.length === 0) { const defaultCats = (selectedType === 'Thu') ? [...defaultIncomeCategories] : [...defaultExpenseCategories]; categoriesToPopulate = defaultCats.filter(cat => cat.value !== TRANSFER_CATEGORY_IN && cat.value !== TRANSFER_CATEGORY_OUT); } categoriesToPopulate.forEach(category => categoryInput.add(new Option(category.text, category.value))); if (categoriesToPopulate.some(cat => cat.value === currentCategoryValue)) categoryInput.value = currentCategoryValue; else if (categoriesToPopulate.length > 0) categoryInput.value = categoriesToPopulate[0].value; }
+
+		function populateCategories() {
+			if (!categoryInput) {
+				console.warn("[populateCategories] Lỗi: Biến categoryInput chưa được định nghĩa.");
+				return;
+			}
+			const selectedTypeRadio = document.querySelector('input[name="type"]:checked');
+			const selectedType = selectedTypeRadio ? selectedTypeRadio.value : 'Chi'; // Mặc định là Chi
+			const currentCategoryValue = categoryInput.value; // Lưu lại giá trị đang chọn (nếu có)
+
+			categoryInput.innerHTML = ''; // Xóa các option cũ
+
+			let categoriesToPopulate = [];
+			if (selectedType === 'Thu') {
+				// Đảm bảo incomeCategories là mảng và không rỗng trước khi filter
+				categoriesToPopulate = (Array.isArray(incomeCategories) ? incomeCategories : [...defaultIncomeCategories])
+									   .filter(cat => cat.value !== TRANSFER_CATEGORY_IN && cat.value !== TRANSFER_CATEGORY_OUT);
+			} else { // 'Chi' hoặc trường hợp không xác định (mặc định là Chi)
+				categoriesToPopulate = (Array.isArray(expenseCategories) ? expenseCategories : [...defaultExpenseCategories])
+									   .filter(cat => cat.value !== TRANSFER_CATEGORY_IN && cat.value !== TRANSFER_CATEGORY_OUT);
+			}
+			
+			// console.log(`[populateCategories] Categories cho loại "${selectedType}":`, JSON.parse(JSON.stringify(categoriesToPopulate)));
+
+
+			if (categoriesToPopulate.length === 0) {
+				// console.warn(`[populateCategories] Không có danh mục nào để hiển thị cho loại ${selectedType}.`);
+				// Có thể thêm một option báo không có danh mục nếu muốn
+				// categoryInput.add(new Option("Không có danh mục", ""));
+				// categoryInput.disabled = true;
+				return;
+			}
+			// categoryInput.disabled = false;
+
+			categoriesToPopulate.forEach(category => {
+				categoryInput.add(new Option(category.text, category.value));
+			});
+
+			// Cố gắng khôi phục lựa chọn trước đó hoặc chọn cái đầu tiên
+			if (categoriesToPopulate.some(cat => cat.value === currentCategoryValue)) {
+				categoryInput.value = currentCategoryValue;
+			} else if (categoriesToPopulate.length > 0) {
+				categoryInput.value = categoriesToPopulate[0].value;
+			}
+		}
+
+		//========================================================================
+		// HÀM XỬ LÝ FILTER CHÍNH VÀ FILTER BẢNG (Quan trọng cho biểu đồ và danh sách)
+		//========================================================================
+
+		function applyMainFilter() {
+			const selectedMonth = filterMonthSelect.value;
+			// console.log("[applyMainFilter] Bắt đầu. SelectedMonth:", selectedMonth);
+
+			populateDayFilter(selectedMonth); // Cập nhật dropdown ngày
+
+			let statsAndChartsTransactions;
+			if (selectedMonth === 'all') {
+				statsAndChartsTransactions = [...transactions];
+			} else {
+				statsAndChartsTransactions = transactions.filter(tx => tx.datetime && typeof tx.datetime === 'string' && tx.datetime.startsWith(selectedMonth));
+			}
+			// console.log("[applyMainFilter] statsAndChartsTransactions (dữ liệu cho thống kê):", JSON.parse(JSON.stringify(statsAndChartsTransactions)));
+
+			const monthDisplayForTitles = getMonthDisplayText(selectedMonth, false);
+			const expenseBreakdownTitleTextEl = document.getElementById('expense-breakdown-title-text');
+			if (expenseBreakdownTitleTextEl) {
+				expenseBreakdownTitleTextEl.textContent = `Phân Loại Chi Tiêu ${monthDisplayForTitles} - VNĐ`;
+			}
+			const incomeExpenseChartTitleEl = document.getElementById('income-expense-chart-title');
+			if (incomeExpenseChartTitleEl) {
+				incomeExpenseChartTitleEl.textContent = `Biểu Đồ Thu vs Chi ${monthDisplayForTitles} - VNĐ`;
+			}
+
+			updateAllSummariesAndCharts(statsAndChartsTransactions); // Dùng dữ liệu đã lọc theo tháng
+			updateDetailedStatisticsTable(statsAndChartsTransactions); // Dùng dữ liệu đã lọc theo tháng
+			updateSummarySectionText(statsAndChartsTransactions, selectedMonth); // Dùng dữ liệu đã lọc theo tháng
+
+			applyTableFilter(); // Lọc riêng cho bảng hiển thị giao dịch
+		}
 		function toggleFormFields() {
 			const selectedTypeRadio = document.querySelector('input[name="type"]:checked');
 			const selectedType = selectedTypeRadio ? selectedTypeRadio.value : 'Chi'; // Mặc định là 'Chi' nếu không có gì được chọn
@@ -1707,7 +1817,56 @@
 		}
 
         function filterTransactionsByMonth() { applyMainFilter(); }
-		function applyMainFilter() { const selectedMonth = filterMonthSelect.value; let filteredTransactions = (selectedMonth === 'all') ? [...transactions] : transactions.filter(tx => tx.datetime && tx.datetime.startsWith(selectedMonth)); const monthDisplayForTitles = getMonthDisplayText(selectedMonth, false); const expenseBreakdownTitleTextEl = document.getElementById('expense-breakdown-title-text'); if (expenseBreakdownTitleTextEl) { expenseBreakdownTitleTextEl.textContent = `Phân Loại Chi Tiêu ${monthDisplayForTitles} - VNĐ`; } const incomeExpenseChartTitleEl = document.getElementById('income-expense-chart-title'); if (incomeExpenseChartTitleEl) { incomeExpenseChartTitleEl.textContent = `Biểu Đồ Thu vs Chi ${monthDisplayForTitles} - VNĐ`; } renderMainTransactions(filteredTransactions); updateAllSummariesAndCharts(filteredTransactions); updateDetailedStatisticsTable(filteredTransactions); updateSummarySectionText(filteredTransactions, selectedMonth); }
+		function applyMainFilter() {
+			const selectedMonth = filterMonthSelect.value;
+			console.log("[applyMainFilter] Bắt đầu. SelectedMonth:", selectedMonth); // DEBUG
+			populateDayFilter(selectedMonth); // Cập nhật dropdown ngày dựa trên tháng
+
+			// Dữ liệu cho thống kê và biểu đồ (toàn bộ giao dịch của tháng)
+			let statsAndChartsTransactions = (selectedMonth === 'all') ?
+											 [...transactions] :
+											 transactions.filter(tx => tx.datetime && tx.datetime.startsWith(selectedMonth));
+
+			// Sắp xếp danh sách cho thống kê (nếu cần, hoặc để các hàm thống kê tự xử lý)
+			// statsAndChartsTransactions.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+
+			// Cập nhật các phần thống kê với toàn bộ dữ liệu của tháng
+			const monthDisplayForTitles = getMonthDisplayText(selectedMonth, false);
+			// ... (cập nhật tiêu đề cho expenseBreakdownTitleTextEl, incomeExpenseChartTitleEl như cũ) ...
+			updateAllSummariesAndCharts(statsAndChartsTransactions);
+			updateDetailedStatisticsTable(statsAndChartsTransactions);
+			updateSummarySectionText(statsAndChartsTransactions, selectedMonth);
+
+			// Bây giờ xử lý dữ liệu cho bảng "Danh Sách Giao Dịch"
+			applyTableFilter(); // Gọi hàm mới để lọc riêng cho bảng
+		}
+
+		// Hàm mới để lọc và render bảng
+		
+		function applyTableFilter() {
+			const selectedMonth = filterMonthSelect.value;
+			const selectedDay = filterDaySelect.value; // Giá trị này là "YYYY-MM-DD" hoặc "all-in-month"
+			// console.log(`[applyTableFilter] SelectedMonth: ${selectedMonth}, SelectedDay: ${selectedDay}`);
+
+			let transactionsForTable;
+
+			if (selectedMonth === 'all') {
+				transactionsForTable = [...transactions];
+			} else {
+				transactionsForTable = transactions.filter(tx => tx.datetime && typeof tx.datetime === 'string' && tx.datetime.startsWith(selectedMonth));
+				if (selectedDay && selectedDay !== 'all-in-month') {
+					transactionsForTable = transactionsForTable.filter(tx => tx.datetime && typeof tx.datetime === 'string' && tx.datetime.startsWith(selectedDay));
+				}
+			}
+
+			// Sắp xếp trước khi gán cho phân trang
+			transactionsForTable.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+			currentFilteredTransactionsForTable = transactionsForTable; // Biến này dùng cho phân trang
+
+			currentPage = 1; // Reset về trang đầu khi filter thay đổi
+			renderMainTransactions(); // Render lại bảng với dữ liệu mới
+		}
+
         function getISOWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7)); const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); return Math.ceil((((d - yearStart) / 86400000) + 1) / 7); }
         function getWeekIdFromDateTime(dateTimeStr) { if (!dateTimeStr) return null; const date = new Date(dateTimeStr); if (isNaN(date.getTime())) return null; const year = date.getFullYear(); const weekNumber = getISOWeekNumber(date); return `${year}-W${String(weekNumber).padStart(2, '0')}`; }
         function getStartDateOfISOWeek(year, week) { const simple = new Date(year, 0, 1 + (week - 1) * 7); const dow = simple.getDay(); const ISOweekStart = simple; if (dow <= 4) ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1); else ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay()); ISOweekStart.setHours(0,0,0,0); return ISOweekStart; }
@@ -1729,8 +1888,8 @@
         }
 		
 		function populateMonthFilter() {
-			if (!filterMonthSelect) { // filterMonthSelect là biến toàn cục
-				console.warn("populateMonthFilter: filterMonthSelect is not defined.");
+			if (!filterMonthSelect) {
+				console.warn("[populateMonthFilter] Lỗi: Biến filterMonthSelect chưa được định nghĩa.");
 				return;
 			}
 			const months = new Set();
@@ -1740,9 +1899,12 @@
 						months.add(tx.datetime.substring(0, 7));
 					}
 				});
+			} else {
+				console.warn("[populateMonthFilter] Mảng 'transactions' không tồn tại hoặc không phải là mảng để tạo bộ lọc tháng.");
 			}
+
 			const sortedMonths = Array.from(months).sort().reverse();
-			filterMonthSelect.innerHTML = '<option value="all">Tất cả các tháng</option>'; // Luôn có lựa chọn "Tất cả"
+			filterMonthSelect.innerHTML = '<option value="all">Tất cả các tháng</option>';
 
 			sortedMonths.forEach(monthStr => {
 				if (monthStr && typeof monthStr === 'string' && monthStr.includes('-')) {
@@ -1750,23 +1912,26 @@
 					if (parts.length === 2) {
 						const year = parts[0];
 						const month = parts[1];
-						const displayText = `Tháng ${month}/${year}`; // Văn bản thuần
+						const displayText = `Tháng <span class="math-inline">\{month\}/</span>{year}`; // Đảm bảo đúng cú pháp này
+						// console.log(`[populateMonthFilter] Tạo option: Value="${monthStr}", Text="${displayText}"`);
 						const option = new Option(displayText, monthStr);
 						filterMonthSelect.add(option);
 					}
 				}
 			});
 
-			// Đặt giá trị mặc định (ví dụ: tháng mới nhất hoặc "Tất cả")
-			const currentSystemMonthFormatted = new Date().toISOString().substring(0, 7);
-			if (sortedMonths.includes(currentSystemMonthFormatted)) {
-				filterMonthSelect.value = currentSystemMonthFormatted;
-			} else if (sortedMonths.length > 0 && sortedMonths[0] && typeof sortedMonths[0] === 'string') {
+			const today = new Date();
+			const currentYear = today.getFullYear();
+			const currentMonthPadded = String(today.getMonth() + 1).padStart(2, '0');
+			const currentMonthFormattedForFilter = `${currentYear}-${currentMonthPadded}`;
+
+			if (months.has(currentMonthFormattedForFilter)) {
+				filterMonthSelect.value = currentMonthFormattedForFilter;
+			} else if (sortedMonths.length > 0 && sortedMonths[0]) {
 				filterMonthSelect.value = sortedMonths[0];
 			} else {
 				filterMonthSelect.value = "all";
 			}
-		}
 
 		function populateSpecificMonthFilter(selectElement) {
 			if (!selectElement) {
@@ -1800,7 +1965,7 @@
 					if (parts.length === 2) {
 						const year = parts[0];
 						const month = parts[1];
-						const displayText = `Tháng ${month}/${year}`; // Văn bản thuần túy
+						const displayDay = `<span class="math-inline">\{parts\[2\]\}/</span>{parts[1]}/${parts[0]}`; // Đảm bảo đúng cú pháp này
 						const option = new Option(displayText, monthStr);
 						selectElement.add(option);
 					} else {
@@ -1821,6 +1986,44 @@
 				selectElement.value = "all";
 			}
 		}
+		
+		function populateDayFilter(selectedMonth) {
+			if (!filterDaySelect || !filterDayContainer) {
+				console.warn("[populateDayFilter] Lỗi: Biến filterDaySelect hoặc filterDayContainer chưa được định nghĩa.");
+				return;
+			}
+			filterDaySelect.innerHTML = '<option value="all-in-month">Tất cả ngày trong tháng</option>';
+
+			if (!selectedMonth || selectedMonth === 'all') {
+				filterDayContainer.style.display = 'none';
+				return;
+			}
+			filterDayContainer.style.display = 'inline-block';
+
+			const daysInMonthWithTransactions = new Set();
+			if (typeof transactions !== 'undefined' && Array.isArray(transactions)) {
+				transactions.forEach(tx => {
+					if (tx.datetime && typeof tx.datetime === 'string' && tx.datetime.startsWith(selectedMonth)) {
+						const dayPart = tx.datetime.substring(0, 10);
+						daysInMonthWithTransactions.add(dayPart);
+					}
+				});
+			} else {
+				 console.warn("[populateDayFilter] Mảng 'transactions' không tồn tại hoặc không phải là mảng để tạo bộ lọc ngày.");
+			}
+
+			const sortedDays = Array.from(daysInMonthWithTransactions).sort();
+			sortedDays.forEach(dayStr => {
+				const parts = dayStr.split('-');
+				if (parts.length === 3) {
+					const displayDay = `${parts[2]}/${parts[1]}/${parts[0]}`; // Đảm bảo nội suy đúng
+					// console.log(`[populateDayFilter] Tạo option: Value="${dayStr}", Text="${displayDay}"`);
+					const option = new Option(displayDay, dayStr);
+					filterDaySelect.add(option);
+				}
+			});
+		}
+
 
         function calculateWeeklyStats(transactionsInPeriod, weekStartDate) { let income = 0, expenses = 0, startBalance = 0; const allSortedTransactions = [...transactions].sort((a,b) => new Date(a.datetime) - new Date(b.datetime)); for (const tx of allSortedTransactions) { const txDate = new Date(tx.datetime); if (txDate < weekStartDate) { if (tx.type === 'Thu') startBalance += tx.amount; else if (tx.type === 'Chi') startBalance -= tx.amount; } else break; } transactionsInPeriod.forEach(tx => { if (tx.type === 'Thu') income += tx.amount; else if (tx.type === 'Chi') expenses += tx.amount; }); return { startBalance, income, expenses, netChange: income - expenses }; }
 
@@ -1938,6 +2141,13 @@
 			populateComparisonWeekFilter();
 			updateWeeklyComparisonDisplay();
 
+
+			if (filterMonthSelect) {
+				filterMonthSelect.addEventListener('change', applyMainFilter); // Đã có
+			}
+			if (filterDaySelect) {
+				filterDaySelect.addEventListener('change', applyTableFilter); // Gọi applyTableFilter khi ngày thay đổi
+			}			
 			// Collapsible sections
 			const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
 			collapsibleHeaders.forEach(header => {
