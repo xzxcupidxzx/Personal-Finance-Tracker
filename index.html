@@ -130,10 +130,31 @@
                 </div>
                 <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
             </h2>
-            <div class="collapsible-content active" id="table-content">
-                <div class="table-actions">
-                    <div class="filter-container"><label for="filter-month">Lọc theo tháng:</label><select id="filter-month" class="p-2 border rounded-md"><option value="all">Tất cả các tháng</option><option value="2025-05">Tháng 05/2025</option></select></div>
-                </div>
+			<div class="collapsible-content active" id="table-content">
+				<div class="table-actions" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1rem; padding:0.5rem;">
+					<div class="filter-container">
+						<label for="filter-specific-date" class="text-sm font-medium text-gray-700 dark:text-gray-300">Lọc theo ngày cụ thể:</label>
+						<input type="date" id="filter-specific-date" class="p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300" style="min-width: 160px;">
+					</div>
+					<button id="clear-date-filter-button" class="btn-secondary py-2 px-3 text-sm rounded-md" title="Hiển thị tất cả các ngày trong tháng đã chọn">Tất cả ngày</button>
+				</div>
+				<div class="overflow-x-auto">
+					<table id="transaction-table">
+						<thead>
+							<tr>
+								<th>Ngày &amp; Giờ</th>
+								<th>Nội dung</th>
+								<th>Hạng mục</th>
+								<th>Số tiền (VNĐ)</th>
+								<th>Loại</th>
+								<th>Tài khoản</th>
+								<th>Thao tác</th>
+							</tr>
+						</thead>
+						<tbody id="transaction-list">
+							</tbody>
+					</table>
+				</div>		
                 <div class="overflow-x-auto"><table id="transaction-table"><thead><tr><th>Ngày &amp; Giờ</th><th>Nội dung</th><th>Hạng mục</th><th>Số tiền (VNĐ)</th><th>Loại</th><th>Tài khoản</th><th>Thao tác</th></tr></thead><tbody id="transaction-list"><tr><td>11/05/2025 02:23</td><td></td><td>Ăn uống</td><td class="text-red-600">22.500&nbsp;₫</td><td>Chi Tiêu</td><td>Tiền mặt</td><td class="text-center"><button class="btn-edit"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square mr-1" viewBox="0 0 16 16"> <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path> <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"></path> </svg>Sửa</button><button class="btn-delete"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></td></tr></tbody></table></div>
                 <p id="no-transactions" class="text-center text-gray-500 mt-4" style="display: none;">Chưa có giao dịch nào.</p>
             </div>
@@ -147,6 +168,15 @@
                 </div>
                 <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
             </h2>
+			<div class="collapsible-content active" id="summary-content-wrapper">
+				<div class="filter-container" style="padding: 0.5rem; margin-bottom: 0.5rem;">
+					<label for="filter-month" class="text-sm font-medium text-gray-700 dark:text-gray-300">Tháng Lọc (Chung):</label>
+					<select id="filter-month" class="p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300" style="min-width: 200px;">
+						<option value="all">Tất cả các tháng</option>
+						</select>
+				</div>
+				<div id="summary-content">
+		</div>
             <div class="collapsible-content active" id="summary-content-wrapper">
                 <div id="summary-content">
                     <div class="summary-item"><span>Tổng Thu <span id="summary-income-month-display">(Tháng Lọc)</span>:</span><span id="total-income" class="text-green-600 font-semibold">0</span></div>
@@ -507,7 +537,8 @@
 		const expenseChartTypeSelector = document.getElementById('expenseChartTypeSelector');
 		const expensePieChartContainer = document.getElementById('expensePieChartContainer');
 		const expenseBarChartContainer = document.getElementById('expenseBarChartContainer');
-	
+		const filterSpecificDateInput = document.getElementById('filter-specific-date');
+		const clearDateFilterButton = document.getElementById('clear-date-filter-button');
 		// const noExpenseDataEl = document.getElementById('no-expense-data-list'); // Đổi tên hoặc giữ nguyên nếu bạn đã có cho list
 
 		// Các element hiển thị thông báo "không có dữ liệu"
@@ -570,41 +601,51 @@
         function showMessage(message, type = 'success') { messageBox.textContent = message; messageBox.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'message-success' : 'message-error'}`; messageBox.style.display = 'block'; setTimeout(() => { messageBox.style.display = 'none'; }, 3000); }
         
 		function formatCurrency(amount, currencyCode = 'VND') {
-					if (isNaN(amount) || amount === null) amount = 0;
+			if (isNaN(amount) || amount === null) amount = 0;
 
-					if (currencyCode === 'VND') {
-						// Sử dụng 'en-US' để định dạng số có dấu phẩy hàng nghìn
-						const numberFormatter = new Intl.NumberFormat('en-US', {
-							style: 'decimal', // Chỉ định dạng số, không kèm ký hiệu tiền tệ từ bước này
-							minimumFractionDigits: 0,
-							maximumFractionDigits: 0
-						});
-						// Thêm ký hiệu '₫' và một khoảng trắng không ngắt dòng (\u00A0)
-						return numberFormatter.format(amount) + '\u00A0₫';
-					} else if (currencyCode === 'USD') {
-						// Giữ nguyên định dạng chuẩn cho USD (đã dùng dấu phẩy hàng nghìn)
-						return new Intl.NumberFormat('en-US', {
-							style: 'currency',
-							currency: 'USD',
-							minimumFractionDigits: 2,
-							maximumFractionDigits: 2
-						}).format(amount);
-					} else {
-						// Đối với các loại tiền tệ khác, bạn có thể giữ nguyên logic cũ
-						// sử dụng locale 'vi-VN' hoặc chọn một locale khác như 'en-US'
-						// để có dấu phẩy hàng nghìn nếu muốn.
-						// Dưới đây là logic gốc cho các loại tiền tệ khác:
-						const options = {
-							style: 'currency',
-							currency: currencyCode,
-							minimumFractionDigits: 0, // Theo code gốc của bạn
-							maximumFractionDigits: 2  // Theo code gốc của bạn
-						};
-						const locale = 'vi-VN'; // Locale gốc của bạn cho các trường hợp khác
-						return new Intl.NumberFormat(locale, options).format(amount);
-					}
+			if (currencyCode === 'VND') {
+				let actualFractionDigits = 0;
+				const amountStrFull = String(amount); // Chuyển số thành chuỗi để kiểm tra phần thập phân
+
+				// Tìm số chữ số thập phân thực tế trong số `amount`
+				const decimalPartMatch = amountStrFull.match(/\.(\d+)$/);
+				if (decimalPartMatch && decimalPartMatch[1]) {
+					actualFractionDigits = decimalPartMatch[1].length;
 				}
 
+				const numberFormatter = new Intl.NumberFormat('en-US', { // 'en-US' sử dụng: 1,234.56
+					style: 'decimal', // Chỉ định dạng số, không tự động thêm ký hiệu tiền tệ
+					minimumFractionDigits: actualFractionDigits, // Hiển thị tối thiểu số chữ số thập phân này
+					maximumFractionDigits: actualFractionDigits  // Hiển thị tối đa số chữ số thập phân này
+																// (Để hiển thị chính xác những gì đã lưu)
+				});
+				return numberFormatter.format(amount) + '\u00A0₫'; // Thêm ký hiệu VNĐ thủ công
+			} else if (currencyCode === 'USD') {
+				// USD thường có 2 chữ số thập phân
+				return new Intl.NumberFormat('en-US', {
+					style: 'currency', // 'currency' sẽ tự thêm ký hiệu $
+					currency: 'USD',
+					minimumFractionDigits: 2,
+					maximumFractionDigits: 2
+				}).format(amount);
+			} else {
+				// Xử lý các loại tiền tệ khác (có thể cần tùy chỉnh thêm)
+				const options = {
+					style: 'currency',
+					currency: currencyCode,
+					minimumFractionDigits: 0, // Mặc định cho các loại tiền tệ khác
+					maximumFractionDigits: 2  // Mặc định cho các loại tiền tệ khác
+				};
+				return new Intl.NumberFormat('en-US', options).format(amount); // Sử dụng 'en-US' cho định dạng chung
+			}
+		}
+		function getCurrentDateFormattedYYYYMMDD() {
+			const today = new Date();
+			const year = today.getFullYear();
+			const month = String(today.getMonth() + 1).padStart(2, '0'); // Tháng bắt đầu từ 0
+			const day = String(today.getDate()).padStart(2, '0');
+			return `${year}-${month}-${day}`;
+		}		
         function formatDateTimeLocalInput(date) { /* ... mã gốc của bạn ... */ 
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -659,70 +700,60 @@
 			const hasPeriod = str.includes('.');
 
 			if (hasComma && hasPeriod) {
-				if (str.lastIndexOf(',') > str.lastIndexOf('.')) { // Kiểu châu Âu: 1.234,56
-					str = str.replace(/\./g, ''); // Xóa dấu chấm phân cách hàng nghìn
-					str = str.replace(',', '.');  // Chuyển dấu phẩy thập phân thành dấu chấm
-				} else { // Kiểu Mỹ: 1,234.56
-					str = str.replace(/,/g, ''); // Xóa dấu phẩy phân cách hàng nghìn
+				if (str.lastIndexOf(',') > str.lastIndexOf('.')) { // Kiểu 1.234,56
+					str = str.replace(/\./g, '').replace(',', '.');
+				} else { // Kiểu 1,234.56
+					str = str.replace(/,/g, '');
 				}
-			} else if (hasComma) { // Chỉ có dấu phẩy
-				const commaCount = (str.match(/,/g) || []).length;
-				if (commaCount === 1) {
-					const decimalPart = str.substring(str.lastIndexOf(',') + 1);
-					const integerPartStr = str.substring(0, str.lastIndexOf(','));
-					if (/^\d*$/.test(integerPartStr.replace(/,/g, '')) && /^\d+$/.test(decimalPart) && str.lastIndexOf(',') > 0 && decimalPart.length > 0) {
-						 if (decimalPart.length <= 3) { // Ưu tiên là thập phân nếu phần sau dấu phẩy ngắn
-							str = str.replace(',', '.');
-						 } else { // Ví dụ "1,2345" -> có thể là 12345
-							str = str.replace(/,/g, '');
-						 }
-					} else { // Cấu trúc không rõ ràng là thập phân
-						str = str.replace(/,/g, '');
-					}
-				} else { // Nhiều dấu phẩy
-					str = str.replace(/,/g, ''); // Coi tất cả là phân cách hàng nghìn
-				}
+			} else if (hasComma) { // Chỉ có dấu phẩy, ví dụ "12,000" hoặc "1,234,567"
+				str = str.replace(/,/g, ''); // Loại bỏ tất cả dấu phẩy
 			} else if (hasPeriod) { // Chỉ có dấu chấm
 				const periodCount = (str.match(/\./g) || []).length;
 				if (periodCount > 1) {
-					// Xóa tất cả các dấu chấm ngoại trừ dấu chấm cuối cùng
-					// Ví dụ: "1.234.567" -> "1234.567"
-					// Ví dụ: "1.000.000" -> "1000.000" (để parseFloat ra 1000)
+					// Giữ lại dấu chấm cuối cùng, loại bỏ các dấu chấm khác (ví dụ: "1.234.56" -> "1234.56")
 					str = str.replace(/\.(?=.*\.)/g, '');
 				}
-				// Nếu chỉ có 1 dấu chấm (ví dụ "22.5"), nó sẽ được giữ nguyên cho parseFloat.
+				// Nếu chỉ có 1 dấu chấm (ví dụ "22.5"), nó sẽ được giữ nguyên.
 			}
 			return str;
 		}
+		function parseAmountInput(amountStr, currency) {
+			if (!amountStr) return 0;
 
+			// Giả định hàm normalizeAmountString đã được sửa để xử lý đúng "12,000" -> "12000"
+			// và "12,000.202" -> "12000.202"
+			const normalizedStr = normalizeAmountString(amountStr);
+			let val = parseFloat(normalizedStr);
 
-        function parseAmountInput(amountStr, currency) {
-            if (!amountStr) return 0;
-            
-            const normalizedStr = normalizeAmountString(amountStr); 
-            let val = parseFloat(normalizedStr);
+			if (isNaN(val)) {
+				// Fallback parsing (có thể cần cải thiện tùy theo các định dạng đầu vào phức tạp)
+				console.warn(`NormalizeAmountString failed or produced NaN for input: '${amountStr}'. Normalized string was: '${normalizedStr}'. Attempting direct parsing.`);
+				let directParseStr = String(amountStr).trim();
+				if (directParseStr.includes(',') && !directParseStr.includes('.')) {
+					directParseStr = directParseStr.replace(/,/g, '');
+				} else if (directParseStr.includes(',') && directParseStr.includes('.')) {
+					 if (directParseStr.lastIndexOf(',') > directParseStr.lastIndexOf('.')) { // 1.234,56
+						directParseStr = directParseStr.replace(/\./g, '').replace(',', '.');
+					} else { // 1,234.56
+						directParseStr = directParseStr.replace(/,/g, '');
+					}
+				}
+				val = parseFloat(directParseStr);
+			}
 
-            if (isNaN(val)) {
-                console.warn(`NormalizeAmountString failed or produced NaN for input: '${amountStr}'. Normalized string was: '${normalizedStr}'. Attempting direct parsing.`);
-                let directParseStr = String(amountStr).trim();
-                if (directParseStr.includes(',') && !directParseStr.includes('.')) {
-                    directParseStr = directParseStr.replace(/,/g, '.');
-                } else { 
-                    directParseStr = directParseStr.replace(/[^0-9.]/g, (match, offset, fullString) => {
-                        return (match === '.' && fullString.indexOf('.') === offset) ? '.' : '';
-                    });
-                }
-                val = parseFloat(directParseStr);
-            }
-            
-            if (isNaN(val)) return 0;
+			if (isNaN(val)) return 0;
 
-            if (currency === 'USD') {
-                val = val * USD_TO_VND_RATE; 
-            } 
-
-            return Math.round(val); // VNĐ giờ sẽ là số nguyên sau khi làm tròn
-        }
+			if (currency === 'USD') {
+				val = val * USD_TO_VND_RATE;
+				return Math.round(val); // Quy đổi USD sang VND thường làm tròn thành số nguyên
+			} else if (currency === 'VND') {
+				// Giữ lại phần thập phân cho VNĐ
+				return val;
+			} else {
+				// Các loại tiền tệ khác có thể có quy tắc làm tròn riêng
+				return val;
+			}
+		}
 		
 		function toggleExpenseChartDisplay() {
 			if (!expenseChartTypeSelector || !expensePieChartContainer || !expenseBarChartContainer || !noExpenseDataChartEl) {
@@ -754,6 +785,7 @@
 				expenseBarChartContainer.style.display = 'block';
 			}
 		}
+		
 		// --- Luu bo nho ---
 		function findAndDisplayTransactionSuggestion() {
 			if (!transactionForm || editingTransactionId) { // Không gợi ý khi đang sửa
@@ -1705,7 +1737,59 @@
 		}
 
         function filterTransactionsByMonth() { applyMainFilter(); }
-		function applyMainFilter() { const selectedMonth = filterMonthSelect.value; let filteredTransactions = (selectedMonth === 'all') ? [...transactions] : transactions.filter(tx => tx.datetime && tx.datetime.startsWith(selectedMonth)); const monthDisplayForTitles = getMonthDisplayText(selectedMonth, false); const expenseBreakdownTitleTextEl = document.getElementById('expense-breakdown-title-text'); if (expenseBreakdownTitleTextEl) { expenseBreakdownTitleTextEl.textContent = `Phân Loại Chi Tiêu ${monthDisplayForTitles} - VNĐ`; } const incomeExpenseChartTitleEl = document.getElementById('income-expense-chart-title'); if (incomeExpenseChartTitleEl) { incomeExpenseChartTitleEl.textContent = `Biểu Đồ Thu vs Chi ${monthDisplayForTitles} - VNĐ`; } renderMainTransactions(filteredTransactions); updateAllSummariesAndCharts(filteredTransactions); updateDetailedStatisticsTable(filteredTransactions); updateSummarySectionText(filteredTransactions, selectedMonth); }
+		function applyMainFilter() {
+			const selectedMonth = filterMonthSelect ? filterMonthSelect.value : 'all';
+			const selectedSpecificDate = filterSpecificDateInput ? filterSpecificDateInput.value : ""; 
+			console.log(`Applying filters: Month='<span class="math-inline">\{selectedMonth\}', SpecificDate\='</span>{selectedSpecificDate}'`);
+
+			let filteredTransactions = [...transactions];
+
+			// 1. Lọc theo tháng (từ bộ lọc chính #filter-month)
+			if (selectedMonth !== 'all') {
+				filteredTransactions = filteredTransactions.filter(tx => tx.datetime && tx.datetime.startsWith(selectedMonth));
+			}
+
+			// 2. Lọc tiếp theo ngày cụ thể (nếu có ngày được chọn trong #filter-specific-date)
+			if (selectedSpecificDate) { 
+				filteredTransactions = filteredTransactions.filter(tx => tx.datetime && tx.datetime.startsWith(selectedSpecificDate));
+			}
+
+			// Cập nhật giao diện
+			renderMainTransactions(filteredTransactions);
+			updateSummarySectionText(filteredTransactions, selectedMonth); // Dùng selectedMonth cho label tháng của tóm tắt
+			updateAllSummariesAndCharts(filteredTransactions); 
+			updateDetailedStatisticsTable(filteredTransactions);
+
+			// Cập nhật tiêu đề cho các biểu đồ và bảng thống kê
+			let effectiveFilterDisplay = getMonthDisplayText(selectedMonth, false);
+			if (selectedSpecificDate) {
+				const dateParts = selectedSpecificDate.split('-'); // YYYY-MM-DD
+				const displayDate = `<span class="math-inline">\{dateParts\[2\]\}/</span>{dateParts[1]}/${dateParts[0]}`; // dd/MM/YYYY
+
+				if (selectedMonth === 'all' || effectiveFilterDisplay === "Tất cả") {
+					effectiveFilterDisplay = `Ngày ${displayDate}`;
+				} else {
+					 // Nếu đã có tháng cụ thể, có thể chỉ hiển thị ngày cho ngắn gọn, hoặc cả hai
+					 effectiveFilterDisplay += `, ngày ${dateParts[2]}`; 
+					 // Hoặc: effectiveFilterDisplay = `${effectiveFilterDisplay} & Ngày ${displayDate}`;
+				}
+			}
+
+			// Đảm bảo các element tiêu đề tồn tại trước khi cập nhật
+			const expenseBreakdownTitleTextEl = document.getElementById('expense-breakdown-title-text');
+			if (expenseBreakdownTitleTextEl) {
+				expenseBreakdownTitleTextEl.textContent = `Phân Loại Chi Tiêu ${effectiveFilterDisplay || 'Tổng Quan'} - VNĐ`;
+			}
+			const incomeExpenseChartTitleEl = document.getElementById('income-expense-chart-title');
+			if (incomeExpenseChartTitleEl) {
+				incomeExpenseChartTitleEl.textContent = `Biểu Đồ Thu vs Chi ${effectiveFilterDisplay || 'Tổng Quan'} - VNĐ`;
+			}
+			const statsTableMonthDisplayEl = document.getElementById('stats-table-month-display');
+			if (statsTableMonthDisplayEl) {
+				statsTableMonthDisplayEl.textContent = `(${effectiveFilterDisplay || 'Tổng Quan'})`;
+			}
+		}
+
         function getISOWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7)); const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); return Math.ceil((((d - yearStart) / 86400000) + 1) / 7); }
         function getWeekIdFromDateTime(dateTimeStr) { if (!dateTimeStr) return null; const date = new Date(dateTimeStr); if (isNaN(date.getTime())) return null; const year = date.getFullYear(); const weekNumber = getISOWeekNumber(date); return `${year}-W${String(weekNumber).padStart(2, '0')}`; }
         function getStartDateOfISOWeek(year, week) { const simple = new Date(year, 0, 1 + (week - 1) * 7); const dow = simple.getDay(); const ISOweekStart = simple; if (dow <= 4) ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1); else ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay()); ISOweekStart.setHours(0,0,0,0); return ISOweekStart; }
@@ -1924,6 +2008,10 @@
 			setDefaultComparisonYear();
 			const typeChiRadio = document.getElementById('type-chi');
 			if (typeChiRadio) typeChiRadio.checked = true;
+			// THÊM DÒNG NÀY ĐỂ CẬP NHẬT NGÀY HIỆN TẠI CHO BỘ LỌC NGÀY CỤ THỂ
+			if (filterSpecificDateInput) {
+				filterSpecificDateInput.value = getCurrentDateFormattedYYYYMMDD();
+			}
 
 			populateAccountDropdowns();
 			toggleFormFields();
@@ -2284,7 +2372,18 @@
 
 			// Đăng ký các event listeners khác
 			if(transactionForm) transactionForm.addEventListener('submit', handleTransactionSubmit);
-			if(filterMonthSelect) filterMonthSelect.addEventListener('change', filterTransactionsByMonth);
+			if (filterMonthSelect) {
+				filterMonthSelect.addEventListener('change', applyMainFilter);
+			}
+			if (filterSpecificDateInput) {
+				filterSpecificDateInput.addEventListener('change', applyMainFilter);
+			}
+			if (clearDateFilterButton && filterSpecificDateInput) {
+				clearDateFilterButton.addEventListener('click', () => {
+					filterSpecificDateInput.value = ""; // Xóa giá trị ngày
+					applyMainFilter(); // Áp dụng lại bộ lọc
+				});
+			}
 			if(typeRadioButtons) typeRadioButtons.forEach(radio => {
 				radio.addEventListener('change', () => {
 					toggleFormFields(); 
