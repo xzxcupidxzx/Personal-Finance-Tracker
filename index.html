@@ -2005,145 +2005,145 @@
 			if (addTripleZeroButton && amountTextInput) {
 				addTripleZeroButton.addEventListener('click', function() { /* ... code của bạn ... */ });
 			}
-						
-			// Đặt hàm này ở đâu đó trong phần script của bạn, có thể ở đầu phần script cho các hàm tiện ích
-			function formatAndPreserveCursor(inputElement, valueToFormat) {
-				const originalValue = valueToFormat;
-				let cursorPos = inputElement.selectionStart;
-				const originalLength = originalValue.length;
+					
+		// Đặt hàm này ở đâu đó trong phần script của bạn, có thể ở đầu phần script cho các hàm tiện ích
+		function formatAndPreserveCursor(inputElement, valueToFormat) {
+			const originalValue = valueToFormat;
+			let cursorPos = inputElement.selectionStart;
+			const originalLength = originalValue.length;
 
-				// 1. Loại bỏ các ký tự không hợp lệ và dấu phẩy cũ, chỉ giữ lại số và một dấu chấm thập phân
-				let cleanValue = originalValue.replace(/[^0-9.]/g, "");
-				const parts = cleanValue.split('.');
-				let integerPart = parts[0];
-				let decimalPart = parts.length > 1 ? parts.slice(1).join('') : ""; // Nối lại nếu có nhiều dấu chấm
+			// 1. Loại bỏ các ký tự không hợp lệ và dấu phẩy cũ, chỉ giữ lại số và một dấu chấm thập phân
+			let cleanValue = originalValue.replace(/[^0-9.]/g, "");
+			const parts = cleanValue.split('.');
+			let integerPart = parts[0];
+			let decimalPart = parts.length > 1 ? parts.slice(1).join('') : ""; // Nối lại nếu có nhiều dấu chấm
 
-				// Chỉ cho phép một dấu chấm thập phân
-				if (parts.length > 2) {
-					decimalPart = parts[1] + parts.slice(2).join(''); // Lấy phần đầu tiên sau dấu chấm và nối phần còn lại
-				}
-				 if (decimalPart.length > 2 && inputElement.id === 'amount-input' && document.getElementById('form-currency-selector').value === 'USD') {
-					// Giới hạn 2 số thập phân cho USD, có thể mở rộng cho các tiền tệ khác nếu cần
-					// decimalPart = decimalPart.substring(0, 2);
-					// Với VND, bạn có thể không muốn giới hạn số thập phân khi nhập,
-					// việc làm tròn sẽ do hàm parseAmountInput đảm nhiệm khi submit.
-					// Hiện tại, không giới hạn số chữ số thập phân khi nhập để linh hoạt.
-				}
+			// Chỉ cho phép một dấu chấm thập phân
+			if (parts.length > 2) {
+				decimalPart = parts[1] + parts.slice(2).join(''); // Lấy phần đầu tiên sau dấu chấm và nối phần còn lại
+			}
+			 if (decimalPart.length > 2 && inputElement.id === 'amount-input' && document.getElementById('form-currency-selector').value === 'USD') {
+				// Giới hạn 2 số thập phân cho USD, có thể mở rộng cho các tiền tệ khác nếu cần
+				// decimalPart = decimalPart.substring(0, 2);
+				// Với VND, bạn có thể không muốn giới hạn số thập phân khi nhập,
+				// việc làm tròn sẽ do hàm parseAmountInput đảm nhiệm khi submit.
+				// Hiện tại, không giới hạn số chữ số thập phân khi nhập để linh hoạt.
+			}
 
 
-				// 2. Định dạng phần nguyên với dấu phẩy
-				let formattedInteger = "";
-				if (integerPart) {
-					// Bỏ qua việc parse thành số rồi format lại nếu đang gõ số 0 ở đầu (ví dụ: 007)
-					if (/^0+$/.test(integerPart) && integerPart.length > 1 && (decimalPart === "" || decimalPart === undefined)) {
-						 // Giữ nguyên nếu chỉ là các số 0 (ví dụ 00) để cho phép nhập 0.5 sau đó
-						 // formattedInteger = integerPart; // Tạm thời để người dùng nhập 007
+			// 2. Định dạng phần nguyên với dấu phẩy
+			let formattedInteger = "";
+			if (integerPart) {
+				// Bỏ qua việc parse thành số rồi format lại nếu đang gõ số 0 ở đầu (ví dụ: 007)
+				if (/^0+$/.test(integerPart) && integerPart.length > 1 && (decimalPart === "" || decimalPart === undefined)) {
+					 // Giữ nguyên nếu chỉ là các số 0 (ví dụ 00) để cho phép nhập 0.5 sau đó
+					 // formattedInteger = integerPart; // Tạm thời để người dùng nhập 007
+				} else {
+					const num = parseInt(integerPart, 10); // Parse để bỏ số 0 ở đầu (vd: 007 -> 7)
+					if (!isNaN(num)) {
+						 formattedInteger = new Intl.NumberFormat('en-US').format(num);
+					} else if (integerPart === "" && (decimalPart !== "" || valueToFormat === ".")) {
+						formattedInteger = "0"; // Nếu chỉ có phần thập phân, ví dụ ".5" -> "0.5"
 					} else {
-						const num = parseInt(integerPart, 10); // Parse để bỏ số 0 ở đầu (vd: 007 -> 7)
-						if (!isNaN(num)) {
-							 formattedInteger = new Intl.NumberFormat('en-US').format(num);
-						} else if (integerPart === "" && (decimalPart !== "" || valueToFormat === ".")) {
-							formattedInteger = "0"; // Nếu chỉ có phần thập phân, ví dụ ".5" -> "0.5"
-						} else {
-							formattedInteger = ""; // Nếu integerPart không hợp lệ và không có phần thập phân
-						}
+						formattedInteger = ""; // Nếu integerPart không hợp lệ và không có phần thập phân
 					}
-				} else if (decimalPart !== "" || valueToFormat === ".") {
-					formattedInteger = "0"; // Nếu không có phần nguyên nhưng có phần thập phân
 				}
-
-
-				// 3. Ghép lại giá trị đã định dạng
-				let newFormattedValue = formattedInteger;
-				if (decimalPart !== "" || (valueToFormat.endsWith('.') && !valueToFormat.endsWith('..'))) { // Cho phép dấu chấm ở cuối khi đang gõ
-					newFormattedValue += "." + decimalPart;
-				}
-				 // Nếu giá trị ban đầu là "." hoặc "0." thì giữ nguyên sau khi thêm số 0
-				if (valueToFormat === ".") newFormattedValue = "0.";
-				if (valueToFormat === "0." && decimalPart==="") newFormattedValue = "0.";
-
-
-				// Xử lý trường hợp đặc biệt: nếu người dùng chỉ nhập "0", thì hiển thị "0"
-				if (integerPart === "0" && decimalPart === "" && !valueToFormat.includes('.')) {
-					newFormattedValue = "0";
-				}
-				// Nếu người dùng xóa hết, newFormattedValue có thể là "0" do Intl.NumberFormat(NaN) hoặc (0)
-				// Cần đảm bảo nếu input rỗng thì hiển thị rỗng
-				if (originalValue.trim() === "") {
-					newFormattedValue = "";
-				}
-
-
-				// 4. Cập nhật giá trị và đặt lại con trỏ
-				inputElement.value = newFormattedValue;
-
-				// Tính toán vị trí con trỏ mới
-				// Logic này cố gắng giữ vị trí con trỏ tương đối dựa trên số lượng chữ số đã thay đổi.
-				// Nó không hoàn hảo 100% cho mọi trường hợp phức tạp (xóa/chèn ở giữa)
-				// nhưng sẽ tốt hơn là chỉ đặt con trỏ về cuối.
-				if (cursorPos !== null) {
-					let newCursorPos = cursorPos;
-					const newLength = newFormattedValue.length;
-
-					// Đếm số dấu phẩy trong giá trị cũ và mới trước vị trí con trỏ ước tính
-					const oldCommasBefore = (originalValue.substring(0, cursorPos).match(/,/g) || []).length;
-					// Ước tính vị trí con trỏ mới trước khi điều chỉnh dấu phẩy
-					let tempNewCursorPos = cursorPos + (newLength - originalLength);
-					if (tempNewCursorPos < 0) tempNewCursorPos = 0;
-					if (tempNewCursorPos > newLength) tempNewCursorPos = newLength;
-
-					const newCommasBefore = (newFormattedValue.substring(0, tempNewCursorPos).match(/,/g) || []).length;
-
-					newCursorPos = tempNewCursorPos + (newCommasBefore - oldCommasBefore);
-
-					// Đảm bảo con trỏ không vượt quá giới hạn
-					if (newCursorPos < 0) newCursorPos = 0;
-					if (newCursorPos > newLength) newCursorPos = newLength;
-
-					// Đặc biệt khi xóa lùi và ký tự bị xóa là dấu phẩy
-					if (inputElement.id === 'amount-input' && originalValue.charAt(cursorPos -1) === ',' && newLength < originalLength) {
-						// Nếu người dùng vừa xóa dấu phẩy, vị trí con trỏ nên ở trước dấu phẩy đó
-						// (giờ đã biến mất), tức là vị trí hiện tại của ký tự đứng trước dấu phẩy
-						// newCursorPos = cursorPos -1; // Đã được xử lý bởi logic trên
-					}
-
-
-					inputElement.setSelectionRange(newCursorPos, newCursorPos);
-				}
+			} else if (decimalPart !== "" || valueToFormat === ".") {
+				formattedInteger = "0"; // Nếu không có phần nguyên nhưng có phần thập phân
 			}
 
 
-			// Đảm bảo biến amountTextInput đã được khai báo ở phạm vi có thể truy cập
-			// const amountTextInput = document.getElementById('amount-input');
-
-			if (amountTextInput) {
-				amountTextInput.addEventListener('input', function(e) {
-					// Chỉ định dạng nếu không phải là xóa (để tránh xung đột khi xóa dấu phẩy)
-					// Hoặc nếu bạn muốn nó luôn định dạng:
-					formatAndPreserveCursor(e.target, e.target.value);
-				});
-
-				amountTextInput.addEventListener('keydown', function(e) {
-					// Cho phép: backspace, delete, tab, escape, enter, home, end, left, right arrows
-					if ([46, 8, 9, 27, 13, 35, 36, 37, 39].indexOf(e.keyCode) !== -1 ||
-						// Cho phép: Ctrl+A, Command+A, Ctrl+C, Ctrl+V, Ctrl+X
-						((e.keyCode === 65 || e.keyCode === 88 || e.keyCode === 67 || e.keyCode === 86) && (e.ctrlKey === true || e.metaKey === true)) ||
-						// Cho phép: số từ 0-9 trên bàn phím chính
-						(e.keyCode >= 48 && e.keyCode <= 57 && !e.shiftKey) ||
-						// Cho phép: số từ 0-9 trên numpad
-						(e.keyCode >= 96 && e.keyCode <= 105) ||
-						// Cho phép: dấu chấm (period) và dấu chấm trên numpad (decimal point)
-						(e.keyCode === 190 || e.keyCode === 110)) {
-						// Nếu là dấu chấm, kiểm tra xem đã có dấu chấm chưa
-						if ((e.keyCode === 190 || e.keyCode === 110) && this.value.includes('.')) {
-							e.preventDefault(); // Ngăn nhập nhiều hơn một dấu chấm
-						}
-						return; // Cho phép các phím này
-					}
-					// Ngăn chặn tất cả các phím khác không được liệt kê ở trên
-					e.preventDefault();
-				});
+			// 3. Ghép lại giá trị đã định dạng
+			let newFormattedValue = formattedInteger;
+			if (decimalPart !== "" || (valueToFormat.endsWith('.') && !valueToFormat.endsWith('..'))) { // Cho phép dấu chấm ở cuối khi đang gõ
+				newFormattedValue += "." + decimalPart;
 			}
+			 // Nếu giá trị ban đầu là "." hoặc "0." thì giữ nguyên sau khi thêm số 0
+			if (valueToFormat === ".") newFormattedValue = "0.";
+			if (valueToFormat === "0." && decimalPart==="") newFormattedValue = "0.";
+
+
+			// Xử lý trường hợp đặc biệt: nếu người dùng chỉ nhập "0", thì hiển thị "0"
+			if (integerPart === "0" && decimalPart === "" && !valueToFormat.includes('.')) {
+				newFormattedValue = "0";
+			}
+			// Nếu người dùng xóa hết, newFormattedValue có thể là "0" do Intl.NumberFormat(NaN) hoặc (0)
+			// Cần đảm bảo nếu input rỗng thì hiển thị rỗng
+			if (originalValue.trim() === "") {
+				newFormattedValue = "";
+			}
+
+
+			// 4. Cập nhật giá trị và đặt lại con trỏ
+			inputElement.value = newFormattedValue;
+
+			// Tính toán vị trí con trỏ mới
+			// Logic này cố gắng giữ vị trí con trỏ tương đối dựa trên số lượng chữ số đã thay đổi.
+			// Nó không hoàn hảo 100% cho mọi trường hợp phức tạp (xóa/chèn ở giữa)
+			// nhưng sẽ tốt hơn là chỉ đặt con trỏ về cuối.
+			if (cursorPos !== null) {
+				let newCursorPos = cursorPos;
+				const newLength = newFormattedValue.length;
+
+				// Đếm số dấu phẩy trong giá trị cũ và mới trước vị trí con trỏ ước tính
+				const oldCommasBefore = (originalValue.substring(0, cursorPos).match(/,/g) || []).length;
+				// Ước tính vị trí con trỏ mới trước khi điều chỉnh dấu phẩy
+				let tempNewCursorPos = cursorPos + (newLength - originalLength);
+				if (tempNewCursorPos < 0) tempNewCursorPos = 0;
+				if (tempNewCursorPos > newLength) tempNewCursorPos = newLength;
+
+				const newCommasBefore = (newFormattedValue.substring(0, tempNewCursorPos).match(/,/g) || []).length;
+
+				newCursorPos = tempNewCursorPos + (newCommasBefore - oldCommasBefore);
+
+				// Đảm bảo con trỏ không vượt quá giới hạn
+				if (newCursorPos < 0) newCursorPos = 0;
+				if (newCursorPos > newLength) newCursorPos = newLength;
+
+				// Đặc biệt khi xóa lùi và ký tự bị xóa là dấu phẩy
+				if (inputElement.id === 'amount-input' && originalValue.charAt(cursorPos -1) === ',' && newLength < originalLength) {
+					// Nếu người dùng vừa xóa dấu phẩy, vị trí con trỏ nên ở trước dấu phẩy đó
+					// (giờ đã biến mất), tức là vị trí hiện tại của ký tự đứng trước dấu phẩy
+					// newCursorPos = cursorPos -1; // Đã được xử lý bởi logic trên
+				}
+
+
+				inputElement.setSelectionRange(newCursorPos, newCursorPos);
+			}
+		}
+
+
+		// Đảm bảo biến amountTextInput đã được khai báo ở phạm vi có thể truy cập
+		// const amountTextInput = document.getElementById('amount-input');
+
+		if (amountTextInput) {
+			amountTextInput.addEventListener('input', function(e) {
+				// Chỉ định dạng nếu không phải là xóa (để tránh xung đột khi xóa dấu phẩy)
+				// Hoặc nếu bạn muốn nó luôn định dạng:
+				formatAndPreserveCursor(e.target, e.target.value);
+			});
+
+			amountTextInput.addEventListener('keydown', function(e) {
+				// Cho phép: backspace, delete, tab, escape, enter, home, end, left, right arrows
+				if ([46, 8, 9, 27, 13, 35, 36, 37, 39].indexOf(e.keyCode) !== -1 ||
+					// Cho phép: Ctrl+A, Command+A, Ctrl+C, Ctrl+V, Ctrl+X
+					((e.keyCode === 65 || e.keyCode === 88 || e.keyCode === 67 || e.keyCode === 86) && (e.ctrlKey === true || e.metaKey === true)) ||
+					// Cho phép: số từ 0-9 trên bàn phím chính
+					(e.keyCode >= 48 && e.keyCode <= 57 && !e.shiftKey) ||
+					// Cho phép: số từ 0-9 trên numpad
+					(e.keyCode >= 96 && e.keyCode <= 105) ||
+					// Cho phép: dấu chấm (period) và dấu chấm trên numpad (decimal point)
+					(e.keyCode === 190 || e.keyCode === 110)) {
+					// Nếu là dấu chấm, kiểm tra xem đã có dấu chấm chưa
+					if ((e.keyCode === 190 || e.keyCode === 110) && this.value.includes('.')) {
+						e.preventDefault(); // Ngăn nhập nhiều hơn một dấu chấm
+					}
+					return; // Cho phép các phím này
+				}
+				// Ngăn chặn tất cả các phím khác không được liệt kê ở trên
+				e.preventDefault();
+			});
+		}
 			
 
 			// ----- VIRTUAL KEYBOARD LOGIC -----
@@ -2211,16 +2211,20 @@
 							activeInputForVirtualKeyboard.value += key;
 						}
 					} else if (key) { // Các phím số (0-9) và '000'
-						activeInputForVirtualKeyboard.value += key;'
+						activeInputForVirtualKeyboard.value += key;
+					}
+					activeInputForVirtualKeyboard.value = newValue; // Cập nhật giá trị thô trước
+
+					// GỌI HÀM ĐỊNH DẠNG NGAY SAU KHI BÀN PHÍM ẢO CẬP NHẬT GIÁ TRỊ
 					if (activeInputForVirtualKeyboard.id === 'amount-input') { // Chỉ định dạng cho ô số tiền
 						formatAndPreserveCursor(activeInputForVirtualKeyboard, activeInputForVirtualKeyboard.value);
-					}
+					}				
 					// Không nên gọi activeInputForVirtualKeyboard.focus() ở đây vì có thể kích hoạt lại bàn phím OS
-					
 				});
 			} else {
 				if (!virtualKeyboardEl) console.warn("[Keyboard] Virtual keyboard element with ID 'virtualNumericKeyboard' not found.");
 				if (!amountInputForKeyboard) console.warn("[Keyboard] Amount input element with ID 'amount-input' not found for virtual keyboard.");
+
 			}
 
 			// Xử lý click ra ngoài để ẩn bàn phím ảo
