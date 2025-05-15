@@ -1843,6 +1843,32 @@
 				console.log("[Keyboard] Showing virtual keyboard for:", inputElement.id);
 				virtualKeyboardEl.style.display = 'grid'; // Hoặc 'block' tùy theo CSS layout bàn phím
 				activeInputForVirtualKeyboard = inputElement;
+				// ... (code hiện tại của bạn để hiển thị bàn phím) ...
+				virtualKeyboardEl.style.display = 'grid'; // Hoặc 'block'
+				activeInputForVirtualKeyboard = inputElement;
+
+				// Thêm logic cuộn ở đây:
+				setTimeout(() => { // Dùng setTimeout để đảm bảo bàn phím đã render và có kích thước
+					const keyboardHeight = virtualKeyboardEl.offsetHeight;
+					const inputRect = activeInputForVirtualKeyboard.getBoundingClientRect();
+					const viewportHeight = window.innerHeight;
+
+					// Tính xem phần dưới của input có bị che không, hoặc một khoảng không gian cần thiết bên dưới input
+					const spaceNeededBelowInput = 50; // Khoảng đệm để nhìn thấy trường tiếp theo hoặc nút submit
+					const inputBottomPosition = inputRect.bottom;
+
+					if (inputBottomPosition > (viewportHeight - keyboardHeight - spaceNeededBelowInput)) {
+						const scrollAmount = inputBottomPosition - (viewportHeight - keyboardHeight - spaceNeededBelowInput);
+						window.scrollBy(0, scrollAmount);
+						console.log(`[Keyboard] Scrolled by: ${scrollAmount}px`);
+					}
+					// Hoặc một cách đơn giản hơn là cuộn trường input vào tầm nhìn,
+					// nhưng cần cẩn thận để không cuộn quá nhiều nếu bàn phím che mất nó từ dưới lên.
+					// activeInputForVirtualKeyboard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+					// Tuy nhiên, scrollIntoView có thể không hoạt động tốt với fixed keyboard,
+					// window.scrollBy thường cho kiểm soát tốt hơn trong trường hợp này.
+
+				}, 100); // Chờ một chút để DOM cập nhật				
 				// Không dùng readonly ở đây nữa, sẽ xử lý bằng blur và preventDefault
 			} else {
 				console.error("[Keyboard] Cannot show virtual keyboard. virtualKeyboardEl or inputElement is missing.");
