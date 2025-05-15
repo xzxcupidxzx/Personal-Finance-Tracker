@@ -2213,12 +2213,7 @@
 					} else if (key) { // Các phím số (0-9) và '000'
 						activeInputForVirtualKeyboard.value += key;
 					}
-					activeInputForVirtualKeyboard.value = newValue; // Cập nhật giá trị thô trước
-
-					// GỌI HÀM ĐỊNH DẠNG NGAY SAU KHI BÀN PHÍM ẢO CẬP NHẬT GIÁ TRỊ
-					if (activeInputForVirtualKeyboard.id === 'amount-input') { // Chỉ định dạng cho ô số tiền
-						formatAndPreserveCursor(activeInputForVirtualKeyboard, activeInputForVirtualKeyboard.value);
-					}				
+					formatAndPreserveCursor(activeInputForVirtualKeyboard, activeInputForVirtualKeyboard.value);					
 					// Không nên gọi activeInputForVirtualKeyboard.focus() ở đây vì có thể kích hoạt lại bàn phím OS
 				});
 			} else {
