@@ -581,6 +581,12 @@
         const defaultExpenseCategories = [ { value: "Ăn uống", text: "Ăn uống" }, { value: "Đi lại", text: "Đi lại" }, { value: "Nhà ở", text: "Nhà ở" }, { value: "Hóa đơn", text: "Hóa đơn (Điện, nước, internet)" }, { value: "Mua sắm", text: "Mua sắm (Quần áo, đồ dùng)" }, { value: "Giải trí", text: "Giải trí" }, { value: "Sức khỏe", text: "Sức khỏe" }, { value: "Giáo dục", text: "Giáo dục" }, { value: "Chi cho đầu tư", text: "Chi cho đầu tư" }, { value: "Trả nợ", text: "Trả nợ (cho người khác)" }, { value: TRANSFER_CATEGORY_OUT, text: "Chuyển tiền đi" }, { value: "Chi phí khác", text: "Chi phí khác (chung)" } ];
         const defaultAccounts = [ { value: "Tiền mặt", text: "Tiền mặt" }, { value: "Momo", text: "Momo" }, { value: "Thẻ tín dụng A", text: "Thẻ tín dụng A" }, { value: "Techcombank", text: "Techcombank" }, { value: "BIDV", text: "BIDV" }, { value: "Khác", text: "Khác" } ];
         const categoryColors = [ '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF', '#8366FF', '#289F40', '#D26384', '#3C64C8', '#C89632' ];
+		document.addEventListener("DOMContentLoaded", () => {
+			document.getElementById("filter-month").addEventListener("change", () => {
+				const selectedMonth = document.getElementById("filter-month").value;
+				filterDataByMonth(selectedMonth);
+			});
+		});
 
         // --- HÀM TIỆN ÍCH (Giữ nguyên các hàm tiện ích của bạn) ---
         function showMessage(message, type = 'success') { messageBox.textContent = message; messageBox.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'message-success' : 'message-error'}`; messageBox.style.display = 'block'; setTimeout(() => { messageBox.style.display = 'none'; }, 3000); }
@@ -739,7 +745,49 @@
 				return val;
 			}
 		}
-		
+		function filterDataByMonth(monthValue) {
+		  const filtered = monthValue === "all"
+			? transactions
+			: transactions.filter(tx => {
+				const date = new Date(tx.datetime);
+				const month = (date.getMonth() + 1).toString().padStart(2, '0');
+				const year = date.getFullYear();
+				return `${year}-${month}` === monthValue;
+			});
+
+		function renderExpenseBreakdown(data) {
+		  const categoryTotals = {};
+		  data.filter(tx => tx.type === "Chi").forEach(tx => {
+			categoryTotals[tx.category] = (categoryTotals[tx.category] || 0) + tx.amount;
+		  });
+
+		  // Cập nhật biểu đồ (Chart.js)
+		  const labels = Object.keys(categoryTotals);
+		  const values = Object.values(categoryTotals);
+
+		  expensePieChart.data.labels = labels;
+		  expensePieChart.data.datasets[0].data = values;
+		  expensePieChart.update();
+
+		  // Cập nhật danh sách bên phải
+		  const container = document.getElementById("expense-category-list-container");
+		  container.innerHTML = labels.map((cat, i) => {
+			const percent = ((values[i] / values.reduce((a, b) => a + b, 0)) * 100).toFixed(1);
+			return `<li class="flex justify-between items-center text-sm">
+			  <div class="flex items-center">
+				<span class="inline-block w-3 h-3 rounded-full mr-2" style="background-color: ${chartColors[i % chartColors.length]}"></span>
+				<span>${cat}</span>
+			  </div>
+			  <div class="text-right">
+				<span class="font-semibold">${values[i].toLocaleString()} ₫</span>
+				<span class="text-gray-500 ml-2">(${percent}%)</span>
+			  </div>
+			</li>`;
+		  }).join("");
+		}
+		  renderExpenseBreakdown(filtered);
+		  renderOverviewCharts(filtered);
+		}		
 		function toggleExpenseChartDisplay() {
 			if (!expenseChartTypeSelector || !expensePieChartContainer || !expenseBarChartContainer || !noExpenseDataChartEl) {
 				// console.error("toggleExpenseChartDisplay: DOM elements for chart toggling are missing.");
@@ -1725,73 +1773,78 @@
 		function applyMainFilter() {
 			const selectedMonth = filterMonthSelect ? filterMonthSelect.value : 'all';
 			const selectedSpecificDate = filterSpecificDateInput ? filterSpecificDateInput.value : "";
-			console.log(`Applying filters: Month='<span class="math-inline">\{selectedMonth\}', SpecificDate\='</span>{selectedSpecificDate}'`); // Giữ lại để kiểm tra
+			// ... (console.log và khởi tạo transactionsForMonthlySummaryAndCharts, transactionsForDailyList) ...
 
-			let filteredTransactions = [...transactions];
+			// --- Lọc cho các mục chỉ theo tháng ---
 			let transactionsForMonthlySummaryAndCharts = [...transactions];
-			
 			if (selectedMonth !== 'all') {
-				filteredTransactions = filteredTransactions.filter(tx => {
+				transactionsForMonthlySummaryAndCharts = transactionsForMonthlySummaryAndCharts.filter(tx => {
 					return tx.datetime && tx.datetime.startsWith(selectedMonth);
 				});
 			}
 
-			if (selectedSpecificDate) {
-				console.log(`Filtering for specific date: '${selectedSpecificDate}'`); // Thêm log
-				filteredTransactions = filteredTransactions.filter(tx => {
+			// --- Lọc tiếp cho danh sách giao dịch hàng ngày (nếu có ngày cụ thể) ---
+			let transactionsForDailyList = [...transactionsForMonthlySummaryAndCharts]; // Bắt đầu từ dữ liệu đã lọc tháng
+			if (selectedSpecificDate && selectedMonth !== 'all') { // Chỉ lọc ngày cụ thể nếu đã có tháng được chọn (tránh lọc ngày trên "Tất cả các tháng")
+															   // Hoặc nếu bạn muốn cho phép lọc ngày trên "Tất cả các tháng", bỏ điều kiện `selectedMonth !== 'all'`
+				transactionsForDailyList = transactionsForDailyList.filter(tx => {
 					if (!tx.datetime) return false;
-					// Trích xuất phần YYYY-MM-DD từ tx.datetime
 					const transactionDatePart = tx.datetime.substring(0, 10);
-					const matches = (transactionDatePart === selectedSpecificDate);
-
-					// Log chi tiết cho việc gỡ lỗi (bạn có thể xóa sau khi đã sửa được)
-					if (tx.datetime.includes('2025-05-11')) { // Hoặc một phần ngày của giao dịch lỗi
-						 console.log(`Checking problematic transaction: ID=<span class="math-inline">\{tx\.id\}, FullDateTime\='</span>{tx.datetime}', TxDatePart='<span class="math-inline">\{transactionDatePart\}', SelectedDate\='</span>{selectedSpecificDate}', Matches=${matches}`);
-					}
-					return matches;
+					return (transactionDatePart === selectedSpecificDate);
+				});
+			} else if (selectedSpecificDate && selectedMonth === 'all') {
+				// Nếu đang chọn "Tất cả các tháng" VÀ có ngày cụ thể
+				 transactionsForDailyList = transactions.filter(tx => { // Lọc từ toàn bộ giao dịch
+					if (!tx.datetime) return false;
+					const transactionDatePart = tx.datetime.substring(0, 10);
+					return (transactionDatePart === selectedSpecificDate);
 				});
 			}
-			console.log("Transactions to be rendered:", JSON.stringify(filteredTransactions.map(tx => ({id: tx.id, datetime: tx.datetime, description: tx.description})), null, 2));
-			renderMainTransactions(filteredTransactions);
-			updateSummarySectionText(filteredTransactions, selectedMonth);
-			updateAllSummariesAndCharts(filteredTransactions);
-			updateDetailedStatisticsTable(filteredTransactions);
 
-			// ... (phần cập nhật tiêu đề biểu đồ giữ nguyên)
-			let effectiveFilterDisplay = getMonthDisplayText(selectedMonth, false);
-			if (selectedSpecificDate) {
-				const dateParts = selectedSpecificDate.split('-');
-				const displayDate = `<span class="math-inline">\{dateParts\[2\]\}/</span>{dateParts[1]}/${dateParts[0]}`;
-				if (selectedMonth === 'all' || effectiveFilterDisplay === "Tất cả") {
-					effectiveFilterDisplay = `Ngày ${displayDate}`;
-				} else {
-					effectiveFilterDisplay += `, ngày ${dateParts[2]}`;
-				}
-			}
+
+			// --- Cập nhật giao diện ---
+			renderMainTransactions(transactionsForDailyList);
+			updateSummarySectionText(transactionsForMonthlySummaryAndCharts, selectedMonth);
+			updateAllSummariesAndCharts(transactionsForMonthlySummaryAndCharts);
+			updateDetailedStatisticsTable(transactionsForMonthlySummaryAndCharts);
+
+
+			// --- Cập nhật tiêu đề cho các khu vực ---
+
+			// Tiêu đề cho "Phân Loại Chi Tiêu" (CHỈ THEO THÁNG)
+			const monthOnlyDisplayText = getMonthDisplayText(selectedMonth, false); // Lấy text cho tháng lọc chung
+
 			const expenseBreakdownTitleTextEl = document.getElementById('expense-breakdown-title-text');
 			if (expenseBreakdownTitleTextEl) {
-				expenseBreakdownTitleTextEl.textContent = `Phân Loại Chi Tiêu ${effectiveFilterDisplay || 'Tổng Quan'} - VNĐ`;
+				expenseBreakdownTitleTextEl.textContent = `Phân Loại Chi Tiêu ${monthOnlyDisplayText || 'Tổng Quan'} - VNĐ`;
 			}
-		const incomeExpenseChartTitleEl = document.getElementById('income-expense-chart-title');
-		if (incomeExpenseChartTitleEl) {
-			// Biểu đồ Thu vs Chi có thể vẫn nên phản ánh bộ lọc chi tiết hơn nếu bạn muốn
-			// Nếu muốn nó cũng chỉ theo tháng, dùng monthOnlyDisplayText
-			// Hiện tại, tôi để nó theo effectiveFilterDisplay cũ của bạn để bạn quyết định
-			let titleForIncomeExpenseChart = getMonthDisplayText(selectedMonth, false);
-			 if (selectedSpecificDate) {
-				const dateParts = selectedSpecificDate.split('-');
-				const displayDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
-				if (selectedMonth === 'all' || titleForIncomeExpenseChart === "Tất cả") {
-					titleForIncomeExpenseChart = `Ngày ${displayDate}`;
-				} else {
-					titleForIncomeExpenseChart += `, ngày ${dateParts[2]}`;
-				}
-			}
-			incomeExpenseChartTitleEl.textContent = `Biểu Đồ Thu vs Chi ${titleForIncomeExpenseChart || 'Tổng Quan'} - VNĐ`;
-		}
+
+			// Tiêu đề cho "Thống Kê Chi Tiết" (CHỈ THEO THÁNG)
 			const statsTableMonthDisplayEl = document.getElementById('stats-table-month-display');
 			if (statsTableMonthDisplayEl) {
-				statsTableMonthDisplayEl.textContent = `(${effectiveFilterDisplay || 'Tổng Quan'})`;
+				statsTableMonthDisplayEl.textContent = `(${monthOnlyDisplayText || 'Tổng Quan'})`;
+			}
+
+			// Tiêu đề cho "Biểu Đồ Thu vs Chi" (có thể vẫn theo ngày cụ thể nếu bạn muốn, hoặc chỉ theo tháng)
+			// Nếu bạn muốn biểu đồ này cũng CHỈ theo tháng, hãy thay thế logic dưới đây bằng:
+			// const incomeExpenseChartTitleEl = document.getElementById('income-expense-chart-title');
+			// if (incomeExpenseChartTitleEl) {
+			//     incomeExpenseChartTitleEl.textContent = `Biểu Đồ Thu vs Chi ${monthOnlyDisplayText || 'Tổng Quan'} - VNĐ`;
+			// }
+			// Nếu muốn giữ như cũ (phản ánh cả ngày cụ thể nếu có):
+			const incomeExpenseChartTitleEl = document.getElementById('income-expense-chart-title');
+			if (incomeExpenseChartTitleEl) {
+				let titleForIncomeExpenseChart = getMonthDisplayText(selectedMonth, false);
+				 if (selectedSpecificDate) { // Chỉ thêm ngày nếu ngày cụ thể được chọn
+					const dateParts = selectedSpecificDate.split('-');
+					const displayDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+					if (selectedMonth === 'all' || titleForIncomeExpenseChart === "Tất cả") {
+						titleForIncomeExpenseChart = `Ngày ${displayDate}`;
+					} else {
+						titleForIncomeExpenseChart += `, ngày ${dateParts[2]}`;
+					}
+				}
+				incomeExpenseChartTitleEl.textContent = `Biểu Đồ Thu vs Chi ${titleForIncomeExpenseChart || 'Tổng Quan'} - VNĐ`;
 			}
 		}
 
