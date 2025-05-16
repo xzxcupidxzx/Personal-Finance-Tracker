@@ -1,6 +1,6 @@
 <html lang="vi"><head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Sổ Theo Dõi Tài Chính Cá Nhân</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -1728,7 +1728,8 @@
 			console.log(`Applying filters: Month='<span class="math-inline">\{selectedMonth\}', SpecificDate\='</span>{selectedSpecificDate}'`); // Giữ lại để kiểm tra
 
 			let filteredTransactions = [...transactions];
-
+			let transactionsForMonthlySummaryAndCharts = [...transactions];
+			
 			if (selectedMonth !== 'all') {
 				filteredTransactions = filteredTransactions.filter(tx => {
 					return tx.datetime && tx.datetime.startsWith(selectedMonth);
@@ -1771,10 +1772,23 @@
 			if (expenseBreakdownTitleTextEl) {
 				expenseBreakdownTitleTextEl.textContent = `Phân Loại Chi Tiêu ${effectiveFilterDisplay || 'Tổng Quan'} - VNĐ`;
 			}
-			const incomeExpenseChartTitleEl = document.getElementById('income-expense-chart-title');
-			if (incomeExpenseChartTitleEl) {
-				incomeExpenseChartTitleEl.textContent = `Biểu Đồ Thu vs Chi ${effectiveFilterDisplay || 'Tổng Quan'} - VNĐ`;
+		const incomeExpenseChartTitleEl = document.getElementById('income-expense-chart-title');
+		if (incomeExpenseChartTitleEl) {
+			// Biểu đồ Thu vs Chi có thể vẫn nên phản ánh bộ lọc chi tiết hơn nếu bạn muốn
+			// Nếu muốn nó cũng chỉ theo tháng, dùng monthOnlyDisplayText
+			// Hiện tại, tôi để nó theo effectiveFilterDisplay cũ của bạn để bạn quyết định
+			let titleForIncomeExpenseChart = getMonthDisplayText(selectedMonth, false);
+			 if (selectedSpecificDate) {
+				const dateParts = selectedSpecificDate.split('-');
+				const displayDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+				if (selectedMonth === 'all' || titleForIncomeExpenseChart === "Tất cả") {
+					titleForIncomeExpenseChart = `Ngày ${displayDate}`;
+				} else {
+					titleForIncomeExpenseChart += `, ngày ${dateParts[2]}`;
+				}
 			}
+			incomeExpenseChartTitleEl.textContent = `Biểu Đồ Thu vs Chi ${titleForIncomeExpenseChart || 'Tổng Quan'} - VNĐ`;
+		}
 			const statsTableMonthDisplayEl = document.getElementById('stats-table-month-display');
 			if (statsTableMonthDisplayEl) {
 				statsTableMonthDisplayEl.textContent = `(${effectiveFilterDisplay || 'Tổng Quan'})`;
