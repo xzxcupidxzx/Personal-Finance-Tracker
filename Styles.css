@@ -354,6 +354,7 @@ body:not(.dark-mode) .statistics-table-section #detailed-stats-tbody td {
 .text-red-600 { color: #dc2626; }
 .text-blue-600 { color: #2563eb; }
 .text-purple-600 { color: #7c3aed; }
+.text-black-600 { color: #ffffff; }
 
 .filter-container {
     display: flex;
@@ -693,14 +694,6 @@ body.dark-mode th {
     border-color: #4b5563; /* Viền mặc định cho bảng ở dark mode */
 }
 
-/* Styles for Thống Kê Chi Tiết table cell borders in dark mode */
-/* (Lớp .dark:border-gray-700 trên HTML td đã xử lý việc này,
-   nhưng nếu cần ghi đè mạnh hơn, bạn có thể bỏ comment dòng dưới) */
-/* body.dark-mode .statistics-table-section #detailed-stats-tbody td {
-    border-color: #4b5563 !important; /* Ví dụ: Tailwind gray-600 */
-/* } */
-
-
 body.dark-mode .summary-item span:first-child { color: #d1d5db; }
 body.dark-mode .summary-item { border-bottom-color: #4b5563; }
 
@@ -714,6 +707,7 @@ body.dark-mode .text-green-600 { color: #34d399 !important; }
 body.dark-mode .text-red-600 { color: #f87171 !important; }
 body.dark-mode .text-blue-600 { color: #60a5fa !important; }
 body.dark-mode .text-purple-600 { color: #a78bfa !important; }
+body.dark-mode .text-white-600 { color: #a78bfa !important; }
 
 body.dark-mode .btn-primary {
     background-color: #2563eb;
@@ -878,4 +872,276 @@ body.dark-mode .message-error {
     justify-content: center;
     width: 100%;
 }
-/* ===== Kết thúc CSS cho Bàn phím số ảo ===== */
+/* ===== bảng đối soát===== */
+/* ===== PHẦN ĐỐI SOÁT SỐ DƯ TÀI KHOẢN - CẬP NHẬT ===== */
+#reconciliation-section #reconciliation-account-list {
+    /* Có thể thêm style cho container nếu cần, ví dụ: */
+    /* margin-top: 1rem; */
+}
+
+/* --- Mỗi dòng/mục đối soát cho một tài khoản --- */
+#reconciliation-section .reconcile-item {
+    display: flex;
+    flex-direction: column; /* Stack theo chiều dọc trên mobile */
+    gap: 0.75rem; /* 12px */
+    padding: 1rem; /* 16px */
+    margin-bottom: 1rem; /* 16px */
+    border-radius: 0.5rem; /* 8px */
+    transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+
+    /* Light Mode Defaults */
+    background-color: #f9fafb; /* Tailwind gray-50 */
+    border: 1px solid #e5e7eb; /* Tailwind gray-200 */
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.07), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+}
+
+@media (min-width: 768px) { /* md breakpoint */
+    #reconciliation-section .reconcile-item {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem; /* 16px */
+    }
+}
+
+#reconciliation-section .reconcile-item:hover {
+    /* Light Mode Hover */
+    background-color: #f3f4f6; /* Tailwind gray-100 */
+    border-color: #d1d5db; /* Tailwind gray-300 */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Phần thông tin chính của mục đối soát (tên TK, số dư app) --- */
+#reconciliation-section .reconcile-item__main-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem; /* 8px */
+    flex-grow: 1; /* Cho phép nó chiếm không gian */
+}
+
+@media (min-width: 640px) { /* sm breakpoint */
+    #reconciliation-section .reconcile-item__main-info {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.75rem; /* 12px */
+    }
+}
+
+/* --- Tên tài khoản --- */
+#reconciliation-section .reconcile-item__title {
+    font-size: 1.05rem; /* ~17px */
+    font-weight: 600; /* semibold */
+    min-width: 120px; /* Giữ độ rộng tối thiểu */
+    flex-shrink: 0; /* Không bị co lại */
+
+    /* Light Mode */
+    color: #1d4ed8; /* Tailwind blue-700 */
+}
+
+/* --- Khối hiển thị "Số dư (ứng dụng)" --- */
+#reconciliation-section .reconcile-item__balance-app {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem; /* 6px */
+    padding: 0.375rem 0.75rem; /* 6px 12px */
+    border-radius: 0.375rem; /* 6px */
+    font-size: 0.9rem; /* ~14.5px */
+
+    /* Light Mode */
+    background-color: #e0e7ff; /* Tailwind indigo-100 (màu nền nhẹ nhàng hơn) */
+    color: #4338ca; /* Tailwind indigo-700 (màu chữ cho nhãn) */
+}
+
+#reconciliation-section .reconcile-item__balance-app-value {
+    font-weight: 700; /* bold */
+    font-variant-numeric: tabular-nums;
+
+    /* Light Mode */
+    color: #166534; /* Tailwind green-700 (màu cho giá trị số dư) */
+}
+
+/* --- Phần nhập liệu và nút --- */
+#reconciliation-section .reconcile-item__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* 8px */
+    flex-shrink: 0; /* Không bị co lại */
+}
+
+/* --- Input "Số dư thực tế" --- */
+#reconciliation-section .reconcile-item__actual-balance-input {
+    width: 140px;
+    padding: 0.625rem; /* 10px */
+    font-size: 0.9rem;
+    text-align: right;
+    border-radius: 0.375rem; /* 6px */
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    /* Light Mode */
+    background-color: #ffffff;
+    color: #111827; /* Tailwind gray-900 */
+    border: 1px solid #d1d5db; /* Tailwind gray-300 */
+}
+
+#reconciliation-section .reconcile-item__actual-balance-input::placeholder {
+    /* Light Mode */
+    color: #9ca3af; /* Tailwind gray-400 */
+}
+
+#reconciliation-section .reconcile-item__actual-balance-input:focus {
+    outline: none;
+    /* Light Mode Focus */
+    border-color: #2563eb; /* Tailwind blue-600 */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* Ring color */
+}
+
+/* --- Nút Đối soát --- */
+#reconciliation-section .reconcile-item__button {
+    /* Các style cho nút đã được định nghĩa chung bởi .btn-primary */
+    /* Có thể thêm style cụ thể ở đây nếu cần, ví dụ: */
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
+    min-width: 90px;
+}
+
+/* --- Container cho kết quả đối soát --- */
+#reconciliation-section .reconcile-item__result-container {
+    width: 100%;
+    margin-top: 0.75rem; /* 12px */
+    padding-top: 0.75rem;
+    font-size: 0.9rem;
+    animation: fadeInResult 0.3s ease-out;
+
+    /* Light Mode */
+    border-top: 1px dashed #d1d5db; /* Tailwind gray-300 */
+    color: #1f2937; /* Tailwind gray-800 */
+}
+
+#reconciliation-section .reconcile-item__result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.375rem; /* 6px */
+}
+
+#reconciliation-section .reconcile-item__result-label {
+    font-weight: 500; /* medium */
+    margin-right: 0.5rem; /* 8px */
+    flex-shrink: 0;
+
+    /* Light Mode */
+    color: #4b5563; /* Tailwind gray-600 */
+}
+
+#reconciliation-section .reconcile-item__result-value {
+    font-weight: 600; /* semibold */
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Màu cho các giá trị kết quả - Light Mode */
+#reconciliation-section .reconcile-item__result-value--old { color: #2563eb; /* Tailwind blue-600 */ }
+#reconciliation-section .reconcile-item__result-value--new { color: #c2410c; /* Tailwind orange-600 (thay vì đỏ, cho khác biệt) */ }
+#reconciliation-section .reconcile-item__result-value--diff-up { color: #16a34a; /* Tailwind green-600 */ }
+#reconciliation-section .reconcile-item__result-value--diff-down { color: #dc2626; /* Tailwind red-600 */ }
+#reconciliation-section .reconcile-item__result-value--diff-zero { color: #16a34a; /* Tailwind green-600 (khớp là tốt) */ }
+
+
+#reconciliation-section .reconcile-item__suggestion {
+    margin-top: 0.5rem; /* 8px */
+    padding: 0.625rem 0.875rem; /* 10px 14px */
+    border-radius: 0.375rem;
+    font-size: 0.875rem; /* 14px */
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Để nút điều chỉnh tách biệt */
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
+    /* Light Mode */
+    background-color: #fefce8; /* Tailwind yellow-50 */
+    color: #ca8a04; /* Tailwind yellow-600 */
+    border: 1px solid #facc15; /* Tailwind yellow-400 */
+}
+#reconciliation-section .reconcile-item__suggestion button {
+    /* Style cho nút trong suggestion (nếu bạn có nút riêng) */
+    /* Ví dụ: sử dụng .btn-secondary-outline hoặc một style mới */
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+}
+
+
+/* ========================================== */
+/* == DARK MODE CHO PHẦN ĐỐI SOÁT == */
+/* ========================================== */
+
+body.dark-mode #reconciliation-section .reconcile-item {
+    background-color: #1f2937; /* Tailwind gray-800 */
+    border-color: #374151; /* Tailwind gray-700 */
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 1px 2px -1px rgba(0, 0, 0, 0.15);
+}
+
+body.dark-mode #reconciliation-section .reconcile-item:hover {
+    background-color: #273344; /* Một màu tối hơn gray-800 một chút */
+    border-color: #4b5563; /* Tailwind gray-600 */
+}
+
+body.dark-mode #reconciliation-section .reconcile-item__title {
+    color: #93c5fd; /* Tailwind blue-300 */
+}
+
+body.dark-mode #reconciliation-section .reconcile-item__balance-app {
+    background-color: #3730a3; /* Tailwind indigo-700 (tối hơn) */
+    color: #c7d2fe; /* Tailwind indigo-200 */
+}
+
+body.dark-mode #reconciliation-section .reconcile-item__balance-app-value {
+    color: #86efac; /* Tailwind green-300 */
+}
+
+body.dark-mode #reconciliation-section .reconcile-item__actual-balance-input {
+    background-color: #111827; /* Tailwind gray-900 */
+    color: #e5e7eb; /* Tailwind gray-200 */
+    border-color: #4b5563; /* Tailwind gray-600 */
+}
+
+body.dark-mode #reconciliation-section .reconcile-item__actual-balance-input::placeholder {
+    color: #6b7280; /* Tailwind gray-500 */
+}
+
+body.dark-mode #reconciliation-section .reconcile-item__actual-balance-input:focus {
+    border-color: #60a5fa; /* Tailwind blue-400 */
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
+}
+
+body.dark-mode #reconciliation-section .reconcile-item__result-container {
+    border-top-color: #4b5563;
+    color: #d1d5db; /* Tailwind gray-300 */
+}
+
+body.dark-mode #reconciliation-section .reconcile-item__result-label {
+    color: #9ca3af; /* Tailwind gray-400 */
+}
+
+/* Màu cho các giá trị kết quả - Dark Mode */
+body.dark-mode #reconciliation-section .reconcile-item__result-value--old { color: #60a5fa; /* Tailwind blue-400 */ }
+body.dark-mode #reconciliation-section .reconcile-item__result-value--new { color: #fb923c; /* Tailwind orange-400 */ }
+body.dark-mode #reconciliation-section .reconcile-item__result-value--diff-up { color: #4ade80; /* Tailwind green-400 */ }
+body.dark-mode #reconciliation-section .reconcile-item__result-value--diff-down { color: #f87171; /* Tailwind red-400 */ }
+body.dark-mode #reconciliation-section .reconcile-item__result-value--diff-zero { color: #4ade80; /* Tailwind green-400 */ }
+
+
+body.dark-mode #reconciliation-section .reconcile-item__suggestion {
+    background-color: #3f3104; /* Nền tối hơn cho suggestion */
+    color: #fef08a; /* Tailwind yellow-200 */
+    border-color: #a16207; /* Tailwind yellow-600 */
+}
+.input-actual-balance {
+    width: 120px;
+    padding: 6px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 14px;
+}

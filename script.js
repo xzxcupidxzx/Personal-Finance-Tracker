@@ -155,6 +155,7 @@
         let incomeCategories = [];
         let expenseCategories = [];
         let accounts = [];
+		let reconciliationHistory = []; // nếu làm phần lịch sử đối soát (có thể chưa cần)
 
         const defaultIncomeCategories = [ { value: "Lương", text: "Lương" }, { value: "Thưởng", text: "Thưởng" }, { value: "Tiền được trả nợ", text: "Tiền được trả nợ" }, { value: TRANSFER_CATEGORY_IN, text: "Nhận tiền chuyển khoản" }, { value: "Lãi tiết kiệm", text: "Lãi tiết kiệm" }, { value: "Thu nhập từ đầu tư", text: "Thu nhập từ đầu tư" }, { value: "Thu nhập phụ", text: "Thu nhập phụ" }, { value: "Thu nhập khác", text: "Thu nhập khác (chung)" } ];
         const defaultExpenseCategories = [ { value: "Ăn uống", text: "Ăn uống" }, { value: "Đi lại", text: "Đi lại" }, { value: "Nhà ở", text: "Nhà ở" }, { value: "Hóa đơn", text: "Hóa đơn (Điện, nước, internet)" }, { value: "Mua sắm", text: "Mua sắm (Quần áo, đồ dùng)" }, { value: "Giải trí", text: "Giải trí" }, { value: "Sức khỏe", text: "Sức khỏe" }, { value: "Giáo dục", text: "Giáo dục" }, { value: "Chi cho đầu tư", text: "Chi cho đầu tư" }, { value: "Trả nợ", text: "Trả nợ (cho người khác)" }, { value: TRANSFER_CATEGORY_OUT, text: "Chuyển tiền đi" }, { value: "Chi phí khác", text: "Chi phí khác (chung)" } ];
@@ -166,10 +167,11 @@
 				filterDataByMonth(selectedMonth);
 			});
 		});
-
+		// Gọi hàm này khi load trang
+		document.addEventListener('DOMContentLoaded', autoSelectCurrentWeekAndYear);
         // --- HÀM TIỆN ÍCH (Giữ nguyên các hàm tiện ích của bạn) ---
         function showMessage(message, type = 'success') { messageBox.textContent = message; messageBox.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'message-success' : 'message-error'}`; messageBox.style.display = 'block'; setTimeout(() => { messageBox.style.display = 'none'; }, 3000); }
-        
+
 		function formatCurrency(amount, currencyCode = 'VND') {
 			if (isNaN(amount) || amount === null) amount = 0;
 
@@ -397,7 +399,73 @@
 				expenseBarChartContainer.style.display = 'block';
 			}
 		}
-		
+		function getISOWeekAndYear(date = new Date()) {
+			// Clone date object to avoid modifying the original
+			const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+			// Set to nearest Thursday: current date + 4 - current day number
+			d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+			// Get first day of year
+			const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+			// Calculate week number
+			const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+			return { year: d.getUTCFullYear(), week: weekNo };
+		}
+
+		// Hàm lấy ngày bắt đầu và kết thúc của 1 tuần ISO
+		function getDateRangeOfISOWeek(week, year) {
+			const simple = new Date(year, 0, 1 + (week - 1) * 7);
+			const dayOfWeek = simple.getDay();
+			const ISOweekStart = new Date(simple);
+			if (dayOfWeek <= 4)
+				ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
+			else
+				ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
+			const ISOweekEnd = new Date(ISOweekStart);
+			ISOweekEnd.setDate(ISOweekStart.getDate() + 6);
+			return {
+				start: ISOweekStart,
+				end: ISOweekEnd
+			};
+		}
+
+		// Hàm tự động cập nhật tuần, năm cho dropdown/input khi load trang
+		function autoSelectCurrentWeekAndYear() {
+			const now = new Date();
+			const { year, week } = getISOWeekAndYear(now);
+
+			// Cập nhật value cho input NĂM
+			const yearInput = document.getElementById('summary-year') || document.getElementById('filter-comparison-year');
+			if (yearInput) yearInput.value = year;
+
+			// Cập nhật value cho select TUẦN
+			const weekSelect = document.getElementById('summary-week') || document.getElementById('filter-comparison-week');
+			if (weekSelect) {
+				// Tạo list tuần nếu chưa có
+				if (!weekSelect.options.length || weekSelect.options.length < 52) {
+					weekSelect.innerHTML = '';
+					for (let i = 1; i <= 53; i++) {
+						const { start, end } = getDateRangeOfISOWeek(i, year);
+						const option = document.createElement('option');
+						option.value = i;
+						option.textContent = `Tuần ${i} (${start.getDate()}/${start.getMonth() + 1} - ${end.getDate()}/${end.getMonth() + 1})`;
+						weekSelect.appendChild(option);
+					}
+				}
+				weekSelect.value = week;
+			}
+
+			// Hiển thị dải ngày của tuần đã chọn (nếu có)
+			const { start, end } = getDateRangeOfISOWeek(week, year);
+			const weekRangeLabel = document.getElementById('summary-week-range') || document.getElementById('selected-week-display');
+			const dateRangeText = `${start.getDate()}/${start.getMonth() + 1}/${start.getFullYear()} - ${end.getDate()}/${end.getMonth() + 1}/${end.getFullYear()}`;
+			if (weekRangeLabel) weekRangeLabel.textContent = dateRangeText;
+
+			// Gắn lên các nơi khác nếu cần
+			const summaryDateRange = document.getElementById('summary-date-range');
+			if (summaryDateRange) summaryDateRange.textContent = dateRangeText;
+			const endDateLabel = document.getElementById('summary-end-date');
+			if (endDateLabel) endDateLabel.textContent = `${end.getDate()}/${end.getMonth() + 1}/${end.getFullYear()}`;
+		}
 		// --- Luu bo nho ---
 		function findAndDisplayTransactionSuggestion() {
 			if (!transactionForm || editingTransactionId) { // Không gợi ý khi đang sửa
@@ -481,7 +549,8 @@
 				if (darkModeToggleCheckbox) darkModeToggleCheckbox.checked = false;
 				localStorage.setItem(THEME_STORAGE_KEY, 'light');
 			}
-			updateAllChartColorsForTheme(theme); // Gọi hàm cập nhật màu biểu đồ
+			updateAllChartColorsForTheme(theme); // Gọi hàm cập nhật màu biểu đồ'
+			updateReconciliationTheme(theme)
 		}
 
 		function toggleTheme() {
@@ -669,7 +738,41 @@
         
         // --- CÁC HÀM RENDER (Giữ nguyên cấu trúc, logic hiển thị sẽ tự điều chỉnh theo giá trị số tiền mới) ---
         function renderAccountListAdmin() { if (!accountListAdminEl) return; accountListAdminEl.innerHTML = ''; accounts.forEach(acc => { const li = document.createElement('li'); li.textContent = acc.text; const deleteButton = document.createElement('button'); deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/> </svg>Xóa`; deleteButton.classList.add('btn-delete', 'text-xs', 'px-2', 'py-1', 'ml-2'); deleteButton.onclick = () => { if (confirm(`Bạn có chắc muốn xóa tài khoản "${acc.text}" không? Lưu ý: Các giao dịch cũ liên quan đến tài khoản này sẽ không tự động cập nhật.`)) { accounts = accounts.filter(a => a.value !== acc.value); saveUserPreferences(); renderAccountListAdmin(); populateAccountDropdowns(); updateAccountBalances(); showMessage(`Đã xóa tài khoản "${acc.text}".`, 'success'); } }; li.appendChild(deleteButton); accountListAdminEl.appendChild(li); }); }
-		function renderCategoryList(listElement, categoriesArray, type) { if (!listElement) return; listElement.innerHTML = ''; categoriesArray.forEach(cat => { const isSpecialTransferCategory = (cat.value === TRANSFER_CATEGORY_IN || cat.value === TRANSFER_CATEGORY_OUT); const li = document.createElement('li'); li.textContent = cat.text; if (!isSpecialTransferCategory) { const deleteButton = document.createElement('button'); deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/> </svg>Xóa`; deleteButton.classList.add('btn-delete', 'text-xs', 'px-2', 'py-1', 'ml-2'); deleteButton.onclick = () => { if (confirm(`Bạn có chắc muốn xóa hạng mục "${cat.text}" không?`)) { if (type === 'income') incomeCategories = incomeCategories.filter(c => c.value !== cat.value); else expenseCategories = expenseCategories.filter(c => c.value !== cat.value); saveUserPreferences(); renderCustomCategoryLists(); populateCategories(); applyMainFilter(); } }; li.appendChild(deleteButton); } else { const lockIcon = document.createElement('span'); lockIcon.innerHTML = ` <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-lock-fill inline-block ml-2 text-gray-400" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>`; li.appendChild(lockIcon); } listElement.appendChild(li); }); }
+		function renderCategoryList(listElement, categoriesArray, type) {
+			if (!listElement) return;
+			listElement.innerHTML = '';
+			categoriesArray.forEach(cat => {
+				const isSystemCategory = cat.isSystemCategory === true; // Kiểm tra chung
+
+				const li = document.createElement('li');
+				li.textContent = cat.text;
+
+				if (!isSystemCategory) { // Chỉ cho phép xóa nếu KHÔNG phải là hạng mục hệ thống
+					const deleteButton = document.createElement('button');
+					// ... (code nút xóa như cũ) ...
+					deleteButton.onclick = () => {
+						if (confirm(`Bạn có chắc muốn xóa hạng mục "${cat.text}" không?`)) {
+							if (type === 'income') {
+								incomeCategories = incomeCategories.filter(c => c.value !== cat.value);
+							} else {
+								expenseCategories = expenseCategories.filter(c => c.value !== cat.value);
+							}
+							saveUserPreferences();
+							renderCustomCategoryLists();
+							populateCategories();
+							applyMainFilter();
+						}
+					};
+					li.appendChild(deleteButton);
+				} else { // Đây là hạng mục hệ thống
+					const lockIcon = document.createElement('span');
+					lockIcon.innerHTML = ` <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-lock-fill inline-block ml-2 text-gray-400 dark:text-gray-500" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>`;
+					li.appendChild(lockIcon);
+				}
+				listElement.appendChild(li);
+			});
+		}
+
         function renderCustomCategoryLists() { renderCategoryList(incomeCategoryListAdminEl, incomeCategories, 'income'); renderCategoryList(expenseCategoryListAdminEl, expenseCategories, 'expense'); }
         function addCategory(name, type) { if (!name || name.trim() === '') { showMessage('Tên hạng mục không được để trống.', 'error'); return false; } const newCategoryValue = name.trim(); const newCategory = { value: newCategoryValue, text: newCategoryValue }; if (type === 'income') { if (incomeCategories.some(cat => cat.value.toLowerCase() === newCategoryValue.toLowerCase())) { showMessage('Hạng mục thu này đã tồn tại.', 'error'); return false; } incomeCategories.push(newCategory); } else { if (expenseCategories.some(cat => cat.value.toLowerCase() === newCategoryValue.toLowerCase())) { showMessage('Hạng mục chi này đã tồn tại.', 'error'); return false; } expenseCategories.push(newCategory); } saveUserPreferences(); renderCustomCategoryLists(); populateCategories(); showMessage(`Đã thêm hạng mục "${newCategory.text}"!`, 'success'); return true; }
         function addAccount(name) { if (!name || name.trim() === '') { showMessage('Tên tài khoản không được để trống.', 'error'); return false; } const newAccountName = name.trim(); if (accounts.some(acc => acc.value.toLowerCase() === newAccountName.toLowerCase() || acc.text.toLowerCase() === newAccountName.toLowerCase())) { showMessage('Tài khoản này đã tồn tại.', 'error'); return false; } const newAccount = { value: newAccountName, text: newAccountName }; accounts.push(newAccount); saveUserPreferences(); renderAccountListAdmin(); populateAccountDropdowns(); updateAccountBalances(); showMessage(`Đã thêm tài khoản "${newAccount.text}"!`, 'success'); return true; }
@@ -725,7 +828,239 @@
 				populateCategories(); // Gọi hàm điền lại danh mục cho Thu/Chi
 			}
 		}
-		
+		function renderReconciliationSection() {
+			const container = document.getElementById("reconciliation-account-list");
+			if (!container) return;
+			container.innerHTML = "";
+
+			accounts.forEach(acc => {
+				const balance = calculateAccountBalance(acc.value);
+				const itemDiv = document.createElement("div");
+				// Sử dụng các class cơ bản, Tailwind cho layout nếu cần
+				itemDiv.className = "reconcile-item flex flex-col md:flex-row items-center justify-between gap-2"; // Loại bỏ p-3, border, rounded từ Tailwind ở đây nếu CSS đã xử lý
+
+				itemDiv.innerHTML = `
+					<div class="reconcile-item__main-info flex flex-col sm:flex-row sm:items-center sm:gap-3 flex-grow">
+						<div class="reconcile-item__title font-semibold min-w-[120px] flex-shrink-0">${acc.text}</div>
+						<div class="reconcile-item__balance-app inline-flex items-center gap-1.5 py-1.5 px-3 rounded-md text-sm">
+							<span>Số dư (ứng dụng):</span>
+							<span class="reconcile-item__balance-app-value font-bold" id="app-balance-${acc.value}">${formatCurrency(balance)}</span>
+						</div>
+					</div>
+					<div class="reconcile-item__actions flex items-center gap-2 flex-shrink-0">
+						<input type="text" inputmode="decimal" class="reconcile-item__actual-balance-input w-36 p-2.5 text-sm text-right rounded-md border" placeholder="Số dư thực tế" id="reconcile-input-${acc.value}">
+						<button class="btn-primary reconcile-item__button py-2.5 min-w-[90px]" id="reconcile-btn-${acc.value}">Đối soát</button>
+					</div>
+					<div class="reconcile-item__result-container w-full mt-3 pt-3 text-sm" id="reconcile-result-${acc.value}" style="display: none;">
+						{/* JavaScript sẽ điền kết quả vào đây */}
+					</div>
+				`;
+				container.appendChild(itemDiv);
+
+				const reconcileBtn = document.getElementById(`reconcile-btn-${acc.value}`);
+				if (reconcileBtn) {
+					reconcileBtn.onclick = () => {
+						handleReconcileAccount(acc.value, balance);
+					};
+				}
+			});
+			// Sau khi render xong, áp dụng theme hiện tại cho các mục vừa tạo
+			updateReconciliationTheme(document.body.classList.contains(DARK_MODE_CLASS) ? 'dark' : 'light');
+		}
+		function calculateAccountBalanceAsOfDate(accountId, specificDate) {
+			let balance = 0;
+			const dateLimit = new Date(specificDate);
+			// Để tính số dư ĐẦU ngày, chúng ta cần các giao dịch TRƯỚC ngày đó.
+			// Hoặc nếu specificDate là cuối ngày, thì tính đến hết ngày đó.
+			// Giả sử specificDate là đầu ngày (00:00:00) của ngày bắt đầu tuần.
+			// Vậy ta sẽ tính tất cả giao dịch có datetime < specificDate.
+			transactions.forEach(tx => {
+				if (tx.account === accountId) {
+					const txDate = new Date(tx.datetime);
+					if (txDate < dateLimit) { // Chỉ lấy các giao dịch TRƯỚC ngày bắt đầu của tuần
+						if (tx.type === 'Thu') {
+							balance += tx.amount;
+						} else if (tx.type === 'Chi') {
+							balance -= tx.amount;
+						}
+					}
+				}
+			});
+			return balance;
+		}
+
+// Hàm mới hoặc cập nhật hàm applyTheme để xử lý riêng phần đối soát
+		function updateReconciliationTheme(theme) {
+			const isDarkMode = theme === 'dark';
+			const reconciliationItems = document.querySelectorAll('#reconciliation-section .reconcile-item');
+
+			reconciliationItems.forEach(item => {
+				// Item chính
+				item.classList.toggle('reconcile-item--dark', isDarkMode);
+
+				// Title
+				const title = item.querySelector('.reconcile-item__title');
+				if (title) title.classList.toggle('reconcile-item__title--dark', isDarkMode);
+
+				// Balance App Container
+				const balanceApp = item.querySelector('.reconcile-item__balance-app');
+				if (balanceApp) balanceApp.classList.toggle('reconcile-item__balance-app--dark', isDarkMode);
+
+				// Balance App Value
+				const balanceAppValue = item.querySelector('.reconcile-item__balance-app-value');
+				if (balanceAppValue) balanceAppValue.classList.toggle('reconcile-item__balance-app-value--dark', isDarkMode);
+
+				// Actual Balance Input
+				const actualInput = item.querySelector('.reconcile-item__actual-balance-input');
+				if (actualInput) actualInput.classList.toggle('reconcile-item__actual-balance-input--dark', isDarkMode);
+				
+				// Result Container
+				const resultContainer = item.querySelector('.reconcile-item__result-container');
+				if (resultContainer) resultContainer.classList.toggle('reconcile-item__result-container--dark', isDarkMode);
+
+				// Result Label (nếu có nhiều)
+				const resultLabels = item.querySelectorAll('.reconcile-item__result-label');
+				resultLabels.forEach(label => label.classList.toggle('reconcile-item__result-label--dark', isDarkMode));
+				
+				// Bạn có thể thêm tương tự cho các result-value và suggestion nếu cần
+				// Ví dụ cho result-value (cần logic để xác định màu cụ thể dựa trên diff)
+				// const resultValues = item.querySelectorAll('.reconcile-item__result-value');
+				// resultValues.forEach(val => {
+				//     val.classList.toggle('reconcile-item__result-value--dark-text', isDarkMode); // Một class chung cho text màu tối
+				//     // Logic màu diff (up, down, zero) vẫn cần được xử lý riêng khi render kết quả
+				// });
+			});
+		}
+
+		function calculateAccountBalance(accountValue) {
+			// Tính tổng tất cả các giao dịch vào/ra cho tài khoản này
+			let sum = 0;
+			transactions.forEach(tx => {
+				if (tx.account === accountValue) {
+					if (tx.type === "Thu" && !tx.isTransfer) sum += tx.amount;
+					if (tx.type === "Chi" && !tx.isTransfer) sum -= tx.amount;
+					// Xử lý chuyển khoản
+					if (tx.isTransfer && tx.account === accountValue) sum -= tx.amount;
+					if (tx.isTransfer && tx.toAccount === accountValue) sum += tx.amount;
+				} else if (tx.isTransfer && tx.toAccount === accountValue) {
+					sum += tx.amount;
+				}
+			});
+			return sum;
+		}
+		function handleReconcileAccount(accountValue, appBalance) {
+			const input = document.getElementById(`reconcile-input-${accountValue}`);
+			const resultDiv = document.getElementById(`reconcile-result-${accountValue}`);
+			if (!input || !resultDiv) return;
+
+			const actualBalance = parseFloat(input.value);
+			if (isNaN(actualBalance)) {
+				resultDiv.style.display = "block";
+				resultDiv.className = "reconcile-result";
+				resultDiv.innerHTML = `<span class="diff-down">Vui lòng nhập số dư thực tế.</span>`;
+				return;
+			}
+
+			const diff = actualBalance - appBalance;
+			let diffClass, icon, diffText, adjustType, adjustCategory, btnLabel, suggest;
+
+			// Nếu khớp
+			if (Math.abs(diff) < 0.001) {
+				resultDiv.style.display = "block";
+				resultDiv.className = "reconcile-result";
+				resultDiv.innerHTML = `
+					<div class="row">
+						<span class="status diff-zero">Số dư đã khớp! ✔️</span>
+					</div>
+				`;
+				return;
+			}
+
+			// Nếu lệch (thừa/thiếu)
+			if (diff > 0) {
+				diffClass = "diff-up";
+				icon = `<span class="icon">▲</span>`;
+				diffText = `+${formatCurrency(diff)}`;
+				adjustType = "Thu";
+				adjustCategory = "Điều chỉnh: Thu nhập thừa/không rõ";
+				btnLabel = "Tạo điều chỉnh (Thu)";
+				suggest = `Đề xuất: Tạo giao dịch điều chỉnh <b>Thu</b> <span class="value value-new">${formatCurrency(diff)}</span>`;
+			} else {
+				diffClass = "diff-down";
+				icon = `<span class="icon">▼</span>`;
+				diffText = `${formatCurrency(diff)}`;
+				adjustType = "Chi";
+				adjustCategory = "Điều chỉnh: Chi tiêu thiếu/không rõ";
+				btnLabel = "Tạo điều chỉnh (Chi)";
+				suggest = `Đề xuất: Tạo giao dịch điều chỉnh <b>Chi</b> <span class="value value-new">${formatCurrency(-diff)}</span>`;
+			}
+
+			resultDiv.style.display = "block";
+			resultDiv.className = "reconcile-result";
+			resultDiv.innerHTML = `
+				<div class="row">
+					<span class="label">Số dư (ứng dụng):</span>
+					<span class="value value-old">${formatCurrency(appBalance)}</span>
+				</div>
+				<div class="row">
+					<span class="label">Số dư thực tế:</span>
+					<span class="value value-new">${formatCurrency(actualBalance)}</span>
+				</div>
+				<div class="row">
+					<span class="label">Chênh lệch:</span>
+					<span class="${diffClass}">${diffText} ${icon}</span>
+				</div>
+				<div class="reconcile-suggestion">
+					${suggest}
+					<button class="btn-secondary ml-2" id="reconcile-confirm-${accountValue}">${btnLabel}</button>
+				</div>
+			`;
+
+			setTimeout(() => {
+				const confirmBtn = document.getElementById(`reconcile-confirm-${accountValue}`);
+				if (confirmBtn) {
+					confirmBtn.onclick = () => {
+						createReconciliationAdjustment(accountValue, adjustType, adjustCategory, Math.abs(diff), actualBalance);
+					};
+				}
+			}, 0);
+		}
+
+		function createReconciliationAdjustment(accountValue, type, category, amount, newAppBalance) {
+			const now = new Date();
+			const isoDate = formatIsoDateTime(now);
+
+			const adjustmentTx = {
+				id: "adj_" + Date.now() + "_" + Math.floor(Math.random() * 10000),
+				datetime: isoDate,
+				type: type,
+				category: category,
+				description: `Đối soát tài khoản [${accountValue}] ngày ${formatDisplayDateTime(isoDate)}.`,
+				amount: amount,
+				account: accountValue,
+				isTransfer: false,
+				originalAmount: amount,
+				originalCurrency: 'VND'
+			};
+			transactions.push(adjustmentTx);
+			localStorage.setItem('transactions_v2', JSON.stringify(transactions));
+			showMessage("Đã tạo giao dịch điều chỉnh!", "success");
+			renderAccountBalanceList && renderAccountBalanceList();
+			renderReconciliationSection && renderReconciliationSection();
+			typeof applyMainFilter === "function" && applyMainFilter();
+
+			// Hiện thông báo đã tạo, và cập nhật số dư mới
+			const resultDiv = document.getElementById(`reconcile-result-${accountValue}`);
+			if (resultDiv) {
+				resultDiv.innerHTML = `
+					<div class="flex items-center gap-2">
+						<span class="text-green-700 font-semibold">Đã tạo điều chỉnh thành công! Số dư đã cập nhật.</span>
+						<span>✔️</span>
+					</div>
+				`;
+			}
+		}
+
 
         // --- HÀM XỬ LÝ SUBMIT GIAO DỊCH (CẬP NHẬT CÁCH LƯU originalAmount) ---
         function handleTransactionSubmit(e) {
@@ -1001,7 +1336,13 @@
 			//                  và tiêu đề biểu đồ được cập nhật ở nơi khác (như trong applyMainFilter).
 
 			let totalIncome = 0;
-			let totalExpenses = 0;
+			let totalExpenses = transactions
+				.filter(tx => 
+					tx.type === "Chi" && 
+					!tx.isTransfer && // không phải giao dịch chuyển khoản
+					tx.category !== "Chuyển tiền đi" // phòng trường hợp dữ liệu cũ có chuyển tiền đi
+				)
+				.reduce((sum, tx) => sum + tx.amount, 0);
 
 			// Đảm bảo summaryTransactionsToUse là một mảng trước khi lặp
 			if (typeof summaryTransactionsToUse !== 'undefined' && Array.isArray(summaryTransactionsToUse)) {
@@ -1347,7 +1688,90 @@
 				console.warn("Element with ID 'stats-table-month-display' not found.");
 			}
 		}
+		
+		function renderReconciliationTable() {
+			const tableBody = document.getElementById('reconciliation-table-body');
+			if (!accounts || accounts.length === 0) return;
+			tableBody.innerHTML = '';
 
+			accounts.forEach(acc => {
+				const systemBalance = getAccountBalance(acc.value); // Viết hàm này nếu chưa có
+				const tr = document.createElement('tr');
+				tr.innerHTML = `
+					<td>${acc.text}</td>
+					<td>${formatCurrency(systemBalance, 'VND')}</td>
+					<td>
+						<input type="number" class="input-actual-balance" data-account="${acc.value}" placeholder="Nhập số dư thực tế">
+					</td>
+					<td class="diff-cell" id="diff-${acc.value}"></td>
+					<td>
+						<button class="btn-primary btn-reconcile" data-account="${acc.value}">Đối soát</button>
+					</td>
+				`;
+				tableBody.appendChild(tr);
+			});
+
+			// Gán sự kiện
+			document.querySelectorAll('.btn-reconcile').forEach(btn => {
+				btn.onclick = function() {
+					const account = btn.getAttribute('data-account');
+					const input = document.querySelector(`.input-actual-balance[data-account="${account}"]`);
+					const actual = parseFloat(input.value);
+					const system = getAccountBalance(account);
+					const diff = actual - system;
+					document.getElementById(`diff-${account}`).textContent = formatCurrency(diff, 'VND');
+					saveReconciliationResult(account, system, actual, diff);
+				};
+			});
+		}
+		function getAccountBalance(account) {
+			// Sử dụng transactions để tính
+			let balance = 0;
+			transactions.forEach(tx => {
+				if (tx.account === account) {
+					if (tx.type === "Thu" || tx.type === "Transfer-in") balance += tx.amount;
+					else if (tx.type === "Chi" || tx.type === "Transfer-out") balance -= tx.amount;
+				}
+			});
+			return balance;
+		}
+		// Hàm lưu lịch sử đối soát
+		function saveReconciliationResult(account, system, actual, diff) {
+			const { year, week } = getISOWeekAndYear(new Date());
+			const data = { account, year, week, system, actual, diff, timestamp: new Date().toISOString() };
+			let history = JSON.parse(localStorage.getItem('reconciliation_history') || '[]');
+			history.push(data);
+			localStorage.setItem('reconciliation_history', JSON.stringify(history));
+			showMessage("Đã lưu kết quả đối soát cho " + account, 'success');
+		}
+		// Khi load xong data:
+		document.addEventListener('DOMContentLoaded', renderReconciliationTable);
+		
+		function handleActualBalanceInput(accountId, endOfWeek) {
+		  const input = document.getElementById(`actual-balance-${accountId}`);
+		  const actual = parseFloat(input.value);
+
+		  // Hiện chênh lệch ngay khi nhập
+		  const diffTd = document.getElementById(`diff-${accountId}`);
+		  if (!isNaN(actual)) {
+			diffTd.textContent = formatCurrency(actual - endOfWeek);
+		  } else {
+			diffTd.textContent = '';
+		  }
+
+		  // Lưu vào localStorage theo tuần & tài khoản
+		  let weekKey = getCurrentWeekKey();
+		  let reconciliationHistory = JSON.parse(localStorage.getItem('reconciliationHistory') || '{}');
+		  if (!reconciliationHistory[weekKey]) reconciliationHistory[weekKey] = {};
+		  reconciliationHistory[weekKey][accountId] = actual;
+		  localStorage.setItem('reconciliationHistory', JSON.stringify(reconciliationHistory));
+		}		
+		function reconcileAccount(accountId, endOfWeek) {
+		  handleActualBalanceInput(accountId, endOfWeek);
+		  // Có thể thêm alert, thông báo, hoặc hiệu ứng ở đây
+		  // Ví dụ: alert("Đối soát xong cho " + accountId);
+		}
+		
         function filterTransactionsByMonth() { applyMainFilter(); }
 		function applyMainFilter() {
 			const selectedMonth = filterMonthSelect ? filterMonthSelect.value : 'all';
@@ -1661,6 +2085,32 @@
 			populateComparisonWeekFilter();
 			updateWeeklyComparisonDisplay();
 
+			// Load phần đối soát
+			renderReconciliationSection();
+			const actualWeekBalanceInput = document.getElementById('actual-week-balance');
+			const saveActualBalanceBtn = document.getElementById('save-actual-balance-btn');
+			const reconciliationResult = document.getElementById('reconciliation-result');
+
+			saveActualBalanceBtn.addEventListener('click', () => {
+				const actualBalance = parseFloat(actualWeekBalanceInput.value);
+				if (isNaN(actualBalance)) {
+					reconciliationResult.textContent = 'Vui lòng nhập số hợp lệ!';
+					return;
+				}
+				// Giả sử currentWeekKey là tuần đang xem, ví dụ: "2024-W21"
+				const currentWeekKey = getCurrentWeekKey(); // Bạn cần tự xác định tuần đang xem!
+				let history = JSON.parse(localStorage.getItem('reconciliationHistory') || '{}');
+				history[currentWeekKey] = actualBalance;
+				localStorage.setItem('reconciliationHistory', JSON.stringify(history));
+
+				// Giả sử currentWeekNetChangeEl.textContent là số dư cuối tuần hệ thống tính ra
+				const netSystem = parseFloat(currentWeekNetChangeEl.textContent.replace(/[^\d.-]/g, ''));
+				const chenhLech = actualBalance - netSystem;
+				reconciliationResult.textContent = 'Chênh lệch: ' + chenhLech.toLocaleString() + ' ₫';
+				reconciliationResult.style.color = Math.abs(chenhLech) > 0 ? 'red' : 'green';
+			});
+
+			
 			// Collapsible sections
 			const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
 			collapsibleHeaders.forEach(header => {
