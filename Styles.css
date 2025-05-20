@@ -2107,7 +2107,99 @@ body.dark-mode #reconciliation-table .input-actual-balance-pivot {
     border-color: #4b5563 !important;
 }
 
+/* --- Các nút "Đối soát" và "Ghi nhận" --- */
+#reconciliation-table .btn-reconcile-pivot,
+#reconciliation-table .btn-record-diff-pivot {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.5rem 0.25rem; /* 8px 4px, giảm padding ngang */
+    font-size: 0.8125rem;   /* 13px, giảm kích thước chữ */
+    white-space: normal;    /* Cho phép chữ trên nút tự xuống dòng */
+    line-height: 1.25;      /* Điều chỉnh khoảng cách dòng nếu chữ xuống dòng */
+    margin-top: 2px;        /* Khoảng cách nhỏ giữa các nút nếu có (hiếm) */
+    margin-bottom: 2px;
+    /* display, align-items, justify-content đã có từ style button chung */
+}
 
+/* SVG bên trong các nút của bảng đối soát */
+#reconciliation-table tbody tr td:first-child {
+    background-color: #ffffff !important;
+}
+#reconciliation-table .btn-reconcile-pivot svg,
+#reconciliation-table .btn-record-diff-pivot svg {
+    width: 1em; /* Kích thước SVG theo font-size của nút */
+    height: 1em;
+    margin-right: 0.25em; /* Khoảng cách SVG và text theo font-size */
+}
+
+/* Style riêng cho nút "Ghi nhận" đã có class positive/negative từ JS */
+#reconciliation-table .btn-record-diff-pivot.positive {
+    /* background-color: #10b981; (Tailwind green-500) */
+    /* color: white; */
+    /* Kế thừa từ .btn-primary nếu JS thêm class đó */
+}
+body.dark-mode #reconciliation-table .btn-record-diff-pivot.positive {
+    /* background-color: #059669; (Tailwind green-600) */
+}
+
+#reconciliation-table .btn-record-diff-pivot.negative {
+    background-color: #ef4444; /* Tailwind red-500 */
+    color: white;
+}
+body.dark-mode #reconciliation-table .btn-record-diff-pivot.negative {
+    background-color: #dc2626; /* Tailwind red-600 */
+}
+#reconciliation-table .btn-record-diff-pivot.negative:hover {
+    background-color: #b91c1c; /* Tailwind red-700 */
+}
+body.dark-mode #reconciliation-table .btn-record-diff-pivot.negative:hover {
+    background-color: #991b1b; /* Tailwind red-800 */
+}
+
+
+/* --- Responsive cho màn hình nhỏ hơn --- */
+
+/* Cột đầu tiên (Mục / Tài khoản) */
+#reconciliation-table th.sticky.left-0,
+#reconciliation-table td.sticky.left-0 {
+    position: -webkit-sticky;
+    position: sticky;
+    left: 0;
+    z-index: 10;
+    min-width: 150px;
+    width: 150px; /* Thêm width cố định */
+    white-space: normal;
+}
+
+/* Các cột tài khoản */
+#reconciliation-table thead th:not(.sticky),
+#reconciliation-table tbody td:not(.sticky) {
+    min-width: 140px;
+    width: 140px; /* Thêm width cố định */
+    text-align: center;
+    white-space: nowrap;
+}
+
+
+#reconciliation-table thead th:not(.sticky),
+#reconciliation-table tbody td:not(.sticky) {
+    min-width: 100px; /* Có thể giảm thêm nếu muốn, ví dụ 90px */
+    width: 100px; /* Thêm width cố định */
+    font-size: 0.75rem; /* 12px */
+    padding: 0.25rem; /* 4px */
+}
+
+#reconciliation-table .input-actual-balance-pivot {
+    font-size: 0.75rem; /* 12px */
+    padding: 0.3125rem 0.1875rem; /* 5px 3px */
+}
+
+#reconciliation-table .btn-reconcile-pivot,
+#reconciliation-table .btn-record-diff-pivot {
+    font-size: 0.6875rem; /* 11px */
+    padding: 0.3125rem 0.125rem; /* 5px 2px, giữ nguyên padding ngang rất nhỏ */
+    min-height: 32px; /* Đảm bảo nút không quá nhỏ, dễ chạm */
+}
 
 /* ===================================================================== */
 /* == KẾT THÚC CSS CẬP NHẬT CHO BẢNG ĐỐI SOÁT XOAY                   == */
