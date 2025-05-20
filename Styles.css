@@ -1956,6 +1956,27 @@ body.dark-mode .message-error {
 /* == DARK MODE CHO PHẦN ĐỐI SOÁT == */
 /* ========================================== */
 
+/* Cột đầu tiên trong light mode */
+body:not(.dark-mode) #reconciliation-table tbody tr td.sticky.left-0 {
+    background-color: #ffffff;
+    color: #1f2937;
+}
+
+/* Cột đầu tiên trong dark mode */
+body.dark-mode #reconciliation-table tbody tr td.sticky.left-0 {
+    background-color: #1f2937;
+    color: #f3f4f6;
+}
+
+#reconciliation-table th.sticky.left-0,
+#reconciliation-table td.sticky.left-0 {
+    position: -webkit-sticky;
+    position: sticky;
+    left: 0;
+    z-index: 10;
+    min-width: 150px;
+    white-space: normal;
+}
 body.dark-mode #reconciliation-section .reconcile-item {
     background-color: #1f2937; /* Tailwind gray-800 */
     border-color: #374151; /* Tailwind gray-700 */
@@ -2033,6 +2054,21 @@ body.dark-mode #reconciliation-section .reconcile-item__suggestion {
 }
 
 /* --- Style chung cho TH và TD trong bảng đối soát xoay --- */
+body:not(.dark-mode) #reconciliation-table {
+    background-color: #ffffff !important;
+}
+
+body:not(.dark-mode) #reconciliation-table td,
+body:not(.dark-mode) #reconciliation-table th {
+    background-color: #ffffff !important;
+}
+
+// Theo dõi thay đổi chế độ sáng/tối
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    // Cập nhật lại class cho body
+    document.body.classList.toggle('dark-mode', e.matches);
+});
+
 #reconciliation-table th,
 #reconciliation-table td {
     border: 1px solid #e5e7eb; /* Light mode border */
@@ -2122,9 +2158,16 @@ body.dark-mode #reconciliation-table .input-actual-balance-pivot {
 }
 
 /* SVG bên trong các nút của bảng đối soát */
-#reconciliation-table tbody tr td:first-child {
-    background-color: #ffffff !important;
+/* Cột đầu tiên trong light mode */
+body:not(.dark-mode) #reconciliation-table tbody tr td:first-child {
+    background-color: #ffffff !important; /* Màu trắng cho light mode */
 }
+
+/* Cột đầu tiên trong dark mode */
+body.dark-mode #reconciliation-table tbody tr td:first-child {
+    background-color: #1f2937 !important; /* Màu tối cho dark mode (gray-800) */
+}
+
 #reconciliation-table .btn-reconcile-pivot svg,
 #reconciliation-table .btn-record-diff-pivot svg {
     width: 1em; /* Kích thước SVG theo font-size của nút */
