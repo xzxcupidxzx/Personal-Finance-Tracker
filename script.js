@@ -1575,13 +1575,16 @@
 													class="input-actual-balance-pivot p-2 border dark:border-gray-600 rounded w-full text-right bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
 													data-account="${acc.value}"
 													placeholder="Nhập số dư">`;
-							const inputEl = cell.querySelector('input');
+						   const inputEl = cell.querySelector('input');
 							if (inputEl) {
+								// Trình xử lý sự kiện 'input' để định dạng số (bạn có thể đã có phần này)
 								inputEl.addEventListener('input', (e) => {
-									if (typeof formatAndPreserveCursor === 'function') { // Đảm bảo hàm này tồn tại
+									if (typeof formatAndPreserveCursor === 'function') {
 										formatAndPreserveCursor(e.target, e.target.value);
 									}
 								});
+
+								// Trình xử lý sự kiện 'keydown' để giới hạn ký tự nhập (bạn có thể đã có phần này)
 								inputEl.addEventListener('keydown', function(e) {
 									if ([46, 8, 9, 27, 13, 35, 36, 37, 39].indexOf(e.keyCode) !== -1 ||
 										((e.keyCode === 65 || e.keyCode === 88 || e.keyCode === 67 || e.keyCode === 86) && (e.ctrlKey === true || e.metaKey === true)) ||
@@ -1595,6 +1598,48 @@
 									}
 									e.preventDefault();
 								});
+
+								// ---- BẮT ĐẦU PHẦN QUAN TRỌNG CẦN THÊM/KIỂM TRA ----
+								// (Biến virtualKeyboardEl được giả định là đã được khai báo toàn cục hoặc có thể truy cập được từ phạm vi này)
+								// const virtualKeyboardEl = document.getElementById('virtualNumericKeyboard'); // Đã khai báo toàn cục
+
+								// Event listener để hiển thị bàn phím ảo khi CLICK (cho thiết bị cảm ứng)
+								inputEl.addEventListener('click', function(event) {
+									// Thêm log để kiểm tra xem sự kiện có được kích hoạt không
+									console.log('[Debug] Click event on actual-balance-pivot input. Account: ' + this.dataset.account);
+									if (('ontouchstart' in window || navigator.maxTouchPoints > 0) && virtualKeyboardEl) {
+										console.log('[Debug] Touch device detected, preventing default and showing keyboard for actual-balance-pivot.');
+										event.preventDefault(); // Ngăn hành vi mặc định (mở bàn phím OS)
+										// Kiểm tra xem bàn phím có đang ẩn hoặc active input có phải là input này không
+										if (virtualKeyboardEl.style.display === 'none' || virtualKeyboardEl.style.display === '' || activeInputForVirtualKeyboard !== this) {
+											showVirtualKeyboard(this); // 'this' chính là inputEl
+										}
+										this.blur(); // Bỏ focus để ngăn bàn phím OS tự động bật lại
+									} else {
+										console.log('[Debug] Not a touch device or virtualKeyboardEl is not found for click on actual-balance-pivot.');
+									}
+								});
+
+								// Event listener để hiển thị bàn phím ảo khi FOCUS (và blur trên thiết bị cảm ứng)
+								inputEl.addEventListener('focus', function(e) {
+									// Thêm log để kiểm tra
+									console.log('[Debug] Focus event on actual-balance-pivot input. Account: ' + this.dataset.account);
+									if (('ontouchstart' in window || navigator.maxTouchPoints > 0) && virtualKeyboardEl) {
+										console.log('[Debug] Touch device focus detected, blurring and showing keyboard for actual-balance-pivot.');
+										e.target.blur(); // Luôn bỏ focus ngay để ngăn bàn phím OS
+										// Nếu bàn phím đang ẩn, hiển thị nó
+										if (virtualKeyboardEl.style.display === 'none' || virtualKeyboardEl.style.display === '') {
+											showVirtualKeyboard(this); // 'this' chính là inputEl
+										}
+									} else {
+										 console.log('[Debug] Desktop focus on actual-balance-pivot. Keyboard not automatically shown on focus for desktop.');
+										// Nếu bạn muốn bàn phím ảo cũng hiển thị khi focus trên desktop, bạn có thể gọi showVirtualKeyboard(this); ở đây.
+										// if (virtualKeyboardEl && (virtualKeyboardEl.style.display === 'none' || virtualKeyboardEl.style.display === '')) {
+										//    showVirtualKeyboard(this);
+										// }
+									}
+								});
+								// ---- KẾT THÚC PHẦN QUAN TRỌNG CẦN THÊM/KIỂM TRA ----
 							}
 							break;
 						case 'displayCell':
