@@ -1114,26 +1114,59 @@
 													placeholder="Nhập số dư">`;
 							const inputEl = cell.querySelector('input');
 							if (inputEl) {
-								// Event listener cho định dạng số khi nhập (nếu có hàm formatAndPreserveCursor)
-								if (typeof formatAndPreserveCursor === 'function') {
-									inputEl.addEventListener('input', (e) => {
+								// PHẦN THÊM MỚI ĐỂ TÍCH HỢP BÀN PHÍM ẢO
+								const virtualKeyboardEl = document.getElementById('virtualNumericKeyboard'); // Đảm bảo biến này có sẵn
+
+								// Event listener cho định dạng số khi nhập
+								inputEl.addEventListener('input', (e) => {
+									if (typeof formatAndPreserveCursor === 'function') {
 										formatAndPreserveCursor(e.target, e.target.value);
-									});
-								}
-								// Event listener để chỉ cho phép nhập số (giữ nguyên từ code của bạn)
-								inputEl.addEventListener('keydown', function(e) {
-									if ([46, 8, 9, 27, 13, 35, 36, 37, 39].indexOf(e.keyCode) !== -1 ||
-										((e.keyCode === 65 || e.keyCode === 88 || e.keyCode === 67 || e.keyCode === 86) && (e.ctrlKey === true || e.metaKey === true)) ||
-										(e.keyCode >= 48 && e.keyCode <= 57 && !e.shiftKey) ||
-										(e.keyCode >= 96 && e.keyCode <= 105) ||
-										(e.keyCode === 190 || e.keyCode === 110)) {
-										if ((e.keyCode === 190 || e.keyCode === 110) && this.value.includes('.')) {
-											e.preventDefault();
-										}
-										return;
 									}
+								});
+
+								// Event listener để chỉ cho phép nhập số (tương tự amount-input)
+								inputEl.addEventListener('keydown', function(e) {
+									if ([46, 8, 9, 27, 13, 35, 36, 37, 39].indexOf(e.keyCode) !== -1 || // Cho phép: backspace, delete, tab, escape, enter, home, end, left, right arrows
+										((e.keyCode === 65 || e.keyCode === 88 || e.keyCode === 67 || e.keyCode === 86) && (e.ctrlKey === true || e.metaKey === true)) || // Cho phép: Ctrl+A, Command+A, Ctrl+C, Ctrl+V, Ctrl+X
+										(e.keyCode >= 48 && e.keyCode <= 57 && !e.shiftKey) || // Cho phép: số từ 0-9 trên bàn phím chính
+										(e.keyCode >= 96 && e.keyCode <= 105) || // Cho phép: số từ 0-9 trên numpad
+										(e.keyCode === 190 || e.keyCode === 110)) { // Cho phép: dấu chấm (period) và dấu chấm trên numpad
+										// Nếu là dấu chấm, kiểm tra xem đã có dấu chấm chưa
+										if ((e.keyCode === 190 || e.keyCode === 110) && this.value.includes('.')) {
+											e.preventDefault(); // Ngăn nhập nhiều hơn một dấu chấm
+										}
+										return; // Cho phép các phím này
+									}
+									// Ngăn chặn tất cả các phím khác không được liệt kê ở trên
 									e.preventDefault();
 								});
+
+								// Event listener để hiển thị bàn phím ảo khi click (cho thiết bị cảm ứng)
+								inputEl.addEventListener('click', function(event) {
+									if (('ontouchstart' in window || navigator.maxTouchPoints > 0) && virtualKeyboardEl) {
+										event.preventDefault();
+										if (virtualKeyboardEl.style.display === 'none' || virtualKeyboardEl.style.display === '' || activeInputForVirtualKeyboard !== this) {
+											showVirtualKeyboard(this); // 'this' ở đây là inputEl
+										}
+										this.blur(); // Ngăn bàn phím OS tự động bật
+									}
+								});
+
+								// Event listener để hiển thị bàn phím ảo khi focus (chủ yếu cho desktop, và xử lý trên cảm ứng)
+								inputEl.addEventListener('focus', function(e) {
+									if (('ontouchstart' in window || navigator.maxTouchPoints > 0) && virtualKeyboardEl) {
+										e.target.blur(); // LUÔN BLUR ngay để ngăn bàn phím OS
+										if (virtualKeyboardEl.style.display === 'none' || virtualKeyboardEl.style.display === '') {
+											showVirtualKeyboard(this); // 'this' ở đây là inputEl
+										}
+									} else if (virtualKeyboardEl) {
+										// Trên desktop, bạn có thể chọn có hiển thị bàn phím ảo tự động khi focus hay không.
+										// Hiện tại, logic này sẽ không tự động hiển thị trên desktop khi focus, người dùng cần click.
+										// Nếu muốn tự động hiển thị khi focus trên desktop, bỏ comment dòng dưới và điều chỉnh showVirtualKeyboard cho phù hợp.
+										// showVirtualKeyboard(this);
+									}
+								});
+								// KẾT THÚC PHẦN THÊM MỚI
 							}
 							break;
 						case 'displayCell': // Ô hiển thị (ví dụ: Chênh lệch)
