@@ -999,46 +999,298 @@
             formSection.scrollIntoView({ behavior: 'smooth' });
         }
 
-		// --- HÀM ĐỐI SOÁT
-		function renderReconciliationSection() {
-			const container = document.getElementById("reconciliation-account-list");
-			if (!container) return;
-			container.innerHTML = "";
+		// --- HÀM RENDER BẢNG ĐỐI SOÁT XOAY ---
+		function renderReconciliationTable() {
+			const table = document.getElementById('reconciliation-table');
+			const tableHead = table.querySelector('thead');
+			const tableBody = table.querySelector('tbody');
 
+			if (!table || !tableHead || !tableBody) {
+				console.error("[RenderTable] Lỗi: Không tìm thấy bảng đối soát (#reconciliation-table) hoặc các thành phần thead/tbody.");
+				return;
+			}
+
+			// Xóa nội dung cũ của bảng để vẽ lại
+			tableHead.innerHTML = '';
+			tableBody.innerHTML = '';
+
+			// Kiểm tra xem có tài khoản nào để hiển thị không
+			if (!accounts || accounts.length === 0) {
+				const headerRowForMessage = tableHead.insertRow();
+				const th = headerRowForMessage.insertCell();
+				th.colSpan = 1; // Colspan ban đầu
+				th.textContent = "Mục / Tài khoản";
+
+				const bodyRowForMessage = tableBody.insertRow();
+				const td = bodyRowForMessage.insertCell();
+				td.colSpan = 1; // Sẽ được điều chỉnh sau nếu cần
+				td.className = 'text-center py-4 text-gray-500 dark:text-gray-400';
+				td.textContent = 'Chưa có tài khoản nào để đối soát.';
+				// Nếu muốn thông báo chiếm toàn bộ chiều rộng, colspan cần được tính dựa trên số tài khoản + 1
+				// Nhưng vì không có tài khoản, 1 là đủ.
+				return;
+			}
+
+			// 1. Xây dựng Header (Tên tài khoản là cột)
+			const headerRow = tableHead.insertRow();
+			// Ô đầu tiên của header, làm sticky để cố định khi cuộn ngang
+			headerRow.insertCell().outerHTML = `<th class="sticky left-0 z-10 bg-gray-50 dark:bg-gray-700 border-r dark:border-gray-600">Mục / Tài khoản</th>`;
 			accounts.forEach(acc => {
-				const balance = calculateAccountBalance(acc.value);
-				const itemDiv = document.createElement("div");
-				// Sử dụng các class cơ bản, Tailwind cho layout nếu cần
-				itemDiv.className = "reconcile-item flex flex-col md:flex-row items-center justify-between gap-2"; // Loại bỏ p-3, border, rounded từ Tailwind ở đây nếu CSS đã xử lý
-
-				itemDiv.innerHTML = `
-					<div class="reconcile-item__main-info flex flex-col sm:flex-row sm:items-center sm:gap-3 flex-grow">
-						<div class="reconcile-item__title font-semibold min-w-[120px] flex-shrink-0">${acc.text}</div>
-						<div class="reconcile-item__balance-app inline-flex items-center gap-1.5 py-1.5 px-3 rounded-md text-sm">
-							<span>Số dư (ứng dụng):</span>
-							<span class="reconcile-item__balance-app-value font-bold" id="app-balance-${acc.value}">${formatCurrency(balance)}</span>
-						</div>
-					</div>
-					<div class="reconcile-item__actions flex items-center gap-2 flex-shrink-0">
-						<input type="text" inputmode="decimal" class="reconcile-item__actual-balance-input w-36 p-2.5 text-sm text-right rounded-md border" placeholder="Số dư thực tế" id="reconcile-input-${acc.value}">
-						<button class="btn-primary reconcile-item__button py-2.5 min-w-[90px]" id="reconcile-btn-${acc.value}">Đối soát</button>
-					</div>
-					<div class="reconcile-item__result-container w-full mt-3 pt-3 text-sm" id="reconcile-result-${acc.value}" style="display: none;">
-						{/* JavaScript sẽ điền kết quả vào đây */}
-					</div>
-				`;
-				container.appendChild(itemDiv);
-
-				const reconcileBtn = document.getElementById(`reconcile-btn-${acc.value}`);
-				if (reconcileBtn) {
-					reconcileBtn.onclick = () => {
-						handleReconcileAccount(acc.value, balance);
-					};
-				}
+				headerRow.insertCell().outerHTML = `<th>${acc.text}</th>`;
 			});
-			// Sau khi render xong, áp dụng theme hiện tại cho các mục vừa tạo
-			updateReconciliationTheme(document.body.classList.contains(DARK_MODE_CLASS) ? 'dark' : 'light');
+			// Cập nhật colspan cho thông báo nếu không có tài khoản (mặc dù đã return ở trên)
+			if (tableBody.querySelector('td[colspan]')) {
+				tableBody.querySelector('td[colspan]').colSpan = accounts.length + 1;
+			}
+
+
+			// 2. Định nghĩa các "hàng" (measures) sẽ hiển thị trong bảng
+			const measures = [
+				{
+					id: 'systemBalance',
+					label: 'Số dư hệ thống',
+					type: 'display', // Kiểu ô hiển thị dữ liệu
+					getValue: (accountId) => formatCurrency(getAccountBalance(accountId), 'VND'),
+				},
+				{
+					id: 'actualBalance',
+					label: 'Số dư thực tế <br><span class="font-normal normal-case text-xs">(Nhập vào)</span>',
+					type: 'input' // Kiểu ô nhập liệu
+				},
+				{
+					id: 'difference',
+					label: 'Chênh lệch',
+					type: 'displayCell', // Kiểu ô hiển thị chênh lệch, được cập nhật bởi JS
+				},
+				{
+					id: 'reconcileAction',
+					label: 'Thao tác',
+					type: 'actionButton', // Kiểu ô chứa nút hành động
+					buttonText: 'Đối soát',
+					buttonClass: 'btn-secondary btn-reconcile-pivot py-2 px-3 text-sm rounded'
+				},
+				{
+					id: 'recordDifferenceAction',
+					label: 'Ghi nhận chênh lệch',
+					type: 'actionButton',
+					buttonText: 'Ghi nhận',
+					buttonClass: 'btn-primary btn-record-diff-pivot py-2 px-3 text-sm rounded', // Class cho nút Ghi nhận
+					initialStyle: 'display:none;' // QUAN TRỌNG: Ban đầu nút này sẽ bị ẩn
+				}
+			];
+
+			// 3. Xây dựng Body của bảng (Mỗi measure là một hàng)
+			measures.forEach(measure => {
+				const row = tableBody.insertRow();
+				// Ô đầu tiên của mỗi hàng (label), làm sticky
+				row.insertCell().outerHTML = `<td class="sticky left-0 z-10 bg-white dark:bg-gray-800 font-medium border-r dark:border-gray-600 p-2">${measure.label}</td>`;
+
+				accounts.forEach(acc => {
+					const cell = row.insertCell();
+					cell.setAttribute('data-account', acc.value); // Lưu trữ ID tài khoản trên ô
+					cell.classList.add('text-right', 'p-2');   // Căn phải cho các ô giá trị/input
+
+					switch (measure.type) {
+						case 'display': // Ô hiển thị (ví dụ: Số dư hệ thống)
+							cell.innerHTML = measure.getValue(acc.value);
+							if (measure.id === 'systemBalance') {
+								cell.id = `system-balance-pivot-${acc.value}`; // ID để cập nhật sau này
+							}
+							break;
+						case 'input': // Ô nhập liệu (ví dụ: Số dư thực tế)
+							cell.innerHTML = `<input type="text" inputmode="decimal"
+													class="input-actual-balance-pivot p-2 border dark:border-gray-600 rounded w-full text-right bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+													data-account="${acc.value}"
+													placeholder="Nhập số dư">`;
+							const inputEl = cell.querySelector('input');
+							if (inputEl) {
+								// Event listener cho định dạng số khi nhập (nếu có hàm formatAndPreserveCursor)
+								if (typeof formatAndPreserveCursor === 'function') {
+									inputEl.addEventListener('input', (e) => {
+										formatAndPreserveCursor(e.target, e.target.value);
+									});
+								}
+								// Event listener để chỉ cho phép nhập số (giữ nguyên từ code của bạn)
+								inputEl.addEventListener('keydown', function(e) {
+									if ([46, 8, 9, 27, 13, 35, 36, 37, 39].indexOf(e.keyCode) !== -1 ||
+										((e.keyCode === 65 || e.keyCode === 88 || e.keyCode === 67 || e.keyCode === 86) && (e.ctrlKey === true || e.metaKey === true)) ||
+										(e.keyCode >= 48 && e.keyCode <= 57 && !e.shiftKey) ||
+										(e.keyCode >= 96 && e.keyCode <= 105) ||
+										(e.keyCode === 190 || e.keyCode === 110)) {
+										if ((e.keyCode === 190 || e.keyCode === 110) && this.value.includes('.')) {
+											e.preventDefault();
+										}
+										return;
+									}
+									e.preventDefault();
+								});
+							}
+							break;
+						case 'displayCell': // Ô hiển thị (ví dụ: Chênh lệch)
+							cell.id = `diff-pivot-${acc.value}`; // ID để cập nhật chênh lệch
+							break;
+						case 'actionButton': // Ô chứa nút hành động
+							const button = document.createElement('button');
+							button.innerHTML = measure.buttonText;
+							button.className = measure.buttonClass;
+							button.dataset.account = acc.value;      // Lưu ID tài khoản vào dataset
+							button.dataset.accountName = acc.text; // Lưu tên tài khoản vào dataset
+							if (measure.initialStyle) {
+								button.style.cssText = measure.initialStyle;
+							}
+
+							// Gán ID cụ thể cho từng loại nút để dễ dàng tìm và điều khiển
+							if (measure.id === 'reconcileAction') { // Nút "Đối soát"
+								button.id = `reconcile-btn-pivot-${acc.value}`;
+							} else if (measure.id === 'recordDifferenceAction') { // Nút "Ghi nhận"
+								button.id = `record-diff-btn-pivot-${acc.value}`;
+								console.log(`[RenderTable] Đã tạo nút 'Ghi nhận': ID=${button.id}, Account=${acc.text}, Style ban đầu=${button.style.cssText}`);
+							}
+							cell.appendChild(button);
+							cell.classList.add('text-center'); // Căn giữa nút trong ô
+							cell.classList.remove('text-right'); // Bỏ căn phải cho ô chứa nút
+							break;
+					}
+				});
+			});
+
+			// 4. Gán sự kiện cho các nút "Đối soát" (CHỈ MỘT LẦN SAU KHI TẤT CẢ ĐÃ RENDER)
+			document.querySelectorAll('.btn-reconcile-pivot').forEach(btn => {
+				btn.addEventListener('click', function() {
+					const accountId = this.dataset.account;
+					const accountName = this.dataset.accountName; // Lấy tên tài khoản từ dataset của nút "Đối soát"
+					console.log(`%c[ReconcilePivot] Nút 'Đối soát' được nhấn cho tài khoản: ${accountName} (ID: ${accountId})`, "color: blue; font-weight: bold;");
+
+					const actualBalanceInputElement = document.querySelector(`input.input-actual-balance-pivot[data-account="${accountId}"]`);
+					const diffCellElement = document.getElementById(`diff-pivot-${accountId}`);
+					const recordButtonElement = document.getElementById(`record-diff-btn-pivot-${accountId}`); // Tìm nút "Ghi nhận" bằng ID
+					const systemBalanceDisplayElement = document.getElementById(`system-balance-pivot-${accountId}`);
+
+					console.log(`[ReconcilePivot] Tìm kiếm phần tử cho tài khoản ${accountId}:`);
+					console.log(`  -> Input số dư thực tế:`, actualBalanceInputElement ? 'Tìm thấy' : 'KHÔNG TÌM THẤY');
+					console.log(`  -> Ô chênh lệch (diffCell):`, diffCellElement ? 'Tìm thấy' : 'KHÔNG TÌM THẤY');
+					console.log(`  -> Nút Ghi nhận (recordButton):`, recordButtonElement ? 'Tìm thấy' : 'KHÔNG TÌM THẤY');
+					console.log(`  -> Ô số dư hệ thống (systemBalanceDisplay):`, systemBalanceDisplayElement ? 'Tìm thấy' : 'KHÔNG TÌM THẤY');
+
+					if (!actualBalanceInputElement || !diffCellElement || !systemBalanceDisplayElement) {
+						console.error(`[ReconcilePivot] Lỗi nghiêm trọng: Không tìm thấy các phần tử DOM cơ bản (input, diff cell, system balance display) cho tài khoản ${accountId}.`);
+						showMessage('Lỗi hệ thống: Không thể thực hiện đối soát do thiếu thành phần giao diện.', 'error');
+						return;
+					}
+					if (!recordButtonElement) {
+						console.warn(`[ReconcilePivot] CẢNH BÁO: Nút "Ghi nhận" (ID: record-diff-btn-pivot-${accountId}) không được tìm thấy! Nút này sẽ không thể hiển thị.`);
+					}
+
+					// Cập nhật hiển thị số dư hệ thống hiện tại trước khi tính toán
+					const systemBalanceValue = getAccountBalance(accountId);
+					systemBalanceDisplayElement.textContent = formatCurrency(systemBalanceValue, 'VND');
+
+					const actualBalanceRaw = actualBalanceInputElement.value;
+					const actualBalanceNormalized = normalizeAmountString(actualBalanceRaw);
+					const actualBalance = parseFloat(actualBalanceNormalized);
+
+					console.log(`[ReconcilePivot] Giá trị tính toán cho ${accountName}:`);
+					console.log(`  - Số dư hệ thống (systemBalanceValue):`, systemBalanceValue);
+					console.log(`  - Số dư thực tế nhập vào (actualBalanceRaw):`, actualBalanceRaw);
+					console.log(`  - Số dư thực tế đã chuẩn hóa (actualBalanceNormalized):`, actualBalanceNormalized);
+					console.log(`  - Số dư thực tế (parsed float - actualBalance):`, actualBalance);
+
+					if (isNaN(actualBalance) || actualBalanceRaw.trim() === '') {
+						showMessage('Vui lòng nhập số dư thực tế hợp lệ cho tài khoản ' + accountName + '.', 'error');
+						diffCellElement.textContent = '';
+						diffCellElement.className = 'text-right p-2'; // Reset class
+						if (recordButtonElement) {
+							recordButtonElement.style.display = 'none'; // Ẩn nút ghi nhận nếu input không hợp lệ
+							console.log(`[ReconcilePivot] Input không hợp lệ -> Ẩn nút 'Ghi nhận' cho ${accountName}.`);
+						}
+						return;
+					}
+
+					const differenceValue = actualBalance - systemBalanceValue;
+					console.log(`%c[ReconcilePivot] Chênh lệch tính được cho ${accountName}: ${differenceValue}`, "color: green; font-weight: bold;");
+
+					diffCellElement.textContent = formatCurrency(differenceValue, 'VND');
+					diffCellElement.className = 'text-right p-2 font-semibold '; // Reset và đặt class cơ bản
+					if (differenceValue > 0) {
+						diffCellElement.classList.add('text-green-600', 'dark:text-green-400');
+					} else if (differenceValue < 0) {
+						diffCellElement.classList.add('text-red-600', 'dark:text-red-400');
+					} else { // Chênh lệch = 0
+						diffCellElement.classList.add('text-blue-600', 'dark:text-blue-400');
+					}
+
+					if (typeof saveReconciliationResult === "function") {
+						saveReconciliationResult(accountId, systemBalanceValue, actualBalance, differenceValue);
+					}
+					// showMessage(`Đã đối soát tài khoản ${accountName}.`, 'info'); // Thông báo có thể không cần thiết nếu có nút Ghi nhận
+
+					// Xử lý hiển thị và sự kiện cho nút "Ghi nhận"
+					if (recordButtonElement) { // Chỉ thực hiện nếu nút Ghi nhận tồn tại
+						if (differenceValue !== 0) {
+							recordButtonElement.style.display = 'inline-block'; // HIỂN THỊ NÚT
+							recordButtonElement.dataset.difference = differenceValue; // Lưu chênh lệch vào dataset
+							// dataset.account và dataset.accountName đã được gán khi tạo nút
+
+							// Cập nhật class cho nút Ghi nhận dựa trên chênh lệch
+							if (differenceValue > 0) { // Chênh lệch dương -> Giao dịch Thu
+								recordButtonElement.classList.remove('negative', 'btn-secondary', 'btn-danger');
+								recordButtonElement.classList.add('positive', 'btn-primary'); // Hoặc class cho màu xanh/thành công
+								// recordButtonElement.innerHTML = 'Ghi nhận Thu'; // Tùy chọn thay đổi text nút
+							} else { // Chênh lệch âm -> Giao dịch Chi
+								recordButtonElement.classList.remove('positive', 'btn-secondary', 'btn-primary');
+								recordButtonElement.classList.add('negative', 'btn-danger'); // Cần định nghĩa .btn-danger trong CSS
+								// recordButtonElement.innerHTML = 'Ghi nhận Chi'; // Tùy chọn
+							}
+							console.log(`%c[ReconcilePivot] ĐÃ HIỂN THỊ nút 'Ghi nhận' cho ${accountName}. Style display: ${recordButtonElement.style.display}`, "background-color: yellow; color: black;");
+
+							// Gán (hoặc gán lại) sự kiện click cho nút "Ghi nhận"
+							recordButtonElement.onclick = function() { // Dùng function thường để 'this' trỏ đúng vào nút
+								const currentAccountId = this.dataset.account;
+								const currentAccountName = this.dataset.accountName;
+								const currentDifference = parseFloat(this.dataset.difference);
+
+								console.log(`[RecordDiffPivot] Nút 'Ghi nhận' được nhấn. Tài khoản: ${currentAccountName}, Chênh lệch: ${currentDifference}`);
+
+								if (confirm(`Bạn có chắc chắn muốn ghi nhận chênh lệch ${formatCurrency(currentDifference, 'VND')} cho tài khoản ${currentAccountName}?`)) {
+									if (typeof handleRecordDifference === "function") {
+										handleRecordDifference(currentAccountId, currentAccountName, currentDifference);
+									} else {
+										console.error("[RecordDiffPivot] Hàm handleRecordDifference không tồn tại!");
+										showMessage("Lỗi: Không thể xử lý việc ghi nhận chênh lệch.", "error");
+										return;
+									}
+									
+									// Sau khi ghi nhận, cập nhật lại hiển thị số dư hệ thống trên bảng
+									if (typeof updateSystemBalanceDisplayOnTable === "function") {
+										updateSystemBalanceDisplayOnTable(currentAccountId);
+									}
+
+									this.style.display = 'none'; // Ẩn nút "Ghi nhận" sau khi đã xử lý
+									actualBalanceInputElement.value = ''; // Xóa giá trị đã nhập trong ô số dư thực tế
+									diffCellElement.textContent = formatCurrency(0, 'VND'); // Reset chênh lệch về 0
+									diffCellElement.className = 'text-right p-2 font-semibold text-blue-600 dark:text-blue-400'; // Reset màu
+
+									showMessage(`Đã ghi nhận chênh lệch cho tài khoản ${currentAccountName}.`, 'success');
+								}
+							};
+						} else { // Nếu differenceValue === 0
+							recordButtonElement.style.display = 'none'; // ẨN NÚT
+							diffCellElement.innerHTML = formatCurrency(0, 'VND') + ' <span class="text-xs font-normal">(Đã khớp)</span>';
+							console.log(`[ReconcilePivot] ĐÃ ẨN nút 'Ghi nhận' cho ${accountName} vì chênh lệch là 0.`);
+						}
+					} else { // Nếu recordButtonElement không tìm thấy
+						 console.error(`[ReconcilePivot] KHÔNG THỂ cập nhật hiển thị cho nút 'Ghi nhận' của tài khoản ${accountName} vì không tìm thấy phần tử nút.`);
+					}
+				});
+			});
+
+			// Áp dụng định dạng số cho các ô input nếu có hàm đó
+			if (typeof setupThousandSeparators === 'function') {
+				setupThousandSeparators();
+			}
+			console.log("[RenderTable] Bảng đối soát xoay đã được render và gán sự kiện.");
 		}
+		
 		function calculateAccountBalanceAsOfDate(accountId, specificDate) {
 			let balance = 0;
 			const dateLimit = new Date(specificDate);
@@ -1060,60 +1312,110 @@
 			});
 			return balance;
 		}
-		function renderReconciliationTable() {
-			const tableBody = document.getElementById('reconciliation-table-body');
-			if (!accounts || accounts.length === 0) return;
-			tableBody.innerHTML = '';
 
-			accounts.forEach(acc => {
-				const systemBalance = getAccountBalance(acc.value); // Viết hàm này nếu chưa có
-				const tr = document.createElement('tr');
-				tr.innerHTML = `
-					<td>${acc.text}</td>
-					<td>${formatCurrency(systemBalance, 'VND')}</td>
-					<td>
-						<input type="number" class="input-actual-balance" data-account="${acc.value}" placeholder="Nhập số dư thực tế">
-					</td>
-					<td class="diff-cell" id="diff-${acc.value}"></td>
-					<td>
-						<button class="btn-primary btn-reconcile" data-account="${acc.value}">Đối soát</button>
-					</td>
-				`;
-				tableBody.appendChild(tr);
-			});
-
-			// Gán sự kiện
-			document.querySelectorAll('.btn-reconcile').forEach(btn => {
-				btn.onclick = function() {
-					const account = btn.getAttribute('data-account');
-					const input = document.querySelector(`.input-actual-balance[data-account="${account}"]`);
-					const actual = parseFloat(input.value);
-					const system = getAccountBalance(account);
-					const diff = actual - system;
-					document.getElementById(`diff-${account}`).textContent = formatCurrency(diff, 'VND');
-					saveReconciliationResult(account, system, actual, diff);
-				};
+	// Hàm hỗ trợ để cập nhật hiển thị số dư hệ thống
+		function updateSystemBalanceDisplay(accountId) {
+			const systemBalanceCells = document.querySelectorAll(`td[data-account="${accountId}"]`);
+			const newBalance = getAccountBalance(accountId);
+			
+			systemBalanceCells.forEach(cell => {
+				// Chỉ cập nhật cell hiển thị số dư hệ thống
+				if (cell.classList.contains('system-balance-cell')) {
+					cell.textContent = formatCurrency(newBalance, 'VND');
+				}
 			});
 		}
-		function getAccountBalance(account) {
-			// Sử dụng transactions để tính
+
+		// Hàm hỗ trợ để lấy tên tài khoản từ ID
+		function getAccountName(accountId) {
+			const account = accounts.find(a => a.value === accountId);
+			return account ? account.text : accountId;
+		}
+		
+		const RECONCILE_ADJUST_INCOME_CAT = "Điều chỉnh Đối Soát (Thu)";
+		const RECONCILE_ADJUST_EXPENSE_CAT = "Điều chỉnh Đối Soát (Chi)";
+		
+		// Hàm handleRecordDifference (bạn nên đã có từ trước, nếu chưa thì thêm vào)
+		function handleRecordDifference(accountId, accountName, difference) {
+			if (isNaN(difference) || difference === 0) {
+				showMessage('Không có chênh lệch để ghi nhận hoặc chênh lệch không hợp lệ.', 'error');
+				return;
+			}
+
+			const type = difference > 0 ? 'Thu' : 'Chi';
+			const amount = Math.abs(difference);
+			const category = difference > 0 ? RECONCILE_ADJUST_INCOME_CAT : RECONCILE_ADJUST_EXPENSE_CAT;
+			const description = `Điều chỉnh đối soát tài khoản ${accountName || accountId}`;
+			const transactionDateTime = formatIsoDateTime(new Date());
+
+			if (type === 'Thu' && !incomeCategories.some(cat => cat.value === RECONCILE_ADJUST_INCOME_CAT)) {
+				incomeCategories.push({ value: RECONCILE_ADJUST_INCOME_CAT, text: RECONCILE_ADJUST_INCOME_CAT });
+				saveUserPreferences();
+			} else if (type === 'Chi' && !expenseCategories.some(cat => cat.value === RECONCILE_ADJUST_EXPENSE_CAT)) {
+				expenseCategories.push({ value: RECONCILE_ADJUST_EXPENSE_CAT, text: RECONCILE_ADJUST_EXPENSE_CAT });
+				saveUserPreferences();
+			}
+
+			const newTransaction = {
+				id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+				datetime: transactionDateTime,
+				description: description,
+				category: category,
+				amount: amount,
+				type: type,
+				account: accountId,
+				currency: 'VND',
+				isTransfer: false,
+				transferPairId: null,
+				originalAmount: amount,
+				originalCurrency: 'VND'
+			};
+
+			transactions.push(newTransaction);
+			saveTransactions();
+			applyMainFilter(); // Quan trọng: Cập nhật lại toàn bộ UI
+			// Các hàm render/populate categories sẽ được gọi trong applyMainFilter nếu cần
+			// Hàm renderReconciliationTable() cũng nên được gọi lại nếu số dư hệ thống thay đổi và bảng không tự cập nhật.
+			// Hoặc, hàm updateSystemBalanceDisplayOnTable sẽ xử lý việc này cho ô cụ thể.
+            // Nếu initializeApp có renderReconciliationTable, và applyMainFilter gọi lại các phần của initializeApp, thì có thể đã đủ.
+            // Để chắc chắn, bạn có thể gọi renderReconciliationTable() ở cuối hàm này nếu cần làm mới toàn bộ bảng.
+            // renderReconciliationTable();
+		}
+
+		function updateSystemBalanceDisplayOnTable(accountId) {
+			const newSystemBalance = getAccountBalance(accountId); // getAccountBalance tính từ mảng transactions đã cập nhật
+			const systemBalanceCell = document.getElementById(`system-balance-pivot-${accountId}`); // Tìm ô theo ID
+
+			if (systemBalanceCell) {
+				systemBalanceCell.textContent = formatCurrency(newSystemBalance, 'VND');
+			} else {
+				console.warn(`Không tìm thấy ô số dư hệ thống (ID: system-balance-pivot-${accountId}) để cập nhật cho tài khoản ${accountId} trên bảng. Sẽ render lại toàn bộ bảng.`);
+				renderReconciliationTable(); // Fallback nếu không tìm thấy ô cụ thể
+			}
+		}
+
+		function getAccountBalance(accountValue) {
 			let balance = 0;
 			transactions.forEach(tx => {
-				if (tx.account === account) {
-					if (tx.type === "Thu" || tx.type === "Transfer-in") balance += tx.amount;
-					else if (tx.type === "Chi" || tx.type === "Transfer-out") balance -= tx.amount;
+				if (tx.account === accountValue) {
+					if (tx.type === "Thu") balance += tx.amount;
+					else if (tx.type === "Chi") balance -= tx.amount;
+					// Logic cho 'Transfer-in'/'Transfer-out' không có trong cấu trúc giao dịch hiện tại,
+					// isTransfer=true sẽ có một giao dịch 'Chi' từ tài khoản này và 'Thu' vào tài khoản khác.
 				}
 			});
 			return balance;
 		}
 		// Hàm lưu lịch sử đối soát
 		function saveReconciliationResult(account, system, actual, diff) {
-			const { year, week } = getISOWeekAndYear(new Date());
-			const data = { account, year, week, system, actual, diff, timestamp: new Date().toISOString() };
-			let history = JSON.parse(localStorage.getItem('reconciliation_history') || '[]');
+			const now = new Date();
+			const year = now.getFullYear();
+			const week = getISOWeekNumber(now); // Giả sử getISOWeekNumber đã đúng
+			const data = { account, year, week, system, actual, diff, timestamp: now.toISOString() };
+			let history = JSON.parse(localStorage.getItem('reconciliation_history_v2') || '[]'); // Sử dụng key mới để tránh xung đột
 			history.push(data);
-			localStorage.setItem('reconciliation_history', JSON.stringify(history));
-			showMessage("Đã lưu kết quả đối soát cho " + account, 'success');
+			localStorage.setItem('reconciliation_history_v2', JSON.stringify(history));
+			// showMessage có thể được gọi bởi hàm gọi saveReconciliationResult nếu cần.
 		}
 		// Khi load xong data:
 		document.addEventListener('DOMContentLoaded', renderReconciliationTable);
@@ -1137,6 +1439,249 @@
 		  reconciliationHistory[weekKey][accountId] = actual;
 		  localStorage.setItem('reconciliationHistory', JSON.stringify(reconciliationHistory));
 		}		
+		
+		function renderReconciliationTable() {
+			const table = document.getElementById('reconciliation-table');
+			const tableHead = table.querySelector('thead');
+			const tableBody = table.querySelector('tbody');
+
+			if (!table || !tableHead || !tableBody) {
+				console.error("[RenderTable] Lỗi: Không tìm thấy bảng đối soát (#reconciliation-table) hoặc các thành phần thead/tbody.");
+				return;
+			}
+
+			tableHead.innerHTML = ''; // Xóa header cũ
+			tableBody.innerHTML = ''; // Xóa body cũ
+
+			if (!accounts || accounts.length === 0) {
+				const headerRowForMessage = tableHead.insertRow();
+				const th = headerRowForMessage.insertCell();
+				th.colSpan = 1; // Hoặc một giá trị mặc định
+                th.textContent = "Mục / Tài khoản"; // Giữ một cột tiêu đề
+
+				const bodyRowForMessage = tableBody.insertRow();
+				const td = bodyRowForMessage.insertCell();
+				td.colSpan = 1; // Phải khớp với colspan của header nếu có nhiều cột
+				td.className = 'text-center py-4 text-gray-500 dark:text-gray-400';
+				td.textContent = 'Chưa có tài khoản nào để đối soát.';
+				return;
+			}
+
+			// 1. Xây dựng Header (Tên tài khoản là cột)
+			const headerRow = tableHead.insertRow();
+			headerRow.insertCell().outerHTML = `<th class="sticky left-0 z-10 bg-gray-50 dark:bg-gray-700">Mục / Tài khoản</th>`;
+			accounts.forEach(acc => {
+				headerRow.insertCell().outerHTML = `<th>${acc.text}</th>`;
+			});
+
+			// 2. Định nghĩa các "hàng" (measures) sẽ hiển thị
+			const measures = [
+				{
+					id: 'systemBalance',
+					label: 'Số dư hệ thống',
+					type: 'display',
+					getValue: (accountId) => formatCurrency(getAccountBalance(accountId), 'VND'),
+				},
+				{
+					id: 'actualBalance',
+					label: 'Số dư thực tế <br><span class="font-normal normal-case text-xs">(Nhập vào cuối tuần)</span>',
+					type: 'input'
+				},
+				{
+					id: 'difference',
+					label: 'Chênh lệch',
+					type: 'displayCell',
+				},
+				{
+					id: 'reconcileAction',
+					label: 'Thao tác',
+					type: 'actionButton',
+					buttonText: 'Đối soát',
+					buttonClass: 'btn-secondary btn-reconcile-pivot py-2 px-3 text-sm rounded'
+				},
+				{
+					id: 'recordDifferenceAction',
+					label: 'Ghi nhận vào Thu/Chi',
+					type: 'actionButton',
+					buttonText: 'Ghi nhận',
+					buttonClass: 'btn-primary btn-record-diff-pivot py-2 px-3 text-sm rounded',
+					initialStyle: 'display:none;'
+				}
+			];
+
+			// 3. Xây dựng Body (Mỗi measure là một hàng)
+			measures.forEach(measure => {
+				const row = tableBody.insertRow();
+                // Ô đầu tiên của mỗi hàng trong tbody là label của measure, làm cho nó sticky
+				row.insertCell().outerHTML = `<td class="sticky left-0 z-10 bg-white dark:bg-gray-800 font-medium">${measure.label}</td>`;
+
+				accounts.forEach(acc => {
+					const cell = row.insertCell();
+					cell.setAttribute('data-account', acc.value);
+                    cell.classList.add('text-right'); // Căn phải cho các ô giá trị/input
+
+					switch (measure.type) {
+						case 'display':
+							cell.innerHTML = measure.getValue(acc.value);
+							if (measure.id === 'systemBalance') {
+								cell.id = `system-balance-pivot-${acc.value}`;
+							}
+							break;
+						case 'input':
+							cell.innerHTML = `<input type="text" inputmode="decimal"
+													class="input-actual-balance-pivot p-2 border dark:border-gray-600 rounded w-full text-right bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+													data-account="${acc.value}"
+													placeholder="Nhập số dư">`;
+							const inputEl = cell.querySelector('input');
+							if (inputEl) {
+								inputEl.addEventListener('input', (e) => {
+									if (typeof formatAndPreserveCursor === 'function') { // Đảm bảo hàm này tồn tại
+										formatAndPreserveCursor(e.target, e.target.value);
+									}
+								});
+								inputEl.addEventListener('keydown', function(e) {
+									if ([46, 8, 9, 27, 13, 35, 36, 37, 39].indexOf(e.keyCode) !== -1 ||
+										((e.keyCode === 65 || e.keyCode === 88 || e.keyCode === 67 || e.keyCode === 86) && (e.ctrlKey === true || e.metaKey === true)) ||
+										(e.keyCode >= 48 && e.keyCode <= 57 && !e.shiftKey) ||
+										(e.keyCode >= 96 && e.keyCode <= 105) ||
+										(e.keyCode === 190 || e.keyCode === 110)) {
+										if ((e.keyCode === 190 || e.keyCode === 110) && this.value.includes('.')) {
+											e.preventDefault();
+										}
+										return;
+									}
+									e.preventDefault();
+								});
+							}
+							break;
+						case 'displayCell':
+							cell.id = `diff-pivot-${acc.value}`;
+							break;
+						case 'actionButton':
+							const button = document.createElement('button');
+							button.innerHTML = measure.buttonText;
+							button.className = measure.buttonClass;
+							button.dataset.account = acc.value;
+							button.dataset.accountName = acc.text; // Sử dụng acc.text cho tên tài khoản
+							if (measure.initialStyle) button.style.cssText = measure.initialStyle;
+
+							if (measure.id === 'reconcileAction') {
+								button.id = `reconcile-btn-pivot-${acc.value}`;
+							} else if (measure.id === 'recordDifferenceAction') {
+								button.id = `record-diff-btn-pivot-${acc.value}`;
+							}
+							cell.appendChild(button);
+							cell.classList.add('text-center'); // Giữ căn giữa cho ô chứa nút
+                            cell.classList.remove('text-right'); // Bỏ căn phải nếu đã thêm ở trên cho cell
+							break;
+					}
+				});
+			});
+
+			// 4. Gán sự kiện cho các nút "Đối soát" (CHỈ MỘT LẦN Ở ĐÂY)
+			document.querySelectorAll('.btn-reconcile-pivot').forEach(btn => {
+				btn.addEventListener('click', function() {
+					const accountId = this.dataset.account;
+                    const accountName = this.dataset.accountName;
+					console.log(`[ReconcilePivot] 'Đối soát' button clicked for account: ${accountName} (ID: ${accountId})`);
+
+					const actualBalanceInputElement = document.querySelector(`input.input-actual-balance-pivot[data-account="${accountId}"]`);
+					const diffCellElement = document.getElementById(`diff-pivot-${accountId}`);
+					const recordButtonElement = document.getElementById(`record-diff-btn-pivot-${accountId}`);
+                    const systemBalanceDisplayElement = document.getElementById(`system-balance-pivot-${accountId}`);
+
+
+					if (!actualBalanceInputElement || !diffCellElement || !recordButtonElement || !systemBalanceDisplayElement) {
+						console.error(`[ReconcilePivot] Lỗi: Không tìm thấy một hoặc nhiều DOM elements cho tài khoản: ${accountId}. Input: ${!!actualBalanceInputElement}, DiffCell: ${!!diffCellElement}, RecordBtn: ${!!recordButtonElement}, SysBalanceDisplay: ${!!systemBalanceDisplayElement}`);
+						showMessage('Lỗi hệ thống khi tìm các thành phần đối soát.', 'error');
+						return;
+					}
+                    
+                    // Cập nhật hiển thị số dư hệ thống hiện tại trước khi tính toán
+                    const systemBalanceValue = getAccountBalance(accountId);
+                    systemBalanceDisplayElement.textContent = formatCurrency(systemBalanceValue, 'VND');
+
+
+					const actualBalanceNormalized = normalizeAmountString(actualBalanceInputElement.value);
+					const actualBalance = parseFloat(actualBalanceNormalized);
+
+					if (isNaN(actualBalance) || actualBalanceInputElement.value.trim() === '') {
+						showMessage('Vui lòng nhập số dư thực tế hợp lệ cho tài khoản ' + accountName + '.', 'error');
+						diffCellElement.textContent = '';
+                        diffCellElement.className = 'text-right'; // Reset class
+						recordButtonElement.style.display = 'none';
+						return;
+					}
+
+					const differenceValue = actualBalance - systemBalanceValue;
+					console.log(`[ReconcilePivot] Account: ${accountName}, SystemBalance: ${systemBalanceValue}, ActualBalance: ${actualBalance}, Difference: ${differenceValue}`);
+
+					diffCellElement.textContent = formatCurrency(differenceValue, 'VND');
+					diffCellElement.className = 'text-right font-semibold '; // Reset classes and set base
+					if (differenceValue > 0) {
+						diffCellElement.classList.add('text-green-600', 'dark:text-green-400');
+					} else if (differenceValue < 0) {
+						diffCellElement.classList.add('text-red-600', 'dark:text-red-400');
+					} else {
+                        diffCellElement.classList.add('text-blue-600', 'dark:text-blue-400'); // Hoặc một màu trung tính
+                    }
+
+					saveReconciliationResult(accountId, systemBalanceValue, actualBalance, differenceValue);
+					// showMessage(`Đã đối soát tài khoản ${accountName}. Chênh lệch: ${formatCurrency(differenceValue)}`, 'info');
+
+					if (differenceValue !== 0) {
+						recordButtonElement.style.display = 'inline-block';
+						recordButtonElement.dataset.difference = differenceValue;
+                        // CSS classes cho nút Ghi nhận dựa trên chênh lệch
+                        if (differenceValue > 0) { // Chênh lệch dương -> Thu
+                            recordButtonElement.classList.remove('negative', 'btn-secondary');
+                            recordButtonElement.classList.add('positive', 'btn-primary'); // Hoặc một class 'btn-success'
+                            // button.innerHTML có thể được cập nhật ở đây nếu muốn thay đổi text
+                        } else { // Chênh lệch âm -> Chi
+                            recordButtonElement.classList.remove('positive', 'btn-secondary');
+                            recordButtonElement.classList.add('negative', 'btn-danger'); // Hoặc một class 'btn-danger'
+                        }
+						console.log(`[ReconcilePivot] Hiển thị nút 'Ghi nhận' cho ${accountName} với chênh lệch: ${differenceValue}.`);
+
+						// Gán sự kiện click cho nút "Ghi nhận" MỘT LẦN khi nó được hiển thị
+                        // Để tránh gán nhiều lần, có thể kiểm tra xem đã có listener chưa, hoặc chỉ gán một lần như hiện tại.
+						recordButtonElement.onclick = function() {
+							const currentAccountId = this.dataset.account;
+							const currentAccountName = this.dataset.accountName;
+							const currentDifference = parseFloat(this.dataset.difference);
+
+							console.log(`[RecordDiffPivot] 'Ghi nhận' clicked. Account: ${currentAccountName}, Difference: ${currentDifference}`);
+
+							if (confirm(`Bạn có chắc chắn muốn ghi nhận chênh lệch ${formatCurrency(currentDifference, 'VND')} cho tài khoản ${currentAccountName}?`)) {
+								handleRecordDifference(currentAccountId, currentAccountName, currentDifference);
+								// Sau khi handleRecordDifference gọi applyMainFilter,
+                                // và nếu applyMainFilter gọi renderReconciliationTable, bảng sẽ được làm mới.
+                                // Nếu không, chúng ta cần cập nhật thủ công:
+								updateSystemBalanceDisplayOnTable(currentAccountId); // Cập nhật số dư hệ thống trên bảng
+
+								this.style.display = 'none'; // Ẩn nút ghi nhận
+								actualBalanceInputElement.value = ''; // Xóa số dư thực tế đã nhập
+								diffCellElement.textContent = formatCurrency(0, 'VND'); // Reset chênh lệch
+								diffCellElement.className = 'text-right font-semibold text-blue-600 dark:text-blue-400';
+
+								showMessage(`Đã ghi nhận chênh lệch cho tài khoản ${currentAccountName}.`, 'success');
+							}
+						};
+					} else {
+						recordButtonElement.style.display = 'none';
+                        diffCellElement.innerHTML += ' <span class="text-xs">(Đã khớp)</span>';
+						console.log(`[ReconcilePivot] Ẩn nút 'Ghi nhận' cho ${accountName} vì chênh lệch là 0.`);
+					}
+				});
+			});
+
+			// Áp dụng định dạng số cho các ô input vừa tạo nếu có
+			if (typeof setupThousandSeparators === 'function') {
+				setupThousandSeparators(); // Gọi hàm này để áp dụng cho các input mới trong bảng
+			}
+			console.log("[RenderTable] Reconciliation pivot table rendered and event listeners attached.");
+		}
+
 		function reconcileAccount(accountId, endOfWeek) {
 		  handleActualBalanceInput(accountId, endOfWeek);
 		  // Có thể thêm alert, thông báo, hoặc hiệu ứng ở đây
@@ -1177,6 +1722,44 @@
 				`;
 			}
 		}
+		
+		// Định dạng số với dấu phân cách hàng nghìn khi nhập
+		function setupThousandSeparators() {
+			const numericInputs = document.querySelectorAll('.input-actual-balance, .input-actual-balance-pivot');
+			
+			numericInputs.forEach(input => {
+				input.addEventListener('input', function(e) {
+					// Lưu vị trí con trỏ
+					const cursorPosition = this.selectionStart;
+					const inputLength = this.value.length;
+					
+					// Loại bỏ tất cả dấu phân cách hiện có và ký tự không phải số hoặc dấu chấm
+					let value = this.value.replace(/[^\d.]/g, '');
+					
+					// Tách phần nguyên và phần thập phân
+					let parts = value.split('.');
+					let integerPart = parts[0];
+					let decimalPart = parts.length > 1 ? '.' + parts[1] : '';
+					
+					// Thêm dấu phẩy phân cách hàng nghìn
+					integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+					
+					// Cập nhật giá trị
+					this.value = integerPart + decimalPart;
+					
+					// Tính toán vị trí con trỏ mới
+					const newLength = this.value.length;
+					const newPosition = cursorPosition + (newLength - inputLength);
+					
+					// Đặt lại vị trí con trỏ
+					this.setSelectionRange(newPosition, newPosition);
+				});
+			});
+		}
+
+		// Gọi hàm này sau khi DOM đã tải xong
+		document.addEventListener('DOMContentLoaded', setupThousandSeparators);
+		
         // --- CÁC HÀM RENDER, UPDATE CHARTS, FILTER (Giữ nguyên logic, chúng sẽ dùng giá trị `amount` đã đúng) ---
         window.deleteTransaction = function(transactionId) { if (!confirm('Bạn có chắc muốn xóa giao dịch này?')) return; const transactionToDelete = transactions.find(t => t.id === transactionId); if (transactionToDelete && transactionToDelete.isTransfer) { transactions = transactions.filter(t => t.id !== transactionToDelete.id && t.transferPairId !== transactionToDelete.id); } else { const baseIdMatch = transactionId.match(/^(\d+)(_out|_in)?$/); if(baseIdMatch && baseIdMatch[1]){ const baseId = baseIdMatch[1]; transactions = transactions.filter(t => !t.id.startsWith(baseId) && !(t.transferPairId && t.transferPairId.startsWith(baseId))); } else { transactions = transactions.filter(t => t.id !== transactionId); } } saveTransactions(); applyMainFilter(); showMessage('Đã xóa giao dịch.', 'success'); }
 
@@ -1906,7 +2489,7 @@
 
 			populateMonthFilter();
 			applyMainFilter();
-
+			
 			populateComparisonWeekFilter();
 			const currentSystemYear = new Date().getFullYear();
 			// const yearInFilterInput = document.getElementById('filter-comparison-year'); // Đã có biến global filterComparisonYearInput
@@ -1936,70 +2519,142 @@
 
 			updateWeeklyComparisonDisplay();
 			
+			
 		// Load phần đối soát
-			renderReconciliationSection();
 			const actualWeekBalanceInput = document.getElementById('actual-week-balance');
 			const saveActualBalanceBtn = document.getElementById('save-actual-balance-btn');
 			const reconciliationResult = document.getElementById('reconciliation-result');
 	
 
-			// Collapsible sections
+// XÓA đoạn mã "Collapsible sections" cũ và hàm setupCollapsibleSections() riêng biệt.
 			const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
 			collapsibleHeaders.forEach(header => {
 				const contentId = header.dataset.collapsibleTarget;
-				const content = document.getElementById(contentId);
-				if (!content) { console.error(`Collapsible Error: Content ID '${contentId}' not found.`, header); return; }
-				const storedState = localStorage.getItem(`collapsibleState_${contentId}`);
-				let isActive = header.classList.contains('active'); // Default từ HTML
-				if (storedState === 'expanded') isActive = true;
-				if (storedState === 'collapsed') isActive = false;
 
-				if (isActive) {
+				if (!contentId) {
+					console.error("Lỗi Collapsible: Thuộc tính data-collapsible-target bị thiếu trên header:", header);
+					return; // Bỏ qua header này nếu thiếu target
+				}
+
+				const content = document.getElementById(contentId);
+				const toggleIcon = header.querySelector('.toggle-icon'); // Lấy phần tử icon
+
+				if (!content) {
+					console.error(`Lỗi Collapsible: Content ID '${contentId}' không tìm thấy cho header:`, header);
+					return; // Bỏ qua nếu content không tồn tại
+				}
+
+				// 1. Xác định trạng thái hoạt động (active) ban đầu:
+				// Ưu tiên trạng thái đã lưu trong localStorage, nếu không có thì lấy từ class 'active' trong HTML.
+				let shouldBeActive = header.classList.contains('active'); // Trạng thái mặc định từ HTML
+				const storedState = localStorage.getItem(`collapsibleState_${contentId}`);
+
+				if (storedState === 'expanded') {
+					shouldBeActive = true;
+				} else if (storedState === 'collapsed') {
+					shouldBeActive = false;
+				}
+				// Nếu storedState là null (không có trong localStorage), shouldBeActive sẽ giữ nguyên giá trị từ HTML.
+
+				// 2. Áp dụng trạng thái ban đầu cho header, content và icon
+				if (shouldBeActive) {
 					header.classList.add('active');
 					content.classList.add('active');
-					// Nếu dùng maxHeight cho section lớn
-					// if (content.classList.contains('collapsible-content')) { // Chỉ áp dụng cho content chính
-					//    setTimeout(() => { if (content.classList.contains('active')) content.style.maxHeight = content.scrollHeight + "px"; }, 50);
+					// Nếu bạn có logic maxHeight cho hiệu ứng động, có thể thêm lại ở đây. Ví dụ:
+					// if (content.classList.contains('collapsible-content')) {
+					//     setTimeout(() => { if (content.classList.contains('active')) content.style.maxHeight = content.scrollHeight + "px"; }, 50);
 					// }
+					if (toggleIcon) {
+						toggleIcon.style.transform = 'rotate(180deg)';
+					}
 				} else {
 					header.classList.remove('active');
 					content.classList.remove('active');
-					// if (content.classList.contains('collapsible-content')) content.style.maxHeight = null;
-				}
-				header.addEventListener('click', () => {
-					header.classList.toggle('active');
-					content.classList.toggle('active');
-					localStorage.setItem(`collapsibleState_${contentId}`, content.classList.contains('active') ? 'expanded' : 'collapsed');
-					// if (content.classList.contains('collapsible-content') && content.classList.contains('active')) {
-					//     content.style.maxHeight = content.scrollHeight + "px";
-					// } else if (content.classList.contains('collapsible-content')) {
+					// if (content.classList.contains('collapsible-content')) {
 					//     content.style.maxHeight = null;
+					// }
+					if (toggleIcon) {
+						toggleIcon.style.transform = 'rotate(0deg)';
+					}
+				}
+
+				// 3. Gán sự kiện click cho header
+				header.addEventListener('click', () => {
+					console.log(`Header được nhấp cho target: ${contentId}`); // Dòng log để kiểm tra
+
+					// Toggle class 'active' trên header và lấy trạng thái mới của nó
+					const isActiveAfterClick = header.classList.toggle('active');
+					
+					// Đặt class 'active' cho content dựa trên trạng thái mới của header
+					content.classList.toggle('active', isActiveAfterClick);
+
+					// Lưu trạng thái mới vào localStorage
+					localStorage.setItem(`collapsibleState_${contentId}`, isActiveAfterClick ? 'expanded' : 'collapsed');
+					
+					// Cập nhật trạng thái xoay của icon (NẾU CÓ ICON)
+					if (toggleIcon) {
+						toggleIcon.style.transform = isActiveAfterClick ? 'rotate(180deg)' : 'rotate(0deg)';
+					}
+
+					// Nếu bạn có logic maxHeight cho hiệu ứng động, xử lý nó ở đây:
+					// if (content.classList.contains('collapsible-content')) { // Giả sử chỉ content chính mới có hiệu ứng này
+					//     if (isActiveAfterClick) {
+					//         content.style.maxHeight = content.scrollHeight + "px";
+					//     } else {
+					//         content.style.maxHeight = null;
+					//     }
 					// }
 				});
 			});
 
+			// PHẦN COLLAPSIBLE CHO DANH SÁCH CON (ví dụ: danh sách hạng mục)
+			// Đoạn mã này có vẻ ổn và xử lý các header khác (.collapsible-list-header)
+			// Bạn có thể giữ lại đoạn mã này nếu nó hoạt động tốt cho các danh sách con.
 			const listHeaders = document.querySelectorAll('.collapsible-list-header');
 			listHeaders.forEach(header => {
 				const contentId = header.dataset.collapsibleTarget;
 				const contentList = document.getElementById(contentId);
 				if (!contentList) { console.error(`Collapsible List Error: Content UL ID '${contentId}' not found.`, header); return; }
-				if (header.classList.contains('active')) {
-					if (!contentList.classList.contains('active')) contentList.classList.add('active');
-					setTimeout(() => { if (contentList.classList.contains('active')) contentList.style.maxHeight = contentList.scrollHeight + "px"; }, 150);
+				
+				const toggleIconList = header.querySelector('.toggle-icon'); // Lấy icon cho list header
+
+				// Khôi phục trạng thái (nếu bạn muốn lưu trạng thái cho các list con này)
+				// const storedListState = localStorage.getItem(`collapsibleListState_${contentId}`);
+				// let isListActive = header.classList.contains('active');
+				// if (storedListState === 'expanded') isListActive = true;
+				// if (storedListState === 'collapsed') isListActive = false;
+				// Bỏ qua localStorage cho list con để đơn giản, mặc định theo HTML
+
+				let isListActive = header.classList.contains('active'); // Mặc định theo HTML
+
+				if (isListActive) {
+					contentList.classList.add('active'); // Phải có class active để CSS transition maxHeight hoạt động
+					setTimeout(() => { // Chờ DOM render để scrollHeight tính đúng
+						 if (contentList.classList.contains('active')) contentList.style.maxHeight = contentList.scrollHeight + "px";
+					}, 150); // Tăng nhẹ timeout
+					if (toggleIconList) toggleIconList.style.transform = 'rotate(180deg)';
 				} else {
-					if (contentList.classList.contains('active')) contentList.classList.remove('active');
+					contentList.classList.remove('active');
 					contentList.style.maxHeight = null;
+					if (toggleIconList) toggleIconList.style.transform = 'rotate(0deg)';
 				}
+
 				header.addEventListener('click', () => {
-					header.classList.toggle('active');
-					contentList.classList.toggle('active');
-					if (contentList.classList.contains('active')) {
+					const isListNowActive = header.classList.toggle('active');
+					contentList.classList.toggle('active', isListNowActive);
+					// localStorage.setItem(`collapsibleListState_${contentId}`, isListNowActive ? 'expanded' : 'collapsed');
+
+					if (isListNowActive) {
 						contentList.style.maxHeight = contentList.scrollHeight + "px";
 					} else {
 						contentList.style.maxHeight = null;
 					}
+					if (toggleIconList) {
+						toggleIconList.style.transform = isListNowActive ? 'rotate(180deg)' : 'rotate(0deg)';
+					}
 				});
 			});
+			// KẾT THÚC PHẦN COLLAPSIBLE MỚI
 
 			// Event listener cho bộ chọn kiểu biểu đồ chi tiêu
 			if (expenseChartTypeSelector) {
