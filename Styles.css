@@ -2196,18 +2196,6 @@ body.dark-mode #reconciliation-table .btn-record-diff-pivot.negative:hover {
         font-size: 0.75rem; /* 12px */
         padding: 0.25rem; /* 4px */
     }
-
-    #reconciliation-table .input-actual-balance-pivot {
-        font-size: 0.75rem; /* 12px */
-        padding: 0.3125rem 0.1875rem; /* 5px 3px */
-    }
-
-    #reconciliation-table .btn-reconcile-pivot,
-    #reconciliation-table .btn-record-diff-pivot {
-        font-size: 0.6875rem; /* 11px */
-        padding: 0.3125rem 0.125rem; /* 5px 2px, giữ nguyên padding ngang rất nhỏ */
-        min-height: 32px; /* Đảm bảo nút không quá nhỏ, dễ chạm */
-    }
 }
 
 /* ===================================================================== */
