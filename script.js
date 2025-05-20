@@ -145,6 +145,16 @@
 	
 
         let transactions = [];
+		// Theo dõi thay đổi chế độ sáng/tối
+		window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+			// Cập nhật lại class cho body
+			document.body.classList.toggle('dark-mode', e.matches);
+		});
+		if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+			document.body.classList.add('dark-mode');
+		} else {
+			document.body.classList.remove('dark-mode');
+		}
         let incomeExpenseChart;
         let expenseCategoryChart;
 		let expenseCategoryBarChart; // Biến cho instance biểu đồ cột
