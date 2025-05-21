@@ -1,5 +1,4 @@
-
-Chart.register(ChartDataLabels);
+        Chart.register(ChartDataLabels);
         const USD_TO_VND_RATE = 25000; // Giữ nguyên hoặc cho phép người dùng cấu hình nếu muốn
         const TRANSFER_CATEGORY_OUT = "Chuyển tiền đi";
         const TRANSFER_CATEGORY_IN = "Nhận tiền chuyển";
