@@ -1908,11 +1908,11 @@
 			let totalExpenses = 0;
 
 			// Đảm bảo summaryTransactionsToUse là một mảng trước khi lặp
-                        if (typeof summaryTransactionsToUse !== 'undefined' && Array.isArray(summaryTransactionsToUse)) {
-                            summaryTransactionsToUse.forEach(tx => {
-                                if (tx.type === 'Thu' && !tx.isTransfer) { // DÒNG ĐÃ SỬA: Thêm điều kiện !tx.isTransfer
-                                    totalIncome += tx.amount;
-                                } else if (tx.type === 'Chi') { 
+			if (typeof summaryTransactionsToUse !== 'undefined' && Array.isArray(summaryTransactionsToUse)) {
+				summaryTransactionsToUse.forEach(tx => {
+					if (tx.type === 'Thu') totalIncome += tx.amount;
+					else if (tx.type === 'Chi') totalExpenses += tx.amount;
+				});
 			} else {
 				console.warn("updateMainSummaryAndChart: summaryTransactionsToUse không phải là mảng hoặc không được định nghĩa. Đặt lại thành 0.");
 				// totalIncome và totalExpenses sẽ giữ giá trị 0 đã khởi tạo
