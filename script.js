@@ -1,3079 +1,3061 @@
-        Chart.register(ChartDataLabels);
-        const USD_TO_VND_RATE = 25000; // Giữ nguyên hoặc cho phép người dùng cấu hình nếu muốn
-        const TRANSFER_CATEGORY_OUT = "Chuyển tiền đi";
-        const TRANSFER_CATEGORY_IN = "Nhận tiền chuyển";
+/**
+ * PERSONAL FINANCIAL MANAGEMENT APPLICATION
+ * Restructured and organized for better maintainability
+ */
 
-        function migrateOriginalAmountsForOldVNDTransactions() {
-            const MIGRATION_KEY_ORIGINAL_AMOUNT_VND = 'migration_original_amount_vnd_v1_done';
-            if (localStorage.getItem(MIGRATION_KEY_ORIGINAL_AMOUNT_VND)) {
-                console.log("Di chuyển originalAmount cho giao dịch VNĐ cũ đã được thực hiện trước đó.");
+// ========================================================================================
+// 1. CONSTANTS & CONFIGURATION
+// ========================================================================================
+
+const CONFIG = {
+    USD_TO_VND_RATE: 25000,
+    TRANSFER_CATEGORY_OUT: "Chuyển tiền đi",
+    TRANSFER_CATEGORY_IN: "Nhận tiền chuyển",
+    RECONCILE_ADJUST_INCOME_CAT: "Điều chỉnh Đối Soát (Thu)",
+    RECONCILE_ADJUST_EXPENSE_CAT: "Điều chỉnh Đối Soát (Chi)",
+    DARK_MODE_CLASS: 'dark-mode',
+    THEME_STORAGE_KEY: 'themePreference',
+    MIGRATION_KEY_ORIGINAL_AMOUNT_VND: 'migration_original_amount_vnd_v1_done'
+};
+
+const STORAGE_KEYS = {
+    TRANSACTIONS: 'transactions_v2',
+    INCOME_CATEGORIES: 'customIncomeCategories_v2',
+    EXPENSE_CATEGORIES: 'customExpenseCategories_v2',
+    ACCOUNTS: 'customAccounts_v2',
+    RECONCILIATION_HISTORY: 'reconciliation_history_v2'
+};
+
+const CATEGORY_COLORS = [
+    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+    '#C9CBCF', '#8366FF', '#289F40', '#D26384', '#3C64C8', '#C89632'
+];
+
+const DEFAULT_DATA = {
+    incomeCategories: [
+        { value: "Lương", text: "Lương" },
+        { value: "Thưởng", text: "Thưởng" },
+        { value: "Tiền được trả nợ", text: "Tiền được trả nợ" },
+        { value: CONFIG.TRANSFER_CATEGORY_IN, text: "Nhận tiền chuyển khoản" },
+        { value: "Lãi tiết kiệm", text: "Lãi tiết kiệm" },
+        { value: "Thu nhập từ đầu tư", text: "Thu nhập từ đầu tư" },
+        { value: "Thu nhập phụ", text: "Thu nhập phụ" },
+        { value: "Thu nhập khác", text: "Thu nhập khác (chung)" }
+    ],
+    expenseCategories: [
+        { value: "Ăn uống", text: "Ăn uống" },
+        { value: "Đi lại", text: "Đi lại" },
+        { value: "Nhà ở", text: "Nhà ở" },
+        { value: "Hóa đơn", text: "Hóa đơn (Điện, nước, internet)" },
+        { value: "Mua sắm", text: "Mua sắm (Quần áo, đồ dùng)" },
+        { value: "Giải trí", text: "Giải trí" },
+        { value: "Sức khỏe", text: "Sức khỏe" },
+        { value: "Giáo dục", text: "Giáo dục" },
+        { value: "Chi cho đầu tư", text: "Chi cho đầu tư" },
+        { value: "Trả nợ", text: "Trả nợ (cho người khác)" },
+        { value: CONFIG.TRANSFER_CATEGORY_OUT, text: "Chuyển tiền đi" },
+        { value: "Chi phí khác", text: "Chi phí khác (chung)" }
+    ],
+    accounts: [
+        { value: "Tiền mặt", text: "Tiền mặt" },
+        { value: "Momo", text: "Momo" },
+        { value: "Thẻ tín dụng A", text: "Thẻ tín dụng A" },
+        { value: "Techcombank", text: "Techcombank" },
+        { value: "BIDV", text: "BIDV" },
+        { value: "Khác", text: "Khác" }
+    ]
+};
+
+// ========================================================================================
+// 2. DOM ELEMENTS
+// ========================================================================================
+
+const DOM = {
+    // Theme
+    darkModeToggle: null,
+    
+    // Forms
+    transactionForm: null,
+    formTitle: null,
+    submitButton: null,
+    datetimeInput: null,
+    categoryInput: null,
+    amountInput: null,
+    formCurrencySelector: null,
+    descriptionInput: null,
+    accountInput: null,
+    accountLabel: null,
+    toAccountInput: null,
+    addTripleZeroButton: null,
+    
+    // Filters
+    filterMonthSelect: null,
+    filterSpecificDateInput: null,
+    clearDateFilterButton: null,
+    filterComparisonYearInput: null,
+    filterComparisonWeekSelect: null,
+    
+    // Display
+    messageBox: null,
+    transactionList: null,
+    noTransactionsMessage: null,
+    totalIncomeEl: null,
+    totalExpensesEl: null,
+    currentBalanceEl: null,
+    accountBalanceListEl: null,
+    
+    // Charts
+    incomeExpenseChartCanvas: null,
+    expenseCategoryChartCanvas: null,
+    expenseCategoryBarCtx: null,
+    last7DaysChartCanvas: null,
+    monthComparisonChartCanvas: null,
+    expenseChartTypeSelector: null,
+    expensePieChartContainer: null,
+    expenseBarChartContainer: null,
+    
+    // Categories Management
+    newIncomeCategoryNameInput: null,
+    addIncomeCategoryButton: null,
+    incomeCategoryListAdmin: null,
+    newExpenseCategoryNameInput: null,
+    addExpenseCategoryButton: null,
+    expenseCategoryListAdmin: null,
+    newAccountNameInput: null,
+    addAccountButton: null,
+    accountListAdmin: null,
+    
+    // Import/Export
+    exportButton: null,
+    exportCsvButton: null,
+    importButton: null,
+    importFileInput: null,
+    
+    // Virtual Keyboard
+    virtualKeyboard: null,
+    
+    // Suggestions
+    transactionSuggestionArea: null,
+    suggestedDescription: null,
+    suggestedAmount: null,
+    applySuggestionButton: null,
+    dismissSuggestionButton: null,
+
+    // Summary displays
+    summaryIncomeMonthDisplay: null,
+    summaryExpenseMonthDisplay: null,
+    summaryBalanceMonthDisplay: null
+};
+
+// ========================================================================================
+// 3. GLOBAL VARIABLES
+// ========================================================================================
+
+let transactions = [];
+let incomeCategories = [];
+let expenseCategories = [];
+let accounts = [];
+let editingTransactionId = null;
+let currentSuggestedTransaction = null;
+let activeInputForVirtualKeyboard = null;
+
+// Chart instances
+let incomeExpenseChart = null;
+let expenseCategoryChart = null;
+let expenseCategoryBarChart = null;
+let last7DaysChart = null;
+let monthComparisonChart = null;
+
+// ========================================================================================
+// 4. UTILITY FUNCTIONS
+// ========================================================================================
+
+const Utils = {
+    // Format currency with proper decimal handling
+    formatCurrency(amount, currencyCode = 'VND') {
+        if (isNaN(amount) || amount === null) amount = 0;
+
+        if (currencyCode === 'VND') {
+            let actualFractionDigits = 0;
+            const amountStrFull = String(amount);
+            const decimalPartMatch = amountStrFull.match(/\.(\d+)$/);
+            if (decimalPartMatch && decimalPartMatch[1]) {
+                actualFractionDigits = decimalPartMatch[1].length;
+            }
+
+            const numberFormatter = new Intl.NumberFormat('en-US', {
+                style: 'decimal',
+                minimumFractionDigits: actualFractionDigits,
+                maximumFractionDigits: actualFractionDigits
+            });
+            return numberFormatter.format(amount) + '\u00A0₫';
+        } else if (currencyCode === 'USD') {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+        } else {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: currencyCode,
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
+    },
+
+    // Format date-time for different purposes
+    formatDateTimeLocalInput(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    },
+
+    formatIsoDateTime(date) {
+        if (!date || isNaN(new Date(date).getTime())) date = new Date();
+        else date = new Date(date);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+    },
+
+    formatDisplayDateTime(isoString) {
+        if (!isoString) return '';
+        try {
+            let date = new Date(isoString);
+            if (isNaN(date.getTime())) return isoString;
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${minutes}`;
+        } catch (e) {
+            console.error("Error formatting display date/time:", e, "Input:", isoString);
+            return isoString;
+        }
+    },
+
+    formatDateTimeForCSV(isoString) {
+        if (!isoString) return '';
+        try {
+            const d = new Date(isoString);
+            if (isNaN(d.getTime())) return isoString;
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
+        } catch (e) {
+            return isoString;
+        }
+    },
+
+    getCurrentDateFormattedYYYYMMDD() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    },
+
+    // Amount parsing and normalization
+    normalizeAmountString(amountStr) {
+        if (typeof amountStr !== 'string' || !amountStr.trim()) return "";
+        
+        let str = amountStr.trim();
+        const hasComma = str.includes(',');
+        const hasPeriod = str.includes('.');
+
+        if (hasComma && hasPeriod) {
+            if (str.lastIndexOf(',') > str.lastIndexOf('.')) {
+                str = str.replace(/\./g, '').replace(',', '.');
+            } else {
+                str = str.replace(/,/g, '');
+            }
+        } else if (hasComma) {
+            str = str.replace(/,/g, '');
+        } else if (hasPeriod) {
+            const periodCount = (str.match(/\./g) || []).length;
+            if (periodCount > 1) {
+                str = str.replace(/\.(?=.*\.)/g, '');
+            }
+        }
+        return str;
+    },
+
+    parseAmountInput(amountStr, currency) {
+        if (!amountStr) return 0;
+
+        const normalizedStr = this.normalizeAmountString(amountStr);
+        let val = parseFloat(normalizedStr);
+
+        if (isNaN(val)) {
+            console.warn(`NormalizeAmountString failed for input: '${amountStr}'`);
+            let directParseStr = String(amountStr).trim();
+            if (directParseStr.includes(',') && !directParseStr.includes('.')) {
+                directParseStr = directParseStr.replace(/,/g, '');
+            } else if (directParseStr.includes(',') && directParseStr.includes('.')) {
+                if (directParseStr.lastIndexOf(',') > directParseStr.lastIndexOf('.')) {
+                    directParseStr = directParseStr.replace(/\./g, '').replace(',', '.');
+                } else {
+                    directParseStr = directParseStr.replace(/,/g, '');
+                }
+            }
+            val = parseFloat(directParseStr);
+        }
+
+        if (isNaN(val)) return 0;
+
+        if (currency === 'USD') {
+            val = val * CONFIG.USD_TO_VND_RATE;
+            return Math.round(val);
+        } else if (currency === 'VND') {
+            return val;
+        } else {
+            return val;
+        }
+    },
+
+    // Week calculations
+    getISOWeekNumber(d) {
+        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    },
+
+    getISOWeek(date) {
+        const d = new Date(date);
+        d.setHours(0, 0, 0, 0);
+        d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+        const yearStart = new Date(d.getFullYear(), 0, 1);
+        const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        return weekNo;
+    },
+
+    getCurrentISOWeekId() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const weekNumber = this.getISOWeekNumber(now);
+        return `${year}-W${String(weekNumber).padStart(2, '0')}`;
+    },
+
+    // Message display
+    showMessage(message, type = 'success') {
+        if (!DOM.messageBox) return;
+        DOM.messageBox.textContent = message;
+        DOM.messageBox.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'message-success' : 'message-error'}`;
+        DOM.messageBox.style.display = 'block';
+        setTimeout(() => {
+            DOM.messageBox.style.display = 'none';
+        }, 3000);
+    },
+
+    // Format amount input with thousand separators
+    formatAndPreserveCursor(inputElement, valueToFormat) {
+        const originalValue = valueToFormat;
+        let cursorPos = inputElement.selectionStart;
+        const originalLength = originalValue.length;
+
+        let cleanValue = originalValue.replace(/[^0-9.]/g, "");
+        const parts = cleanValue.split('.');
+        let integerPart = parts[0];
+        let decimalPart = parts.length > 1 ? parts.slice(1).join('') : "";
+
+        if (parts.length > 2) {
+            decimalPart = parts[1] + parts.slice(2).join('');
+        }
+
+        let formattedInteger = "";
+        if (integerPart) {
+            if (/^0+$/.test(integerPart) && integerPart.length > 1 && (decimalPart === "" || decimalPart === undefined)) {
+                // Keep zeros for cases like "007"
+            } else {
+                const num = parseInt(integerPart, 10);
+                if (!isNaN(num)) {
+                    formattedInteger = new Intl.NumberFormat('en-US').format(num);
+                } else if (integerPart === "" && (decimalPart !== "" || valueToFormat === ".")) {
+                    formattedInteger = "0";
+                } else {
+                    formattedInteger = "";
+                }
+            }
+        } else if (decimalPart !== "" || valueToFormat === ".") {
+            formattedInteger = "0";
+        }
+
+        let newFormattedValue = formattedInteger;
+        if (decimalPart !== "" || (valueToFormat.endsWith('.') && !valueToFormat.endsWith('..'))) {
+            newFormattedValue += "." + decimalPart;
+        }
+        
+        if (valueToFormat === ".") newFormattedValue = "0.";
+        if (valueToFormat === "0." && decimalPart === "") newFormattedValue = "0.";
+
+        if (integerPart === "0" && decimalPart === "" && !valueToFormat.includes('.')) {
+            newFormattedValue = "0";
+        }
+        
+        if (originalValue.trim() === "") {
+            newFormattedValue = "";
+        }
+
+        inputElement.value = newFormattedValue;
+
+        // Cursor position calculation
+        if (cursorPos !== null) {
+            let newCursorPos = cursorPos;
+            const newLength = newFormattedValue.length;
+
+            const oldCommasBefore = (originalValue.substring(0, cursorPos).match(/,/g) || []).length;
+            let tempNewCursorPos = cursorPos + (newLength - originalLength);
+            if (tempNewCursorPos < 0) tempNewCursorPos = 0;
+            if (tempNewCursorPos > newLength) tempNewCursorPos = newLength;
+
+            const newCommasBefore = (newFormattedValue.substring(0, tempNewCursorPos).match(/,/g) || []).length;
+            newCursorPos = tempNewCursorPos + (newCommasBefore - oldCommasBefore);
+
+            if (newCursorPos < 0) newCursorPos = 0;
+            if (newCursorPos > newLength) newCursorPos = newLength;
+
+            inputElement.setSelectionRange(newCursorPos, newCursorPos);
+        }
+    }
+};
+
+// ========================================================================================
+// 5. DATA MANAGEMENT
+// ========================================================================================
+
+const DataManager = {
+    // Load user preferences from localStorage
+    loadUserPreferences() {
+        // Load transactions
+        const storedTransactions = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
+        transactions = [];
+        if (storedTransactions) {
+            try {
+                transactions = JSON.parse(storedTransactions);
+                console.log("Loaded transactions:", transactions);
+                if (!Array.isArray(transactions)) {
+                    console.warn("Transactions data is not an array, resetting to empty array.");
+                    transactions = [];
+                }
+            } catch (error) {
+                console.error("Error parsing transactions from localStorage:", error);
+                transactions = [];
+                Utils.showMessage('Có lỗi khi tải dữ liệu giao dịch. Dữ liệu có thể đã bị hỏng.', 'error');
+            }
+        } else {
+            console.log("No transactions found in localStorage, using empty array.");
+            transactions = [];
+        }
+
+        // Load income categories
+        const storedIncomeCategories = localStorage.getItem(STORAGE_KEYS.INCOME_CATEGORIES);
+        incomeCategories = [];
+        if (storedIncomeCategories) {
+            try {
+                incomeCategories = JSON.parse(storedIncomeCategories);
+                if (!Array.isArray(incomeCategories) || incomeCategories.length === 0 || !incomeCategories.find(c => c.value === CONFIG.TRANSFER_CATEGORY_IN)) {
+                    incomeCategories = [...DEFAULT_DATA.incomeCategories];
+                }
+            } catch (error) {
+                console.error("Error parsing income categories:", error);
+                incomeCategories = [...DEFAULT_DATA.incomeCategories];
+            }
+        } else {
+            incomeCategories = [...DEFAULT_DATA.incomeCategories];
+        }
+
+        // Load expense categories
+        const storedExpenseCategories = localStorage.getItem(STORAGE_KEYS.EXPENSE_CATEGORIES);
+        expenseCategories = [];
+        if (storedExpenseCategories) {
+            try {
+                expenseCategories = JSON.parse(storedExpenseCategories);
+                if (!Array.isArray(expenseCategories) || expenseCategories.length === 0 || !expenseCategories.find(c => c.value === CONFIG.TRANSFER_CATEGORY_OUT)) {
+                    expenseCategories = [...DEFAULT_DATA.expenseCategories];
+                }
+            } catch (error) {
+                console.error("Error parsing expense categories:", error);
+                expenseCategories = [...DEFAULT_DATA.expenseCategories];
+            }
+        } else {
+            expenseCategories = [...DEFAULT_DATA.expenseCategories];
+        }
+
+        // Load accounts
+        const storedAccounts = localStorage.getItem(STORAGE_KEYS.ACCOUNTS);
+        accounts = [];
+        if (storedAccounts) {
+            try {
+                accounts = JSON.parse(storedAccounts);
+                if (!Array.isArray(accounts) || accounts.length === 0) {
+                    accounts = [...DEFAULT_DATA.accounts];
+                }
+            } catch (error) {
+                console.error("Error parsing accounts:", error);
+                accounts = [...DEFAULT_DATA.accounts];
+            }
+        } else {
+            accounts = [...DEFAULT_DATA.accounts];
+        }
+
+        console.log("Final data after loading:", { transactions, incomeCategories, expenseCategories, accounts });
+    },
+
+    // Save user preferences to localStorage
+    saveUserPreferences() {
+        localStorage.setItem(STORAGE_KEYS.INCOME_CATEGORIES, JSON.stringify(incomeCategories));
+        localStorage.setItem(STORAGE_KEYS.EXPENSE_CATEGORIES, JSON.stringify(expenseCategories));
+        localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(accounts));
+    },
+
+    // Save transactions to localStorage
+    saveTransactions() {
+        localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions));
+    },
+
+    // Save reconciliation result
+    saveReconciliationResult(account, system, actual, diff) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const week = Utils.getISOWeekNumber(now);
+        const data = { 
+            account, 
+            year, 
+            week, 
+            system, 
+            actual, 
+            diff, 
+            timestamp: now.toISOString() 
+        };
+        let history = JSON.parse(localStorage.getItem(STORAGE_KEYS.RECONCILIATION_HISTORY) || '[]');
+        history.push(data);
+        localStorage.setItem(STORAGE_KEYS.RECONCILIATION_HISTORY, JSON.stringify(history));
+    }
+};
+
+// ========================================================================================
+// 6. TRANSACTION MANAGEMENT
+// ========================================================================================
+
+const TransactionManager = {
+    // Handle transaction form submission
+    handleSubmit(e) {
+        e.preventDefault();
+        
+        const datetimeValue = DOM.datetimeInput.value;
+        const typeRadio = document.querySelector('input[name="type"]:checked');
+        const type = typeRadio ? typeRadio.value : null;
+        const amountRaw = DOM.amountInput.value;
+        const currency = DOM.formCurrencySelector.value;
+        let categoryValue = (type !== 'Transfer') ? DOM.categoryInput.value : null;
+        const accountValue = DOM.accountInput.value;
+        const toAccountValue = (type === 'Transfer') ? DOM.toAccountInput.value : null;
+        const descriptionValue = DOM.descriptionInput.value.trim();
+        
+        // Validation
+        if (!datetimeValue || !type || !amountRaw || !accountValue) {
+            Utils.showMessage('Vui lòng điền đầy đủ các trường bắt buộc.', 'error');
+            return;
+        }
+        if (type !== 'Transfer' && !categoryValue) {
+            Utils.showMessage('Vui lòng chọn hạng mục.', 'error');
+            return;
+        }
+        if (type === 'Transfer' && !toAccountValue) {
+            Utils.showMessage('Vui lòng chọn tài khoản nhận cho giao dịch chuyển tiền.', 'error');
+            return;
+        }
+        if (type === 'Transfer' && accountValue === toAccountValue) {
+            Utils.showMessage('Tài khoản chuyển và tài khoản nhận không được trùng nhau.', 'error');
+            return;
+        }
+
+        let amount = Utils.parseAmountInput(amountRaw, currency);
+        if (isNaN(amount) || amount <= 0 && !(type === 'Transfer' && amount === 0)) {
+            if (amount <= 0 && type !== 'Transfer') {
+                Utils.showMessage('Số tiền không hợp lệ hoặc phải lớn hơn 0.', 'error');
+                return;
+            } else if (amount < 0) {
+                Utils.showMessage('Số tiền không được là số âm.', 'error');
+                return;
+            }
+        }
+
+        const transactionDateTime = Utils.formatIsoDateTime(new Date(datetimeValue));
+        const rawNumericValue = parseFloat(Utils.normalizeAmountString(amountRaw));
+        
+        if (isNaN(rawNumericValue)) {
+            Utils.showMessage('Số tiền nhập vào không hợp lệ.', 'error');
+            return;
+        }
+
+        if (editingTransactionId) {
+            this.updateTransaction(editingTransactionId, {
+                datetime: transactionDateTime,
+                type,
+                amount,
+                category: categoryValue,
+                account: accountValue,
+                toAccount: toAccountValue,
+                description: descriptionValue,
+                originalAmount: rawNumericValue,
+                originalCurrency: currency
+            });
+        } else {
+            this.addTransaction({
+                datetime: transactionDateTime,
+                type,
+                amount,
+                category: categoryValue,
+                account: accountValue,
+                toAccount: toAccountValue,
+                description: descriptionValue,
+                originalAmount: rawNumericValue,
+                originalCurrency: currency
+            });
+        }
+
+        DataManager.saveTransactions();
+        FilterManager.populateMonthFilter();
+        FilterManager.applyMainFilter();
+        this.resetForm(type);
+    },
+
+    // Add new transaction
+    addTransaction(data) {
+        const newIdBase = Date.now().toString();
+        
+        if (data.type === 'Transfer') {
+            const transferOutId = `${newIdBase}_out`;
+            const transferInId = `${newIdBase}_in`;
+            
+            transactions.push({
+                id: transferOutId,
+                datetime: data.datetime,
+                description: data.description || `Chuyển tiền từ ${data.account} đến ${data.toAccount}`,
+                category: CONFIG.TRANSFER_CATEGORY_OUT,
+                amount: data.amount,
+                type: 'Chi',
+                account: data.account,
+                currency: 'VND',
+                isTransfer: true,
+                transferPairId: transferInId,
+                originalAmount: data.originalAmount,
+                originalCurrency: data.originalCurrency
+            });
+            
+            transactions.push({
+                id: transferInId,
+                datetime: data.datetime,
+                description: data.description || `Nhận tiền từ ${data.account} vào ${data.toAccount}`,
+                category: CONFIG.TRANSFER_CATEGORY_IN,
+                amount: data.amount,
+                type: 'Thu',
+                account: data.toAccount,
+                currency: 'VND',
+                isTransfer: true,
+                transferPairId: transferOutId,
+                originalAmount: data.originalAmount,
+                originalCurrency: data.originalCurrency
+            });
+            
+            Utils.showMessage('Giao dịch chuyển tiền đã được thêm!', 'success');
+        } else {
+            transactions.push({
+                id: newIdBase,
+                datetime: data.datetime,
+                description: data.description,
+                category: data.category,
+                amount: data.amount,
+                type: data.type,
+                account: data.account,
+                currency: 'VND',
+                isTransfer: false,
+                transferPairId: null,
+                originalAmount: data.originalAmount,
+                originalCurrency: data.originalCurrency
+            });
+            
+            Utils.showMessage(`Giao dịch ${data.type === 'Thu' ? 'thu' : 'chi'} đã được thêm!`, 'success');
+        }
+    },
+
+    // Update existing transaction
+    updateTransaction(transactionId, data) {
+        const existingTransactionIndex = transactions.findIndex(t => t.id === transactionId || (t.isTransfer && (t.id.startsWith(transactionId) || t.transferPairId.startsWith(transactionId))));
+        
+        if (existingTransactionIndex === -1 && data.type !== 'Transfer') {
+            Utils.showMessage('Lỗi: Giao dịch gốc để sửa không tìm thấy.', 'error');
+            editingTransactionId = null;
+            return;
+        }
+        
+        // Remove old transaction
+        if (transactions.find(t => t.id.startsWith(transactionId) && t.isTransfer) || data.type === 'Transfer') {
+            transactions = transactions.filter(t => !t.id.startsWith(transactionId) && !(t.transferPairId && t.transferPairId.startsWith(transactionId)));
+        } else if (existingTransactionIndex !== -1) {
+            transactions.splice(existingTransactionIndex, 1);
+        }
+        
+        const baseId = transactionId;
+        
+        if (data.type === 'Transfer') {
+            const transferOutId = `${baseId}_out_edited_${Date.now()}`;
+            const transferInId = `${baseId}_in_edited_${Date.now()}`;
+            
+            transactions.push({
+                id: transferOutId,
+                datetime: data.datetime,
+                description: data.description || `Chuyển tiền từ ${data.account} đến ${data.toAccount}`,
+                category: CONFIG.TRANSFER_CATEGORY_OUT,
+                amount: data.amount,
+                type: 'Chi',
+                account: data.account,
+                currency: 'VND',
+                isTransfer: true,
+                transferPairId: transferInId,
+                originalAmount: data.originalAmount,
+                originalCurrency: data.originalCurrency
+            });
+            
+            transactions.push({
+                id: transferInId,
+                datetime: data.datetime,
+                description: data.description || `Nhận tiền từ ${data.account} vào ${data.toAccount}`,
+                category: CONFIG.TRANSFER_CATEGORY_IN,
+                amount: data.amount,
+                type: 'Thu',
+                account: data.toAccount,
+                currency: 'VND',
+                isTransfer: true,
+                transferPairId: transferOutId,
+                originalAmount: data.originalAmount,
+                originalCurrency: data.originalCurrency
+            });
+            
+            Utils.showMessage('Giao dịch chuyển tiền đã được cập nhật!', 'success');
+        } else {
+            transactions.push({
+                id: baseId,
+                datetime: data.datetime,
+                description: data.description,
+                category: data.category,
+                amount: data.amount,
+                type: data.type,
+                account: data.account,
+                currency: 'VND',
+                isTransfer: false,
+                transferPairId: null,
+                originalAmount: data.originalAmount,
+                originalCurrency: data.originalCurrency
+            });
+            
+            Utils.showMessage(`Giao dịch ${data.type === 'Thu' ? 'thu' : 'chi'} đã được cập nhật!`, 'success');
+        }
+        
+        editingTransactionId = null;
+    },
+
+    // Delete transaction
+    deleteTransaction(transactionId) {
+        if (!confirm('Bạn có chắc muốn xóa giao dịch này?')) return;
+        
+        const transactionToDelete = transactions.find(t => t.id === transactionId);
+        
+        if (transactionToDelete && transactionToDelete.isTransfer) {
+            transactions = transactions.filter(t => t.id !== transactionToDelete.id && t.transferPairId !== transactionToDelete.id);
+        } else {
+            const baseIdMatch = transactionId.match(/^(\d+)(_out|_in)?$/);
+            if (baseIdMatch && baseIdMatch[1]) {
+                const baseId = baseIdMatch[1];
+                transactions = transactions.filter(t => !t.id.startsWith(baseId) && !(t.transferPairId && t.transferPairId.startsWith(baseId)));
+            } else {
+                transactions = transactions.filter(t => t.id !== transactionId);
+            }
+        }
+        
+        DataManager.saveTransactions();
+        FilterManager.applyMainFilter();
+        Utils.showMessage('Đã xóa giao dịch.', 'success');
+    },
+
+    // Load transaction for editing
+    loadForEdit(transactionId) {
+        let transactionToEdit = transactions.find(t => t.id === transactionId);
+        let baseIdForEdit = transactionId;
+
+        if (!transactionToEdit) {
+            const transferPart = transactions.find(t => t.isTransfer && (t.id === transactionId || t.transferPairId === transactionId));
+            if (transferPart) {
+                baseIdForEdit = transferPart.id.split('_')[0];
+                const outTx = transactions.find(t => t.id.startsWith(baseIdForEdit) && t.type === 'Chi' && t.isTransfer);
+                const inTx = transactions.find(t => t.id.startsWith(baseIdForEdit) && t.type === 'Thu' && t.isTransfer);
+                
+                if (outTx && inTx) {
+                    transactionToEdit = outTx;
+                    DOM.datetimeInput.value = Utils.formatDateTimeLocalInput(new Date(outTx.datetime));
+                    document.getElementById('type-transfer').checked = true;
+                    DOM.amountInput.value = String(outTx.originalAmount);
+                    DOM.formCurrencySelector.value = outTx.originalCurrency;
+                    DOM.descriptionInput.value = outTx.description.startsWith("Chuyển tiền từ") ? outTx.description : (inTx.description.startsWith("Nhận tiền từ") ? inTx.description : outTx.description);
+                    DOM.accountInput.value = outTx.account;
+                    DOM.toAccountInput.value = inTx.account;
+                } else {
+                    Utils.showMessage('Lỗi: Không tìm thấy đủ thông tin giao dịch chuyển tiền để sửa.', 'error');
+                    return;
+                }
+            } else {
+                Utils.showMessage('Lỗi: Không tìm thấy giao dịch.', 'error');
+                return;
+            }
+        } else {
+            DOM.datetimeInput.value = Utils.formatDateTimeLocalInput(new Date(transactionToEdit.datetime));
+            document.querySelector(`input[name="type"][value="${transactionToEdit.type}"]`).checked = true;
+            DOM.amountInput.value = String(transactionToEdit.originalAmount);
+            DOM.formCurrencySelector.value = transactionToEdit.originalCurrency;
+            DOM.descriptionInput.value = transactionToEdit.description;
+            DOM.accountInput.value = transactionToEdit.account;
+            if (transactionToEdit.type !== 'Transfer') DOM.categoryInput.value = transactionToEdit.category;
+        }
+
+        editingTransactionId = baseIdForEdit;
+        DOM.formTitle.textContent = 'Sửa Giao Dịch';
+        DOM.submitButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>Lưu Thay Đổi`;
+        
+        FormManager.toggleFormFields();
+        CategoryManager.populateAccountDropdowns();
+        
+        if (document.querySelector('input[name="type"]:checked').value !== 'Transfer') {
+            CategoryManager.populateCategories();
+            if (transactionToEdit && transactionToEdit.type !== 'Transfer') DOM.categoryInput.value = transactionToEdit.category;
+        }
+        
+        const formSection = document.querySelector('.form-section .collapsible-header');
+        if (formSection && !formSection.classList.contains('active')) formSection.click();
+        formSection.scrollIntoView({ behavior: 'smooth' });
+    },
+
+    // Reset form
+    resetForm(persistedType = null) {
+        const previousAccountValue = DOM.accountInput.value;
+        const previousToAccountValue = DOM.toAccountInput.value;
+
+        DOM.transactionForm.reset();
+        DOM.datetimeInput.value = Utils.formatDateTimeLocalInput(new Date());
+        DOM.formCurrencySelector.value = 'VND';
+
+        if (persistedType) {
+            const radioToSelect = document.querySelector(`input[name="type"][value="${persistedType}"]`);
+            if (radioToSelect) radioToSelect.checked = true;
+        } else {
+            const typeChiRadio = document.getElementById('type-chi');
+            if (typeChiRadio) typeChiRadio.checked = true;
+        }
+
+        editingTransactionId = null;
+        DOM.formTitle.textContent = 'Thêm Giao Dịch Mới';
+        DOM.submitButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>Thêm Giao Dịch';
+
+        FormManager.toggleFormFields();
+        CategoryManager.populateAccountDropdowns();
+
+        if (DOM.accountInput && Array.from(DOM.accountInput.options).some(opt => opt.value === previousAccountValue)) {
+            DOM.accountInput.value = previousAccountValue;
+        }
+        
+        if (document.querySelector('input[name="type"]:checked')?.value === 'Transfer' && 
+            DOM.toAccountInput && 
+            Array.from(DOM.toAccountInput.options).some(opt => opt.value === previousToAccountValue)) {
+            DOM.toAccountInput.value = previousToAccountValue;
+        }
+
+        const currentTransactionType = document.querySelector('input[name="type"]:checked');
+        if (currentTransactionType && currentTransactionType.value !== 'Transfer') {
+            CategoryManager.populateCategories();
+        }
+    }
+};
+
+// ========================================================================================
+// 7. CATEGORY & ACCOUNT MANAGEMENT
+// ========================================================================================
+
+const CategoryManager = {
+    // Populate account dropdowns
+    populateAccountDropdowns() {
+        if (!DOM.accountInput || !DOM.toAccountInput) return;
+        
+        const currentFromAccount = DOM.accountInput.value;
+        const currentToAccount = DOM.toAccountInput.value;
+        
+        DOM.accountInput.innerHTML = '';
+        DOM.toAccountInput.innerHTML = '';
+        
+        if (!accounts || accounts.length === 0) accounts = [...DEFAULT_DATA.accounts];
+        
+        accounts.forEach(acc => {
+            DOM.accountInput.add(new Option(acc.text, acc.value));
+            DOM.toAccountInput.add(new Option(acc.text, acc.value));
+        });
+        
+        if (accounts.some(acc => acc.value === currentFromAccount)) {
+            DOM.accountInput.value = currentFromAccount;
+        } else if (accounts.length > 0) {
+            DOM.accountInput.value = accounts[0].value;
+        }
+        
+        if (accounts.some(acc => acc.value === currentToAccount)) {
+            DOM.toAccountInput.value = currentToAccount;
+        } else if (accounts.length > 1) {
+            DOM.toAccountInput.value = accounts[1].value;
+        } else if (accounts.length > 0) {
+            DOM.toAccountInput.value = accounts[0].value;
+        }
+    },
+
+    // Populate categories based on transaction type
+    populateCategories() {
+        if (!DOM.categoryInput) return;
+        
+        const selectedTypeRadio = document.querySelector('input[name="type"]:checked');
+        const selectedType = selectedTypeRadio ? selectedTypeRadio.value : 'Chi';
+        const currentCategoryValue = DOM.categoryInput.value;
+        
+        DOM.categoryInput.innerHTML = '';
+        
+        let categoriesToPopulate = (selectedType === 'Thu') ? incomeCategories : expenseCategories;
+        categoriesToPopulate = categoriesToPopulate.filter(cat => cat.value !== CONFIG.TRANSFER_CATEGORY_IN && cat.value !== CONFIG.TRANSFER_CATEGORY_OUT);
+        
+        if (!categoriesToPopulate || categoriesToPopulate.length === 0) {
+            const defaultCats = (selectedType === 'Thu') ? [...DEFAULT_DATA.incomeCategories] : [...DEFAULT_DATA.expenseCategories];
+            categoriesToPopulate = defaultCats.filter(cat => cat.value !== CONFIG.TRANSFER_CATEGORY_IN && cat.value !== CONFIG.TRANSFER_CATEGORY_OUT);
+        }
+        
+        categoriesToPopulate.forEach(category => DOM.categoryInput.add(new Option(category.text, category.value)));
+        
+        if (categoriesToPopulate.some(cat => cat.value === currentCategoryValue)) {
+            DOM.categoryInput.value = currentCategoryValue;
+        } else if (categoriesToPopulate.length > 0) {
+            DOM.categoryInput.value = categoriesToPopulate[0].value;
+        }
+    },
+
+    // Add new category
+    addCategory(name, type) {
+        if (!name || name.trim() === '') {
+            Utils.showMessage('Tên hạng mục không được để trống.', 'error');
+            return false;
+        }
+        
+        const newCategoryValue = name.trim();
+        const newCategory = { value: newCategoryValue, text: newCategoryValue };
+        
+        if (type === 'income') {
+            if (incomeCategories.some(cat => cat.value.toLowerCase() === newCategoryValue.toLowerCase())) {
+                Utils.showMessage('Hạng mục thu này đã tồn tại.', 'error');
+                return false;
+            }
+            incomeCategories.push(newCategory);
+        } else {
+            if (expenseCategories.some(cat => cat.value.toLowerCase() === newCategoryValue.toLowerCase())) {
+                Utils.showMessage('Hạng mục chi này đã tồn tại.', 'error');
+                return false;
+            }
+            expenseCategories.push(newCategory);
+        }
+        
+        DataManager.saveUserPreferences();
+        UIRenderer.renderCustomCategoryLists();
+        this.populateCategories();
+        Utils.showMessage(`Đã thêm hạng mục "${newCategory.text}"!`, 'success');
+        return true;
+    },
+
+    // Add new account
+    addAccount(name) {
+        if (!name || name.trim() === '') {
+            Utils.showMessage('Tên tài khoản không được để trống.', 'error');
+            return false;
+        }
+        
+        const newAccountName = name.trim();
+        if (accounts.some(acc => acc.value.toLowerCase() === newAccountName.toLowerCase() || acc.text.toLowerCase() === newAccountName.toLowerCase())) {
+            Utils.showMessage('Tài khoản này đã tồn tại.', 'error');
+            return false;
+        }
+        
+        const newAccount = { value: newAccountName, text: newAccountName };
+        accounts.push(newAccount);
+        
+        DataManager.saveUserPreferences();
+        UIRenderer.renderAccountListAdmin();
+        this.populateAccountDropdowns();
+        UIRenderer.updateAccountBalances();
+        Utils.showMessage(`Đã thêm tài khoản "${newAccount.text}"!`, 'success');
+        return true;
+    }
+};
+
+// ========================================================================================
+// 8. FORM MANAGEMENT
+// ========================================================================================
+
+const FormManager = {
+    // Toggle form fields based on transaction type
+    toggleFormFields() {
+        const selectedTypeRadio = document.querySelector('input[name="type"]:checked');
+        const selectedType = selectedTypeRadio ? selectedTypeRadio.value : 'Chi';
+
+        const categoryFieldContainer = document.querySelector('.form-field-normal');
+        const toAccountFieldContainer = document.querySelector('.form-field-transfer');
+
+        if (!categoryFieldContainer) {
+            console.error("Lỗi: Không tìm thấy container cho trường Hạng mục (class 'form-field-normal').");
+        }
+        if (!toAccountFieldContainer) {
+            console.error("Lỗi: Không tìm thấy container cho trường Đến Tài khoản (class 'form-field-transfer').");
+        }
+
+        if (DOM.transactionForm) {
+            DOM.transactionForm.dataset.transactionMode = selectedType;
+        }
+
+        if (selectedType === 'Transfer') {
+            if (DOM.accountLabel) DOM.accountLabel.textContent = 'Từ Tài khoản:';
+            if (categoryFieldContainer) categoryFieldContainer.style.display = 'none';
+            if (DOM.categoryInput) DOM.categoryInput.removeAttribute('required');
+            if (toAccountFieldContainer) toAccountFieldContainer.style.display = 'block';
+            if (DOM.toAccountInput) DOM.toAccountInput.setAttribute('required', '');
+        } else {
+            if (DOM.accountLabel) DOM.accountLabel.textContent = 'Tài khoản:';
+            if (categoryFieldContainer) categoryFieldContainer.style.display = 'block';
+            if (DOM.categoryInput) DOM.categoryInput.setAttribute('required', '');
+            if (toAccountFieldContainer) toAccountFieldContainer.style.display = 'none';
+            if (DOM.toAccountInput) DOM.toAccountInput.removeAttribute('required');
+            CategoryManager.populateCategories();
+        }
+    },
+
+    // Set default form values
+    setDefaults() {
+        if (DOM.datetimeInput) DOM.datetimeInput.value = Utils.formatDateTimeLocalInput(new Date());
+        if (DOM.filterComparisonYearInput) DOM.filterComparisonYearInput.value = new Date().getFullYear();
+        if (DOM.filterSpecificDateInput) DOM.filterSpecificDateInput.value = Utils.getCurrentDateFormattedYYYYMMDD();
+    }
+};
+
+// ========================================================================================
+// 9. UI RENDERING
+// ========================================================================================
+
+const UIRenderer = {
+    // Render main transaction list
+    renderMainTransactions(txsToRender = transactions) {
+        if (!DOM.transactionList) return;
+        
+        DOM.transactionList.innerHTML = '';
+        if (txsToRender.length === 0) {
+            if (DOM.noTransactionsMessage) DOM.noTransactionsMessage.style.display = 'block';
+            return;
+        }
+        
+        if (DOM.noTransactionsMessage) DOM.noTransactionsMessage.style.display = 'none';
+        txsToRender.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+        
+        txsToRender.forEach(tx => {
+            const row = DOM.transactionList.insertRow();
+            row.insertCell().textContent = Utils.formatDisplayDateTime(tx.datetime);
+            
+            let displayDescription = tx.description;
+            let displayCategory = tx.category;
+            let displayAccount = accounts.find(a => a.value === tx.account)?.text || tx.account;
+            
+            if (tx.isTransfer) {
+                const pair = transactions.find(p => p.id === tx.transferPairId);
+                const pairAccountName = pair ? (accounts.find(a => a.value === pair.account)?.text || pair.account) : 'N/A';
+                if (tx.type === 'Chi') {
+                    displayDescription = displayDescription || `Chuyển đến ${pairAccountName}`;
+                } else {
+                    displayDescription = displayDescription || `Nhận từ ${pairAccountName}`;
+                }
+            }
+            
+            row.insertCell().textContent = displayDescription;
+            row.insertCell().textContent = displayCategory;
+            
+            const amountCell = row.insertCell();
+            const vndAmountFormatted = Utils.formatCurrency(tx.amount);
+            if (tx.originalCurrency === 'USD' && typeof tx.originalAmount === 'number') {
+                const originalUsdFormatted = Utils.formatCurrency(tx.originalAmount, 'USD');
+                amountCell.innerHTML = `${vndAmountFormatted} <span class="text-xs text-gray-500 block sm:inline ml-1">(${originalUsdFormatted} gốc)</span>`;
+            } else {
+                amountCell.textContent = vndAmountFormatted;
+            }
+            amountCell.classList.add(tx.type === 'Thu' ? 'text-green-600' : 'text-red-600');
+            
+            row.insertCell().textContent = tx.type === 'Thu' ? 'Thu Nhập' : (tx.type === 'Chi' ? 'Chi Tiêu' : 'Chuyển Tiền');
+            row.insertCell().textContent = displayAccount;
+            
+            const actionsCell = row.insertCell();
+            actionsCell.classList.add('text-center');
+            
+            const editBtn = document.createElement('button');
+            editBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square mr-1" viewBox="0 0 16 16"> <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/> <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/> </svg>Sửa`;
+            editBtn.classList.add('btn-edit');
+            const editId = tx.isTransfer ? tx.id.split('_')[0] : tx.id;
+            editBtn.onclick = () => TransactionManager.loadForEdit(editId);
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/> </svg>Xóa`;
+            deleteBtn.classList.add('btn-delete');
+            const deleteId = tx.isTransfer ? tx.id.split('_')[0] : tx.id;
+            deleteBtn.onclick = () => TransactionManager.deleteTransaction(deleteId);
+            
+            actionsCell.appendChild(editBtn);
+            actionsCell.appendChild(deleteBtn);
+        });
+    },
+
+    // Update account balances
+    updateAccountBalances() {
+        if (!DOM.accountBalanceListEl) return;
+        
+        DOM.accountBalanceListEl.innerHTML = '<h3>Số Dư Theo Tài Khoản (Tổng thể - VNĐ):</h3>';
+        const balances = {};
+        
+        accounts.forEach(acc => balances[acc.value] = 0);
+        
+        transactions.forEach(tx => {
+            if (balances[tx.account] !== undefined) {
+                if (tx.type === 'Thu') balances[tx.account] += tx.amount;
+                else if (tx.type === 'Chi') balances[tx.account] -= tx.amount;
+            }
+        });
+        
+        Object.keys(balances).forEach(accValue => {
+            const acc = accounts.find(a => a.value === accValue);
+            if (acc) {
+                const balanceItem = document.createElement('div');
+                balanceItem.classList.add('summary-item');
+                balanceItem.innerHTML = `<span>${acc.text}: </span><span class="${balances[accValue] >= 0 ? 'text-green-600' : 'text-red-600'}">${Utils.formatCurrency(balances[accValue])}</span>`;
+                DOM.accountBalanceListEl.appendChild(balanceItem);
+            }
+        });
+    },
+
+    // Render custom category lists
+    renderCustomCategoryLists() {
+        this.renderCategoryList(DOM.incomeCategoryListAdmin, incomeCategories, 'income');
+        this.renderCategoryList(DOM.expenseCategoryListAdmin, expenseCategories, 'expense');
+    },
+
+    renderCategoryList(listElement, categoriesArray, type) {
+        if (!listElement) return;
+        
+        listElement.innerHTML = '';
+        categoriesArray.forEach(cat => {
+            const isSpecialTransferCategory = (cat.value === CONFIG.TRANSFER_CATEGORY_IN || cat.value === CONFIG.TRANSFER_CATEGORY_OUT);
+            const li = document.createElement('li');
+            li.textContent = cat.text;
+            
+            if (!isSpecialTransferCategory) {
+                const deleteButton = document.createElement('button');
+                deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/> </svg>Xóa`;
+                deleteButton.classList.add('btn-delete', 'text-xs', 'px-2', 'py-1', 'ml-2');
+                deleteButton.onclick = () => {
+                    if (confirm(`Bạn có chắc muốn xóa hạng mục "${cat.text}" không?`)) {
+                        if (type === 'income') {
+                            incomeCategories = incomeCategories.filter(c => c.value !== cat.value);
+                        } else {
+                            expenseCategories = expenseCategories.filter(c => c.value !== cat.value);
+                        }
+                        DataManager.saveUserPreferences();
+                        this.renderCustomCategoryLists();
+                        CategoryManager.populateCategories();
+                        FilterManager.applyMainFilter();
+                    }
+                };
+                li.appendChild(deleteButton);
+            } else {
+                const lockIcon = document.createElement('span');
+                lockIcon.innerHTML = ` <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-lock-fill inline-block ml-2 text-gray-400" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>`;
+                li.appendChild(lockIcon);
+            }
+            listElement.appendChild(li);
+        });
+    },
+
+    renderAccountListAdmin() {
+        if (!DOM.accountListAdmin) return;
+        
+        DOM.accountListAdmin.innerHTML = '';
+        accounts.forEach(acc => {
+            const li = document.createElement('li');
+            li.textContent = acc.text;
+            const deleteButton = document.createElement('button');
+            deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/> </svg>Xóa`;
+            deleteButton.classList.add('btn-delete', 'text-xs', 'px-2', 'py-1', 'ml-2');
+            deleteButton.onclick = () => {
+                if (confirm(`Bạn có chắc muốn xóa tài khoản "${acc.text}" không? Lưu ý: Các giao dịch cũ liên quan đến tài khoản này sẽ không tự động cập nhật.`)) {
+                    accounts = accounts.filter(a => a.value !== acc.value);
+                    DataManager.saveUserPreferences();
+                    this.renderAccountListAdmin();
+                    CategoryManager.populateAccountDropdowns();
+                    this.updateAccountBalances();
+                    Utils.showMessage(`Đã xóa tài khoản "${acc.text}".`, 'success');
+                }
+            };
+            li.appendChild(deleteButton);
+            DOM.accountListAdmin.appendChild(li);
+        });
+    },
+
+    // Update summary section text
+    updateSummarySectionText(summaryTransactions, monthForDisplay) {
+        let totalIncome = 0;
+        let totalExpenses = 0;
+
+        if (typeof summaryTransactions !== 'undefined' && Array.isArray(summaryTransactions)) {
+            summaryTransactions.forEach(tx => {
+                if (tx.type === 'Thu' && !tx.isTransfer) {
+                    totalIncome += tx.amount;
+                } else if (tx.type === 'Chi' && !tx.isTransfer) {
+                    totalExpenses += tx.amount;
+                }
+            });
+        }
+
+        const monthDisplayTextForLabels = this.getMonthDisplayText(monthForDisplay, true);
+
+        if (DOM.summaryIncomeMonthDisplay) DOM.summaryIncomeMonthDisplay.textContent = monthDisplayTextForLabels;
+        if (DOM.summaryExpenseMonthDisplay) DOM.summaryExpenseMonthDisplay.textContent = monthDisplayTextForLabels;
+        if (DOM.summaryBalanceMonthDisplay) DOM.summaryBalanceMonthDisplay.textContent = monthDisplayTextForLabels;
+
+        if (DOM.totalIncomeEl) DOM.totalIncomeEl.textContent = Utils.formatCurrency(totalIncome);
+        if (DOM.totalExpensesEl) DOM.totalExpensesEl.textContent = Utils.formatCurrency(totalExpenses);
+
+        if (DOM.currentBalanceEl) {
+            const balance = totalIncome - totalExpenses;
+            DOM.currentBalanceEl.textContent = Utils.formatCurrency(balance);
+            let balanceClasses = 'font-bold';
+            if (balance >= 0) {
+                balanceClasses += ' text-blue-600 dark:text-blue-400';
+            } else {
+                balanceClasses += ' text-red-600 dark:text-red-400';
+            }
+            DOM.currentBalanceEl.className = balanceClasses;
+        }
+    },
+
+    getMonthDisplayText(selectedMonthValue, withParentheses = true) {
+        let text;
+        if (selectedMonthValue === 'all' || !selectedMonthValue) {
+            text = "Tất cả";
+        } else {
+            const parts = selectedMonthValue.split('-');
+            if (parts.length === 2) {
+                const [year, month] = parts;
+                text = `Tháng ${month}/${year}`;
+            } else {
+                text = "Đã chọn";
+            }
+        }
+        return withParentheses ? `(${text})` : text;
+    }
+};
+
+// ========================================================================================
+// 10. CHARTS & ANALYTICS
+// ========================================================================================
+
+const ChartManager = {
+    // Initialize Chart.js
+    init() {
+        if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
+            Chart.register(ChartDataLabels);
+        }
+    },
+
+    // Update all summaries and charts
+    updateAllSummariesAndCharts(transactionsToAnalyze = transactions) {
+        this.updateMainSummaryAndChart(transactionsToAnalyze);
+        this.renderExpenseCategoryChartAndList(transactionsToAnalyze);
+        UIRenderer.updateAccountBalances();
+        this.renderLast7DaysChart();
+        this.renderMonthComparisonChart();
+    },
+
+    // Update main summary chart
+    updateMainSummaryAndChart(summaryTransactionsToUse = transactions, monthForDisplay = (DOM.filterMonthSelect ? DOM.filterMonthSelect.value : 'all')) {
+        let totalIncome = 0;
+        let totalExpenses = 0;
+
+        if (typeof summaryTransactionsToUse !== 'undefined' && Array.isArray(summaryTransactionsToUse)) {
+            summaryTransactionsToUse.forEach(tx => {
+                if (tx.type === 'Thu') totalIncome += tx.amount;
+                else if (tx.type === 'Chi') totalExpenses += tx.amount;
+            });
+        } else {
+            console.warn("updateMainSummaryAndChart: summaryTransactionsToUse is not an array");
+        }
+
+        if (typeof this.renderOrUpdateMainChart === 'function' && DOM.incomeExpenseChartCanvas) {
+            this.renderOrUpdateMainChart(totalIncome, totalExpenses);
+        }
+    },
+
+    // Render or update main chart
+    renderOrUpdateMainChart(income, expenses) {
+        const data = {
+            labels: ['Tổng Thu', 'Tổng Chi'],
+            datasets: [{
+                label: 'Số tiền (VNĐ)',
+                data: [income, expenses],
+                backgroundColor: [CATEGORY_COLORS[1], CATEGORY_COLORS[0]],
+            }]
+        };
+        
+        if (incomeExpenseChart) {
+            incomeExpenseChart.data = data;
+            incomeExpenseChart.update();
+        } else {
+            incomeExpenseChart = new Chart(DOM.incomeExpenseChartCanvas, {
+                type: 'bar',
+                data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        datalabels: { display: false }
+                    }
+                }
+            });
+        }
+    },
+
+    // Render expense category charts and list
+    renderExpenseCategoryChartAndList(transactionsToAnalyze = transactions) {
+        const expenseTransactions = transactionsToAnalyze.filter(t => t.type === 'Chi' && !t.isTransfer);
+        const expenseByCategory = {};
+        let totalExpensesInFilteredPeriod = 0;
+
+        expenseTransactions.forEach(tx => {
+            const category = tx.category || "Chưa phân loại";
+            expenseByCategory[category] = (expenseByCategory[category] || 0) + tx.amount;
+            totalExpensesInFilteredPeriod += tx.amount;
+        });
+
+        // Handle no expense data
+        const noExpenseDataChartEl = document.getElementById('no-expense-data-chart');
+        const noExpenseDataListEl = document.getElementById('no-expense-data-list');
+        const expenseCategoryListContainerEl = document.getElementById('expense-category-list-container');
+        
+        if (totalExpensesInFilteredPeriod === 0) {
+            if (DOM.expensePieChartContainer) DOM.expensePieChartContainer.style.display = 'none';
+            if (DOM.expenseBarChartContainer) DOM.expenseBarChartContainer.style.display = 'none';
+            if (noExpenseDataChartEl) noExpenseDataChartEl.style.display = 'block';
+
+            if (expenseCategoryChart) { expenseCategoryChart.destroy(); expenseCategoryChart = null; }
+            if (expenseCategoryBarChart) { expenseCategoryBarChart.destroy(); expenseCategoryBarChart = null; }
+
+            if (expenseCategoryListContainerEl) expenseCategoryListContainerEl.innerHTML = '';
+            if (noExpenseDataListEl) noExpenseDataListEl.style.display = 'block';
+            return;
+        }
+
+        // Hide no data messages
+        if (noExpenseDataChartEl) noExpenseDataChartEl.style.display = 'none';
+        if (noExpenseDataListEl) noExpenseDataListEl.style.display = 'none';
+
+        const sortedCategoriesArray = Object.entries(expenseByCategory).sort(([, a], [, b]) => b - a);
+        const categoryLabels = sortedCategoriesArray.map(entry => entry[0]);
+        const categoryData = sortedCategoriesArray.map(entry => entry[1]);
+        const backgroundColors = categoryLabels.map((_, i) => CATEGORY_COLORS[i % CATEGORY_COLORS.length]);
+
+        // Theme colors
+        const currentThemeIsDark = document.body.classList.contains(CONFIG.DARK_MODE_CLASS);
+        const pieBorderColor = '#FFFFFF';
+        const legendAndTickColor = currentThemeIsDark ? '#9ca3af' : '#6b7280';
+        const gridLineColor = currentThemeIsDark ? 'rgba(107, 114, 128, 0.2)' : 'rgba(209, 213, 219, 0.5)';
+        const datalabelPieColor = '#ffffff';
+        const datalabelBarColor = currentThemeIsDark ? '#e0e0e0' : '#333333';
+
+        // Pie chart
+        const pieChartData = {
+            labels: categoryLabels,
+            datasets: [{
+                data: categoryData,
+                backgroundColor: backgroundColors,
+                borderColor: pieBorderColor,
+                borderWidth: 2
+            }]
+        };
+
+        const pieChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15, color: legendAndTickColor } },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) { label += ': '; }
+                            const value = context.raw;
+                            label += Utils.formatCurrency(value, 'VND');
+                            if (totalExpensesInFilteredPeriod > 0) {
+                                const percentage = (value / totalExpensesInFilteredPeriod * 100).toFixed(1);
+                                label += ` (${percentage}%)`;
+                            }
+                            return label;
+                        }
+                    }
+                },
+                datalabels: {
+                    formatter: (value, ctx) => {
+                        if (totalExpensesInFilteredPeriod === 0) return '';
+                        const percentage = (value / totalExpensesInFilteredPeriod) * 100;
+                        return percentage > 5 ? percentage.toFixed(0) + '%' : '';
+                    },
+                    color: datalabelPieColor,
+                    font: { weight: 'bold' }
+                }
+            }
+        };
+
+        if (expenseCategoryChart) {
+            expenseCategoryChart.data = pieChartData;
+            expenseCategoryChart.options.plugins.legend.labels.color = legendAndTickColor;
+            expenseCategoryChart.data.datasets[0].borderColor = pieBorderColor;
+            expenseCategoryChart.options.plugins.datalabels.color = datalabelPieColor;
+            expenseCategoryChart.update();
+        } else {
+            if (DOM.expenseCategoryChartCanvas) {
+                expenseCategoryChart = new Chart(DOM.expenseCategoryChartCanvas, {
+                    type: 'doughnut',
+                    data: pieChartData,
+                    options: pieChartOptions,
+                    plugins: [ChartDataLabels]
+                });
+            }
+        }
+
+        // Bar chart
+        const barChartData = {
+            labels: categoryLabels,
+            datasets: [{
+                label: 'Số tiền chi',
+                data: categoryData,
+                backgroundColor: backgroundColors,
+                borderColor: backgroundColors,
+                borderWidth: 1
+            }]
+        };
+
+        const barChartOptions = {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Số tiền (VNĐ)', color: legendAndTickColor },
+                    ticks: {
+                        callback: function(value) { return Utils.formatCurrency(value, 'VND').replace(/\s*VNĐ$/, ''); },
+                        color: legendAndTickColor
+                    },
+                    grid: { color: gridLineColor }
+                },
+                y: {
+                    ticks: { color: legendAndTickColor },
+                    grid: { display: false }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return Utils.formatCurrency(context.raw, 'VND');
+                        }
+                    }
+                },
+                datalabels: {
+                    anchor: 'end',
+                    align: 'end',
+                    formatter: (value) => Utils.formatCurrency(value, 'VND'),
+                    color: datalabelBarColor,
+                    font: { weight: 'bold', size: 10 },
+                    padding: { left: 4 }
+                }
+            }
+        };
+
+        if (expenseCategoryBarChart) {
+            expenseCategoryBarChart.data = barChartData;
+            expenseCategoryBarChart.options.scales.x.title.color = legendAndTickColor;
+            expenseCategoryBarChart.options.scales.x.ticks.color = legendAndTickColor;
+            expenseCategoryBarChart.options.scales.x.grid.color = gridLineColor;
+            expenseCategoryBarChart.options.scales.y.ticks.color = legendAndTickColor;
+            expenseCategoryBarChart.options.plugins.datalabels.color = datalabelBarColor;
+            expenseCategoryBarChart.update();
+        } else {
+            if (DOM.expenseCategoryBarCtx) {
+                expenseCategoryBarChart = new Chart(DOM.expenseCategoryBarCtx, {
+                    type: 'bar',
+                    data: barChartData,
+                    options: barChartOptions,
+                    plugins: [ChartDataLabels]
+                });
+            }
+        }
+
+        // Update category list
+        if (expenseCategoryListContainerEl && totalExpensesInFilteredPeriod > 0) {
+            expenseCategoryListContainerEl.innerHTML = '';
+            let listHTML = '<ul class="space-y-2">';
+            sortedCategoriesArray.forEach(([label, amount], index) => {
+                const percentage = (amount / totalExpensesInFilteredPeriod * 100).toFixed(1);
+                const color = backgroundColors[index % backgroundColors.length];
+                listHTML += `<li class="flex justify-between items-center text-sm">
+                                <div class="flex items-center">
+                                    <span class="inline-block w-3 h-3 rounded-full mr-2" style="background-color: ${color}"></span>
+                                    <span>${label}</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="font-semibold">${Utils.formatCurrency(amount)}</span>
+                                    <span class="text-gray-500 dark:text-gray-400 ml-2">(${percentage}%)</span>
+                                </div>
+                             </li>`;
+            });
+            listHTML += '</ul>';
+            expenseCategoryListContainerEl.innerHTML = listHTML;
+        } else if (expenseCategoryListContainerEl) {
+            expenseCategoryListContainerEl.innerHTML = '';
+        }
+
+        this.toggleExpenseChartDisplay();
+    },
+
+    // Toggle expense chart display
+    toggleExpenseChartDisplay() {
+        if (!DOM.expenseChartTypeSelector || !DOM.expensePieChartContainer || !DOM.expenseBarChartContainer) {
+            return;
+        }
+
+        const selectedType = DOM.expenseChartTypeSelector.value;
+        const noExpenseDataChartEl = document.getElementById('no-expense-data-chart');
+        
+        const chartsHaveData = (expenseCategoryChart && expenseCategoryChart.data.labels && expenseCategoryChart.data.labels.length > 0) ||
+                               (expenseCategoryBarChart && expenseCategoryBarChart.data.labels && expenseCategoryBarChart.data.labels.length > 0);
+
+        if (!chartsHaveData) {
+            DOM.expensePieChartContainer.style.display = 'none';
+            DOM.expenseBarChartContainer.style.display = 'none';
+            if (noExpenseDataChartEl) noExpenseDataChartEl.style.display = 'block';
+            return;
+        }
+
+        if (selectedType === 'pie') {
+            DOM.expensePieChartContainer.style.display = 'block';
+            DOM.expenseBarChartContainer.style.display = 'none';
+        } else if (selectedType === 'bar') {
+            DOM.expensePieChartContainer.style.display = 'none';
+            DOM.expenseBarChartContainer.style.display = 'block';
+        }
+    },
+
+    // Render last 7 days chart
+    renderLast7DaysChart() {
+        const today = new Date();
+        today.setHours(23, 59, 59, 999);
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+        sevenDaysAgo.setHours(0, 0, 0, 0);
+        
+        const dailyExpenses = {};
+        const labels = [];
+        
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(sevenDaysAgo);
+            d.setDate(d.getDate() + i);
+            const dateString = d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+            labels.push(dateString);
+            dailyExpenses[dateString] = 0;
+        }
+        
+        transactions.filter(tx => {
+            const txDate = new Date(tx.datetime);
+            return tx.type === 'Chi' && !tx.isTransfer && txDate >= sevenDaysAgo && txDate <= today;
+        }).forEach(tx => {
+            const dateString = new Date(tx.datetime).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+            if (dailyExpenses[dateString] !== undefined) dailyExpenses[dateString] += tx.amount;
+        });
+        
+        const dataValues = labels.map(label => dailyExpenses[label]);
+        const data = {
+            labels: labels,
+            datasets: [{
+                label: 'Chi tiêu hàng ngày (VNĐ)',
+                data: dataValues,
+                borderColor: CATEGORY_COLORS[3],
+                backgroundColor: 'transparent',
+                tension: 0.1,
+                fill: false
+            }]
+        };
+        
+        if (last7DaysChart) {
+            last7DaysChart.data = data;
+            last7DaysChart.update();
+        } else {
+            last7DaysChart = new Chart(DOM.last7DaysChartCanvas, {
+                type: 'line',
+                data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        datalabels: { display: false }
+                    }
+                }
+            });
+        }
+    },
+
+    // Render month comparison chart
+    renderMonthComparisonChart() {
+        const currentMonthFilter = DOM.filterMonthSelect ? DOM.filterMonthSelect.value : null;
+        if (!currentMonthFilter || currentMonthFilter === 'all') return;
+        
+        const [currentYear, currentMonthNum] = currentMonthFilter.split('-').map(Number);
+        let prevYear = currentYear;
+        let prevMonthNum = currentMonthNum - 1;
+        
+        if (prevMonthNum === 0) {
+            prevMonthNum = 12;
+            prevYear--;
+        }
+        
+        const prevMonthFilter = `${prevYear}-${String(prevMonthNum).padStart(2, '0')}`;
+        let currentMonthIncome = 0, currentMonthExpenses = 0, prevMonthIncome = 0, prevMonthExpenses = 0;
+        
+        transactions.forEach(tx => {
+            const txMonth = tx.datetime.substring(0, 7);
+            if (txMonth === currentMonthFilter) {
+                if (tx.type === 'Thu' && !tx.isTransfer) currentMonthIncome += tx.amount;
+                else if (tx.type === 'Chi' && !tx.isTransfer) currentMonthExpenses += tx.amount;
+            } else if (txMonth === prevMonthFilter) {
+                if (tx.type === 'Thu' && !tx.isTransfer) prevMonthIncome += tx.amount;
+                else if (tx.type === 'Chi' && !tx.isTransfer) prevMonthExpenses += tx.amount;
+            }
+        });
+        
+        const data = {
+            labels: ['Tháng Trước', 'Tháng Này'],
+            datasets: [
+                { label: 'Tổng Thu', data: [prevMonthIncome, currentMonthIncome], backgroundColor: CATEGORY_COLORS[1] },
+                { label: 'Tổng Chi', data: [prevMonthExpenses, currentMonthExpenses], backgroundColor: CATEGORY_COLORS[0] }
+            ]
+        };
+        
+        if (monthComparisonChart) {
+            monthComparisonChart.data = data;
+            monthComparisonChart.update();
+        } else {
+            monthComparisonChart = new Chart(DOM.monthComparisonChartCanvas, {
+                type: 'bar',
+                data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'x',
+                    plugins: {
+                        datalabels: { display: false }
+                    }
+                }
+            });
+        }
+    },
+
+    // Update chart colors for theme
+    updateAllChartColorsForTheme(theme) {
+        const isDarkMode = theme === 'dark';
+        const gridColor = isDarkMode ? 'rgba(107, 114, 128, 0.2)' : 'rgba(209, 213, 219, 0.5)';
+        const ticksColor = isDarkMode ? '#9ca3af' : '#6b7280';
+        const axisLineColor = isDarkMode ? '#4b5563' : '#d1d5db';
+        const legendAndAxisTitleColor = isDarkMode ? '#d1d5db' : '#374151';
+        const chartMainTitleColor = isDarkMode ? '#e5e7eb' : '#1f2937';
+        let pieSliceBorderColor = isDarkMode ? (window.getComputedStyle(document.body).backgroundColor || '#374151') : '#ffffff';
+        const datalabelPieColor = '#ffffff';
+        const datalabelGeneralColor = isDarkMode ? '#e0e0e0' : '#333333';
+
+        const charts = [
+            incomeExpenseChart, expenseCategoryChart, last7DaysChart,
+            monthComparisonChart, expenseCategoryBarChart
+        ].filter(c => c && c.ctx && typeof c.update === 'function');
+
+        charts.forEach(chart => {
+            if (!chart.options) return;
+            try {
+                if (chart.options.plugins) {
+                    if (chart.options.plugins.legend && chart.options.plugins.legend.labels) {
+                        chart.options.plugins.legend.labels.color = legendAndAxisTitleColor;
+                    }
+                    if (chart.options.plugins.title && chart.options.plugins.title.display) {
+                        chart.options.plugins.title.color = chartMainTitleColor;
+                    }
+                }
+
+                if (chart.options.scales) {
+                    Object.keys(chart.options.scales).forEach(scaleKey => {
+                        const scale = chart.options.scales[scaleKey];
+                        if (scale) {
+                            if (scale.grid) scale.grid.color = gridColor;
+                            if (typeof scale.borderColor !== 'undefined') scale.borderColor = axisLineColor;
+                            if (scale.ticks) scale.ticks.color = ticksColor;
+                            if (scale.title && scale.title.display) scale.title.color = legendAndAxisTitleColor;
+                        }
+                    });
+                }
+
+                if (chart.options.plugins && chart.options.plugins.datalabels) {
+                    chart.options.plugins.datalabels.color = (chart === expenseCategoryChart) ? datalabelPieColor : datalabelGeneralColor;
+                }
+                
+                if (chart === expenseCategoryChart && chart.data.datasets && chart.data.datasets.length > 0) {
+                    chart.data.datasets[0].borderColor = pieSliceBorderColor;
+                }
+                
+                chart.update();
+            } catch (e) {
+                console.error("[Theme] Error updating chart colors:", chart.config ? chart.config.type : 'Unknown Chart', e);
+            }
+        });
+    }
+};
+
+// ========================================================================================
+// 11. FILTERING & SEARCH
+// ========================================================================================
+
+const FilterManager = {
+    // Populate month filter dropdown
+    populateMonthFilter() {
+        if (!DOM.filterMonthSelect) {
+            console.warn("populateMonthFilter: filterMonthSelect is not defined.");
+            return;
+        }
+        
+        const months = new Set();
+        if (typeof transactions !== 'undefined' && Array.isArray(transactions)) {
+            transactions.forEach(tx => {
+                if (tx.datetime && typeof tx.datetime === 'string' && tx.datetime.length >= 7) {
+                    months.add(tx.datetime.substring(0, 7));
+                }
+            });
+        }
+        
+        const sortedMonths = Array.from(months).sort().reverse();
+        DOM.filterMonthSelect.innerHTML = '<option value="all">Tất cả các tháng</option>';
+
+        sortedMonths.forEach(monthStr => {
+            if (monthStr && typeof monthStr === 'string' && monthStr.includes('-')) {
+                const parts = monthStr.split('-');
+                if (parts.length === 2) {
+                    const year = parts[0];
+                    const month = parts[1];
+                    const displayText = `Tháng ${month}/${year}`;
+                    const option = new Option(displayText, monthStr);
+                    DOM.filterMonthSelect.add(option);
+                }
+            }
+        });
+
+        // Set default value
+        const currentSystemMonthFormatted = new Date().toISOString().substring(0, 7);
+        if (sortedMonths.includes(currentSystemMonthFormatted)) {
+            DOM.filterMonthSelect.value = currentSystemMonthFormatted;
+        } else if (sortedMonths.length > 0 && sortedMonths[0] && typeof sortedMonths[0] === 'string') {
+            DOM.filterMonthSelect.value = sortedMonths[0];
+        } else {
+            DOM.filterMonthSelect.value = "all";
+        }
+    },
+
+    // Apply main filter
+    applyMainFilter() {
+        const selectedMonth = DOM.filterMonthSelect ? DOM.filterMonthSelect.value : 'all';
+        const selectedSpecificDate = DOM.filterSpecificDateInput ? DOM.filterSpecificDateInput.value : "";
+        
+        console.log(`[Filter] Applying filter: Month='${selectedMonth}', Date='${selectedSpecificDate}'`);
+
+        // Filter data for monthly scope
+        let transactionsForMonthlyScope = [...transactions]; 
+        if (selectedMonth !== 'all') {
+            transactionsForMonthlyScope = transactionsForMonthlyScope.filter(tx => {
+                return tx.datetime && typeof tx.datetime === 'string' && tx.datetime.startsWith(selectedMonth);
+            });
+        }
+
+        // Filter data for daily list scope
+        let transactionsForDailyListScope = [...transactionsForMonthlyScope];
+        if (selectedSpecificDate) { 
+            let baseForDailyFilter = (selectedMonth === 'all') ? [...transactions] : [...transactionsForMonthlyScope];
+            transactionsForDailyListScope = baseForDailyFilter.filter(tx => {
+                if (!tx.datetime || typeof tx.datetime !== 'string') return false;
+                const transactionDatePart = tx.datetime.substring(0, 10);
+                return (transactionDatePart === selectedSpecificDate);
+            });
+        }
+        
+        console.log(`[Filter] Transactions for Monthly Scope: ${transactionsForMonthlyScope.length} items`);
+        console.log(`[Filter] Transactions for Daily List Scope: ${transactionsForDailyListScope.length} items`);
+
+        // Update UI components
+        UIRenderer.renderMainTransactions(transactionsForDailyListScope);
+        UIRenderer.updateSummarySectionText(transactionsForMonthlyScope, selectedMonth);
+        ChartManager.updateAllSummariesAndCharts(transactionsForMonthlyScope);
+        this.updateDetailedStatisticsTable(transactionsForMonthlyScope);
+
+        // Update titles
+        const monthOnlyDisplayText = UIRenderer.getMonthDisplayText(selectedMonth, false);
+
+        const expenseBreakdownTitleTextEl = document.getElementById('expense-breakdown-title-text');
+        if (expenseBreakdownTitleTextEl) {
+            expenseBreakdownTitleTextEl.textContent = `Phân Loại Chi Tiêu ${monthOnlyDisplayText || 'Tổng Quan'} - VNĐ`;
+        }
+
+        const statsTableMonthDisplayEl = document.getElementById('stats-table-month-display');
+        if (statsTableMonthDisplayEl) {
+            statsTableMonthDisplayEl.textContent = `(${monthOnlyDisplayText || 'Tổng Quan'})`;
+        }
+
+        const incomeExpenseChartTitleEl = document.getElementById('income-expense-chart-title');
+        if (incomeExpenseChartTitleEl) {
+            let titleForIncomeExpenseChart = monthOnlyDisplayText; 
+            if (selectedSpecificDate) { 
+                const dateParts = selectedSpecificDate.split('-');
+                const displayDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+                if (selectedMonth === 'all' || titleForIncomeExpenseChart === "Tất cả") {
+                    titleForIncomeExpenseChart = `Ngày ${displayDate}`;
+                } else {
+                    titleForIncomeExpenseChart = `${titleForIncomeExpenseChart}, ngày ${dateParts[2]}`; 
+                }
+            }
+            incomeExpenseChartTitleEl.textContent = `Biểu Đồ Thu vs Chi ${titleForIncomeExpenseChart || 'Tổng Quan'} - VNĐ`;
+        }
+        console.log("[Filter] UI Update in applyMainFilter completed.");
+    },
+
+    // Update detailed statistics table
+    updateDetailedStatisticsTable(transactionsToAnalyze) {
+        let totalIncome = 0;
+        let totalExpense = 0;
+        let incomeTxCount = 0;
+        let expenseTxCount = 0;
+        const nonTransferExpenseByCategory = {};
+
+        transactionsToAnalyze.forEach(tx => {
+            if (tx.type === 'Thu' && !tx.isTransfer) {
+                totalIncome += tx.amount;
+                incomeTxCount++;
+            } else if (tx.type === 'Chi' && !tx.isTransfer) {
+                totalExpense += tx.amount;
+                expenseTxCount++;
+                if (tx.category && !tx.isTransfer) { 
+                    nonTransferExpenseByCategory[tx.category] = (nonTransferExpenseByCategory[tx.category] || 0) + tx.amount;
+                }
+            }
+        });
+
+        const netCashflow = totalIncome - totalExpense;
+
+        let topExpenseCategoryName = '-';
+        let topExpenseCategoryAmount = 0;
+
+        if (Object.keys(nonTransferExpenseByCategory).length > 0) {
+            topExpenseCategoryName = Object.keys(nonTransferExpenseByCategory).reduce((a, b) => nonTransferExpenseByCategory[a] > nonTransferExpenseByCategory[b] ? a : b);
+            topExpenseCategoryAmount = nonTransferExpenseByCategory[topExpenseCategoryName];
+        }
+
+        const setText = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+            else console.warn(`Element with ID '${id}' not found for statistics table.`);
+        };
+
+        setText('stats-total-income', Utils.formatCurrency(totalIncome));
+        setText('stats-total-expense', Utils.formatCurrency(totalExpense));
+
+        const statsNetCashflowEl = document.getElementById('stats-net-cashflow');
+        if (statsNetCashflowEl) {
+            statsNetCashflowEl.textContent = Utils.formatCurrency(netCashflow);
+            statsNetCashflowEl.classList.remove('text-blue-600', 'dark:text-blue-400', 'text-red-600', 'dark:text-red-400');
+            if (netCashflow >= 0) {
+                statsNetCashflowEl.classList.add('text-blue-600', 'dark:text-blue-400');
+            } else {
+                statsNetCashflowEl.classList.add('text-red-600', 'dark:text-red-400');
+            }
+        }
+
+        setText('stats-income-tx-count', incomeTxCount);
+        setText('stats-expense-tx-count', expenseTxCount);
+        setText('stats-top-expense-cat', topExpenseCategoryName);
+        setText('stats-top-expense-cat-amount', Utils.formatCurrency(topExpenseCategoryAmount));
+
+        const selectedMonthForStatsTitle = DOM.filterMonthSelect ? DOM.filterMonthSelect.value : 'all';
+        const statsTableMonthDisplayText = UIRenderer.getMonthDisplayText(selectedMonthForStatsTitle, false);
+        const statsTableMonthDisplayEl = document.getElementById('stats-table-month-display');
+        if (statsTableMonthDisplayEl) {
+            statsTableMonthDisplayEl.textContent = `(${statsTableMonthDisplayText})`;
+        }
+    }
+};
+
+// ========================================================================================
+// 12. THEME MANAGEMENT
+// ========================================================================================
+
+const ThemeManager = {
+    // Apply theme
+    applyTheme(theme) {
+        if (theme === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.body.classList.add(CONFIG.DARK_MODE_CLASS);
+            if (DOM.darkModeToggle) DOM.darkModeToggle.checked = true;
+            localStorage.setItem(CONFIG.THEME_STORAGE_KEY, 'dark');
+        } else {
+            document.body.classList.remove('dark-mode')
+            document.body.classList.remove(CONFIG.DARK_MODE_CLASS);
+            if (DOM.darkModeToggle) DOM.darkModeToggle.checked = false;
+            localStorage.setItem(CONFIG.THEME_STORAGE_KEY, 'light');
+        }
+        ChartManager.updateAllChartColorsForTheme(theme);
+    },
+
+    // Toggle theme
+    toggleTheme() {
+        if (!DOM.darkModeToggle) {
+            console.error("darkModeToggle not found in toggleTheme");
+            return;
+        }
+        this.applyTheme(DOM.darkModeToggle.checked ? 'dark' : 'light');
+    },
+
+    // Load theme preference
+    loadThemePreference() {
+        const savedTheme = localStorage.getItem(CONFIG.THEME_STORAGE_KEY);
+        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (savedTheme) {
+            this.applyTheme(savedTheme);
+        } else if (prefersDarkScheme) {
+            this.applyTheme('dark');
+        } else {
+            this.applyTheme('light');
+        }
+    }
+};
+
+// ========================================================================================
+// 13. VIRTUAL KEYBOARD
+// ========================================================================================
+
+const VirtualKeyboard = {
+    // Show virtual keyboard
+    show(inputElement) {
+        if (DOM.virtualKeyboard && inputElement) {
+            console.log("[Keyboard] Showing virtual keyboard for:", inputElement.id);
+            DOM.virtualKeyboard.style.display = 'grid';
+            activeInputForVirtualKeyboard = inputElement;
+
+            setTimeout(() => {
+                const keyboardHeight = DOM.virtualKeyboard.offsetHeight;
+                const inputRect = activeInputForVirtualKeyboard.getBoundingClientRect();
+                const viewportHeight = window.innerHeight;
+
+                const spaceNeededBelowInput = 50;
+                const inputBottomPosition = inputRect.bottom;
+
+                if (inputBottomPosition > (viewportHeight - keyboardHeight - spaceNeededBelowInput)) {
+                    const scrollAmount = inputBottomPosition - (viewportHeight - keyboardHeight - spaceNeededBelowInput);
+                    window.scrollBy(0, scrollAmount);
+                    console.log(`[Keyboard] Scrolled by: ${scrollAmount}px`);
+                }
+            }, 100);
+        } else {
+            console.error("[Keyboard] Cannot show virtual keyboard. Element missing.");
+        }
+    },
+
+    // Hide virtual keyboard
+    hide() {
+        if (DOM.virtualKeyboard) {
+            console.log("[Keyboard] Hiding virtual keyboard");
+            DOM.virtualKeyboard.style.display = 'none';
+            activeInputForVirtualKeyboard = null;
+        }
+    },
+
+    // Initialize virtual keyboard
+    init() {
+        if (DOM.amountInput && DOM.virtualKeyboard) {
+            console.log('[Keyboard] Initializing event listeners for virtual keyboard.');
+
+            DOM.amountInput.addEventListener('click', (event) => {
+                if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                    console.log("[Keyboard] Amount input CLICKED on touch device.");
+                    event.preventDefault();
+                    
+                    if (DOM.virtualKeyboard.style.display === 'none' || DOM.virtualKeyboard.style.display === '' || activeInputForVirtualKeyboard !== DOM.amountInput) {
+                        this.show(DOM.amountInput);
+                    }
+                    DOM.amountInput.blur(); 
+                }
+            });
+
+            DOM.amountInput.addEventListener('focus', (e) => {
+                if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                    console.log("[Keyboard] Amount input FOCUSED on touch device - attempting to blur and show virtual.");
+                    e.target.blur();
+                    if (DOM.virtualKeyboard.style.display === 'none' || DOM.virtualKeyboard.style.display === '') {
+                        this.show(DOM.amountInput);
+                    }
+                } else {
+                    console.log("[Keyboard] Amount input FOCUSED on non-touch device.");
+                }
+            });
+
+            DOM.virtualKeyboard.addEventListener('touchstart', (event) => {
+                if (!activeInputForVirtualKeyboard) {
+                    console.warn("[Keyboard] Virtual keyboard key pressed, but no active input target.");
+                    return;
+                }
+
+                const targetButton = event.target.closest('button.virtual-key');
+                if (!targetButton) return;
+
+                const key = targetButton.dataset.key;
+                console.log("[Keyboard] Virtual key pressed:", key);
+
+                let currentValue = activeInputForVirtualKeyboard.value;
+
+                if (key === 'backspace') {
+                    activeInputForVirtualKeyboard.value = currentValue.slice(0, -1);
+                } else if (key === 'done') {
+                    this.hide();
+                    if (DOM.submitButton) DOM.submitButton.focus();
+                } else if (key === '.') {
+                    if (!currentValue.includes('.')) {
+                        activeInputForVirtualKeyboard.value += key;
+                    }
+                } else if (key) {
+                    activeInputForVirtualKeyboard.value += key;
+                }
+                Utils.formatAndPreserveCursor(activeInputForVirtualKeyboard, activeInputForVirtualKeyboard.value);					
+            });
+        }
+
+        // Handle clicks outside keyboard
+        document.addEventListener('mousedown', (event) => {
+            if (DOM.virtualKeyboard && DOM.virtualKeyboard.style.display !== 'none') {
+                const isClickOnKeyboard = DOM.virtualKeyboard.contains(event.target);
+                const isClickOnActiveInput = activeInputForVirtualKeyboard && activeInputForVirtualKeyboard.contains(event.target);
+
+                if (!isClickOnKeyboard && !isClickOnActiveInput) {
+                    console.log("[Keyboard] Clicked outside, hiding virtual keyboard.");
+                    this.hide();
+                }
+            }
+        });
+
+        // Prevent double tap issues
+        document.querySelectorAll('.virtual-key').forEach(button => {
+            let lastTap = 0;
+            button.addEventListener('touchend', function(event) {
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTap;
+                if (tapLength < 300 && tapLength > 0) { 
+                    event.preventDefault();
+                }
+                lastTap = currentTime;
+            });
+        });
+    }
+};
+
+// ========================================================================================
+// 14. TRANSACTION SUGGESTIONS
+// ========================================================================================
+
+const SuggestionManager = {
+    // Find and display transaction suggestion
+    findAndDisplay() {
+        if (!DOM.transactionForm || editingTransactionId) {
+            this.hide();
+            return;
+        }
+
+        const typeRadio = document.querySelector('input[name="type"]:checked');
+        const currentType = typeRadio ? typeRadio.value : null;
+        const currentCategory = DOM.categoryInput ? DOM.categoryInput.value : null;
+
+        if (!currentType || !currentCategory) {
+            this.hide();
+            return;
+        }
+
+        const recentTransactions = [...transactions].sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+
+        currentSuggestedTransaction = recentTransactions.find(tx => 
+            tx.type === currentType && 
+            tx.category === currentCategory &&
+            !tx.isTransfer
+        );
+
+        if (currentSuggestedTransaction) {
+            if (DOM.suggestedDescription) DOM.suggestedDescription.textContent = currentSuggestedTransaction.description || "(không có mô tả)";
+            if (DOM.suggestedAmount) {
+                if (currentSuggestedTransaction.originalCurrency && currentSuggestedTransaction.originalCurrency !== 'VND' && typeof currentSuggestedTransaction.originalAmount === 'number') {
+                    DOM.suggestedAmount.textContent = Utils.formatCurrency(currentSuggestedTransaction.originalAmount, currentSuggestedTransaction.originalCurrency);
+                } else {
+                    DOM.suggestedAmount.textContent = Utils.formatCurrency(currentSuggestedTransaction.amount, 'VND');
+                }
+            }
+            if (DOM.transactionSuggestionArea) DOM.transactionSuggestionArea.style.display = 'block';
+        } else {
+            this.hide();
+        }
+    },
+
+    // Hide suggestion
+    hide() {
+        if (DOM.transactionSuggestionArea) DOM.transactionSuggestionArea.style.display = 'none';
+        currentSuggestedTransaction = null;
+    },
+
+    // Apply suggestion
+    apply() {
+        if (currentSuggestedTransaction) {
+            if (currentSuggestedTransaction.originalCurrency && typeof currentSuggestedTransaction.originalAmount === 'number') {
+                DOM.amountInput.value = String(currentSuggestedTransaction.originalAmount);
+                DOM.formCurrencySelector.value = currentSuggestedTransaction.originalCurrency;
+            } else {
+                DOM.amountInput.value = String(currentSuggestedTransaction.amount);
+                DOM.formCurrencySelector.value = 'VND'; 
+            }
+
+            DOM.descriptionInput.value = currentSuggestedTransaction.description || "";
+
+            Utils.showMessage('Đã áp dụng gợi ý từ giao dịch cũ.', 'info');
+            this.hide();
+            DOM.amountInput.focus();
+        }
+    },
+
+    // Initialize suggestion system
+    init() {
+        const fieldsForSuggestion = [
+            ...document.querySelectorAll('input[name="type"]'),
+            DOM.categoryInput
+        ];
+
+        fieldsForSuggestion.forEach(field => {
+            if (field) {
+                field.addEventListener('change', () => this.findAndDisplay());
+            }
+        });
+
+        if (DOM.applySuggestionButton) {
+            DOM.applySuggestionButton.addEventListener('click', () => this.apply());
+        }
+        if (DOM.dismissSuggestionButton) {
+            DOM.dismissSuggestionButton.addEventListener('click', () => this.hide());
+        }
+
+        if (DOM.transactionForm) {
+            DOM.transactionForm.addEventListener('reset', () => this.hide());
+        }
+    }
+};
+
+// ========================================================================================
+// 15. IMPORT/EXPORT
+// ========================================================================================
+
+const ImportExportManager = {
+    // Export data to JSON
+    exportData() {
+        const dataToExport = { transactions, incomeCategories, expenseCategories, accounts };
+        const dataStr = JSON.stringify(dataToExport, null, 2);
+        const blob = new Blob([dataStr], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `financial_data_${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        Utils.showMessage('Dữ liệu đã được xuất!', 'success');
+    },
+
+    // Export data to CSV
+    exportToCSV() {
+        if (transactions.length === 0) {
+            Utils.showMessage('Không có dữ liệu giao dịch để xuất.', 'error');
+            return;
+        }
+
+        const headers = [
+            'ID Giao Dịch', 'Ngày Giờ (YYYY-MM-DD HH:mm:ss)', 'Nội dung', 'Hạng mục', 
+            'Loại (Thu/Chi)', 'Số Tiền (VNĐ)', 'Tài khoản', 'Là Chuyển Khoản?', 
+            'ID Liên Kết CK', 'Số Tiền Gốc', 'Đơn Vị Gốc'
+        ];
+
+        const rows = transactions.map(tx => {
+            const accountName = accounts.find(acc => acc.value === tx.account)?.text || tx.account;
+            return [
+                tx.id,
+                Utils.formatDateTimeForCSV(tx.datetime),
+                tx.description,
+                tx.category,
+                tx.type,
+                tx.amount,
+                accountName,
+                tx.isTransfer ? 'Có' : 'Không',
+                tx.isTransfer ? tx.transferPairId : '',
+                tx.originalAmount,
+                tx.originalCurrency
+            ].map(this.escapeCSVValue);
+        });
+
+        let csvContent = "\ufeff";
+        csvContent += headers.join(',') + '\n';
+        rows.forEach(rowArray => {
+            csvContent += rowArray.join(',') + '\n';
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `transactions_${new Date().toISOString().slice(0,10)}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            Utils.showMessage('Dữ liệu đã được xuất ra CSV!', 'success');
+        } else {
+            Utils.showMessage('Trình duyệt của bạn không hỗ trợ tải file trực tiếp.', 'error');
+        }
+    },
+
+    // Escape CSV values
+    escapeCSVValue(value) {
+        if (value == null) return '';
+        value = String(value);
+        if (value.includes(',') || value.includes('\n') || value.includes('"')) {
+            value = value.replace(/\"/g, '""');
+            return `"${value}"`;
+        }
+        return value;
+    },
+
+    // Handle import file
+    handleImportFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (importedData.transactions && importedData.incomeCategories && importedData.expenseCategories && importedData.accounts) {
+                    if (!confirm('Nhập dữ liệu sẽ ghi đè toàn bộ dữ liệu hiện tại. Bạn có chắc chắn muốn tiếp tục?')) {
+                        DOM.importFileInput.value = '';
+                        return;
+                    }
+                    
+                    transactions = importedData.transactions;
+                    incomeCategories = importedData.incomeCategories;
+                    expenseCategories = importedData.expenseCategories;
+                    accounts = importedData.accounts;
+                    
+                    DataManager.saveTransactions();
+                    DataManager.saveUserPreferences();
+                    App.initialize();
+                    Utils.showMessage('Dữ liệu đã được nhập thành công!', 'success');
+                } else {
+                    Utils.showMessage('Lỗi: Định dạng file không hợp lệ.', 'error');
+                }
+            } catch (error) {
+                Utils.showMessage(`Lỗi khi nhập file: ${error.message}`, 'error');
+                console.error("Import error:", error);
+            } finally {
+                DOM.importFileInput.value = '';
+            }
+        };
+        reader.readAsText(file);
+    }
+};
+
+// ========================================================================================
+// 16. COLLAPSIBLE SECTIONS
+// ========================================================================================
+
+const CollapsibleManager = {
+    // Initialize collapsible sections
+    init() {
+        const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
+        collapsibleHeaders.forEach(header => {
+            const contentId = header.dataset.collapsibleTarget;
+
+            if (!contentId) {
+                console.error("Collapsible error: data-collapsible-target missing on header:", header);
                 return;
             }
 
-            let transactions = JSON.parse(localStorage.getItem('transactions_v2') || '[]');
-            let changed = false;
-            if (transactions.length > 0) {
-                console.log("Bắt đầu kiểm tra và di chuyển originalAmount cho giao dịch VNĐ cũ...");
-                transactions.forEach(tx => {
-                    if (tx.originalCurrency === 'VND' && typeof tx.originalAmount === 'number' && typeof tx.amount === 'number') {
-                        // Heuristic: Nếu amount gần bằng originalAmount * 1000 VÀ originalAmount có vẻ là số "nhỏ" (có thể chứa thập phân)
-                        // thì originalAmount này có thể là giá trị "base" từ thời x1000.
-                        // Chúng ta muốn originalAmount bây giờ phản ánh giá trị đầy đủ sẽ được hiển thị trong form.
-                        const isLikelyOldScaledVnd = Math.abs(tx.amount - (tx.originalAmount * 1000)) < 1 && // amount ~ originalAmount * 1000
-                                                  tx.originalAmount.toString().includes('.'); // originalAmount có dạng thập phân
+            const content = document.getElementById(contentId);
+            const toggleIcon = header.querySelector('.toggle-icon');
 
-                        if (isLikelyOldScaledVnd) {
-                            console.log(`Di chuyển originalAmount cho giao dịch ID ${tx.id}: từ ${tx.originalAmount} thành ${tx.amount}`);
-                            tx.originalAmount = tx.amount; // Giờ originalAmount sẽ là giá trị đầy đủ
-                            changed = true;
-                        }
-                    }
-                });
+            if (!content) {
+                console.error(`Collapsible error: Content ID '${contentId}' not found for header:`, header);
+                return;
+            }
 
-                if (changed) {
-                    localStorage.setItem('transactions_v2', JSON.stringify(transactions));
-                    console.log("Hoàn tất di chuyển originalAmount. Dữ liệu đã được cập nhật.");
-                } else {
-                    console.log("Không có originalAmount nào cần di chuyển hoặc đã ở định dạng mới.");
+            // Determine initial state
+            let shouldBeActive = header.classList.contains('active');
+            const storedState = localStorage.getItem(`collapsibleState_${contentId}`);
+
+            if (storedState === 'expanded') {
+                shouldBeActive = true;
+            } else if (storedState === 'collapsed') {
+                shouldBeActive = false;
+            }
+
+            // Apply initial state
+            if (shouldBeActive) {
+                header.classList.add('active');
+                content.classList.add('active');
+                if (toggleIcon) {
+                    toggleIcon.style.transform = 'rotate(180deg)';
                 }
-                localStorage.setItem(MIGRATION_KEY_ORIGINAL_AMOUNT_VND, 'true');
-            }
-        }
-        // BẠN CÓ THỂ GỌI HÀM NÀY MỘT LẦN KHI ỨNG DỤNG KHỞI ĐỘNG, TRƯỚC KHI loadUserPreferences
-        // migrateOriginalAmountsForOldVNDTransactions(); 
-        // SAU KHI CHẮC CHẮN NÓ HOẠT ĐỘNG ĐÚNG VÀ CHỈ CHẠY MỘT LẦN, BẠN CÓ THỂ XÓA HOẶC VÔ HIỆU HÓA LỜI GỌI NÀY.
-        // --------------------------------------------------------------------
-        // KẾT THÚC PHẦN CẢNH BÁO DI CHUYỂN DỮ LIỆU
-        // --------------------------------------------------------------------
-
-
-        // --- CÁC BIẾN DOM (Giữ nguyên hoặc điều chỉnh nếu ID thay đổi) ---
-        const darkModeToggleCheckbox = document.getElementById('darkModeToggleCheckbox');
-        const DARK_MODE_CLASS = 'dark-mode';
-        const THEME_STORAGE_KEY = 'themePreference';
-
-        const transactionForm = document.getElementById('transaction-form');
-        const formTitleEl = document.getElementById('form-title');
-        const submitButton = document.getElementById('submit-transaction-button');
-        const transactionList = document.getElementById('transaction-list');
-        const totalIncomeEl = document.getElementById('total-income');
-        const totalExpensesEl = document.getElementById('total-expenses');
-        const currentBalanceEl = document.getElementById('current-balance');
-        const accountBalanceListEl = document.getElementById('account-balance-list');
-        const datetimeInput = document.getElementById('datetime-input');
-        const categoryInput = document.getElementById('category');
-		
-		// >>> THÊM 3 DÒNG MỚI CỦA BẠN VÀO ĐÂY:
-		const transactionSuggestionAreaEl = document.getElementById('transaction-suggestion-area');
-		const suggestedDescriptionEl = document.getElementById('suggested-description');
-		const suggestedAmountEl = document.getElementById('suggested-amount');
-		const applySuggestionButtonEl = document.getElementById('apply-suggestion-button');
-		const dismissSuggestionButtonEl = document.getElementById('dismiss-suggestion-button');
-		let currentSuggestedTransaction = null; // Để lưu trữ giao dịch được gợi ý
-		
-		// >>> THÊM 3 DÒNG MỚI CỦA BẠN VÀO ĐÂY:
-        const summaryIncomeMonthDisplayEl = document.getElementById('summary-income-month-display');
-        const summaryExpenseMonthDisplayEl = document.getElementById('summary-expense-month-display');
-        const summaryBalanceMonthDisplayEl = document.getElementById('summary-balance-month-display');
-		
-        // const categoryContainer = categoryInput.parentElement; // Dòng này bạn có dùng không?
-        const amountTextInput = document.getElementById('amount-input'); // QUAN TRỌNG CHO NÚT "000"
-        const formCurrencySelector = document.getElementById('form-currency-selector');
-        const descriptionInput = document.getElementById('description');
-        const accountInput = document.getElementById('account');
-        const accountLabel = document.getElementById('account-label');
-        // const toAccountContainer = document.querySelector('.form-field-transfer'); // Dòng này bạn có dùng không?
-        const toAccountInput = document.getElementById('to-account');
-        const noTransactionsMessage = document.getElementById('no-transactions');
-        const filterMonthSelect = document.getElementById('filter-month');
-        const messageBox = document.getElementById('message-box');
-
-        const incomeExpenseChartCanvas = document.getElementById('incomeExpenseChart').getContext('2d');
-        const expenseCategoryChartCanvas = document.getElementById('expenseCategoryChart').getContext('2d');
-        const expenseCategoryListContainerEl = document.getElementById('expense-category-list-container');
-        const noExpenseDataEl = document.getElementById('no-expense-data');
-        const last7DaysChartCanvas = document.getElementById('last7DaysChart').getContext('2d');
-        const monthComparisonChartCanvas = document.getElementById('monthComparisonChart').getContext('2d');
-		// ... các biến hiện có ...
-		const expenseCategoryBarCtx = document.getElementById('expenseCategoryBarChart').getContext('2d');
-
-
-		const expenseChartTypeSelector = document.getElementById('expenseChartTypeSelector');
-		const expensePieChartContainer = document.getElementById('expensePieChartContainer');
-		const expenseBarChartContainer = document.getElementById('expenseBarChartContainer');
-		const filterSpecificDateInput = document.getElementById('filter-specific-date');
-		const clearDateFilterButton = document.getElementById('clear-date-filter-button');
-		// const noExpenseDataEl = document.getElementById('no-expense-data-list'); // Đổi tên hoặc giữ nguyên nếu bạn đã có cho list
-
-		// Các element hiển thị thông báo "không có dữ liệu"
-		// (Đảm bảo ID trong HTML của bạn khớp với các ID này)
-		const noExpenseDataChartEl = document.getElementById('no-expense-data-chart'); // MỚI (cho khu vực biểu đồ)
-		const noExpenseDataListEl = document.getElementById('no-expense-data-list');   // ID này bạn đã cập nhật trong HTML cho phần danh sách
-
-
-        const filterComparisonYearInput = document.getElementById('filter-comparison-year');
-        const filterComparisonWeekSelect = document.getElementById('filter-comparison-week');
-        const weeklyComparisonContentEl = document.getElementById('weekly-comparison-content');
-        const selectedWeekDisplayEl = document.getElementById('selected-week-display');
-        const currentWeekStartBalanceEl = document.getElementById('current-week-start-balance');
-        const currentWeekIncomeEl = document.getElementById('current-week-income');
-        const currentWeekExpensesEl = document.getElementById('current-week-expenses');
-        const currentWeekNetChangeEl = document.getElementById('current-week-net-change');
-        const previousWeekDisplayEl = document.getElementById('previous-week-display');
-        const previousWeekExpensesEl = document.getElementById('previous-week-expenses');
-        const spendingDifferenceEl = document.getElementById('spending-difference');
-        const noComparisonDataEl = document.getElementById('no-comparison-data');
-
-        const typeRadioButtons = document.querySelectorAll('input[name="type"]');
-        const exportButton = document.getElementById('export-button');
-        const exportCsvButton = document.getElementById('export-csv-button');
-        const importButton = document.getElementById('import-button');
-        const importFileInput = document.getElementById('import-file-input');
-
-        const newIncomeCategoryNameInput = document.getElementById('new-income-category-name');
-        const addIncomeCategoryButton = document.getElementById('add-income-category-button');
-        const incomeCategoryListAdminEl = document.getElementById('income-category-list-admin');
-        const newExpenseCategoryNameInput = document.getElementById('new-expense-category-name');
-        const addExpenseCategoryButton = document.getElementById('add-expense-category-button');
-        const expenseCategoryListAdminEl = document.getElementById('expense-category-list-admin');
-        const newAccountNameInput = document.getElementById('new-account-name');
-        const addAccountButton = document.getElementById('add-account-button');
-        const accountListAdminEl = document.getElementById('account-list-admin');
-
-        // Nút mới
-        const addTripleZeroButton = document.getElementById('add-triple-zero-button');
-	
-
-        let transactions = [];
-		// Theo dõi thay đổi chế độ sáng/tối
-		window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-			// Cập nhật lại class cho body
-			document.body.classList.toggle('dark-mode', e.matches);
-		});
-		if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-			document.body.classList.add('dark-mode');
-		} else {
-			document.body.classList.remove('dark-mode');
-		}
-        let incomeExpenseChart;
-        let expenseCategoryChart;
-		let expenseCategoryBarChart; // Biến cho instance biểu đồ cột
-        let last7DaysChart;
-        let monthComparisonChart;
-        let editingTransactionId = null;
-
-        let incomeCategories = [];
-        let expenseCategories = [];
-        let accounts = [];
-
-        const defaultIncomeCategories = [ { value: "Lương", text: "Lương" }, { value: "Thưởng", text: "Thưởng" }, { value: "Tiền được trả nợ", text: "Tiền được trả nợ" }, { value: TRANSFER_CATEGORY_IN, text: "Nhận tiền chuyển khoản" }, { value: "Lãi tiết kiệm", text: "Lãi tiết kiệm" }, { value: "Thu nhập từ đầu tư", text: "Thu nhập từ đầu tư" }, { value: "Thu nhập phụ", text: "Thu nhập phụ" }, { value: "Thu nhập khác", text: "Thu nhập khác (chung)" } ];
-        const defaultExpenseCategories = [ { value: "Ăn uống", text: "Ăn uống" }, { value: "Đi lại", text: "Đi lại" }, { value: "Nhà ở", text: "Nhà ở" }, { value: "Hóa đơn", text: "Hóa đơn (Điện, nước, internet)" }, { value: "Mua sắm", text: "Mua sắm (Quần áo, đồ dùng)" }, { value: "Giải trí", text: "Giải trí" }, { value: "Sức khỏe", text: "Sức khỏe" }, { value: "Giáo dục", text: "Giáo dục" }, { value: "Chi cho đầu tư", text: "Chi cho đầu tư" }, { value: "Trả nợ", text: "Trả nợ (cho người khác)" }, { value: TRANSFER_CATEGORY_OUT, text: "Chuyển tiền đi" }, { value: "Chi phí khác", text: "Chi phí khác (chung)" } ];
-        const defaultAccounts = [ { value: "Tiền mặt", text: "Tiền mặt" }, { value: "Momo", text: "Momo" }, { value: "Thẻ tín dụng A", text: "Thẻ tín dụng A" }, { value: "Techcombank", text: "Techcombank" }, { value: "BIDV", text: "BIDV" }, { value: "Khác", text: "Khác" } ];
-        const categoryColors = [ '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF', '#8366FF', '#289F40', '#D26384', '#3C64C8', '#C89632' ];
-		document.addEventListener("DOMContentLoaded", () => {
-			document.getElementById("filter-month").addEventListener("change", () => {
-				const selectedMonth = document.getElementById("filter-month").value;
-				filterDataByMonth(selectedMonth);
-			});
-		});
-
-			filterComparisonWeekSelect.addEventListener('change', function() {
-				const selectedWeek = Number(this.value);
-				const selectedYear = Number(filterComparisonYearInput.value);
-				renderWeeklyComparison(selectedYear, selectedWeek);
-			});
-			filterComparisonYearInput.addEventListener('change', function() {
-				const selectedYear = Number(this.value);
-				const selectedWeek = Number(filterComparisonWeekSelect.value);
-				renderWeeklyComparison(selectedYear, selectedWeek);
-			});
-			
-		function afterTransactionChange() {
-			// ... code cập nhật khác ...
-			const selectedYear = Number(filterComparisonYearInput.value);
-			const selectedWeek = Number(filterComparisonWeekSelect.value);
-			renderWeeklyComparison(selectedYear, selectedWeek);
-		}
-
-        // --- HÀM TIỆN ÍCH (Giữ nguyên các hàm tiện ích của bạn) ---
-        function showMessage(message, type = 'success') { messageBox.textContent = message; messageBox.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'message-success' : 'message-error'}`; messageBox.style.display = 'block'; setTimeout(() => { messageBox.style.display = 'none'; }, 3000); }
-        
-		function formatCurrency(amount, currencyCode = 'VND') {
-			if (isNaN(amount) || amount === null) amount = 0;
-
-			if (currencyCode === 'VND') {
-				let actualFractionDigits = 0;
-				const amountStrFull = String(amount); // Chuyển số thành chuỗi để kiểm tra phần thập phân
-
-				// Tìm số chữ số thập phân thực tế trong số `amount`
-				const decimalPartMatch = amountStrFull.match(/\.(\d+)$/);
-				if (decimalPartMatch && decimalPartMatch[1]) {
-					actualFractionDigits = decimalPartMatch[1].length;
-				}
-
-				const numberFormatter = new Intl.NumberFormat('en-US', { // 'en-US' sử dụng: 1,234.56
-					style: 'decimal', // Chỉ định dạng số, không tự động thêm ký hiệu tiền tệ
-					minimumFractionDigits: actualFractionDigits, // Hiển thị tối thiểu số chữ số thập phân này
-					maximumFractionDigits: actualFractionDigits  // Hiển thị tối đa số chữ số thập phân này
-																// (Để hiển thị chính xác những gì đã lưu)
-				});
-				return numberFormatter.format(amount) + '\u00A0₫'; // Thêm ký hiệu VNĐ thủ công
-			} else if (currencyCode === 'USD') {
-				// USD thường có 2 chữ số thập phân
-				return new Intl.NumberFormat('en-US', {
-					style: 'currency', // 'currency' sẽ tự thêm ký hiệu $
-					currency: 'USD',
-					minimumFractionDigits: 2,
-					maximumFractionDigits: 2
-				}).format(amount);
-			} else {
-				// Xử lý các loại tiền tệ khác (có thể cần tùy chỉnh thêm)
-				const options = {
-					style: 'currency',
-					currency: currencyCode,
-					minimumFractionDigits: 0, // Mặc định cho các loại tiền tệ khác
-					maximumFractionDigits: 2  // Mặc định cho các loại tiền tệ khác
-				};
-				return new Intl.NumberFormat('en-US', options).format(amount); // Sử dụng 'en-US' cho định dạng chung
-			}
-		}
-		function getCurrentDateFormattedYYYYMMDD() {
-			const today = new Date();
-			const year = today.getFullYear();
-			const month = String(today.getMonth() + 1).padStart(2, '0'); // Tháng bắt đầu từ 0
-			const day = String(today.getDate()).padStart(2, '0');
-			return `${year}-${month}-${day}`;
-		}		
-        function formatDateTimeLocalInput(date) { /* ... mã gốc của bạn ... */ 
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            return `${year}-${month}-${day}T${hours}:${minutes}`;
-        }
-        function formatIsoDateTime(date) { /* ... mã gốc của bạn ... */ 
-            if (!date || isNaN(new Date(date).getTime())) date = new Date();
-            else date = new Date(date);
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            const seconds = String(date.getSeconds()).padStart(2, '0');
-            return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-        }
-        function formatDisplayDateTime(isoString) { /* ... mã gốc của bạn ... */ 
-             if (!isoString) return '';
-            try {
-                let date = new Date(isoString);
-                if (isNaN(date.getTime())) return isoString; 
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const hours = String(date.getHours()).padStart(2, '0');
-                const minutes = String(date.getMinutes()).padStart(2, '0');
-                return `${day}/${month}/${year} ${hours}:${minutes}`;
-            } catch (e) {
-                console.error("Error formatting display date/time:", e, "Input:", isoString);
-                return isoString;
-            }
-        }
-        function formatDateTimeForCSV(isoString) { /* ... mã gốc của bạn ... */
-            if (!isoString) return '';
-            try {
-                const d = new Date(isoString);
-                if (isNaN(d.getTime())) return isoString;
-                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
-            } catch (e) { return isoString; }
-        }
-		function getISOWeek(date) {
-			const d = new Date(date);
-			d.setHours(0, 0, 0, 0);
-			d.setDate(d.getDate() + 4 - (d.getDay() || 7));
-			const yearStart = new Date(d.getFullYear(), 0, 1);
-			const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-			return weekNo;
-		}
-		function renderWeeklyComparison(year, week) {
-			const weekTxs = getTransactionsByWeek(transactions, year, week);
-			// Tổng thu, chi, số dư, v.v.
-			let totalIncome = 0, totalExpense = 0;
-			weekTxs.forEach(tx => {
-				if (tx.type === "Thu") totalIncome += tx.amount;
-				else if (tx.type === "Chi") totalExpense += tx.amount;
-			});
-			// Cập nhật giao diện
-			currentWeekIncomeEl.textContent = formatCurrency(totalIncome);
-			currentWeekExpensesEl.textContent = formatCurrency(totalExpense);
-			currentWeekNetChangeEl.textContent = formatCurrency(totalIncome - totalExpense);
-			// Tương tự cho tuần trước nếu cần
-		}
-		function getCurrentISOWeekId() {
-			const now = new Date();
-			const year = now.getFullYear();
-			const weekNumber = getISOWeekNumber(now); // Hàm getISOWeekNumber đã có trong script.js
-			return `${year}-W${String(weekNumber).padStart(2, '0')}`;
-		}
-		// Hàm lọc giao dịch của tuần & năm chỉ định
-		function getTransactionsByWeek(transactions, year, week) {
-			return transactions.filter(tx => {
-				const txDate = new Date(tx.datetime);
-				return txDate.getFullYear() === year && getISOWeek(txDate) === week;
-			});
-		}
-
-        // --- HÀM NORMALIZEAMOUNTSTRING (CẬP NHẬT) ---
-		function normalizeAmountString(amountStr) {
-			if (typeof amountStr !== 'string' || !amountStr.trim()) {
-				return "";
-			}
-			let str = amountStr.trim();
-			const hasComma = str.includes(',');
-			const hasPeriod = str.includes('.');
-
-			if (hasComma && hasPeriod) {
-				if (str.lastIndexOf(',') > str.lastIndexOf('.')) { // Kiểu 1.234,56
-					str = str.replace(/\./g, '').replace(',', '.');
-				} else { // Kiểu 1,234.56
-					str = str.replace(/,/g, '');
-				}
-			} else if (hasComma) { // Chỉ có dấu phẩy, ví dụ "12,000" hoặc "1,234,567"
-				str = str.replace(/,/g, ''); // Loại bỏ tất cả dấu phẩy
-			} else if (hasPeriod) { // Chỉ có dấu chấm
-				const periodCount = (str.match(/\./g) || []).length;
-				if (periodCount > 1) {
-					// Giữ lại dấu chấm cuối cùng, loại bỏ các dấu chấm khác (ví dụ: "1.234.56" -> "1234.56")
-					str = str.replace(/\.(?=.*\.)/g, '');
-				}
-				// Nếu chỉ có 1 dấu chấm (ví dụ "22.5"), nó sẽ được giữ nguyên.
-			}
-			return str;
-		}
-		function parseAmountInput(amountStr, currency) {
-			if (!amountStr) return 0;
-
-			// Giả định hàm normalizeAmountString đã được sửa để xử lý đúng "12,000" -> "12000"
-			// và "12,000.202" -> "12000.202"
-			const normalizedStr = normalizeAmountString(amountStr);
-			let val = parseFloat(normalizedStr);
-
-			if (isNaN(val)) {
-				// Fallback parsing (có thể cần cải thiện tùy theo các định dạng đầu vào phức tạp)
-				console.warn(`NormalizeAmountString failed or produced NaN for input: '${amountStr}'. Normalized string was: '${normalizedStr}'. Attempting direct parsing.`);
-				let directParseStr = String(amountStr).trim();
-				if (directParseStr.includes(',') && !directParseStr.includes('.')) {
-					directParseStr = directParseStr.replace(/,/g, '');
-				} else if (directParseStr.includes(',') && directParseStr.includes('.')) {
-					 if (directParseStr.lastIndexOf(',') > directParseStr.lastIndexOf('.')) { // 1.234,56
-						directParseStr = directParseStr.replace(/\./g, '').replace(',', '.');
-					} else { // 1,234.56
-						directParseStr = directParseStr.replace(/,/g, '');
-					}
-				}
-				val = parseFloat(directParseStr);
-			}
-
-			if (isNaN(val)) return 0;
-
-			if (currency === 'USD') {
-				val = val * USD_TO_VND_RATE;
-				return Math.round(val); // Quy đổi USD sang VND thường làm tròn thành số nguyên
-			} else if (currency === 'VND') {
-				// Giữ lại phần thập phân cho VNĐ
-				return val;
-			} else {
-				// Các loại tiền tệ khác có thể có quy tắc làm tròn riêng
-				return val;
-			}
-		}
-		function filterDataByMonth(monthValue) {
-		  const filtered = monthValue === "all"
-			? transactions
-			: transactions.filter(tx => {
-				const date = new Date(tx.datetime);
-				const month = (date.getMonth() + 1).toString().padStart(2, '0');
-				const year = date.getFullYear();
-				return `${year}-${month}` === monthValue;
-			});
-
-		function renderExpenseBreakdown(data) {
-		  const categoryTotals = {};
-		  data.filter(tx => tx.type === "Chi").forEach(tx => {
-			categoryTotals[tx.category] = (categoryTotals[tx.category] || 0) + tx.amount;
-		  });
-
-		  // Cập nhật biểu đồ (Chart.js)
-		  const labels = Object.keys(categoryTotals);
-		  const values = Object.values(categoryTotals);
-
-		  expensePieChart.data.labels = labels;
-		  expensePieChart.data.datasets[0].data = values;
-		  expensePieChart.update();
-
-		  // Cập nhật danh sách bên phải
-		  const container = document.getElementById("expense-category-list-container");
-		  container.innerHTML = labels.map((cat, i) => {
-			const percent = ((values[i] / values.reduce((a, b) => a + b, 0)) * 100).toFixed(1);
-			return `<li class="flex justify-between items-center text-sm">
-			  <div class="flex items-center">
-				<span class="inline-block w-3 h-3 rounded-full mr-2" style="background-color: ${chartColors[i % chartColors.length]}"></span>
-				<span>${cat}</span>
-			  </div>
-			  <div class="text-right">
-				<span class="font-semibold">${values[i].toLocaleString()} ₫</span>
-				<span class="text-gray-500 ml-2">(${percent}%)</span>
-			  </div>
-			</li>`;
-		  }).join("");
-		}
-		  renderExpenseBreakdown(filtered);
-		  renderOverviewCharts(filtered);
-		}		
-		function toggleExpenseChartDisplay() {
-			if (!expenseChartTypeSelector || !expensePieChartContainer || !expenseBarChartContainer || !noExpenseDataChartEl) {
-				// console.error("toggleExpenseChartDisplay: DOM elements for chart toggling are missing.");
-				return;
-			}
-
-			const selectedType = expenseChartTypeSelector.value;
-			// Kiểm tra xem có dữ liệu không (dựa vào việc một trong hai biểu đồ đã được khởi tạo và có dữ liệu)
-			const chartsHaveData = (expenseCategoryChart && expenseCategoryChart.data.labels && expenseCategoryChart.data.labels.length > 0) ||
-								   (expenseCategoryBarChart && expenseCategoryBarChart.data.labels && expenseCategoryBarChart.data.labels.length > 0);
-
-			if (!chartsHaveData && totalExpenses === 0) { // Kiểm tra thêm totalExpenses từ renderExpenseCategoryChartAndList (cần truyền vào hoặc dùng biến global)
-														// Hoặc đơn giản hơn là dựa vào trạng thái của noExpenseDataChartEl được set trong renderExpenseCategoryChartAndList
-				expensePieChartContainer.style.display = 'none';
-				expenseBarChartContainer.style.display = 'none';
-				noExpenseDataChartEl.style.display = 'block';
-				return;
-			}
-			
-			// Nếu hàm render đã ẩn/hiện noExpenseDataChartEl rồi thì không cần dòng này nữa
-			// noExpenseDataChartEl.style.display = 'none'; 
-
-			if (selectedType === 'pie') {
-				expensePieChartContainer.style.display = 'block';
-				expenseBarChartContainer.style.display = 'none';
-			} else if (selectedType === 'bar') {
-				expensePieChartContainer.style.display = 'none';
-				expenseBarChartContainer.style.display = 'block';
-			}
-		}
-		
-		// --- Luu bo nho ---
-		function findAndDisplayTransactionSuggestion() {
-			if (!transactionForm || editingTransactionId) { // Không gợi ý khi đang sửa
-				hideTransactionSuggestion();
-				return;
-			}
-
-			const typeRadio = document.querySelector('input[name="type"]:checked');
-			const currentType = typeRadio ? typeRadio.value : null;
-			const currentCategory = categoryInput.value;
-			const currentAccount = accountInput.value; // Có thể thêm điều kiện này
-
-			if (!currentType || !currentCategory) {
-				hideTransactionSuggestion();
-				return;
-			}
-
-			// Tìm kiếm giao dịch gần nhất khớp với loại và hạng mục (và tài khoản nếu muốn)
-			// Ưu tiên các giao dịch gần đây hơn
-			const recentTransactions = [...transactions].sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
-
-			currentSuggestedTransaction = recentTransactions.find(tx => 
-				tx.type === currentType && 
-				tx.category === currentCategory &&
-				// tx.account === currentAccount && // Bỏ comment dòng này nếu muốn khớp cả tài khoản
-				!tx.isTransfer // Thường không cần gợi ý cho giao dịch chuyển tiền theo cách này
-			);
-
-			if (currentSuggestedTransaction) {
-				if (suggestedDescriptionEl) suggestedDescriptionEl.textContent = currentSuggestedTransaction.description || "(không có mô tả)";
-				if (suggestedAmountEl) {
-					// Hiển thị số tiền gốc nếu có và khác VNĐ, nếu không thì hiển thị số tiền đã quy đổi
-					if (currentSuggestedTransaction.originalCurrency && currentSuggestedTransaction.originalCurrency !== 'VND' && typeof currentSuggestedTransaction.originalAmount === 'number') {
-						suggestedAmountEl.textContent = formatCurrency(currentSuggestedTransaction.originalAmount, currentSuggestedTransaction.originalCurrency);
-					} else {
-						suggestedAmountEl.textContent = formatCurrency(currentSuggestedTransaction.amount, 'VND');
-					}
-				}
-				if (transactionSuggestionAreaEl) transactionSuggestionAreaEl.style.display = 'block';
-			} else {
-				hideTransactionSuggestion();
-			}
-		}
-
-		function hideTransactionSuggestion() {
-			if (transactionSuggestionAreaEl) transactionSuggestionAreaEl.style.display = 'none';
-			currentSuggestedTransaction = null;
-		}
-
-		function applyTransactionSuggestion() {
-			if (currentSuggestedTransaction) {
-				// Điền số tiền (giá trị gốc) và đơn vị tiền tệ gốc
-				if (currentSuggestedTransaction.originalCurrency && typeof currentSuggestedTransaction.originalAmount === 'number') {
-					amountTextInput.value = String(currentSuggestedTransaction.originalAmount); // Điền giá trị gốc
-					formCurrencySelector.value = currentSuggestedTransaction.originalCurrency;
-				} else { // Fallback nếu không có thông tin tiền tệ gốc rõ ràng
-					amountTextInput.value = String(currentSuggestedTransaction.amount); // Điền giá trị đã quy đổi
-					formCurrencySelector.value = 'VND'; 
-				}
-
-				descriptionInput.value = currentSuggestedTransaction.description || "";
-
-				// Tùy chọn: có thể điền cả tài khoản nếu logic tìm kiếm của bạn bao gồm tài khoản
-				// accountInput.value = currentSuggestedTransaction.account;
-
-				showMessage('Đã áp dụng gợi ý từ giao dịch cũ.', 'info');
-				hideTransactionSuggestion();
-				amountTextInput.focus(); // Chuyển focus để người dùng có thể sửa nhanh nếu cần
-			}
-		}		
-		
-        // --- DARK MODE LOGIC (Giữ nguyên) ---
-		function applyTheme(theme) {
-			// console.log('Applying theme:', theme);
-			if (theme === 'dark') {
-				document.body.classList.add('dark-mode');
-				document.body.classList.add(DARK_MODE_CLASS);
-				if (darkModeToggleCheckbox) darkModeToggleCheckbox.checked = true;
-				localStorage.setItem(THEME_STORAGE_KEY, 'dark');
-			} else {
-				document.body.classList.remove('dark-mode')
-				document.body.classList.remove(DARK_MODE_CLASS);
-				if (darkModeToggleCheckbox) darkModeToggleCheckbox.checked = false;
-				localStorage.setItem(THEME_STORAGE_KEY, 'light');
-			}
-			updateAllChartColorsForTheme(theme); // Gọi hàm cập nhật màu biểu đồ
-		}
-
-		function toggleTheme() {
-			// console.log('toggleTheme called. Checkbox checked:', darkModeToggleCheckbox ? darkModeToggleCheckbox.checked : 'checkbox not found');
-			if (!darkModeToggleCheckbox) {
-				console.error("darkModeToggleCheckbox not found in toggleTheme");
-				return;
-			}
-			applyTheme(darkModeToggleCheckbox.checked ? 'dark' : 'light');
-		}
-		
-		function loadThemePreference() {
-			// console.log('loadThemePreference called'); // Thêm để kiểm tra
-			const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-			const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-			if (savedTheme) {
-				applyTheme(savedTheme);
-			} else if (prefersDarkScheme) {
-				applyTheme('dark');
-			} else {
-				applyTheme('light'); // Mặc định là light nếu không có gì được lưu và không có ưu tiên hệ thống
-			}
-		}
-		
-		function updateAllChartColorsForTheme(theme) {
-			const isDarkMode = theme === 'dark';
-			const gridColor = isDarkMode ? 'rgba(107, 114, 128, 0.2)' : 'rgba(209, 213, 219, 0.5)';
-			const ticksColor = isDarkMode ? '#9ca3af' : '#6b7280';
-			const axisLineColor = isDarkMode ? '#4b5563' : '#d1d5db';
-			const legendAndAxisTitleColor = isDarkMode ? '#d1d5db' : '#374151';
-			const chartMainTitleColor = isDarkMode ? '#e5e7eb' : '#1f2937';
-			let pieSliceBorderColor = isDarkMode ? (window.getComputedStyle(document.body).backgroundColor || '#374151') : '#ffffff';
-			const datalabelPieColor = '#ffffff';
-			const datalabelGeneralColor = isDarkMode ? '#e0e0e0' : '#333333';
-
-			const charts = [
-				incomeExpenseChart, expenseCategoryChart, last7DaysChart,
-				monthComparisonChart, expenseCategoryBarChart // Đã bao gồm biểu đồ cột
-			].filter(c => c && c.ctx && typeof c.update === 'function');
-
-			charts.forEach(chart => {
-				if (!chart.options) return;
-				try {
-					if (chart.options.plugins) {
-						if (chart.options.plugins.legend && chart.options.plugins.legend.labels) {
-							chart.options.plugins.legend.labels.color = legendAndAxisTitleColor;
-						}
-						if (chart.options.plugins.title && chart.options.plugins.title.display) {
-							chart.options.plugins.title.color = chartMainTitleColor;
-						}
-					}
-
-					if (chart.options.scales) {
-						Object.keys(chart.options.scales).forEach(scaleKey => {
-							const scale = chart.options.scales[scaleKey];
-							if (scale) {
-								if (scale.grid) scale.grid.color = gridColor;
-								if (typeof scale.borderColor !== 'undefined') scale.borderColor = axisLineColor;
-								if (scale.ticks) scale.ticks.color = ticksColor;
-								if (scale.title && scale.title.display) scale.title.color = legendAndAxisTitleColor;
-							}
-						});
-					}
-
-					if (chart.options.plugins && chart.options.plugins.datalabels) {
-						chart.options.plugins.datalabels.color = (chart === expenseCategoryChart) ? datalabelPieColor : datalabelGeneralColor;
-					}
-					
-					if (chart === expenseCategoryChart && chart.data.datasets && chart.data.datasets.length > 0) {
-						chart.data.datasets[0].borderColor = pieSliceBorderColor;
-					}
-					
-					chart.update();
-				} catch (e) {
-					console.error("[Theme] Error updating chart colors:", chart.config ? chart.config.type : 'Unknown Chart', e);
-				}
-			});
-		}
-
-        function setDefaultDateTime() { if(datetimeInput) datetimeInput.value = formatDateTimeLocalInput(new Date()); }
-        function setDefaultComparisonYear() { if(filterComparisonYearInput) filterComparisonYearInput.value = new Date().getFullYear(); }
-		function loadUserPreferences() {
-			// Ví dụ cho transactions (giữ nguyên cách bạn đã làm hoặc cải thiện)
-			const storedTransactions = localStorage.getItem('transactions_v2');
-			transactions = [];
-			if (storedTransactions) {
-				try {
-					transactions = JSON.parse(storedTransactions);
-					console.log("Loaded transactions_v2:", transactions); // KIỂM TRA TRANSACTIONS
-					if (!Array.isArray(transactions)) {
-						console.warn("Dữ liệu transactions_v2 từ localStorage không phải là mảng, đặt lại thành mảng rỗng.");
-						transactions = [];
-					}
-				} catch (error) {
-					console.error("Lỗi khi parse transactions_v2 từ localStorage:", error);
-					transactions = [];
-					showMessage('Có lỗi khi tải dữ liệu giao dịch. Dữ liệu có thể đã bị hỏng.', 'error');
-				}
-			} else {
-				console.log("Không tìm thấy transactions_v2 trong localStorage, sử dụng mảng rỗng.");
-				transactions = []; // Đảm bảo transactions luôn là một mảng
-			}
-
-			// --- LÀM TƯƠNG TỰ CHO incomeCategories ---
-			const storedIncomeCategories = localStorage.getItem('customIncomeCategories_v2');
-			incomeCategories = []; // Khởi tạo
-			if (storedIncomeCategories) {
-				try {
-					incomeCategories = JSON.parse(storedIncomeCategories);
-					console.log("Loaded customIncomeCategories_v2:", incomeCategories); // KIỂM TRA incomeCategories
-					if (!Array.isArray(incomeCategories)) {
-						console.warn("customIncomeCategories_v2 không phải mảng, dùng giá trị mặc định.");
-						incomeCategories = [...defaultIncomeCategories]; // Sử dụng default nếu lỗi
-						console.log("Fell back to defaultIncomeCategories (not array):", incomeCategories);
-					} else if (incomeCategories.length === 0 || !incomeCategories.find(c => c.value === TRANSFER_CATEGORY_IN)) {
-						console.warn("customIncomeCategories_v2 rỗng hoặc thiếu hạng mục chuyển tiền cần thiết, dùng giá trị mặc định.");
-						incomeCategories = [...defaultIncomeCategories];
-						console.log("Fell back to defaultIncomeCategories (empty or missing transfer):", incomeCategories);
-					}
-				} catch (error) {
-					console.error("Lỗi khi parse customIncomeCategories_v2:", error);
-					incomeCategories = [...defaultIncomeCategories];
-					console.log("Fell back to defaultIncomeCategories (parse error):", incomeCategories);
-				}
-			} else { // Nếu không có gì trong localStorage, dùng default
-				 console.log("Không tìm thấy customIncomeCategories_v2, sử dụng defaultIncomeCategories.");
-				 incomeCategories = [...defaultIncomeCategories];
-			}
-
-			// --- LÀM TƯƠNG TỰ CHO expenseCategories --- (đoạn này bạn đã có, chỉ để tham khảo cấu trúc)
-			const storedExpenseCategories = localStorage.getItem('customExpenseCategories_v2');
-			expenseCategories = [];
-			if (storedExpenseCategories) {
-				try {
-					expenseCategories = JSON.parse(storedExpenseCategories);
-					console.log("Loaded customExpenseCategories_v2:", expenseCategories); // KIỂM TRA expenseCategories
-					if (!Array.isArray(expenseCategories)) {
-						console.warn("customExpenseCategories_v2 không phải mảng, dùng giá trị mặc định.");
-						expenseCategories = [...defaultExpenseCategories];
-						console.log("Fell back to defaultExpenseCategories (not array):", expenseCategories);
-					} else if (expenseCategories.length === 0 || !expenseCategories.find(c => c.value === TRANSFER_CATEGORY_OUT)) {
-						 console.warn("customExpenseCategories_v2 rỗng hoặc thiếu hạng mục chuyển tiền cần thiết, dùng giá trị mặc định.");
-						expenseCategories = [...defaultExpenseCategories];
-						console.log("Fell back to defaultExpenseCategories (empty or missing transfer):", expenseCategories);
-					}
-				} catch (error) {
-					console.error("Lỗi khi parse customExpenseCategories_v2:", error);
-					expenseCategories = [...defaultExpenseCategories];
-					console.log("Fell back to defaultExpenseCategories (parse error):", expenseCategories);
-				}
-			} else {
-				 console.log("Không tìm thấy customExpenseCategories_v2, sử dụng defaultExpenseCategories.");
-				 expenseCategories = [...defaultExpenseCategories];
-			}
-
-			// --- LÀM TƯƠNG TỰ CHO accounts ---
-			const storedAccounts = localStorage.getItem('customAccounts_v2');
-			accounts = []; // Khởi tạo
-			if (storedAccounts) {
-				try {
-					accounts = JSON.parse(storedAccounts);
-					console.log("Loaded customAccounts_v2:", accounts); // KIỂM TRA accounts
-					if (!Array.isArray(accounts) || accounts.length === 0) {
-						console.warn("customAccounts_v2 không phải mảng hoặc rỗng, dùng giá trị mặc định.");
-						accounts = [...defaultAccounts];
-						console.log("Fell back to defaultAccounts (not array or empty):", accounts);
-					}
-				} catch (error) {
-					console.error("Lỗi khi parse customAccounts_v2:", error);
-					accounts = [...defaultAccounts];
-					console.log("Fell back to defaultAccounts (parse error):", accounts);
-				}
-			} else {
-				 console.log("Không tìm thấy customAccounts_v2, sử dụng defaultAccounts.");
-				 accounts = [...defaultAccounts];
-			}
-
-			// Sau khi đã tải hoặc đặt lại tất cả, log ra trạng thái cuối cùng
-			console.log("Dữ liệu cuối cùng sau khi tải (loadUserPreferences):", { transactions, incomeCategories, expenseCategories, accounts });
-		}
-
-        function saveUserPreferences() { localStorage.setItem('customIncomeCategories_v2', JSON.stringify(incomeCategories)); localStorage.setItem('customExpenseCategories_v2', JSON.stringify(expenseCategories)); localStorage.setItem('customAccounts_v2', JSON.stringify(accounts)); }
-        function saveTransactions() { localStorage.setItem('transactions_v2', JSON.stringify(transactions)); }
-        
-        // --- CÁC HÀM RENDER (Giữ nguyên cấu trúc, logic hiển thị sẽ tự điều chỉnh theo giá trị số tiền mới) ---
-        function renderAccountListAdmin() { if (!accountListAdminEl) return; accountListAdminEl.innerHTML = ''; accounts.forEach(acc => { const li = document.createElement('li'); li.textContent = acc.text; const deleteButton = document.createElement('button'); deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/> </svg>Xóa`; deleteButton.classList.add('btn-delete', 'text-xs', 'px-2', 'py-1', 'ml-2'); deleteButton.onclick = () => { if (confirm(`Bạn có chắc muốn xóa tài khoản "${acc.text}" không? Lưu ý: Các giao dịch cũ liên quan đến tài khoản này sẽ không tự động cập nhật.`)) { accounts = accounts.filter(a => a.value !== acc.value); saveUserPreferences(); renderAccountListAdmin(); populateAccountDropdowns(); updateAccountBalances(); showMessage(`Đã xóa tài khoản "${acc.text}".`, 'success'); } }; li.appendChild(deleteButton); accountListAdminEl.appendChild(li); }); }
-		function renderCategoryList(listElement, categoriesArray, type) { if (!listElement) return; listElement.innerHTML = ''; categoriesArray.forEach(cat => { const isSpecialTransferCategory = (cat.value === TRANSFER_CATEGORY_IN || cat.value === TRANSFER_CATEGORY_OUT); const li = document.createElement('li'); li.textContent = cat.text; if (!isSpecialTransferCategory) { const deleteButton = document.createElement('button'); deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/> </svg>Xóa`; deleteButton.classList.add('btn-delete', 'text-xs', 'px-2', 'py-1', 'ml-2'); deleteButton.onclick = () => { if (confirm(`Bạn có chắc muốn xóa hạng mục "${cat.text}" không?`)) { if (type === 'income') incomeCategories = incomeCategories.filter(c => c.value !== cat.value); else expenseCategories = expenseCategories.filter(c => c.value !== cat.value); saveUserPreferences(); renderCustomCategoryLists(); populateCategories(); applyMainFilter(); } }; li.appendChild(deleteButton); } else { const lockIcon = document.createElement('span'); lockIcon.innerHTML = ` <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-lock-fill inline-block ml-2 text-gray-400" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>`; li.appendChild(lockIcon); } listElement.appendChild(li); }); }
-        function renderCustomCategoryLists() { renderCategoryList(incomeCategoryListAdminEl, incomeCategories, 'income'); renderCategoryList(expenseCategoryListAdminEl, expenseCategories, 'expense'); }
-        function addCategory(name, type) { if (!name || name.trim() === '') { showMessage('Tên hạng mục không được để trống.', 'error'); return false; } const newCategoryValue = name.trim(); const newCategory = { value: newCategoryValue, text: newCategoryValue }; if (type === 'income') { if (incomeCategories.some(cat => cat.value.toLowerCase() === newCategoryValue.toLowerCase())) { showMessage('Hạng mục thu này đã tồn tại.', 'error'); return false; } incomeCategories.push(newCategory); } else { if (expenseCategories.some(cat => cat.value.toLowerCase() === newCategoryValue.toLowerCase())) { showMessage('Hạng mục chi này đã tồn tại.', 'error'); return false; } expenseCategories.push(newCategory); } saveUserPreferences(); renderCustomCategoryLists(); populateCategories(); showMessage(`Đã thêm hạng mục "${newCategory.text}"!`, 'success'); return true; }
-        function addAccount(name) { if (!name || name.trim() === '') { showMessage('Tên tài khoản không được để trống.', 'error'); return false; } const newAccountName = name.trim(); if (accounts.some(acc => acc.value.toLowerCase() === newAccountName.toLowerCase() || acc.text.toLowerCase() === newAccountName.toLowerCase())) { showMessage('Tài khoản này đã tồn tại.', 'error'); return false; } const newAccount = { value: newAccountName, text: newAccountName }; accounts.push(newAccount); saveUserPreferences(); renderAccountListAdmin(); populateAccountDropdowns(); updateAccountBalances(); showMessage(`Đã thêm tài khoản "${newAccount.text}"!`, 'success'); return true; }
-        function populateAccountDropdowns() { if (!accountInput || !toAccountInput) return; const currentFromAccount = accountInput.value; const currentToAccount = toAccountInput.value; accountInput.innerHTML = ''; toAccountInput.innerHTML = ''; if (!accounts || accounts.length === 0) accounts = [...defaultAccounts]; accounts.forEach(acc => { accountInput.add(new Option(acc.text, acc.value)); toAccountInput.add(new Option(acc.text, acc.value)); }); if (accounts.some(acc => acc.value === currentFromAccount)) accountInput.value = currentFromAccount; else if (accounts.length > 0) accountInput.value = accounts[0].value; if (accounts.some(acc => acc.value === currentToAccount)) toAccountInput.value = currentToAccount; else if (accounts.length > 1) toAccountInput.value = accounts[1].value; else if (accounts.length > 0) toAccountInput.value = accounts[0].value; }
-        function populateCategories() { if (!categoryInput) return; const selectedTypeRadio = document.querySelector('input[name="type"]:checked'); const selectedType = selectedTypeRadio ? selectedTypeRadio.value : 'Chi'; const currentCategoryValue = categoryInput.value; categoryInput.innerHTML = ''; let categoriesToPopulate = (selectedType === 'Thu') ? incomeCategories : expenseCategories; categoriesToPopulate = categoriesToPopulate.filter(cat => cat.value !== TRANSFER_CATEGORY_IN && cat.value !== TRANSFER_CATEGORY_OUT); if (!categoriesToPopulate || categoriesToPopulate.length === 0) { const defaultCats = (selectedType === 'Thu') ? [...defaultIncomeCategories] : [...defaultExpenseCategories]; categoriesToPopulate = defaultCats.filter(cat => cat.value !== TRANSFER_CATEGORY_IN && cat.value !== TRANSFER_CATEGORY_OUT); } categoriesToPopulate.forEach(category => categoryInput.add(new Option(category.text, category.value))); if (categoriesToPopulate.some(cat => cat.value === currentCategoryValue)) categoryInput.value = currentCategoryValue; else if (categoriesToPopulate.length > 0) categoryInput.value = categoriesToPopulate[0].value; }
-		function toggleFormFields() {
-			const selectedTypeRadio = document.querySelector('input[name="type"]:checked');
-			const selectedType = selectedTypeRadio ? selectedTypeRadio.value : 'Chi'; // Mặc định là 'Chi' nếu không có gì được chọn
-
-			// Lấy các element DOM của các container field
-			// Đảm bảo rằng các class này tồn tại trong HTML của bạn
-			const categoryFieldContainer = document.querySelector('.form-field-normal'); 
-			const toAccountFieldContainer = document.querySelector('.form-field-transfer');
-
-			// Kiểm tra xem các container có thực sự được tìm thấy không (để tránh lỗi)
-			if (!categoryFieldContainer) {
-				console.error("Lỗi: Không tìm thấy container cho trường Hạng mục (class 'form-field-normal').");
-			}
-			if (!toAccountFieldContainer) {
-				console.error("Lỗi: Không tìm thấy container cho trường Đến Tài khoản (class 'form-field-transfer').");
-			}
-
-			// Cập nhật dataset trên form (đã có)
-			if (transactionForm) { // Giả sử transactionForm là biến global trỏ đến form
-			  transactionForm.dataset.transactionMode = selectedType;
-			}
-
-
-			if (selectedType === 'Transfer') {
-				// Cập nhật label (đã có)
-				if (accountLabel) accountLabel.textContent = 'Từ Tài khoản:'; // Giả sử accountLabel là biến global
-
-				// Ẩn trường Hạng mục và bỏ yêu cầu
-				if (categoryFieldContainer) categoryFieldContainer.style.display = 'none';
-				if (categoryInput) categoryInput.removeAttribute('required'); // Giả sử categoryInput là biến global
-
-				// Hiển thị trường Đến Tài khoản và đặt là bắt buộc
-				if (toAccountFieldContainer) toAccountFieldContainer.style.display = 'block'; // Hoặc 'grid', 'flex' tùy theo layout của bạn
-				if (toAccountInput) toAccountInput.setAttribute('required', ''); // Giả sử toAccountInput là biến global
-				
-			} else { // Cho 'Thu' hoặc 'Chi'
-				// Cập nhật label (đã có)
-				if (accountLabel) accountLabel.textContent = 'Tài khoản:';
-
-				// Hiển thị trường Hạng mục và đặt là bắt buộc
-				if (categoryFieldContainer) categoryFieldContainer.style.display = 'block'; // Hoặc 'grid', 'flex'
-				if (categoryInput) categoryInput.setAttribute('required', '');
-
-				// Ẩn trường Đến Tài khoản và bỏ yêu cầu
-				if (toAccountFieldContainer) toAccountFieldContainer.style.display = 'none';
-				if (toAccountInput) toAccountInput.removeAttribute('required');
-				
-				populateCategories(); // Gọi hàm điền lại danh mục cho Thu/Chi
-			}
-		}
-		
-
-        // --- HÀM XỬ LÝ SUBMIT GIAO DỊCH (CẬP NHẬT CÁCH LƯU originalAmount) ---
-        function handleTransactionSubmit(e) {
-            e.preventDefault();
-            const datetimeValue = datetimeInput.value;
-            const typeRadio = document.querySelector('input[name="type"]:checked');
-            const type = typeRadio ? typeRadio.value : null;
-            const amountRaw = amountTextInput.value; // Giá trị thô từ ô input
-            const currency = formCurrencySelector.value; // Đơn vị tiền tệ người dùng chọn
-            let categoryValue = (type !== 'Transfer') ? categoryInput.value : null;
-            const accountValue = accountInput.value;
-            const toAccountValue = (type === 'Transfer') ? toAccountInput.value : null;
-            const descriptionValue = descriptionInput.value.trim();
-            
-            // --- Các kiểm tra đầu vào giữ nguyên ---
-            if (!datetimeValue || !type || !amountRaw || !accountValue) { showMessage('Vui lòng điền đầy đủ các trường bắt buộc.', 'error'); return; }
-            if (type !== 'Transfer' && !categoryValue) { showMessage('Vui lòng chọn hạng mục.', 'error'); return; }
-            if (type === 'Transfer' && !toAccountValue) { showMessage('Vui lòng chọn tài khoản nhận cho giao dịch chuyển tiền.', 'error'); return; }
-            if (type === 'Transfer' && accountValue === toAccountValue) { showMessage('Tài khoản chuyển và tài khoản nhận không được trùng nhau.', 'error'); return; }
-
-            // parseAmountInput giờ sẽ trả về giá trị đầy đủ, không còn x1000
-            let amount = parseAmountInput(amountRaw, currency); 
-            if (isNaN(amount) || amount <= 0 && !(type === 'Transfer' && amount === 0) /*Cho phép chuyển 0đ nếu cần*/) { 
-                // Điều chỉnh lại điều kiện amount <=0 nếu muốn cho phép giao dịch 0 đồng
-                // Hiện tại đang là phải > 0
-                 if (amount <= 0 && type !== 'Transfer') { // Chỉ cho phép chuyển tiền 0 đồng, thu/chi phải >0
-                    showMessage('Số tiền không hợp lệ hoặc phải lớn hơn 0.', 'error'); return;
-                 } else if (amount < 0) { // Không cho phép số tiền âm
-                    showMessage('Số tiền không được là số âm.', 'error'); return;
-                 }
-            }
-
-            const transactionDateTime = formatIsoDateTime(new Date(datetimeValue));
-            const persistedTransactionType = type; // Loại giao dịch thực tế (Thu/Chi/Transfer)
-
-            // Giá trị số hóa từ ô input, trước khi quy đổi USD (nếu có)
-            // Sẽ được lưu vào originalAmount
-            const rawNumericValue = parseFloat(normalizeAmountString(amountRaw)); 
-            if(isNaN(rawNumericValue)){
-                showMessage('Số tiền nhập vào không hợp lệ.', 'error'); return;
-            }
-
-
-            if (editingTransactionId) {
-                // ... (Phần logic sửa giao dịch của bạn giữ nguyên cấu trúc)
-                // Chỉ cần đảm bảo các trường amount, originalAmount, originalCurrency được cập nhật đúng
-                const existingTransactionIndex = transactions.findIndex(t => t.id === editingTransactionId || (t.isTransfer && (t.id.startsWith(editingTransactionId) || t.transferPairId.startsWith(editingTransactionId))));
-                if (existingTransactionIndex === -1 && type !== 'Transfer') { showMessage('Lỗi: Giao dịch gốc để sửa không tìm thấy.', 'error'); editingTransactionId = null; return; }
-                
-                // Xóa giao dịch cũ để thêm lại bản cập nhật
-                if (transactions.find(t => t.id.startsWith(editingTransactionId) && t.isTransfer) || type === 'Transfer') { transactions = transactions.filter(t => !t.id.startsWith(editingTransactionId) && !(t.transferPairId && t.transferPairId.startsWith(editingTransactionId))); } else if (existingTransactionIndex !== -1) { transactions.splice(existingTransactionIndex, 1); }
-                
-                const baseId = editingTransactionId; // Giữ lại ID gốc nếu là sửa
-                if (type === 'Transfer') {
-                    categoryValue = null;
-                    const transferOutId = `${baseId}_out_edited_${Date.now()}`;
-                    const transferInId = `${baseId}_in_edited_${Date.now()}`;
-                    transactions.push({ id: transferOutId, datetime: transactionDateTime, description: descriptionValue || `Chuyển tiền từ ${accountValue} đến ${toAccountValue}`, category: TRANSFER_CATEGORY_OUT, amount, type: 'Chi', account: accountValue, currency: 'VND', isTransfer: true, transferPairId: transferInId, originalAmount: rawNumericValue, originalCurrency: currency });
-                    transactions.push({ id: transferInId, datetime: transactionDateTime, description: descriptionValue || `Nhận tiền từ ${accountValue} vào ${toAccountValue}`, category: TRANSFER_CATEGORY_IN, amount, type: 'Thu', account: toAccountValue, currency: 'VND', isTransfer: true, transferPairId: transferOutId, originalAmount: rawNumericValue, originalCurrency: currency });
-                    showMessage('Giao dịch chuyển tiền đã được cập nhật!', 'success');
-                } else {
-                    transactions.push({ id: baseId, datetime: transactionDateTime, description: descriptionValue, category: categoryValue, amount, type, account: accountValue, currency: 'VND', isTransfer: false, transferPairId: null, originalAmount: rawNumericValue, originalCurrency: currency });
-                    showMessage(`Giao dịch ${type === 'Thu' ? 'thu' : 'chi'} đã được cập nhật!`, 'success');
-                }
-                editingTransactionId = null;
-            } else { // Thêm giao dịch mới
-                const newIdBase = Date.now().toString();
-                if (type === 'Transfer') {
-                    const transferOutId = `${newIdBase}_out`;
-                    const transferInId = `${newIdBase}_in`;
-                    transactions.push({ id: transferOutId, datetime: transactionDateTime, description: descriptionValue || `Chuyển tiền từ ${accountValue} đến ${toAccountValue}`, category: TRANSFER_CATEGORY_OUT, amount, type: 'Chi', account: accountValue, currency: 'VND', isTransfer: true, transferPairId: transferInId, originalAmount: rawNumericValue, originalCurrency: currency });
-                    transactions.push({ id: transferInId, datetime: transactionDateTime, description: descriptionValue || `Nhận tiền từ ${accountValue} vào ${toAccountValue}`, category: TRANSFER_CATEGORY_IN, amount, type: 'Thu', account: toAccountValue, currency: 'VND', isTransfer: true, transferPairId: transferOutId, originalAmount: rawNumericValue, originalCurrency: currency });
-                    showMessage('Giao dịch chuyển tiền đã được thêm!', 'success');
-                } else {
-                    transactions.push({ id: newIdBase, datetime: transactionDateTime, description: descriptionValue, category: categoryValue, amount, type, account: accountValue, currency: 'VND', isTransfer: false, transferPairId: null, originalAmount: rawNumericValue, originalCurrency: currency });
-                    showMessage(`Giao dịch ${type === 'Thu' ? 'thu' : 'chi'} đã được thêm!`, 'success');
-                }
-            }
-            saveTransactions();
-            populateMonthFilter(); // Cập nhật bộ lọc tháng (nếu có tháng mới)
-            applyMainFilter();     // Áp dụng lại bộ lọc và render lại tất cả
-            resetForm(persistedTransactionType); // Reset form, giữ lại loại giao dịch vừa chọn
-        }
-        
-	// --- HÀM RESET FORM (Cập nhật để giữ lại lựa chọn tài khoản) ---
-	function resetForm(persistedType = null) {
-	    // Lưu lại giá trị tài khoản đã chọn trước khi reset
-	    const previousAccountValue = accountInput.value;
-	    const previousToAccountValue = toAccountInput.value; // Sẽ là '' nếu không phải transfer
-	
-	    transactionForm.reset(); // Reset các trường input cơ bản
-	    setDefaultDateTime();    // Đặt lại ngày giờ về hiện tại
-	    formCurrencySelector.value = 'VND'; // Đặt lại đơn vị tiền tệ
-	
-	    // Khôi phục loại giao dịch (Thu/Chi/Transfer) nếu được truyền vào
-	    if (persistedType) {
-	        const radioToSelect = document.querySelector(`input[name="type"][value="${persistedType}"]`);
-	        if (radioToSelect) {
-	            radioToSelect.checked = true;
-	        }
-	    } else {
-	        // Mặc định chọn "Chi" nếu không có persistedType
-	        const typeChiRadio = document.getElementById('type-chi');
-	        if (typeChiRadio) typeChiRadio.checked = true;
-	    }
-	
-	    editingTransactionId = null; // Reset ID đang sửa
-	    // Cập nhật tiêu đề form và nút submit về trạng thái "Thêm mới"
-	    if (formTitleEl) formTitleEl.textContent = 'Thêm Giao Dịch Mới';
-	    if (submitButton) {
-	        submitButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>Thêm Giao Dịch';
-	    }
-	
-	    toggleFormFields(); // Cập nhật hiển thị các trường dựa trên loại giao dịch
-	    
-	    // Điền lại danh sách tài khoản và cố gắng khôi phục lựa chọn trước đó
-	    populateAccountDropdowns(); // Hàm này sẽ điền các options
-	
-	    // Cố gắng khôi phục giá trị tài khoản đã chọn
-	    if (accountInput && Array.from(accountInput.options).some(opt => opt.value === previousAccountValue)) {
-	        accountInput.value = previousAccountValue;
-	    }
-	    // Nếu là giao dịch chuyển tiền và giá trị "Đến tài khoản" trước đó hợp lệ
-	    if (document.querySelector('input[name="type"]:checked')?.value === 'Transfer' && 
-	        toAccountInput && 
-	        Array.from(toAccountInput.options).some(opt => opt.value === previousToAccountValue)) {
-	        toAccountInput.value = previousToAccountValue;
-	    }
-	
-	
-	    // Điền lại danh mục nếu không phải là giao dịch chuyển tiền
-	    // và giữ lại lựa chọn hạng mục nếu có thể (tùy thuộc vào việc bạn có muốn giữ lại hạng mục không)
-	    // Hiện tại, populateCategories sẽ chọn hạng mục đầu tiên của loại giao dịch mới.
-	    // Nếu bạn muốn giữ lại hạng mục, cần logic tương tự như giữ lại tài khoản.
-	    const currentTransactionType = document.querySelector('input[name="type"]:checked');
-	    if (currentTransactionType && currentTransactionType.value !== 'Transfer') {
-	        populateCategories(); // Điều này sẽ chọn hạng mục đầu tiên cho loại Thu/Chi
-	    }
-	    
-	    // Đặt lại focus vào trường đầu tiên hoặc trường số tiền (tùy chọn)
-	    // datetimeInput.focus(); 
-	    // Hoặc
-	    // amountTextInput.focus();
-	}
-
-        function getMonthDisplayText(selectedMonthValue, withParentheses = true) {
-            let text;
-            if (selectedMonthValue === 'all' || !selectedMonthValue) {
-                text = "Tất cả";
             } else {
-                const parts = selectedMonthValue.split('-');
-                if (parts.length === 2) {
-                    const [year, month] = parts;
-                    text = `Tháng ${month}/${year}`;
-                } else {
-                    text = "Đã chọn";
+                header.classList.remove('active');
+                content.classList.remove('active');
+                if (toggleIcon) {
+                    toggleIcon.style.transform = 'rotate(0deg)';
                 }
             }
-            return withParentheses ? `(${text})` : text;
-        }
 
-        // --- HÀM SỬA GIAO DỊCH (CẬP NHẬT CÁCH ĐIỀN `amountTextInput`) ---
-        window.loadTransactionForEdit = function(transactionId) {
-            let transactionToEdit = transactions.find(t => t.id === transactionId);
-            let baseIdForEdit = transactionId; // ID cơ sở để chỉnh sửa
+            // Add click event
+            header.addEventListener('click', () => {
+                console.log(`Header clicked for target: ${contentId}`);
 
-            if (!transactionToEdit) { // Có thể là một phần của giao dịch chuyển tiền
-                const transferPart = transactions.find(t => t.isTransfer && (t.id === transactionId || t.transferPairId === transactionId));
-                if (transferPart) {
-                    baseIdForEdit = transferPart.id.split('_')[0]; // Lấy ID gốc của cặp chuyển tiền
-                    // Tìm cả hai phần của giao dịch chuyển tiền dựa trên baseIdForEdit
-                    const outTx = transactions.find(t => t.id.startsWith(baseIdForEdit) && t.type === 'Chi' && t.isTransfer);
-                    const inTx = transactions.find(t => t.id.startsWith(baseIdForEdit) && t.type === 'Thu' && t.isTransfer);
-                    if (outTx && inTx) {
-                        transactionToEdit = outTx; // Dùng outTx làm cơ sở để điền form, vì nó chứa tài khoản nguồn
-                        datetimeInput.value = formatDateTimeLocalInput(new Date(outTx.datetime));
-                        document.getElementById('type-transfer').checked = true;
-                        
-                        // QUAN TRỌNG: Điền vào ô input số tiền giá trị originalAmount (là giá trị thô người dùng đã nhập)
-                        amountTextInput.value = String(outTx.originalAmount); 
-                        formCurrencySelector.value = outTx.originalCurrency; // Đơn vị tiền tệ gốc khi nhập
+                const isActiveAfterClick = header.classList.toggle('active');
+                content.classList.toggle('active', isActiveAfterClick);
 
-                        descriptionInput.value = outTx.description.startsWith("Chuyển tiền từ") ? outTx.description : (inTx.description.startsWith("Nhận tiền từ") ? inTx.description : outTx.description);
-                        accountInput.value = outTx.account;
-                        toAccountInput.value = inTx.account;
-                    } else {
-                        showMessage('Lỗi: Không tìm thấy đủ thông tin giao dịch chuyển tiền để sửa.', 'error'); return;
-                    }
-                } else {
-                    showMessage('Lỗi: Không tìm thấy giao dịch.', 'error'); return;
-                }
-            } else { // Giao dịch thu/chi thông thường
-                datetimeInput.value = formatDateTimeLocalInput(new Date(transactionToEdit.datetime));
-                document.querySelector(`input[name="type"][value="${transactionToEdit.type}"]`).checked = true;
+                localStorage.setItem(`collapsibleState_${contentId}`, isActiveAfterClick ? 'expanded' : 'collapsed');
                 
-                // QUAN TRỌNG: Điền vào ô input số tiền giá trị originalAmount
-                amountTextInput.value = String(transactionToEdit.originalAmount);
-                formCurrencySelector.value = transactionToEdit.originalCurrency;
-
-                descriptionInput.value = transactionToEdit.description;
-                accountInput.value = transactionToEdit.account;
-                if (transactionToEdit.type !== 'Transfer') categoryInput.value = transactionToEdit.category;
-            }
-
-            editingTransactionId = baseIdForEdit; // Lưu ID cơ sở để submit biết là đang sửa
-            formTitleEl.textContent = 'Sửa Giao Dịch';
-            submitButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>Lưu Thay Đổi`;
-            toggleFormFields(); // Quan trọng để hiện/ẩn đúng trường cho loại giao dịch
-            populateAccountDropdowns(); // Tải lại danh sách tài khoản
-            if (document.querySelector('input[name="type"]:checked').value !== 'Transfer') {
-                populateCategories(); // Tải lại danh mục nếu không phải chuyển tiền
-                if(transactionToEdit && transactionToEdit.type !== 'Transfer') categoryInput.value = transactionToEdit.category;
-            }
-            const formSection = document.querySelector('.form-section .collapsible-header');
-            if(formSection && !formSection.classList.contains('active')) formSection.click();
-            formSection.scrollIntoView({ behavior: 'smooth' });
-        }
-
-		// --- HÀM RENDER BẢNG ĐỐI SOÁT XOAY ---
-		function renderReconciliationTable() {
-			const table = document.getElementById('reconciliation-table');
-			const tableHead = table.querySelector('thead');
-			const tableBody = table.querySelector('tbody');
-
-			if (!table || !tableHead || !tableBody) {
-				console.error("[RenderTable] Lỗi: Không tìm thấy bảng đối soát (#reconciliation-table) hoặc các thành phần thead/tbody.");
-				return;
-			}
-
-			// Xóa nội dung cũ của bảng để vẽ lại
-			tableHead.innerHTML = '';
-			tableBody.innerHTML = '';
-
-			// Kiểm tra xem có tài khoản nào để hiển thị không
-			if (!accounts || accounts.length === 0) {
-				const headerRowForMessage = tableHead.insertRow();
-				const th = headerRowForMessage.insertCell();
-				th.colSpan = 1; // Colspan ban đầu
-				th.textContent = "Mục / Tài khoản";
-
-				const bodyRowForMessage = tableBody.insertRow();
-				const td = bodyRowForMessage.insertCell();
-				td.colSpan = 1; // Sẽ được điều chỉnh sau nếu cần
-				td.className = 'text-center py-4 text-gray-500 dark:text-gray-400';
-				td.textContent = 'Chưa có tài khoản nào để đối soát.';
-				// Nếu muốn thông báo chiếm toàn bộ chiều rộng, colspan cần được tính dựa trên số tài khoản + 1
-				// Nhưng vì không có tài khoản, 1 là đủ.
-				return;
-			}
-
-			// 1. Xây dựng Header (Tên tài khoản là cột)
-			const headerRow = tableHead.insertRow();
-			// Ô đầu tiên của header, làm sticky để cố định khi cuộn ngang
-			headerRow.insertCell().outerHTML = `<th class="sticky left-0 z-10 bg-gray-50 dark:bg-gray-700 border-r dark:border-gray-600">Mục / Tài khoản</th>`;
-			accounts.forEach(acc => {
-				headerRow.insertCell().outerHTML = `<th>${acc.text}</th>`;
-			});
-			// Cập nhật colspan cho thông báo nếu không có tài khoản (mặc dù đã return ở trên)
-			if (tableBody.querySelector('td[colspan]')) {
-				tableBody.querySelector('td[colspan]').colSpan = accounts.length + 1;
-			}
-
-
-			// 2. Định nghĩa các "hàng" (measures) sẽ hiển thị trong bảng
-			const measures = [
-				{
-					id: 'systemBalance',
-					label: 'Số dư hệ thống',
-					type: 'display', // Kiểu ô hiển thị dữ liệu
-					getValue: (accountId) => formatCurrency(getAccountBalance(accountId), 'VND'),
-				},
-				{
-					id: 'actualBalance',
-					label: 'Số dư thực tế <br><span class="font-normal normal-case text-xs">(Nhập vào)</span>',
-					type: 'input' // Kiểu ô nhập liệu
-				},
-				{
-					id: 'difference',
-					label: 'Chênh lệch',
-					type: 'displayCell', // Kiểu ô hiển thị chênh lệch, được cập nhật bởi JS
-				},
-				{
-					id: 'reconcileAction',
-					label: 'Thao tác',
-					type: 'actionButton', // Kiểu ô chứa nút hành động
-					buttonText: 'Đối soát',
-					buttonClass: 'btn-secondary btn-reconcile-pivot py-2 px-3 text-sm rounded'
-				},
-				{
-					id: 'recordDifferenceAction',
-					label: 'Ghi nhận chênh lệch',
-					type: 'actionButton',
-					buttonText: 'Ghi nhận',
-					buttonClass: 'btn-primary btn-record-diff-pivot py-2 px-3 text-sm rounded', // Class cho nút Ghi nhận
-					initialStyle: 'display:none;' // QUAN TRỌNG: Ban đầu nút này sẽ bị ẩn
-				}
-			];
-
-			// 3. Xây dựng Body của bảng (Mỗi measure là một hàng)
-			measures.forEach(measure => {
-				const row = tableBody.insertRow();
-				// Ô đầu tiên của mỗi hàng (label), làm sticky
-				row.insertCell().outerHTML = `<td class="sticky left-0 z-10 bg-white dark:bg-gray-800 font-medium border-r dark:border-gray-600 p-2">${measure.label}</td>`;
-
-				accounts.forEach(acc => {
-					const cell = row.insertCell();
-					cell.setAttribute('data-account', acc.value); // Lưu trữ ID tài khoản trên ô
-					cell.classList.add('text-right', 'p-2');   // Căn phải cho các ô giá trị/input
-
-					switch (measure.type) {
-						case 'display': // Ô hiển thị (ví dụ: Số dư hệ thống)
-							cell.innerHTML = measure.getValue(acc.value);
-							if (measure.id === 'systemBalance') {
-								cell.id = `system-balance-pivot-${acc.value}`; // ID để cập nhật sau này
-							}
-							break;
-						case 'input': // Ô nhập liệu (ví dụ: Số dư thực tế)
-							cell.innerHTML = `<input type="text" inputmode="decimal"
-													class="input-actual-balance-pivot p-2 border dark:border-gray-600 rounded w-full text-right bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-													data-account="${acc.value}"
-													placeholder="Nhập số dư">`;
-							const inputEl = cell.querySelector('input');
-							if (inputEl) {
-								// PHẦN THÊM MỚI ĐỂ TÍCH HỢP BÀN PHÍM ẢO
-								const virtualKeyboardEl = document.getElementById('virtualNumericKeyboard'); // Đảm bảo biến này có sẵn
-
-								// Event listener cho định dạng số khi nhập
-								inputEl.addEventListener('input', (e) => {
-									if (typeof formatAndPreserveCursor === 'function') {
-										formatAndPreserveCursor(e.target, e.target.value);
-									}
-								});
-
-								// Event listener để chỉ cho phép nhập số (tương tự amount-input)
-								inputEl.addEventListener('keydown', function(e) {
-									if ([46, 8, 9, 27, 13, 35, 36, 37, 39].indexOf(e.keyCode) !== -1 || // Cho phép: backspace, delete, tab, escape, enter, home, end, left, right arrows
-										((e.keyCode === 65 || e.keyCode === 88 || e.keyCode === 67 || e.keyCode === 86) && (e.ctrlKey === true || e.metaKey === true)) || // Cho phép: Ctrl+A, Command+A, Ctrl+C, Ctrl+V, Ctrl+X
-										(e.keyCode >= 48 && e.keyCode <= 57 && !e.shiftKey) || // Cho phép: số từ 0-9 trên bàn phím chính
-										(e.keyCode >= 96 && e.keyCode <= 105) || // Cho phép: số từ 0-9 trên numpad
-										(e.keyCode === 190 || e.keyCode === 110)) { // Cho phép: dấu chấm (period) và dấu chấm trên numpad
-										// Nếu là dấu chấm, kiểm tra xem đã có dấu chấm chưa
-										if ((e.keyCode === 190 || e.keyCode === 110) && this.value.includes('.')) {
-											e.preventDefault(); // Ngăn nhập nhiều hơn một dấu chấm
-										}
-										return; // Cho phép các phím này
-									}
-									// Ngăn chặn tất cả các phím khác không được liệt kê ở trên
-									e.preventDefault();
-								});
-
-								// Event listener để hiển thị bàn phím ảo khi click (cho thiết bị cảm ứng)
-								inputEl.addEventListener('click', function(event) {
-									if (('ontouchstart' in window || navigator.maxTouchPoints > 0) && virtualKeyboardEl) {
-										event.preventDefault();
-										if (virtualKeyboardEl.style.display === 'none' || virtualKeyboardEl.style.display === '' || activeInputForVirtualKeyboard !== this) {
-											showVirtualKeyboard(this); // 'this' ở đây là inputEl
-										}
-										this.blur(); // Ngăn bàn phím OS tự động bật
-									}
-								});
-
-								// Event listener để hiển thị bàn phím ảo khi focus (chủ yếu cho desktop, và xử lý trên cảm ứng)
-								inputEl.addEventListener('focus', function(e) {
-									if (('ontouchstart' in window || navigator.maxTouchPoints > 0) && virtualKeyboardEl) {
-										e.target.blur(); // LUÔN BLUR ngay để ngăn bàn phím OS
-										if (virtualKeyboardEl.style.display === 'none' || virtualKeyboardEl.style.display === '') {
-											showVirtualKeyboard(this); // 'this' ở đây là inputEl
-										}
-									} else if (virtualKeyboardEl) {
-										// Trên desktop, bạn có thể chọn có hiển thị bàn phím ảo tự động khi focus hay không.
-										// Hiện tại, logic này sẽ không tự động hiển thị trên desktop khi focus, người dùng cần click.
-										// Nếu muốn tự động hiển thị khi focus trên desktop, bỏ comment dòng dưới và điều chỉnh showVirtualKeyboard cho phù hợp.
-										// showVirtualKeyboard(this);
-									}
-								});
-								// KẾT THÚC PHẦN THÊM MỚI
-							}
-							break;
-						case 'displayCell': // Ô hiển thị (ví dụ: Chênh lệch)
-							cell.id = `diff-pivot-${acc.value}`; // ID để cập nhật chênh lệch
-							break;
-						case 'actionButton': // Ô chứa nút hành động
-							const button = document.createElement('button');
-							button.innerHTML = measure.buttonText;
-							button.className = measure.buttonClass;
-							button.dataset.account = acc.value;      // Lưu ID tài khoản vào dataset
-							button.dataset.accountName = acc.text; // Lưu tên tài khoản vào dataset
-							if (measure.initialStyle) {
-								button.style.cssText = measure.initialStyle;
-							}
-
-							// Gán ID cụ thể cho từng loại nút để dễ dàng tìm và điều khiển
-							if (measure.id === 'reconcileAction') { // Nút "Đối soát"
-								button.id = `reconcile-btn-pivot-${acc.value}`;
-							} else if (measure.id === 'recordDifferenceAction') { // Nút "Ghi nhận"
-								button.id = `record-diff-btn-pivot-${acc.value}`;
-								console.log(`[RenderTable] Đã tạo nút 'Ghi nhận': ID=${button.id}, Account=${acc.text}, Style ban đầu=${button.style.cssText}`);
-							}
-							cell.appendChild(button);
-							cell.classList.add('text-center'); // Căn giữa nút trong ô
-							cell.classList.remove('text-right'); // Bỏ căn phải cho ô chứa nút
-							break;
-					}
-				});
-			});
-
-			// 4. Gán sự kiện cho các nút "Đối soát" (CHỈ MỘT LẦN SAU KHI TẤT CẢ ĐÃ RENDER)
-			document.querySelectorAll('.btn-reconcile-pivot').forEach(btn => {
-				btn.addEventListener('click', function() {
-					const accountId = this.dataset.account;
-					const accountName = this.dataset.accountName; // Lấy tên tài khoản từ dataset của nút "Đối soát"
-					console.log(`%c[ReconcilePivot] Nút 'Đối soát' được nhấn cho tài khoản: ${accountName} (ID: ${accountId})`, "color: blue; font-weight: bold;");
-
-					const actualBalanceInputElement = document.querySelector(`input.input-actual-balance-pivot[data-account="${accountId}"]`);
-					const diffCellElement = document.getElementById(`diff-pivot-${accountId}`);
-					const recordButtonElement = document.getElementById(`record-diff-btn-pivot-${accountId}`); // Tìm nút "Ghi nhận" bằng ID
-					const systemBalanceDisplayElement = document.getElementById(`system-balance-pivot-${accountId}`);
-
-					console.log(`[ReconcilePivot] Tìm kiếm phần tử cho tài khoản ${accountId}:`);
-					console.log(`  -> Input số dư thực tế:`, actualBalanceInputElement ? 'Tìm thấy' : 'KHÔNG TÌM THẤY');
-					console.log(`  -> Ô chênh lệch (diffCell):`, diffCellElement ? 'Tìm thấy' : 'KHÔNG TÌM THẤY');
-					console.log(`  -> Nút Ghi nhận (recordButton):`, recordButtonElement ? 'Tìm thấy' : 'KHÔNG TÌM THẤY');
-					console.log(`  -> Ô số dư hệ thống (systemBalanceDisplay):`, systemBalanceDisplayElement ? 'Tìm thấy' : 'KHÔNG TÌM THẤY');
-
-					if (!actualBalanceInputElement || !diffCellElement || !systemBalanceDisplayElement) {
-						console.error(`[ReconcilePivot] Lỗi nghiêm trọng: Không tìm thấy các phần tử DOM cơ bản (input, diff cell, system balance display) cho tài khoản ${accountId}.`);
-						showMessage('Lỗi hệ thống: Không thể thực hiện đối soát do thiếu thành phần giao diện.', 'error');
-						return;
-					}
-					if (!recordButtonElement) {
-						console.warn(`[ReconcilePivot] CẢNH BÁO: Nút "Ghi nhận" (ID: record-diff-btn-pivot-${accountId}) không được tìm thấy! Nút này sẽ không thể hiển thị.`);
-					}
-
-					// Cập nhật hiển thị số dư hệ thống hiện tại trước khi tính toán
-					const systemBalanceValue = getAccountBalance(accountId);
-					systemBalanceDisplayElement.textContent = formatCurrency(systemBalanceValue, 'VND');
-
-					const actualBalanceRaw = actualBalanceInputElement.value;
-					const actualBalanceNormalized = normalizeAmountString(actualBalanceRaw);
-					const actualBalance = parseFloat(actualBalanceNormalized);
-
-					console.log(`[ReconcilePivot] Giá trị tính toán cho ${accountName}:`);
-					console.log(`  - Số dư hệ thống (systemBalanceValue):`, systemBalanceValue);
-					console.log(`  - Số dư thực tế nhập vào (actualBalanceRaw):`, actualBalanceRaw);
-					console.log(`  - Số dư thực tế đã chuẩn hóa (actualBalanceNormalized):`, actualBalanceNormalized);
-					console.log(`  - Số dư thực tế (parsed float - actualBalance):`, actualBalance);
-
-					if (isNaN(actualBalance) || actualBalanceRaw.trim() === '') {
-						showMessage('Vui lòng nhập số dư thực tế hợp lệ cho tài khoản ' + accountName + '.', 'error');
-						diffCellElement.textContent = '';
-						diffCellElement.className = 'text-right p-2'; // Reset class
-						if (recordButtonElement) {
-							recordButtonElement.style.display = 'none'; // Ẩn nút ghi nhận nếu input không hợp lệ
-							console.log(`[ReconcilePivot] Input không hợp lệ -> Ẩn nút 'Ghi nhận' cho ${accountName}.`);
-						}
-						return;
-					}
-
-					const differenceValue = actualBalance - systemBalanceValue;
-					console.log(`%c[ReconcilePivot] Chênh lệch tính được cho ${accountName}: ${differenceValue}`, "color: green; font-weight: bold;");
-
-					diffCellElement.textContent = formatCurrency(differenceValue, 'VND');
-					diffCellElement.className = 'text-right p-2 font-semibold '; // Reset và đặt class cơ bản
-					if (differenceValue > 0) {
-						diffCellElement.classList.add('text-green-600', 'dark:text-green-400');
-					} else if (differenceValue < 0) {
-						diffCellElement.classList.add('text-red-600', 'dark:text-red-400');
-					} else { // Chênh lệch = 0
-						diffCellElement.classList.add('text-blue-600', 'dark:text-blue-400');
-					}
-
-					if (typeof saveReconciliationResult === "function") {
-						saveReconciliationResult(accountId, systemBalanceValue, actualBalance, differenceValue);
-					}
-					// showMessage(`Đã đối soát tài khoản ${accountName}.`, 'info'); // Thông báo có thể không cần thiết nếu có nút Ghi nhận
-
-					// Xử lý hiển thị và sự kiện cho nút "Ghi nhận"
-					if (recordButtonElement) { // Chỉ thực hiện nếu nút Ghi nhận tồn tại
-						if (differenceValue !== 0) {
-							recordButtonElement.style.display = 'inline-block'; // HIỂN THỊ NÚT
-							recordButtonElement.dataset.difference = differenceValue; // Lưu chênh lệch vào dataset
-							// dataset.account và dataset.accountName đã được gán khi tạo nút
-
-							// Cập nhật class cho nút Ghi nhận dựa trên chênh lệch
-							if (differenceValue > 0) { // Chênh lệch dương -> Giao dịch Thu
-								recordButtonElement.classList.remove('negative', 'btn-secondary', 'btn-danger');
-								recordButtonElement.classList.add('positive', 'btn-primary'); // Hoặc class cho màu xanh/thành công
-								// recordButtonElement.innerHTML = 'Ghi nhận Thu'; // Tùy chọn thay đổi text nút
-							} else { // Chênh lệch âm -> Giao dịch Chi
-								recordButtonElement.classList.remove('positive', 'btn-secondary', 'btn-primary');
-								recordButtonElement.classList.add('negative', 'btn-danger'); // Cần định nghĩa .btn-danger trong CSS
-								// recordButtonElement.innerHTML = 'Ghi nhận Chi'; // Tùy chọn
-							}
-							console.log(`%c[ReconcilePivot] ĐÃ HIỂN THỊ nút 'Ghi nhận' cho ${accountName}. Style display: ${recordButtonElement.style.display}`, "background-color: yellow; color: black;");
-
-							// Gán (hoặc gán lại) sự kiện click cho nút "Ghi nhận"
-							recordButtonElement.onclick = function() { // Dùng function thường để 'this' trỏ đúng vào nút
-								const currentAccountId = this.dataset.account;
-								const currentAccountName = this.dataset.accountName;
-								const currentDifference = parseFloat(this.dataset.difference);
-
-								console.log(`[RecordDiffPivot] Nút 'Ghi nhận' được nhấn. Tài khoản: ${currentAccountName}, Chênh lệch: ${currentDifference}`);
-
-								if (confirm(`Bạn có chắc chắn muốn ghi nhận chênh lệch ${formatCurrency(currentDifference, 'VND')} cho tài khoản ${currentAccountName}?`)) {
-									if (typeof handleRecordDifference === "function") {
-										handleRecordDifference(currentAccountId, currentAccountName, currentDifference);
-									} else {
-										console.error("[RecordDiffPivot] Hàm handleRecordDifference không tồn tại!");
-										showMessage("Lỗi: Không thể xử lý việc ghi nhận chênh lệch.", "error");
-										return;
-									}
-									
-									// Sau khi ghi nhận, cập nhật lại hiển thị số dư hệ thống trên bảng
-									if (typeof updateSystemBalanceDisplayOnTable === "function") {
-										updateSystemBalanceDisplayOnTable(currentAccountId);
-									}
-
-									this.style.display = 'none'; // Ẩn nút "Ghi nhận" sau khi đã xử lý
-									actualBalanceInputElement.value = ''; // Xóa giá trị đã nhập trong ô số dư thực tế
-									diffCellElement.textContent = formatCurrency(0, 'VND'); // Reset chênh lệch về 0
-									diffCellElement.className = 'text-right p-2 font-semibold text-blue-600 dark:text-blue-400'; // Reset màu
-
-									showMessage(`Đã ghi nhận chênh lệch cho tài khoản ${currentAccountName}.`, 'success');
-								}
-							};
-						} else { // Nếu differenceValue === 0
-							recordButtonElement.style.display = 'none'; // ẨN NÚT
-							diffCellElement.innerHTML = formatCurrency(0, 'VND') + ' <span class="text-xs font-normal">(Đã khớp)</span>';
-							console.log(`[ReconcilePivot] ĐÃ ẨN nút 'Ghi nhận' cho ${accountName} vì chênh lệch là 0.`);
-						}
-					} else { // Nếu recordButtonElement không tìm thấy
-						 console.error(`[ReconcilePivot] KHÔNG THỂ cập nhật hiển thị cho nút 'Ghi nhận' của tài khoản ${accountName} vì không tìm thấy phần tử nút.`);
-					}
-				});
-			});
-
-			// Áp dụng định dạng số cho các ô input nếu có hàm đó
-			if (typeof setupThousandSeparators === 'function') {
-				setupThousandSeparators();
-			}
-			console.log("[RenderTable] Bảng đối soát xoay đã được render và gán sự kiện.");
-		}
-		
-		function calculateAccountBalanceAsOfDate(accountId, specificDate) {
-			let balance = 0;
-			const dateLimit = new Date(specificDate);
-			// Để tính số dư ĐẦU ngày, chúng ta cần các giao dịch TRƯỚC ngày đó.
-			// Hoặc nếu specificDate là cuối ngày, thì tính đến hết ngày đó.
-			// Giả sử specificDate là đầu ngày (00:00:00) của ngày bắt đầu tuần.
-			// Vậy ta sẽ tính tất cả giao dịch có datetime < specificDate.
-			transactions.forEach(tx => {
-				if (tx.account === accountId) {
-					const txDate = new Date(tx.datetime);
-					if (txDate < dateLimit) { // Chỉ lấy các giao dịch TRƯỚC ngày bắt đầu của tuần
-						if (tx.type === 'Thu') {
-							balance += tx.amount;
-						} else if (tx.type === 'Chi') {
-							balance -= tx.amount;
-						}
-					}
-				}
-			});
-			return balance;
-		}
-
-	// Hàm hỗ trợ để cập nhật hiển thị số dư hệ thống
-		function updateSystemBalanceDisplay(accountId) {
-			const systemBalanceCells = document.querySelectorAll(`td[data-account="${accountId}"]`);
-			const newBalance = getAccountBalance(accountId);
-			
-			systemBalanceCells.forEach(cell => {
-				// Chỉ cập nhật cell hiển thị số dư hệ thống
-				if (cell.classList.contains('system-balance-cell')) {
-					cell.textContent = formatCurrency(newBalance, 'VND');
-				}
-			});
-		}
-
-		// Hàm hỗ trợ để lấy tên tài khoản từ ID
-		function getAccountName(accountId) {
-			const account = accounts.find(a => a.value === accountId);
-			return account ? account.text : accountId;
-		}
-		
-		const RECONCILE_ADJUST_INCOME_CAT = "Điều chỉnh Đối Soát (Thu)";
-		const RECONCILE_ADJUST_EXPENSE_CAT = "Điều chỉnh Đối Soát (Chi)";
-		
-		// Hàm handleRecordDifference (bạn nên đã có từ trước, nếu chưa thì thêm vào)
-		function handleRecordDifference(accountId, accountName, difference) {
-			if (isNaN(difference) || difference === 0) {
-				showMessage('Không có chênh lệch để ghi nhận hoặc chênh lệch không hợp lệ.', 'error');
-				return;
-			}
-
-			const type = difference > 0 ? 'Thu' : 'Chi';
-			const amount = Math.abs(difference);
-			const category = difference > 0 ? RECONCILE_ADJUST_INCOME_CAT : RECONCILE_ADJUST_EXPENSE_CAT;
-			const description = `Điều chỉnh đối soát tài khoản ${accountName || accountId}`;
-			const transactionDateTime = formatIsoDateTime(new Date());
-
-			if (type === 'Thu' && !incomeCategories.some(cat => cat.value === RECONCILE_ADJUST_INCOME_CAT)) {
-				incomeCategories.push({ value: RECONCILE_ADJUST_INCOME_CAT, text: RECONCILE_ADJUST_INCOME_CAT });
-				saveUserPreferences();
-			} else if (type === 'Chi' && !expenseCategories.some(cat => cat.value === RECONCILE_ADJUST_EXPENSE_CAT)) {
-				expenseCategories.push({ value: RECONCILE_ADJUST_EXPENSE_CAT, text: RECONCILE_ADJUST_EXPENSE_CAT });
-				saveUserPreferences();
-			}
-
-			const newTransaction = {
-				id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
-				datetime: transactionDateTime,
-				description: description,
-				category: category,
-				amount: amount,
-				type: type,
-				account: accountId,
-				currency: 'VND',
-				isTransfer: false,
-				transferPairId: null,
-				originalAmount: amount,
-				originalCurrency: 'VND'
-			};
-
-			transactions.push(newTransaction);
-			saveTransactions();
-			applyMainFilter(); // Quan trọng: Cập nhật lại toàn bộ UI
-			// Các hàm render/populate categories sẽ được gọi trong applyMainFilter nếu cần
-			// Hàm renderReconciliationTable() cũng nên được gọi lại nếu số dư hệ thống thay đổi và bảng không tự cập nhật.
-			// Hoặc, hàm updateSystemBalanceDisplayOnTable sẽ xử lý việc này cho ô cụ thể.
-            // Nếu initializeApp có renderReconciliationTable, và applyMainFilter gọi lại các phần của initializeApp, thì có thể đã đủ.
-            // Để chắc chắn, bạn có thể gọi renderReconciliationTable() ở cuối hàm này nếu cần làm mới toàn bộ bảng.
-            // renderReconciliationTable();
-		}
-
-		function updateSystemBalanceDisplayOnTable(accountId) {
-			const newSystemBalance = getAccountBalance(accountId); // getAccountBalance tính từ mảng transactions đã cập nhật
-			const systemBalanceCell = document.getElementById(`system-balance-pivot-${accountId}`); // Tìm ô theo ID
-
-			if (systemBalanceCell) {
-				systemBalanceCell.textContent = formatCurrency(newSystemBalance, 'VND');
-			} else {
-				console.warn(`Không tìm thấy ô số dư hệ thống (ID: system-balance-pivot-${accountId}) để cập nhật cho tài khoản ${accountId} trên bảng. Sẽ render lại toàn bộ bảng.`);
-				renderReconciliationTable(); // Fallback nếu không tìm thấy ô cụ thể
-			}
-		}
-
-		function getAccountBalance(accountValue) {
-			let balance = 0;
-			transactions.forEach(tx => {
-				if (tx.account === accountValue) {
-					if (tx.type === "Thu") balance += tx.amount;
-					else if (tx.type === "Chi") balance -= tx.amount;
-					// Logic cho 'Transfer-in'/'Transfer-out' không có trong cấu trúc giao dịch hiện tại,
-					// isTransfer=true sẽ có một giao dịch 'Chi' từ tài khoản này và 'Thu' vào tài khoản khác.
-				}
-			});
-			return balance;
-		}
-		// Hàm lưu lịch sử đối soát
-		function saveReconciliationResult(account, system, actual, diff) {
-			const now = new Date();
-			const year = now.getFullYear();
-			const week = getISOWeekNumber(now); // Giả sử getISOWeekNumber đã đúng
-			const data = { account, year, week, system, actual, diff, timestamp: now.toISOString() };
-			let history = JSON.parse(localStorage.getItem('reconciliation_history_v2') || '[]'); // Sử dụng key mới để tránh xung đột
-			history.push(data);
-			localStorage.setItem('reconciliation_history_v2', JSON.stringify(history));
-			// showMessage có thể được gọi bởi hàm gọi saveReconciliationResult nếu cần.
-		}
-		// Khi load xong data:
-		document.addEventListener('DOMContentLoaded', renderReconciliationTable);
-		
-		function handleActualBalanceInput(accountId, endOfWeek) {
-		  const input = document.getElementById(`actual-balance-${accountId}`);
-		  const actual = parseFloat(input.value);
-
-		  // Hiện chênh lệch ngay khi nhập
-		  const diffTd = document.getElementById(`diff-${accountId}`);
-		  if (!isNaN(actual)) {
-			diffTd.textContent = formatCurrency(actual - endOfWeek);
-		  } else {
-			diffTd.textContent = '';
-		  }
-
-		  // Lưu vào localStorage theo tuần & tài khoản
-		  let weekKey = getCurrentWeekKey();
-		  let reconciliationHistory = JSON.parse(localStorage.getItem('reconciliationHistory') || '{}');
-		  if (!reconciliationHistory[weekKey]) reconciliationHistory[weekKey] = {};
-		  reconciliationHistory[weekKey][accountId] = actual;
-		  localStorage.setItem('reconciliationHistory', JSON.stringify(reconciliationHistory));
-		}		
-		
-		function renderReconciliationTable() {
-			const table = document.getElementById('reconciliation-table');
-			const tableHead = table.querySelector('thead');
-			const tableBody = table.querySelector('tbody');
-
-			if (!table || !tableHead || !tableBody) {
-				console.error("[RenderTable] Lỗi: Không tìm thấy bảng đối soát (#reconciliation-table) hoặc các thành phần thead/tbody.");
-				return;
-			}
-
-			tableHead.innerHTML = ''; // Xóa header cũ
-			tableBody.innerHTML = ''; // Xóa body cũ
-
-			if (!accounts || accounts.length === 0) {
-				const headerRowForMessage = tableHead.insertRow();
-				const th = headerRowForMessage.insertCell();
-				th.colSpan = 1; // Hoặc một giá trị mặc định
-                th.textContent = "Mục / Tài khoản"; // Giữ một cột tiêu đề
-
-				const bodyRowForMessage = tableBody.insertRow();
-				const td = bodyRowForMessage.insertCell();
-				td.colSpan = 1; // Phải khớp với colspan của header nếu có nhiều cột
-				td.className = 'text-center py-4 text-gray-500 dark:text-gray-400';
-				td.textContent = 'Chưa có tài khoản nào để đối soát.';
-				return;
-			}
-
-			// 1. Xây dựng Header (Tên tài khoản là cột)
-			const headerRow = tableHead.insertRow();
-			headerRow.insertCell().outerHTML = `<th class="sticky left-0 z-10 bg-gray-50 dark:bg-gray-700">Mục / Tài khoản</th>`;
-			accounts.forEach(acc => {
-				headerRow.insertCell().outerHTML = `<th>${acc.text}</th>`;
-			});
-
-			// 2. Định nghĩa các "hàng" (measures) sẽ hiển thị
-			const measures = [
-				{
-					id: 'systemBalance',
-					label: 'Số dư hệ thống',
-					type: 'display',
-					getValue: (accountId) => formatCurrency(getAccountBalance(accountId), 'VND'),
-				},
-				{
-					id: 'actualBalance',
-					label: 'Số dư thực tế <br><span class="font-normal normal-case text-xs">(Nhập vào cuối tuần)</span>',
-					type: 'input'
-				},
-				{
-					id: 'difference',
-					label: 'Chênh lệch',
-					type: 'displayCell',
-				},
-				{
-					id: 'reconcileAction',
-					label: 'Thao tác',
-					type: 'actionButton',
-					buttonText: 'Đối soát',
-					buttonClass: 'btn-secondary btn-reconcile-pivot py-2 px-3 text-sm rounded'
-				},
-				{
-					id: 'recordDifferenceAction',
-					label: 'Ghi nhận vào Thu/Chi',
-					type: 'actionButton',
-					buttonText: 'Ghi nhận',
-					buttonClass: 'btn-primary btn-record-diff-pivot py-2 px-3 text-sm rounded',
-					initialStyle: 'display:none;'
-				}
-			];
-
-			// 3. Xây dựng Body (Mỗi measure là một hàng)
-			measures.forEach(measure => {
-				const row = tableBody.insertRow();
-                // Ô đầu tiên của mỗi hàng trong tbody là label của measure, làm cho nó sticky
-				row.insertCell().outerHTML = `<td class="sticky left-0 z-10 bg-white dark:bg-gray-800 font-medium">${measure.label}</td>`;
-
-				accounts.forEach(acc => {
-					const cell = row.insertCell();
-					cell.setAttribute('data-account', acc.value);
-                    cell.classList.add('text-right'); // Căn phải cho các ô giá trị/input
-
-					switch (measure.type) {
-						case 'display':
-							cell.innerHTML = measure.getValue(acc.value);
-							if (measure.id === 'systemBalance') {
-								cell.id = `system-balance-pivot-${acc.value}`;
-							}
-							break;
-						case 'input':
-							cell.innerHTML = `<input type="text" inputmode="decimal"
-													class="input-actual-balance-pivot p-2 border dark:border-gray-600 rounded w-full text-right bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-													data-account="${acc.value}"
-													placeholder="Nhập số dư">`;
-							const inputEl = cell.querySelector('input');
-							if (inputEl) {
-								// Trình xử lý sự kiện 'input' để định dạng số (bạn có thể đã có phần này)
-								inputEl.addEventListener('input', (e) => {
-									if (typeof formatAndPreserveCursor === 'function') {
-										formatAndPreserveCursor(e.target, e.target.value);
-									}
-								});
-
-								// Trình xử lý sự kiện 'keydown' để giới hạn ký tự nhập (bạn có thể đã có phần này)
-								inputEl.addEventListener('keydown', function(e) {
-									if ([46, 8, 9, 27, 13, 35, 36, 37, 39].indexOf(e.keyCode) !== -1 ||
-										((e.keyCode === 65 || e.keyCode === 88 || e.keyCode === 67 || e.keyCode === 86) && (e.ctrlKey === true || e.metaKey === true)) ||
-										(e.keyCode >= 48 && e.keyCode <= 57 && !e.shiftKey) ||
-										(e.keyCode >= 96 && e.keyCode <= 105) ||
-										(e.keyCode === 190 || e.keyCode === 110)) {
-										if ((e.keyCode === 190 || e.keyCode === 110) && this.value.includes('.')) {
-											e.preventDefault();
-										}
-										return;
-									}
-									e.preventDefault();
-								});
-
-								// ---- BẮT ĐẦU PHẦN QUAN TRỌNG CẦN THÊM/KIỂM TRA ----
-								// (Biến virtualKeyboardEl được giả định là đã được khai báo toàn cục hoặc có thể truy cập được từ phạm vi này)
-								// const virtualKeyboardEl = document.getElementById('virtualNumericKeyboard'); // Đã khai báo toàn cục
-
-								// Event listener để hiển thị bàn phím ảo khi CLICK (cho thiết bị cảm ứng)
-								inputEl.addEventListener('click', function(event) {
-									// Thêm log để kiểm tra xem sự kiện có được kích hoạt không
-									console.log('[Debug] Click event on actual-balance-pivot input. Account: ' + this.dataset.account);
-									if (('ontouchstart' in window || navigator.maxTouchPoints > 0) && virtualKeyboardEl) {
-										console.log('[Debug] Touch device detected, preventing default and showing keyboard for actual-balance-pivot.');
-										event.preventDefault(); // Ngăn hành vi mặc định (mở bàn phím OS)
-										// Kiểm tra xem bàn phím có đang ẩn hoặc active input có phải là input này không
-										if (virtualKeyboardEl.style.display === 'none' || virtualKeyboardEl.style.display === '' || activeInputForVirtualKeyboard !== this) {
-											showVirtualKeyboard(this); // 'this' chính là inputEl
-										}
-										this.blur(); // Bỏ focus để ngăn bàn phím OS tự động bật lại
-									} else {
-										console.log('[Debug] Not a touch device or virtualKeyboardEl is not found for click on actual-balance-pivot.');
-									}
-								});
-
-								// Event listener để hiển thị bàn phím ảo khi FOCUS (và blur trên thiết bị cảm ứng)
-								inputEl.addEventListener('focus', function(e) {
-									// Thêm log để kiểm tra
-									console.log('[Debug] Focus event on actual-balance-pivot input. Account: ' + this.dataset.account);
-									if (('ontouchstart' in window || navigator.maxTouchPoints > 0) && virtualKeyboardEl) {
-										console.log('[Debug] Touch device focus detected, blurring and showing keyboard for actual-balance-pivot.');
-										e.target.blur(); // Luôn bỏ focus ngay để ngăn bàn phím OS
-										// Nếu bàn phím đang ẩn, hiển thị nó
-										if (virtualKeyboardEl.style.display === 'none' || virtualKeyboardEl.style.display === '') {
-											showVirtualKeyboard(this); // 'this' chính là inputEl
-										}
-									} else {
-										 console.log('[Debug] Desktop focus on actual-balance-pivot. Keyboard not automatically shown on focus for desktop.');
-										// Nếu bạn muốn bàn phím ảo cũng hiển thị khi focus trên desktop, bạn có thể gọi showVirtualKeyboard(this); ở đây.
-										// if (virtualKeyboardEl && (virtualKeyboardEl.style.display === 'none' || virtualKeyboardEl.style.display === '')) {
-										//    showVirtualKeyboard(this);
-										// }
-									}
-								});
-								// ---- KẾT THÚC PHẦN QUAN TRỌNG CẦN THÊM/KIỂM TRA ----
-							}
-							break;
-						case 'displayCell':
-							cell.id = `diff-pivot-${acc.value}`;
-							break;
-						case 'actionButton':
-							const button = document.createElement('button');
-							button.innerHTML = measure.buttonText;
-							button.className = measure.buttonClass;
-							button.dataset.account = acc.value;
-							button.dataset.accountName = acc.text; // Sử dụng acc.text cho tên tài khoản
-							if (measure.initialStyle) button.style.cssText = measure.initialStyle;
-
-							if (measure.id === 'reconcileAction') {
-								button.id = `reconcile-btn-pivot-${acc.value}`;
-							} else if (measure.id === 'recordDifferenceAction') {
-								button.id = `record-diff-btn-pivot-${acc.value}`;
-							}
-							cell.appendChild(button);
-							cell.classList.add('text-center'); // Giữ căn giữa cho ô chứa nút
-                            cell.classList.remove('text-right'); // Bỏ căn phải nếu đã thêm ở trên cho cell
-							break;
-					}
-				});
-			});
-
-			// 4. Gán sự kiện cho các nút "Đối soát" (CHỈ MỘT LẦN Ở ĐÂY)
-			document.querySelectorAll('.btn-reconcile-pivot').forEach(btn => {
-				btn.addEventListener('click', function() {
-					const accountId = this.dataset.account;
-                    const accountName = this.dataset.accountName;
-					console.log(`[ReconcilePivot] 'Đối soát' button clicked for account: ${accountName} (ID: ${accountId})`);
-
-					const actualBalanceInputElement = document.querySelector(`input.input-actual-balance-pivot[data-account="${accountId}"]`);
-					const diffCellElement = document.getElementById(`diff-pivot-${accountId}`);
-					const recordButtonElement = document.getElementById(`record-diff-btn-pivot-${accountId}`);
-                    const systemBalanceDisplayElement = document.getElementById(`system-balance-pivot-${accountId}`);
-
-
-					if (!actualBalanceInputElement || !diffCellElement || !recordButtonElement || !systemBalanceDisplayElement) {
-						console.error(`[ReconcilePivot] Lỗi: Không tìm thấy một hoặc nhiều DOM elements cho tài khoản: ${accountId}. Input: ${!!actualBalanceInputElement}, DiffCell: ${!!diffCellElement}, RecordBtn: ${!!recordButtonElement}, SysBalanceDisplay: ${!!systemBalanceDisplayElement}`);
-						showMessage('Lỗi hệ thống khi tìm các thành phần đối soát.', 'error');
-						return;
-					}
-                    
-                    // Cập nhật hiển thị số dư hệ thống hiện tại trước khi tính toán
-                    const systemBalanceValue = getAccountBalance(accountId);
-                    systemBalanceDisplayElement.textContent = formatCurrency(systemBalanceValue, 'VND');
-
-
-					const actualBalanceNormalized = normalizeAmountString(actualBalanceInputElement.value);
-					const actualBalance = parseFloat(actualBalanceNormalized);
-
-					if (isNaN(actualBalance) || actualBalanceInputElement.value.trim() === '') {
-						showMessage('Vui lòng nhập số dư thực tế hợp lệ cho tài khoản ' + accountName + '.', 'error');
-						diffCellElement.textContent = '';
-                        diffCellElement.className = 'text-right'; // Reset class
-						recordButtonElement.style.display = 'none';
-						return;
-					}
-
-					const differenceValue = actualBalance - systemBalanceValue;
-					console.log(`[ReconcilePivot] Account: ${accountName}, SystemBalance: ${systemBalanceValue}, ActualBalance: ${actualBalance}, Difference: ${differenceValue}`);
-
-					diffCellElement.textContent = formatCurrency(differenceValue, 'VND');
-					diffCellElement.className = 'text-right font-semibold '; // Reset classes and set base
-					if (differenceValue > 0) {
-						diffCellElement.classList.add('text-green-600', 'dark:text-green-400');
-					} else if (differenceValue < 0) {
-						diffCellElement.classList.add('text-red-600', 'dark:text-red-400');
-					} else {
-                        diffCellElement.classList.add('text-blue-600', 'dark:text-blue-400'); // Hoặc một màu trung tính
-                    }
-
-					saveReconciliationResult(accountId, systemBalanceValue, actualBalance, differenceValue);
-					// showMessage(`Đã đối soát tài khoản ${accountName}. Chênh lệch: ${formatCurrency(differenceValue)}`, 'info');
-
-					if (differenceValue !== 0) {
-						recordButtonElement.style.display = 'inline-block';
-						recordButtonElement.dataset.difference = differenceValue;
-                        // CSS classes cho nút Ghi nhận dựa trên chênh lệch
-                        if (differenceValue > 0) { // Chênh lệch dương -> Thu
-                            recordButtonElement.classList.remove('negative', 'btn-secondary');
-                            recordButtonElement.classList.add('positive', 'btn-primary'); // Hoặc một class 'btn-success'
-                            // button.innerHTML có thể được cập nhật ở đây nếu muốn thay đổi text
-                        } else { // Chênh lệch âm -> Chi
-                            recordButtonElement.classList.remove('positive', 'btn-secondary');
-                            recordButtonElement.classList.add('negative', 'btn-danger'); // Hoặc một class 'btn-danger'
-                        }
-						console.log(`[ReconcilePivot] Hiển thị nút 'Ghi nhận' cho ${accountName} với chênh lệch: ${differenceValue}.`);
-
-						// Gán sự kiện click cho nút "Ghi nhận" MỘT LẦN khi nó được hiển thị
-                        // Để tránh gán nhiều lần, có thể kiểm tra xem đã có listener chưa, hoặc chỉ gán một lần như hiện tại.
-						recordButtonElement.onclick = function() {
-							const currentAccountId = this.dataset.account;
-							const currentAccountName = this.dataset.accountName;
-							const currentDifference = parseFloat(this.dataset.difference);
-
-							console.log(`[RecordDiffPivot] 'Ghi nhận' clicked. Account: ${currentAccountName}, Difference: ${currentDifference}`);
-
-							if (confirm(`Bạn có chắc chắn muốn ghi nhận chênh lệch ${formatCurrency(currentDifference, 'VND')} cho tài khoản ${currentAccountName}?`)) {
-								handleRecordDifference(currentAccountId, currentAccountName, currentDifference);
-								// Sau khi handleRecordDifference gọi applyMainFilter,
-                                // và nếu applyMainFilter gọi renderReconciliationTable, bảng sẽ được làm mới.
-                                // Nếu không, chúng ta cần cập nhật thủ công:
-								updateSystemBalanceDisplayOnTable(currentAccountId); // Cập nhật số dư hệ thống trên bảng
-
-								this.style.display = 'none'; // Ẩn nút ghi nhận
-								actualBalanceInputElement.value = ''; // Xóa số dư thực tế đã nhập
-								diffCellElement.textContent = formatCurrency(0, 'VND'); // Reset chênh lệch
-								diffCellElement.className = 'text-right font-semibold text-blue-600 dark:text-blue-400';
-
-								showMessage(`Đã ghi nhận chênh lệch cho tài khoản ${currentAccountName}.`, 'success');
-							}
-						};
-					} else {
-						recordButtonElement.style.display = 'none';
-                        diffCellElement.innerHTML += ' <span class="text-xs">(Đã khớp)</span>';
-						console.log(`[ReconcilePivot] Ẩn nút 'Ghi nhận' cho ${accountName} vì chênh lệch là 0.`);
-					}
-				});
-			});
-
-			// Áp dụng định dạng số cho các ô input vừa tạo nếu có
-			if (typeof setupThousandSeparators === 'function') {
-				setupThousandSeparators(); // Gọi hàm này để áp dụng cho các input mới trong bảng
-			}
-			console.log("[RenderTable] Reconciliation pivot table rendered and event listeners attached.");
-		}
-
-		function reconcileAccount(accountId, endOfWeek) {
-		  handleActualBalanceInput(accountId, endOfWeek);
-		  // Có thể thêm alert, thông báo, hoặc hiệu ứng ở đây
-		  // Ví dụ: alert("Đối soát xong cho " + accountId);
-		}
-
-		function createReconciliationAdjustment(accountValue, type, category, amount, newAppBalance) {
-			const now = new Date();
-			const isoDate = formatIsoDateTime(now);
-
-			const adjustmentTx = {
-				id: "adj_" + Date.now() + "_" + Math.floor(Math.random() * 10000),
-				datetime: isoDate,
-				type: type,
-				category: category,
-				description: `Đối soát tài khoản [${accountValue}] ngày ${formatDisplayDateTime(isoDate)}.`,
-				amount: amount,
-				account: accountValue,
-				isTransfer: false,
-				originalAmount: amount,
-				originalCurrency: 'VND'
-			};
-			transactions.push(adjustmentTx);
-			localStorage.setItem('transactions_v2', JSON.stringify(transactions));
-			showMessage("Đã tạo giao dịch điều chỉnh!", "success");
-			renderAccountBalanceList && renderAccountBalanceList();
-			renderReconciliationSection && renderReconciliationSection();
-			typeof applyMainFilter === "function" && applyMainFilter();
-
-			// Hiện thông báo đã tạo, và cập nhật số dư mới
-			const resultDiv = document.getElementById(`reconcile-result-${accountValue}`);
-			if (resultDiv) {
-				resultDiv.innerHTML = `
-					<div class="flex items-center gap-2">
-						<span class="text-green-700 font-semibold">Đã tạo điều chỉnh thành công! Số dư đã cập nhật.</span>
-						<span>✔️</span>
-					</div>
-				`;
-			}
-		}
-		
-		// Định dạng số với dấu phân cách hàng nghìn khi nhập
-		function setupThousandSeparators() {
-			const numericInputs = document.querySelectorAll('.input-actual-balance, .input-actual-balance-pivot');
-			
-			numericInputs.forEach(input => {
-				input.addEventListener('input', function(e) {
-					// Lưu vị trí con trỏ
-					const cursorPosition = this.selectionStart;
-					const inputLength = this.value.length;
-					
-					// Loại bỏ tất cả dấu phân cách hiện có và ký tự không phải số hoặc dấu chấm
-					let value = this.value.replace(/[^\d.]/g, '');
-					
-					// Tách phần nguyên và phần thập phân
-					let parts = value.split('.');
-					let integerPart = parts[0];
-					let decimalPart = parts.length > 1 ? '.' + parts[1] : '';
-					
-					// Thêm dấu phẩy phân cách hàng nghìn
-					integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-					
-					// Cập nhật giá trị
-					this.value = integerPart + decimalPart;
-					
-					// Tính toán vị trí con trỏ mới
-					const newLength = this.value.length;
-					const newPosition = cursorPosition + (newLength - inputLength);
-					
-					// Đặt lại vị trí con trỏ
-					this.setSelectionRange(newPosition, newPosition);
-				});
-			});
-		}
-
-		// Gọi hàm này sau khi DOM đã tải xong
-		document.addEventListener('DOMContentLoaded', setupThousandSeparators);
-		
-        // --- CÁC HÀM RENDER, UPDATE CHARTS, FILTER (Giữ nguyên logic, chúng sẽ dùng giá trị `amount` đã đúng) ---
-        window.deleteTransaction = function(transactionId) { if (!confirm('Bạn có chắc muốn xóa giao dịch này?')) return; const transactionToDelete = transactions.find(t => t.id === transactionId); if (transactionToDelete && transactionToDelete.isTransfer) { transactions = transactions.filter(t => t.id !== transactionToDelete.id && t.transferPairId !== transactionToDelete.id); } else { const baseIdMatch = transactionId.match(/^(\d+)(_out|_in)?$/); if(baseIdMatch && baseIdMatch[1]){ const baseId = baseIdMatch[1]; transactions = transactions.filter(t => !t.id.startsWith(baseId) && !(t.transferPairId && t.transferPairId.startsWith(baseId))); } else { transactions = transactions.filter(t => t.id !== transactionId); } } saveTransactions(); applyMainFilter(); showMessage('Đã xóa giao dịch.', 'success'); }
-
-        function renderMainTransactions(txsToRender = transactions) {
-            transactionList.innerHTML = '';
-            if (txsToRender.length === 0) { noTransactionsMessage.style.display = 'block'; return; }
-            noTransactionsMessage.style.display = 'none';
-            txsToRender.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
-            txsToRender.forEach(tx => {
-                const row = transactionList.insertRow();
-                row.insertCell().textContent = formatDisplayDateTime(tx.datetime);
-                let displayDescription = tx.description;
-                let displayCategory = tx.category;
-                let displayAccount = accounts.find(a => a.value === tx.account)?.text || tx.account;
-                if (tx.isTransfer) {
-                    const pair = transactions.find(p => p.id === tx.transferPairId);
-                    const pairAccountName = pair ? (accounts.find(a => a.value === pair.account)?.text || pair.account) : 'N/A';
-                    if (tx.type === 'Chi') { displayDescription = displayDescription || `Chuyển đến ${pairAccountName}`; }
-                    else { displayDescription = displayDescription || `Nhận từ ${pairAccountName}`; }
+                if (toggleIcon) {
+                    toggleIcon.style.transform = isActiveAfterClick ? 'rotate(180deg)' : 'rotate(0deg)';
                 }
-                row.insertCell().textContent = displayDescription;
-                row.insertCell().textContent = displayCategory;
-                const amountCell = row.insertCell();
-                const vndAmountFormatted = formatCurrency(tx.amount);
-                if (tx.originalCurrency === 'USD' && typeof tx.originalAmount === 'number') {
-                    const originalUsdFormatted = formatCurrency(tx.originalAmount, 'USD');
-                    amountCell.innerHTML = `${vndAmountFormatted} <span class="text-xs text-gray-500 block sm:inline ml-1">(${originalUsdFormatted} gốc)</span>`;
+            });
+        });
+
+        // Handle list headers
+        const listHeaders = document.querySelectorAll('.collapsible-list-header');
+        listHeaders.forEach(header => {
+            const contentId = header.dataset.collapsibleTarget;
+            const contentList = document.getElementById(contentId);
+            if (!contentList) {
+                console.error(`Collapsible List Error: Content UL ID '${contentId}' not found.`, header);
+                return;
+            }
+            
+            const toggleIconList = header.querySelector('.toggle-icon');
+
+            let isListActive = header.classList.contains('active');
+
+            if (isListActive) {
+                contentList.classList.add('active');
+                setTimeout(() => {
+                    if (contentList.classList.contains('active')) contentList.style.maxHeight = contentList.scrollHeight + "px";
+                }, 150);
+                if (toggleIconList) toggleIconList.style.transform = 'rotate(180deg)';
+            } else {
+                contentList.classList.remove('active');
+                contentList.style.maxHeight = null;
+                if (toggleIconList) toggleIconList.style.transform = 'rotate(0deg)';
+            }
+
+            header.addEventListener('click', () => {
+                const isListNowActive = header.classList.toggle('active');
+                contentList.classList.toggle('active', isListNowActive);
+
+                if (isListNowActive) {
+                    contentList.style.maxHeight = contentList.scrollHeight + "px";
                 } else {
-                    amountCell.textContent = vndAmountFormatted;
+                    contentList.style.maxHeight = null;
                 }
-                amountCell.classList.add(tx.type === 'Thu' ? 'text-green-600' : 'text-red-600');
-                row.insertCell().textContent = tx.type === 'Thu' ? 'Thu Nhập' : (tx.type === 'Chi' ? 'Chi Tiêu' : 'Chuyển Tiền');
-                row.insertCell().textContent = displayAccount;
-                const actionsCell = row.insertCell();
-                actionsCell.classList.add('text-center');
-                const editBtn = document.createElement('button');
-                editBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square mr-1" viewBox="0 0 16 16"> <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/> <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/> </svg>Sửa`;
-                editBtn.classList.add('btn-edit');
-                const editId = tx.isTransfer ? tx.id.split('_')[0] : tx.id;
-                editBtn.onclick = () => loadTransactionForEdit(editId);
-                const deleteBtn = document.createElement('button');
-                deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/> </svg>Xóa`;
-                deleteBtn.classList.add('btn-delete');
-                const deleteId = tx.isTransfer ? tx.id.split('_')[0] : tx.id;
-                deleteBtn.onclick = () => deleteTransaction(deleteId);
-                actionsCell.appendChild(editBtn); actionsCell.appendChild(deleteBtn);
-            });
-        }
-
-        function updateAllSummariesAndCharts(transactionsToAnalyze = transactions) { updateMainSummaryAndChart(transactionsToAnalyze); renderExpenseCategoryChartAndList(transactionsToAnalyze); updateAccountBalances(); renderLast7DaysChart(); renderMonthComparisonChart(); }
-		function updateMainSummaryAndChart(summaryTransactionsToUse = transactions, monthForDisplay = (filterMonthSelect ? filterMonthSelect.value : 'all')) {
-			// summaryTransactionsToUse: là mảng giao dịch đã được lọc (thường bởi bộ lọc tháng chung).
-			// monthForDisplay: là tháng được chọn từ bộ lọc tháng chung (ví dụ: "2025-05" hoặc "all").
-			//                  Tham số này có thể không cần thiết nếu hàm này chỉ cập nhật biểu đồ
-			//                  và tiêu đề biểu đồ được cập nhật ở nơi khác (như trong applyMainFilter).
-
-			let totalIncome = 0;
-			let totalExpenses = 0;
-
-			// Đảm bảo summaryTransactionsToUse là một mảng trước khi lặp
-			if (typeof summaryTransactionsToUse !== 'undefined' && Array.isArray(summaryTransactionsToUse)) {
-				summaryTransactionsToUse.forEach(tx => {
-					if (tx.type === 'Thu') totalIncome += tx.amount;
-					else if (tx.type === 'Chi') totalExpenses += tx.amount;
-				});
-			} else {
-				console.warn("updateMainSummaryAndChart: summaryTransactionsToUse không phải là mảng hoặc không được định nghĩa. Đặt lại thành 0.");
-				// totalIncome và totalExpenses sẽ giữ giá trị 0 đã khởi tạo
-			}
-
-			// Cập nhật BIỂU ĐỒ CHUNG "Thu vs Chi" (nếu có)
-			// Giả sử bạn có hàm renderOrUpdateMainChart và biến incomeExpenseChartCanvas đã được khai báo toàn cục
-			if (typeof renderOrUpdateMainChart === 'function' && incomeExpenseChartCanvas) {
-				renderOrUpdateMainChart(totalIncome, totalExpenses);
-			} else {
-				// console.warn("updateMainSummaryAndChart: renderOrUpdateMainChart function or incomeExpenseChartCanvas is not available.");
-			}
-
-			// --- CÁC DÒNG SAU ĐÂY ĐÃ BỊ XÓA HOẶC VÔ HIỆU HÓA ---
-			// Lý do: Phần cập nhật text của "Tóm tắt tài chính" giờ đây do hàm 'updateSummarySectionText'
-			// (được điều khiển bởi menu 'summary-filter-month') đảm nhiệm.
-
-			// const selectedMonthValue = filterMonthSelect.value; // Không dùng trực tiếp filterMonthSelect.value ở đây nữa nếu dùng monthForDisplay
-			// const monthDisplayTextForLabels = getMonthDisplayText(monthForDisplay, true);
-
-			// const summaryIncomeMonthDisplayEl = document.getElementById('summary-income-month-display');
-			// if (summaryIncomeMonthDisplayEl) summaryIncomeMonthDisplayEl.textContent = monthDisplayTextForLabels;
-
-			// const summaryExpenseMonthDisplayEl = document.getElementById('summary-expense-month-display');
-			// if (summaryExpenseMonthDisplayEl) summaryExpenseMonthDisplayEl.textContent = monthDisplayTextForLabels;
-
-			// const summaryBalanceMonthDisplayEl = document.getElementById('summary-balance-month-display');
-			// if (summaryBalanceMonthDisplayEl) summaryBalanceMonthDisplayEl.textContent = monthDisplayTextForLabels;
-
-			// if (totalIncomeEl) totalIncomeEl.textContent = formatCurrency(totalIncome);
-			// if (totalExpensesEl) totalExpensesEl.textContent = formatCurrency(totalExpenses);
-			// if (currentBalanceEl) {
-			//     currentBalanceEl.textContent = formatCurrency(totalIncome - totalExpenses);
-			//     currentBalanceEl.className = (totalIncome - totalExpenses >= 0) ? 'text-blue-600 font-bold' : 'text-red-600 font-bold';
-			// }
-		}
-		
-
-		function updateSummarySectionText(summaryTransactions, monthForDisplay) {
-			let totalIncome = 0;
-			let totalExpenses = 0;
-
-			if (typeof summaryTransactions !== 'undefined' && Array.isArray(summaryTransactions)) {
-				summaryTransactions.forEach(tx => {
-					if (tx.type === 'Thu' && !tx.isTransfer) { // <<< THÊM ĐIỀU KIỆN !tx.isTransfer
-						totalIncome += tx.amount;
-					} else if (tx.type === 'Chi' && !tx.isTransfer) { // <<< THÊM ĐIỀU KIỆN !tx.isTransfer
-						totalExpenses += tx.amount;
-					}
-				});
-			}
-
-			const monthDisplayTextForLabels = getMonthDisplayText(monthForDisplay, true);
-
-			// Sử dụng các biến DOM toàn cục đã khai báo
-			if (summaryIncomeMonthDisplayEl) summaryIncomeMonthDisplayEl.textContent = monthDisplayTextForLabels;
-			if (summaryExpenseMonthDisplayEl) summaryExpenseMonthDisplayEl.textContent = monthDisplayTextForLabels;
-			if (summaryBalanceMonthDisplayEl) summaryBalanceMonthDisplayEl.textContent = monthDisplayTextForLabels;
-
-			if (totalIncomeEl) totalIncomeEl.textContent = formatCurrency(totalIncome);
-			if (totalExpensesEl) totalExpensesEl.textContent = formatCurrency(totalExpenses);
-
-			if (currentBalanceEl) {
-				const balance = totalIncome - totalExpenses;
-				currentBalanceEl.textContent = formatCurrency(balance);
-				let balanceClasses = 'font-bold';
-				if (balance >= 0) {
-					balanceClasses += ' text-blue-600 dark:text-blue-400';
-				} else {
-					balanceClasses += ' text-red-600 dark:text-red-400';
-				}
-				currentBalanceEl.className = balanceClasses;
-			}
-		}
-
-        function renderOrUpdateMainChart(income, expenses) { const data = { labels: ['Tổng Thu', 'Tổng Chi'], datasets: [{ label: 'Số tiền (VNĐ)', data: [income, expenses], backgroundColor: [categoryColors[1], categoryColors[0]], }] }; if (incomeExpenseChart) { incomeExpenseChart.data = data; incomeExpenseChart.update(); } else { incomeExpenseChart = new Chart(incomeExpenseChartCanvas, { type: 'bar', data, options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false } } } }); } }
-
-		function renderExpenseCategoryChartAndList(transactionsToAnalyze = transactions) {
-			const expenseTransactions = transactionsToAnalyze.filter(t => t.type === 'Chi' && !t.isTransfer);
-			const expenseByCategory = {};
-			let totalExpensesInFilteredPeriod = 0; // Đổi tên biến để rõ ràng hơn
-
-			expenseTransactions.forEach(tx => {
-				const category = tx.category || "Chưa phân loại"; // Xử lý hạng mục null/undefined
-				expenseByCategory[category] = (expenseByCategory[category] || 0) + tx.amount;
-				totalExpensesInFilteredPeriod += tx.amount;
-			});
-
-			// Xử lý khi không có dữ liệu chi tiêu để vẽ biểu đồ
-			if (totalExpensesInFilteredPeriod === 0) {
-				if (expensePieChartContainer) expensePieChartContainer.style.display = 'none';
-				if (expenseBarChartContainer) expenseBarChartContainer.style.display = 'none';
-				if (noExpenseDataChartEl) noExpenseDataChartEl.style.display = 'block';
-
-				if (expenseCategoryChart) { expenseCategoryChart.destroy(); expenseCategoryChart = null; }
-				if (expenseCategoryBarChart) { expenseCategoryBarChart.destroy(); expenseCategoryBarChart = null; }
-
-				// Xử lý danh sách chi tiết (có thể bạn đã có)
-				if (expenseCategoryListContainerEl) expenseCategoryListContainerEl.innerHTML = ''; // Hoặc hiển thị thông báo
-				if (noExpenseDataListEl) noExpenseDataListEl.style.display = 'block';
-				return;
-			}
-
-			// Nếu có dữ liệu, ẩn thông báo "không có dữ liệu"
-			if (noExpenseDataChartEl) noExpenseDataChartEl.style.display = 'none';
-			if (noExpenseDataListEl) noExpenseDataListEl.style.display = 'none';
-
-			const sortedCategoriesArray = Object.entries(expenseByCategory).sort(([, a], [, b]) => b - a);
-			const categoryLabels = sortedCategoriesArray.map(entry => entry[0]);
-			const categoryData = sortedCategoriesArray.map(entry => entry[1]);
-			const backgroundColors = categoryLabels.map((_, i) => categoryColors[i % categoryColors.length]);
-
-			// Lấy các giá trị màu sắc dựa trên theme hiện tại (nên được định nghĩa trong updateAllChartColorsForTheme và truyền vào hoặc lấy từ đó)
-			const currentThemeIsDark = document.body.classList.contains(DARK_MODE_CLASS);
-			const pieBorderColor = '#FFFFFF'; // <-- LUÔN LÀ MÀU TRẮNG
-			const legendAndTickColor = currentThemeIsDark ? '#9ca3af' : '#6b7280';
-			const gridLineColor = currentThemeIsDark ? 'rgba(107, 114, 128, 0.2)' : 'rgba(209, 213, 219, 0.5)';
-			const datalabelPieColor = '#ffffff';
-			const datalabelBarColor = currentThemeIsDark ? '#e0e0e0' : '#333333';
-
-			// 1. BIỂU ĐỒ TRÒN (PIE/DOUGHNUT)
-			const pieChartData = {
-				labels: categoryLabels,
-				datasets: [{
-					data: categoryData,
-					backgroundColor: backgroundColors,
-					borderColor: pieBorderColor, // <--- THUỘC TÍNH CẦN THAY ĐỔI
-					borderWidth: 2 // Bạn có thể điều chỉnh độ dày của viền ở đây
-				}]
-			};
-			
-			const pieChartOptions = {
-				responsive: true, maintainAspectRatio: false,
-				plugins: {
-					legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15, color: legendAndTickColor } },
-					tooltip: {
-						callbacks: {
-							label: function(context) {
-								let label = context.label || '';
-								if (label) { label += ': '; }
-								const value = context.raw;
-								label += formatCurrency(value, 'VND');
-								if (totalExpensesInFilteredPeriod > 0) {
-									const percentage = (value / totalExpensesInFilteredPeriod * 100).toFixed(1);
-									label += ` (${percentage}%)`;
-								}
-								return label;
-							}
-						}
-					},
-					datalabels: {
-						formatter: (value, ctx) => {
-							if (totalExpensesInFilteredPeriod === 0) return '';
-							const percentage = (value / totalExpensesInFilteredPeriod) * 100;
-							return percentage > 5 ? percentage.toFixed(0) + '%' : '';
-						},
-						color: datalabelPieColor, font: { weight: 'bold' }
-					}
-				}
-			};
-
-			if (expenseCategoryChart) {
-				expenseCategoryChart.data = pieChartData;
-				expenseCategoryChart.options.plugins.legend.labels.color = legendAndTickColor;
-				expenseCategoryChart.data.datasets[0].borderColor = pieBorderColor; // Quan trọng khi theme thay đổi
-				expenseCategoryChart.options.plugins.datalabels.color = datalabelPieColor; // Cập nhật màu datalabel
-				expenseCategoryChart.update();
-			} else {
-				if (expenseCategoryChartCanvas) { // Chỉ tạo nếu canvas tồn tại
-					 expenseCategoryChart = new Chart(expenseCategoryChartCanvas, { type: 'doughnut', data: pieChartData, options: pieChartOptions, plugins: [ChartDataLabels] });
-				} else {
-					console.error("Canvas for expenseCategoryChart not found!");
-				}
-			}
-
-			// 2. BIỂU ĐỒ CỘT NGANG (BAR)
-			const barChartData = {
-				labels: categoryLabels,
-				datasets: [{
-					label: 'Số tiền chi', data: categoryData, backgroundColor: backgroundColors,
-					borderColor: backgroundColors, // Hoặc màu đậm hơn: backgroundColors.map(c => Chart.helpers.color(c).darken(0.1).rgbString()) - API cũ
-					borderWidth: 1
-				}]
-			};
-			const barChartOptions = {
-				indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-				scales: {
-					x: {
-						beginAtZero: true, title: { display: true, text: 'Số tiền (VNĐ)', color: legendAndTickColor },
-						ticks: { callback: function(value) { return formatCurrency(value, 'VND').replace(/\s*VNĐ$/, ''); }, color: legendAndTickColor },
-						grid: { color: gridLineColor }
-					},
-					y: {
-						ticks: { color: legendAndTickColor },
-						grid: { display: false }
-					}
-				},
-				plugins: {
-					legend: { display: false },
-					tooltip: {
-						callbacks: { /* ... như trên ... */ }
-					},
-					datalabels: {
-						anchor: 'end', align: 'end', formatter: (value) => formatCurrency(value, 'VND'),
-						color: datalabelBarColor, font: { weight: 'bold', size: 10 }, padding: { left: 4 }
-					}
-				}
-			};
-
-			if (expenseCategoryBarChart) {
-				expenseCategoryBarChart.data = barChartData;
-				// Cập nhật các màu sắc options
-				expenseCategoryBarChart.options.scales.x.title.color = legendAndTickColor;
-				expenseCategoryBarChart.options.scales.x.ticks.color = legendAndTickColor;
-				expenseCategoryBarChart.options.scales.x.grid.color = gridLineColor;
-				expenseCategoryBarChart.options.scales.y.ticks.color = legendAndTickColor;
-				expenseCategoryBarChart.options.plugins.datalabels.color = datalabelBarColor;
-				expenseCategoryBarChart.update();
-			} else {
-				if (expenseCategoryBarCtx) { // Chỉ tạo nếu context tồn tại
-					expenseCategoryBarChart = new Chart(expenseCategoryBarCtx, { type: 'bar', data: barChartData, options: barChartOptions, plugins: [ChartDataLabels] });
-				} else {
-					console.error("Canvas context for expenseCategoryBarChart not found!");
-				}
-			}
-
-			// Cập nhật danh sách chi tiết (giữ nguyên logic của bạn, đảm bảo dùng sortedCategoriesArray)
-			if(expenseCategoryListContainerEl && totalExpensesInFilteredPeriod > 0) {
-				expenseCategoryListContainerEl.innerHTML = '';
-				let listHTML = '<ul class="space-y-2">';
-				sortedCategoriesArray.forEach(([label, amount], index) => {
-					const percentage = (amount / totalExpensesInFilteredPeriod * 100).toFixed(1);
-					const color = backgroundColors[index % backgroundColors.length];
-					listHTML += `<li class="flex justify-between items-center text-sm">
-									<div class="flex items-center">
-										<span class="inline-block w-3 h-3 rounded-full mr-2" style="background-color: ${color}"></span>
-										<span>${label}</span>
-									</div>
-									<div class="text-right">
-										<span class="font-semibold">${formatCurrency(amount)}</span>
-										<span class="text-gray-500 dark:text-gray-400 ml-2">(${percentage}%)</span>
-									</div>
-								 </li>`;
-				});
-				listHTML += '</ul>';
-				expenseCategoryListContainerEl.innerHTML = listHTML;
-			} else if (expenseCategoryListContainerEl) {
-				expenseCategoryListContainerEl.innerHTML = ''; // Xóa nếu không có data
-			}
-
-			toggleExpenseChartDisplay(); // Gọi để hiển thị đúng biểu đồ
-		}
-
-        function updateAccountBalances() {
-            accountBalanceListEl.innerHTML = '<h3>Số Dư Theo Tài Khoản (Tổng thể - VNĐ):</h3>'; const balances = {};
-            accounts.forEach(acc => balances[acc.value] = 0);
-            transactions.forEach(tx => { if (balances[tx.account] !== undefined) { if (tx.type === 'Thu') balances[tx.account] += tx.amount; else if (tx.type === 'Chi') balances[tx.account] -= tx.amount; } });
-            Object.keys(balances).forEach(accValue => {
-                const acc = accounts.find(a => a.value === accValue);
-                if (acc) {
-                    const balanceItem = document.createElement('div');
-                    balanceItem.classList.add('summary-item');
-                    balanceItem.innerHTML = `<span>${acc.text}: </span><span class="${balances[accValue] >= 0 ? 'text-green-600' : 'text-red-600'}">${formatCurrency(balances[accValue])}</span>`;
-                    accountBalanceListEl.appendChild(balanceItem);
+                if (toggleIconList) {
+                    toggleIconList.style.transform = isListNowActive ? 'rotate(180deg)' : 'rotate(0deg)';
                 }
             });
-        }
+        });
+    }
+};
 
-        function getPastDate(daysAgo) { const date = new Date(); date.setDate(date.getDate() - daysAgo); date.setHours(0, 0, 0, 0); return date; }
-        function renderLast7DaysChart() { const today = new Date(); today.setHours(23,59,59,999); const sevenDaysAgo = getPastDate(6); const dailyExpenses = {}; const labels = []; for (let i = 0; i < 7; i++) { const d = new Date(sevenDaysAgo); d.setDate(d.getDate() + i); const dateString = d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }); labels.push(dateString); dailyExpenses[dateString] = 0; } transactions.filter(tx => { const txDate = new Date(tx.datetime); return tx.type === 'Chi' && !tx.isTransfer && txDate >= sevenDaysAgo && txDate <= today; }).forEach(tx => { const dateString = new Date(tx.datetime).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }); if (dailyExpenses[dateString] !== undefined) dailyExpenses[dateString] += tx.amount; }); const dataValues = labels.map(label => dailyExpenses[label]); const data = { labels: labels, datasets: [{ label: 'Chi tiêu hàng ngày (VNĐ)', data: dataValues, borderColor: categoryColors[3], backgroundColor: 'transparent', tension: 0.1, fill: false }] }; if (last7DaysChart) { last7DaysChart.data = data; last7DaysChart.update(); } else { last7DaysChart = new Chart(last7DaysChartCanvas, { type: 'line', data, options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false } } } }); } }
-        function renderMonthComparisonChart() { const currentMonthFilter = filterMonthSelect.value; if (!currentMonthFilter || currentMonthFilter === 'all') return; const [currentYear, currentMonthNum] = currentMonthFilter.split('-').map(Number); let prevYear = currentYear; let prevMonthNum = currentMonthNum - 1; if (prevMonthNum === 0) { prevMonthNum = 12; prevYear--; } const prevMonthFilter = `${prevYear}-${String(prevMonthNum).padStart(2, '0')}`; let currentMonthIncome = 0, currentMonthExpenses = 0, prevMonthIncome = 0, prevMonthExpenses = 0; transactions.forEach(tx => { const txMonth = tx.datetime.substring(0, 7); if (txMonth === currentMonthFilter) { if (tx.type === 'Thu' && !tx.isTransfer) currentMonthIncome += tx.amount; else if (tx.type === 'Chi' && !tx.isTransfer) currentMonthExpenses += tx.amount; } else if (txMonth === prevMonthFilter) { if (tx.type === 'Thu' && !tx.isTransfer) prevMonthIncome += tx.amount; else if (tx.type === 'Chi' && !tx.isTransfer) prevMonthExpenses += tx.amount; } }); const data = { labels: ['Tháng Trước', 'Tháng Này'], datasets: [ { label: 'Tổng Thu', data: [prevMonthIncome, currentMonthIncome], backgroundColor: categoryColors[1] }, { label: 'Tổng Chi', data: [prevMonthExpenses, currentMonthExpenses], backgroundColor: categoryColors[0] } ] }; if (monthComparisonChart) { monthComparisonChart.data = data; monthComparisonChart.update(); } else { monthComparisonChart = new Chart(monthComparisonChartCanvas, { type: 'bar', data, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'x', plugins: { datalabels: { display: false } } } }); } }
-		function updateDetailedStatisticsTable(transactionsToAnalyze) {
-			let totalIncome = 0;
-			let totalExpense = 0;
-			let incomeTxCount = 0;
-			let expenseTxCount = 0;
-			const nonTransferExpenseByCategory = {}; // Để tính hạng mục chi nhiều nhất không bao gồm chuyển tiền
+// ========================================================================================
+// 17. INPUT VALIDATION & FORMATTING
+// ========================================================================================
 
-			transactionsToAnalyze.forEach(tx => {
-				if (tx.type === 'Thu' && !tx.isTransfer) { // <<< THÊM ĐIỀU KIỆN
-					totalIncome += tx.amount;
-					incomeTxCount++; // Cân nhắc: Bạn có muốn đếm giao dịch nhận tiền chuyển khoản là một "giao dịch thu nhập" không?
-									 // Nếu không, thêm !tx.isTransfer vào điều kiện của incomeTxCount++
-				} else if (tx.type === 'Chi' && !tx.isTransfer) { // <<< THÊM ĐIỀU KIỆN
-					totalExpense += tx.amount;
-					expenseTxCount++; // Tương tự, cân nhắc cho expenseTxCount++
-					// Phần nonTransferExpenseByCategory đã đúng, không cần sửa
-					if (tx.category && !tx.isTransfer) { 
-						nonTransferExpenseByCategory[tx.category] = (nonTransferExpenseByCategory[tx.category] || 0) + tx.amount;
-					}
-				}
-			});
+const InputManager = {
+    // Initialize input event listeners
+    init() {
+        if (DOM.amountInput) {
+            DOM.amountInput.addEventListener('input', function(e) {
+                Utils.formatAndPreserveCursor(e.target, e.target.value);
+            });
 
-			const netCashflow = totalIncome - totalExpense;
-
-			let topExpenseCategoryName = '-';
-			let topExpenseCategoryAmount = 0;
-
-			if (Object.keys(nonTransferExpenseByCategory).length > 0) {
-				topExpenseCategoryName = Object.keys(nonTransferExpenseByCategory).reduce((a, b) => nonTransferExpenseByCategory[a] > nonTransferExpenseByCategory[b] ? a : b);
-				topExpenseCategoryAmount = nonTransferExpenseByCategory[topExpenseCategoryName];
-			}
-
-			// Hàm nhỏ để cập nhật textContent an toàn
-			const setText = (id, value) => {
-				const el = document.getElementById(id);
-				if (el) el.textContent = value;
-				else console.warn(`Element with ID '${id}' not found for statistics table.`);
-			};
-
-			setText('stats-total-income', formatCurrency(totalIncome));
-			setText('stats-total-expense', formatCurrency(totalExpense));
-
-			const statsNetCashflowEl = document.getElementById('stats-net-cashflow');
-			if (statsNetCashflowEl) {
-				statsNetCashflowEl.textContent = formatCurrency(netCashflow);
-				// Xóa các class màu cũ của Tailwind trước khi thêm class mới
-				statsNetCashflowEl.classList.remove('text-blue-600', 'dark:text-blue-400', 'text-red-600', 'dark:text-red-400');
-				if (netCashflow >= 0) {
-					statsNetCashflowEl.classList.add('text-blue-600', 'dark:text-blue-400');
-				} else {
-					statsNetCashflowEl.classList.add('text-red-600', 'dark:text-red-400');
-				}
-			} else {
-				console.warn("Element with ID 'stats-net-cashflow' not found.");
-			}
-
-			setText('stats-income-tx-count', incomeTxCount);
-			setText('stats-expense-tx-count', expenseTxCount);
-			setText('stats-top-expense-cat', topExpenseCategoryName);
-			setText('stats-top-expense-cat-amount', formatCurrency(topExpenseCategoryAmount));
-
-			// Cập nhật tháng hiển thị trong tiêu đề bảng
-			const selectedMonthForStatsTitle = filterMonthSelect.value; // Đảm bảo filterMonthSelect đã được khai báo
-			const statsTableMonthDisplayText = getMonthDisplayText(selectedMonthForStatsTitle, false);
-			const statsTableMonthDisplayEl = document.getElementById('stats-table-month-display');
-			if (statsTableMonthDisplayEl) {
-				statsTableMonthDisplayEl.textContent = `(${statsTableMonthDisplayText})`;
-			} else {
-				console.warn("Element with ID 'stats-table-month-display' not found.");
-			}
-		}
-
-        function filterTransactionsByMonth() { applyMainFilter(); }
-        function applyMainFilter() {
-            const selectedMonth = filterMonthSelect ? filterMonthSelect.value : 'all';
-            const selectedSpecificDate = filterSpecificDateInput ? filterSpecificDateInput.value : "";
-            
-            console.log(`[Filter] Applying filter: Month='${selectedMonth}', Date='${selectedSpecificDate}'`);
-
-            // --- 1. Lọc dữ liệu dựa trên lựa chọn của người dùng ---
-
-            // Dữ liệu cho các mục có phạm vi theo tháng (hoặc tất cả các tháng)
-            // Ví dụ: Tóm tắt tài chính, Thống kê chi tiết, Phân loại chi tiêu theo hạng mục.
-            let transactionsForMonthlyScope = [...transactions]; 
-            if (selectedMonth !== 'all') {
-                transactionsForMonthlyScope = transactionsForMonthlyScope.filter(tx => {
-                    // Đảm bảo tx.datetime tồn tại và là chuỗi trước khi dùng startsWith
-                    return tx.datetime && typeof tx.datetime === 'string' && tx.datetime.startsWith(selectedMonth);
-                });
-            }
-
-            // Dữ liệu cho danh sách giao dịch chính (có thể được lọc thêm theo ngày cụ thể)
-            let transactionsForDailyListScope = [...transactionsForMonthlyScope]; // Bắt đầu với dữ liệu đã lọc theo tháng
-            if (selectedSpecificDate) { 
-                // Nếu người dùng đã chọn một ngày cụ thể:
-                // - Nếu đang xem "Tất cả các tháng", sẽ lọc ngày từ toàn bộ giao dịch.
-                // - Nếu đang xem một tháng cụ thể, sẽ lọc ngày từ các giao dịch của tháng đó.
-                let baseForDailyFilter = (selectedMonth === 'all') ? [...transactions] : [...transactionsForMonthlyScope];
-                transactionsForDailyListScope = baseForDailyFilter.filter(tx => {
-                    if (!tx.datetime || typeof tx.datetime !== 'string') return false;
-                    const transactionDatePart = tx.datetime.substring(0, 10); // Lấy phần YYYY-MM-DD
-                    return (transactionDatePart === selectedSpecificDate);
-                });
-            }
-            
-            console.log(`[Filter] Transactions for Monthly Scope: ${transactionsForMonthlyScope.length} items`);
-            console.log(`[Filter] Transactions for Daily List Scope: ${transactionsForDailyListScope.length} items`);
-
-            // --- 2. Cập nhật các thành phần giao diện dựa trên dữ liệu đã lọc ---
-            
-            // Cập nhật Danh sách giao dịch chính (hiển thị giao dịch theo ngày nếu được chọn, hoặc theo tháng/tất cả)
-            renderMainTransactions(transactionsForDailyListScope);
-
-            // Cập nhật phần Tóm tắt tài chính (Tổng thu, Tổng chi, Số dư) 
-            // Phần này sẽ sử dụng dữ liệu đã lọc theo tháng (transactionsForMonthlyScope)
-            updateSummarySectionText(transactionsForMonthlyScope, selectedMonth);
-            
-            // Cập nhật tất cả các Biểu đồ và danh sách Số dư các tài khoản
-            // - Các biểu đồ theo tháng (Thu vs Chi chính, Phân loại chi tiêu) sẽ dùng transactionsForMonthlyScope.
-            // - Các biểu đồ không theo tháng (7 ngày qua) hoặc tổng hợp (Số dư tài khoản, So sánh tháng) sẽ dùng logic riêng bên trong.
-            updateAllSummariesAndCharts(transactionsForMonthlyScope); 
-
-            // Cập nhật Bảng thống kê chi tiết - sử dụng dữ liệu đã lọc theo tháng
-            updateDetailedStatisticsTable(transactionsForMonthlyScope);
-
-            // --- 3. Cập nhật tiêu đề cho các khu vực dựa trên bộ lọc hiện tại ---
-            const monthOnlyDisplayText = getMonthDisplayText(selectedMonth, false); // Lấy văn bản hiển thị cho tháng/tất cả
-
-            // Tiêu đề cho khu vực "Phân Loại Chi Tiêu"
-            const expenseBreakdownTitleTextEl = document.getElementById('expense-breakdown-title-text');
-            if (expenseBreakdownTitleTextEl) {
-                expenseBreakdownTitleTextEl.textContent = `Phân Loại Chi Tiêu ${monthOnlyDisplayText || 'Tổng Quan'} - VNĐ`;
-            }
-
-            // Tiêu đề phụ cho "Bảng Thống Kê Chi Tiết" (phần tháng trong ngoặc đơn)
-            const statsTableMonthDisplayEl = document.getElementById('stats-table-month-display');
-            if (statsTableMonthDisplayEl) {
-                statsTableMonthDisplayEl.textContent = `(${monthOnlyDisplayText || 'Tổng Quan'})`;
-            }
-
-            // Tiêu đề cho "Biểu Đồ Thu vs Chi" chính
-            // Tiêu đề này có thể phản ánh cả ngày cụ thể nếu người dùng đã chọn.
-            // Lưu ý: Dữ liệu cho biểu đồ này (renderOrUpdateMainChart) hiện tại vẫn dựa trên transactionsForMonthlyScope.
-            // Nếu bạn muốn dữ liệu biểu đồ này cũng thay đổi theo ngày cụ thể, cần điều chỉnh logic trong updateMainSummaryAndChart.
-            const incomeExpenseChartTitleEl = document.getElementById('income-expense-chart-title');
-            if (incomeExpenseChartTitleEl) {
-                let titleForIncomeExpenseChart = monthOnlyDisplayText; 
-                if (selectedSpecificDate) { 
-                    const dateParts = selectedSpecificDate.split('-'); // YYYY-MM-DD
-                    const displayDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`; // DD/MM/YYYY
-                    if (selectedMonth === 'all' || titleForIncomeExpenseChart === "Tất cả") {
-                        // Nếu đang xem "Tất cả các tháng" và chọn ngày, tiêu đề chỉ là ngày đó.
-                        titleForIncomeExpenseChart = `Ngày ${displayDate}`;
-                    } else {
-                        // Nếu đang xem một tháng cụ thể và chọn ngày, tiêu đề là "Tháng MM/YYYY, ngày DD".
-                        titleForIncomeExpenseChart = `${titleForIncomeExpenseChart}, ngày ${dateParts[2]}`; 
+            DOM.amountInput.addEventListener('keydown', function(e) {
+                if ([46, 8, 9, 27, 13, 35, 36, 37, 39].indexOf(e.keyCode) !== -1 ||
+                    ((e.keyCode === 65 || e.keyCode === 88 || e.keyCode === 67 || e.keyCode === 86) && (e.ctrlKey === true || e.metaKey === true)) ||
+                    (e.keyCode >= 48 && e.keyCode <= 57 && !e.shiftKey) ||
+                    (e.keyCode >= 96 && e.keyCode <= 105) ||
+                    (e.keyCode === 190 || e.keyCode === 110)) {
+                    if ((e.keyCode === 190 || e.keyCode === 110) && this.value.includes('.')) {
+                        e.preventDefault();
                     }
+                    return;
                 }
-                incomeExpenseChartTitleEl.textContent = `Biểu Đồ Thu vs Chi ${titleForIncomeExpenseChart || 'Tổng Quan'} - VNĐ`;
-            }
-            console.log("[Filter] UI Update in applyMainFilter completed.");
-        }
-
-        function getISOWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7)); const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); return Math.ceil((((d - yearStart) / 86400000) + 1) / 7); }
-        function getWeekIdFromDateTime(dateTimeStr) { if (!dateTimeStr) return null; const date = new Date(dateTimeStr); if (isNaN(date.getTime())) return null; const year = date.getFullYear(); const weekNumber = getISOWeekNumber(date); return `${year}-W${String(weekNumber).padStart(2, '0')}`; }
-        function getStartDateOfISOWeek(year, week) { const simple = new Date(year, 0, 1 + (week - 1) * 7); const dow = simple.getDay(); const ISOweekStart = simple; if (dow <= 4) ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1); else ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay()); ISOweekStart.setHours(0,0,0,0); return ISOweekStart; }
-        function getWeekDates(weekId) { if (!weekId || !weekId.includes('-W')) return { start: null, end: null }; const [yearStr, weekNumStr] = weekId.split('-W'); const year = parseInt(yearStr); const week = parseInt(weekNumStr, 10); if (isNaN(year) || isNaN(week)) return { start: null, end: null }; const startDate = getStartDateOfISOWeek(year, week); const endDate = new Date(startDate); endDate.setDate(startDate.getDate() + 6); endDate.setHours(23, 59, 59, 999); return { start: startDate, end: endDate }; }
-        function getNumberOfISOWeeks(year) { const date = new Date(year, 11, 28); return getISOWeekNumber(date); }
-        function getAllWeekIdsInYear(year) { if (isNaN(year) || year < 1900 || year > 2200) return []; const numWeeks = getNumberOfISOWeeks(year); const weekIds = []; for (let i = 1; i <= numWeeks; i++) weekIds.push(`${year}-W${String(i).padStart(2, '0')}`); return weekIds; }
-        function getPreviousWeekId(weekId) { if (!weekId || !weekId.includes('-W')) return null; let [yearStr, weekNumStr] = weekId.split('-W'); let year = parseInt(yearStr); let week = parseInt(weekNumStr); if (week > 1) return `${year}-W${String(week - 1).padStart(2, '0')}`; else { year--; const numWeeksInPrevYear = getNumberOfISOWeeks(year); return `${year}-W${String(numWeeksInPrevYear).padStart(2, '0')}`; } }
-
-        function populateComparisonWeekFilter() {
-            const year = parseInt(filterComparisonYearInput.value);
-            if (isNaN(year)) { filterComparisonWeekSelect.innerHTML = '<option value="none">-- Chọn năm hợp lệ --</option>'; return; }
-            const weekIds = getAllWeekIdsInYear(year).reverse();
-            filterComparisonWeekSelect.innerHTML = '<option value="none">-- Chọn tuần --</option>';
-            weekIds.forEach(id => {
-                const {start, end} = getWeekDates(id);
-                const optionText = `${id.replace(year + "-W","Tuần ")} (${start.toLocaleDateString('vi-VN')} - ${end.toLocaleDateString('vi-VN')})`;
-                filterComparisonWeekSelect.add(new Option(optionText, id));
+                e.preventDefault();
             });
         }
-		
-		function populateMonthFilter() {
-			if (!filterMonthSelect) { // filterMonthSelect là biến toàn cục
-				console.warn("populateMonthFilter: filterMonthSelect is not defined.");
-				return;
-			}
-			const months = new Set();
-			if (typeof transactions !== 'undefined' && Array.isArray(transactions)) {
-				transactions.forEach(tx => {
-					if (tx.datetime && typeof tx.datetime === 'string' && tx.datetime.length >= 7) {
-						months.add(tx.datetime.substring(0, 7));
-					}
-				});
-			}
-			const sortedMonths = Array.from(months).sort().reverse();
-			filterMonthSelect.innerHTML = '<option value="all">Tất cả các tháng</option>'; // Luôn có lựa chọn "Tất cả"
 
-			sortedMonths.forEach(monthStr => {
-				if (monthStr && typeof monthStr === 'string' && monthStr.includes('-')) {
-					const parts = monthStr.split('-');
-					if (parts.length === 2) {
-						const year = parts[0];
-						const month = parts[1];
-						const displayText = `Tháng ${month}/${year}`; // Văn bản thuần
-						const option = new Option(displayText, monthStr);
-						filterMonthSelect.add(option);
-					}
-				}
-			});
+        // Setup thousand separators for reconciliation inputs
+        this.setupThousandSeparators();
+    },
 
-			// Đặt giá trị mặc định (ví dụ: tháng mới nhất hoặc "Tất cả")
-			const currentSystemMonthFormatted = new Date().toISOString().substring(0, 7);
-			if (sortedMonths.includes(currentSystemMonthFormatted)) {
-				filterMonthSelect.value = currentSystemMonthFormatted;
-			} else if (sortedMonths.length > 0 && sortedMonths[0] && typeof sortedMonths[0] === 'string') {
-				filterMonthSelect.value = sortedMonths[0];
-			} else {
-				filterMonthSelect.value = "all";
-			}
-		}
+    // Setup thousand separators for numeric inputs
+    setupThousandSeparators() {
+        const numericInputs = document.querySelectorAll('.input-actual-balance, .input-actual-balance-pivot');
+        
+        numericInputs.forEach(input => {
+            input.addEventListener('input', function(e) {
+                const cursorPosition = this.selectionStart;
+                const inputLength = this.value.length;
+                
+                let value = this.value.replace(/[^\d.]/g, '');
+                let parts = value.split('.');
+                let integerPart = parts[0];
+                let decimalPart = parts.length > 1 ? '.' + parts[1] : '';
+                
+                integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                this.value = integerPart + decimalPart;
+                
+                const newLength = this.value.length;
+                const newPosition = cursorPosition + (newLength - inputLength);
+                this.setSelectionRange(newPosition, newPosition);
+            });
+        });
+    }
+};
 
-		function populateSpecificMonthFilter(selectElement) {
-			if (!selectElement) {
-				console.warn("populateSpecificMonthFilter: selectElement is not provided.");
-				return;
-			}
+// ========================================================================================
+// 18. RECONCILIATION MODULE
+// ========================================================================================
 
-			const months = new Set();
-			if (typeof transactions !== 'undefined' && Array.isArray(transactions)) {
-				transactions.forEach(tx => {
-					if (tx.datetime) {
-						try {
-							if (typeof tx.datetime === 'string' && tx.datetime.length >= 7) {
-								months.add(tx.datetime.substring(0, 7));
-							} else {
-								console.warn("populateSpecificMonthFilter: Định dạng tx.datetime không hợp lệ hoặc quá ngắn:", tx.datetime);
-							}
-						} catch (e) {
-							console.error("populateSpecificMonthFilter: Lỗi khi lấy substring từ tx.datetime:", tx.datetime, e);
-						}
-					}
-				});
-			}
+const ReconciliationManager = {
+    // Render reconciliation table
+    renderReconciliationTable() {
+        const table = document.getElementById('reconciliation-table');
+        const tableHead = table.querySelector('thead');
+        const tableBody = table.querySelector('tbody');
 
-			const sortedMonths = Array.from(months).sort().reverse();
-			selectElement.innerHTML = '<option value="all">Tất cả các tháng</option>'; // Reset các options cũ
-
-			sortedMonths.forEach(monthStr => {
-				if (monthStr && typeof monthStr === 'string' && monthStr.includes('-')) {
-					const parts = monthStr.split('-');
-					if (parts.length === 2) {
-						const year = parts[0];
-						const month = parts[1];
-						const displayText = `Tháng ${month}/${year}`; // Văn bản thuần túy
-						const option = new Option(displayText, monthStr);
-						selectElement.add(option);
-					} else {
-						console.warn("populateSpecificMonthFilter: Định dạng monthStr không đúng sau khi split:", monthStr);
-					}
-				} else {
-					console.warn("populateSpecificMonthFilter: Giá trị monthStr không hợp lệ trong sortedMonths:", monthStr);
-				}
-			});
-
-			// Đặt giá trị mặc định cho menu chọn tháng
-			const currentSystemMonthFormatted = new Date().toISOString().substring(0, 7);
-			if (sortedMonths.includes(currentSystemMonthFormatted)) {
-				selectElement.value = currentSystemMonthFormatted;
-			} else if (sortedMonths.length > 0 && sortedMonths[0] && typeof sortedMonths[0] === 'string' && sortedMonths[0].includes('-')) {
-				selectElement.value = sortedMonths[0];
-			} else {
-				selectElement.value = "all";
-			}
-		}
-
-        function calculateWeeklyStats(transactionsInPeriod, weekStartDate) { let income = 0, expenses = 0, startBalance = 0; const allSortedTransactions = [...transactions].sort((a,b) => new Date(a.datetime) - new Date(b.datetime)); for (const tx of allSortedTransactions) { const txDate = new Date(tx.datetime); if (txDate < weekStartDate) { if (tx.type === 'Thu') startBalance += tx.amount; else if (tx.type === 'Chi') startBalance -= tx.amount; } else break; } transactionsInPeriod.forEach(tx => { if (tx.type === 'Thu' && !tx.isTransfer) income += tx.amount; else if (tx.type === 'Chi' && !tx.isTransfer) expenses += tx.amount; }); return { startBalance, income, expenses, netChange: income - expenses }; }
-
-        function updateWeeklyComparisonDisplay() {
-            const selectedWeekId = filterComparisonWeekSelect.value;
-            if (selectedWeekId === 'none') { weeklyComparisonContentEl.style.display = 'none'; noComparisonDataEl.style.display = 'block'; return; }
-            weeklyComparisonContentEl.style.display = 'grid'; noComparisonDataEl.style.display = 'none';
-            const currentWeekDates = getWeekDates(selectedWeekId);
-            if (!currentWeekDates.start) { weeklyComparisonContentEl.style.display = 'none'; noComparisonDataEl.style.display = 'block'; noComparisonDataEl.textContent = 'Tuần không hợp lệ.'; return; }
-            const currentWeekTransactions = transactions.filter(tx => { const txDate = new Date(tx.datetime); return txDate >= currentWeekDates.start && txDate <= currentWeekDates.end; });
-            const currentWeekStats = calculateWeeklyStats(currentWeekTransactions, currentWeekDates.start);
-            selectedWeekDisplayEl.textContent = `${selectedWeekId.replace(filterComparisonYearInput.value + "-W","Tuần ")} (${currentWeekDates.start.toLocaleDateString('vi-VN')} - ${currentWeekDates.end.toLocaleDateString('vi-VN')})`;
-            currentWeekStartBalanceEl.textContent = formatCurrency(currentWeekStats.startBalance);
-            currentWeekIncomeEl.textContent = formatCurrency(currentWeekStats.income);
-            currentWeekExpensesEl.textContent = formatCurrency(currentWeekStats.expenses);
-            currentWeekNetChangeEl.textContent = formatCurrency(currentWeekStats.netChange);
-            currentWeekNetChangeEl.className = currentWeekStats.netChange >= 0 ? 'font-bold text-green-600' : 'font-bold text-red-600';
-            const prevWeekId = getPreviousWeekId(selectedWeekId);
-            if (prevWeekId) {
-                const prevWeekDates = getWeekDates(prevWeekId);
-                if(prevWeekDates.start) {
-                    const prevWeekTransactions = transactions.filter(tx => { const txDate = new Date(tx.datetime); return txDate >= prevWeekDates.start && txDate <= prevWeekDates.end; });
-                    const prevWeekStats = calculateWeeklyStats(prevWeekTransactions, prevWeekDates.start);
-                    previousWeekDisplayEl.textContent = `${prevWeekId.replace(filterComparisonYearInput.value + "-W","Tuần ")} (${prevWeekDates.start.toLocaleDateString('vi-VN')} - ${prevWeekDates.end.toLocaleDateString('vi-VN')})`;
-                    previousWeekExpensesEl.textContent = formatCurrency(prevWeekStats.expenses);
-                    const difference = currentWeekStats.expenses - prevWeekStats.expenses;
-                    spendingDifferenceEl.textContent = formatCurrency(difference);
-                    spendingDifferenceEl.className = difference >= 0 ? 'font-bold text-red-600' : 'font-bold text-green-600';
-                } else { previousWeekDisplayEl.textContent = "N/A"; previousWeekExpensesEl.textContent = formatCurrency(0); spendingDifferenceEl.textContent = formatCurrency(0); }
-            } else { previousWeekDisplayEl.textContent = "N/A"; previousWeekExpensesEl.textContent = formatCurrency(0); spendingDifferenceEl.textContent = formatCurrency(0); }
+        if (!table || !tableHead || !tableBody) {
+            console.error("[RenderTable] Reconciliation table or components not found.");
+            return;
         }
 
-        function escapeCSVValue(value) { if (value == null) return ''; value = String(value); if (value.includes(',') || value.includes('\n') || value.includes('"')) { value = value.replace(/\"/g, '""'); return `"${value}"`; } return value; }
-        function exportToCSV() { if (transactions.length === 0) { showMessage('Không có dữ liệu giao dịch để xuất.', 'error'); return; } const headers = [ 'ID Giao Dịch', 'Ngày Giờ (YYYY-MM-DD HH:mm:ss)', 'Nội dung', 'Hạng mục', 'Loại (Thu/Chi)', 'Số Tiền (VNĐ)', 'Tài khoản', 'Là Chuyển Khoản?', 'ID Liên Kết CK', 'Số Tiền Gốc', 'Đơn Vị Gốc' ]; const rows = transactions.map(tx => { const accountName = accounts.find(acc => acc.value === tx.account)?.text || tx.account; return [ tx.id, formatDateTimeForCSV(tx.datetime), tx.description, tx.category, tx.type, tx.amount, accountName, tx.isTransfer ? 'Có' : 'Không', tx.isTransfer ? tx.transferPairId : '', tx.originalAmount, tx.originalCurrency ].map(escapeCSVValue); }); let csvContent = "\ufeff"; csvContent += headers.join(',') + '\n'; rows.forEach(rowArray => { csvContent += rowArray.join(',') + '\n'; }); const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement('a'); if (link.download !== undefined) { const url = URL.createObjectURL(blob); link.setAttribute('href', url); link.setAttribute('download', `transactions_${new Date().toISOString().slice(0,10)}.csv`); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url); showMessage('Dữ liệu đã được xuất ra CSV!', 'success'); } else { showMessage('Trình duyệt của bạn không hỗ trợ tải file trực tiếp.', 'error'); } }
-        function exportData() { const dataToExport = { transactions, incomeCategories, expenseCategories, accounts }; const dataStr = JSON.stringify(dataToExport, null, 2); const blob = new Blob([dataStr], {type: "application/json"}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `financial_data_${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); showMessage('Dữ liệu đã được xuất!', 'success'); }
-        function handleImportFile(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const importedData = JSON.parse(e.target.result); if (importedData.transactions && importedData.incomeCategories && importedData.expenseCategories && importedData.accounts) { if (!confirm('Nhập dữ liệu sẽ ghi đè toàn bộ dữ liệu hiện tại. Bạn có chắc chắn muốn tiếp tục?')) { importFileInput.value = ''; return; } transactions = importedData.transactions; incomeCategories = importedData.incomeCategories; expenseCategories = importedData.expenseCategories; accounts = importedData.accounts; saveTransactions(); saveUserPreferences(); initializeApp(); showMessage('Dữ liệu đã được nhập thành công!', 'success'); } else { showMessage('Lỗi: Định dạng file không hợp lệ.', 'error'); } } catch (error) { showMessage(`Lỗi khi nhập file: ${error.message}`, 'error'); console.error("Import error:", error); } finally { importFileInput.value = ''; } }; reader.readAsText(file); }
-
-        // --- HÀM FUNCTION VIRTUAL KEYBOARD ---
-		let activeInputForVirtualKeyboard = null; // Biến theo dõi ô input đang active với bàn phím ảo
-
-		function showVirtualKeyboard(inputElement) {
-			const virtualKeyboardEl = document.getElementById('virtualNumericKeyboard'); // Lấy element ở đây
-			if (virtualKeyboardEl && inputElement) {
-				console.log("[Keyboard] Showing virtual keyboard for:", inputElement.id);
-				virtualKeyboardEl.style.display = 'grid'; // Hoặc 'block' tùy theo CSS layout bàn phím
-				activeInputForVirtualKeyboard = inputElement;
-				// ... (code hiện tại của bạn để hiển thị bàn phím) ...
-				virtualKeyboardEl.style.display = 'grid'; // Hoặc 'block'
-				activeInputForVirtualKeyboard = inputElement;
-
-				// Thêm logic cuộn ở đây:
-				setTimeout(() => { // Dùng setTimeout để đảm bảo bàn phím đã render và có kích thước
-					const keyboardHeight = virtualKeyboardEl.offsetHeight;
-					const inputRect = activeInputForVirtualKeyboard.getBoundingClientRect();
-					const viewportHeight = window.innerHeight;
-
-					// Tính xem phần dưới của input có bị che không, hoặc một khoảng không gian cần thiết bên dưới input
-					const spaceNeededBelowInput = 50; // Khoảng đệm để nhìn thấy trường tiếp theo hoặc nút submit
-					const inputBottomPosition = inputRect.bottom;
-
-					if (inputBottomPosition > (viewportHeight - keyboardHeight - spaceNeededBelowInput)) {
-						const scrollAmount = inputBottomPosition - (viewportHeight - keyboardHeight - spaceNeededBelowInput);
-						window.scrollBy(0, scrollAmount);
-						console.log(`[Keyboard] Scrolled by: ${scrollAmount}px`);
-					}
-					// Hoặc một cách đơn giản hơn là cuộn trường input vào tầm nhìn,
-					// nhưng cần cẩn thận để không cuộn quá nhiều nếu bàn phím che mất nó từ dưới lên.
-					// activeInputForVirtualKeyboard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-					// Tuy nhiên, scrollIntoView có thể không hoạt động tốt với fixed keyboard,
-					// window.scrollBy thường cho kiểm soát tốt hơn trong trường hợp này.
-
-				}, 100); // Chờ một chút để DOM cập nhật				
-				// Không dùng readonly ở đây nữa, sẽ xử lý bằng blur và preventDefault
-			} else {
-				console.error("[Keyboard] Cannot show virtual keyboard. virtualKeyboardEl or inputElement is missing.");
-			}
-		}
-
-		function hideVirtualKeyboard() {
-			const virtualKeyboardEl = document.getElementById('virtualNumericKeyboard'); // Lấy element ở đây
-			if (virtualKeyboardEl) {
-				console.log("[Keyboard] Hiding virtual keyboard");
-				virtualKeyboardEl.style.display = 'none';
-				if (activeInputForVirtualKeyboard) {
-					// Cân nhắc có nên activeInputForVirtualKeyboard.blur(); ở đây không
-					// Nếu người dùng nhấn "Done", focus sẽ chuyển sang nút submit
-				}
-				activeInputForVirtualKeyboard = null;
-			}
-		}
-		
-		// --- HÀM KHỞI TẠO ỨNG DỤNG ---
-		function initializeApp() {
-			console.log("[Debug] initializeApp CALLED")
-			console.log("[APP] initializeApp CALLED");
-			// migrateOriginalAmountsForOldVNDTransactions();
-
-			loadThemePreference(); // Quan trọng: gọi đầu tiên
-			loadUserPreferences();
-
-			if (formCurrencySelector) formCurrencySelector.value = 'VND';
-			setDefaultDateTime();
-			setDefaultComparisonYear();
-			const typeChiRadio = document.getElementById('type-chi');
-			if (typeChiRadio) typeChiRadio.checked = true;
-			// THÊM DÒNG NÀY ĐỂ CẬP NHẬT NGÀY HIỆN TẠI CHO BỘ LỌC NGÀY CỤ THỂ
-			if (filterSpecificDateInput) {
-				filterSpecificDateInput.value = getCurrentDateFormattedYYYYMMDD();
-			}
-
-			populateAccountDropdowns();
-			toggleFormFields();
-			renderCustomCategoryLists();
-			renderAccountListAdmin();
-
-			populateMonthFilter();
-			applyMainFilter();
-			
-			populateComparisonWeekFilter();
-			const currentSystemYear = new Date().getFullYear();
-			// const yearInFilterInput = document.getElementById('filter-comparison-year'); // Đã có biến global filterComparisonYearInput
-			// const weekFilterSelect = document.getElementById('filter-comparison-week'); // Đã có biến global filterComparisonWeekSelect
-
-			// Sử dụng biến global đã được khai báo ở đầu tệp script.js
-			if (filterComparisonYearInput && filterComparisonWeekSelect) { 
-				const yearInFilter = parseInt(filterComparisonYearInput.value);
-
-				if (yearInFilter === currentSystemYear) {
-					const currentWeekId = getCurrentISOWeekId(); // Gọi hàm trợ giúp mới
-					
-					// Kiểm tra xem tùy chọn tuần hiện tại có tồn tại trong danh sách không
-					const currentWeekOptionExists = Array.from(filterComparisonWeekSelect.options).some(opt => opt.value === currentWeekId);
-
-					if (currentWeekOptionExists) {
-						filterComparisonWeekSelect.value = currentWeekId;
-						console.log(`[APP] Tuần hiện tại ${currentWeekId} đã được tự động chọn.`);
-					} else {
-						console.warn(`[APP] Tuần hiện tại (${currentWeekId}) không tìm thấy trong danh sách cho năm ${yearInFilter}.`);
-						// Nếu muốn, bạn có thể chọn tuần mới nhất có sẵn ở đây
-						// Ví dụ: if (filterComparisonWeekSelect.options.length > 1) filterComparisonWeekSelect.selectedIndex = 1; (chọn tuần đầu tiên sau "-- Chọn tuần --")
-					}
-				}
-			}
-			// --- KẾT THÚC PHẦN TỰ ĐỘNG CHỌN TUẦN HIỆN TẠI ---
-
-			updateWeeklyComparisonDisplay();
-			
-			
-		// Load phần đối soát
-			const actualWeekBalanceInput = document.getElementById('actual-week-balance');
-			const saveActualBalanceBtn = document.getElementById('save-actual-balance-btn');
-			const reconciliationResult = document.getElementById('reconciliation-result');
-	
-
-// XÓA đoạn mã "Collapsible sections" cũ và hàm setupCollapsibleSections() riêng biệt.
-			const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
-			collapsibleHeaders.forEach(header => {
-				const contentId = header.dataset.collapsibleTarget;
-
-				if (!contentId) {
-					console.error("Lỗi Collapsible: Thuộc tính data-collapsible-target bị thiếu trên header:", header);
-					return; // Bỏ qua header này nếu thiếu target
-				}
-
-				const content = document.getElementById(contentId);
-				const toggleIcon = header.querySelector('.toggle-icon'); // Lấy phần tử icon
-
-				if (!content) {
-					console.error(`Lỗi Collapsible: Content ID '${contentId}' không tìm thấy cho header:`, header);
-					return; // Bỏ qua nếu content không tồn tại
-				}
-
-				// 1. Xác định trạng thái hoạt động (active) ban đầu:
-				// Ưu tiên trạng thái đã lưu trong localStorage, nếu không có thì lấy từ class 'active' trong HTML.
-				let shouldBeActive = header.classList.contains('active'); // Trạng thái mặc định từ HTML
-				const storedState = localStorage.getItem(`collapsibleState_${contentId}`);
-
-				if (storedState === 'expanded') {
-					shouldBeActive = true;
-				} else if (storedState === 'collapsed') {
-					shouldBeActive = false;
-				}
-				// Nếu storedState là null (không có trong localStorage), shouldBeActive sẽ giữ nguyên giá trị từ HTML.
-
-				// 2. Áp dụng trạng thái ban đầu cho header, content và icon
-				if (shouldBeActive) {
-					header.classList.add('active');
-					content.classList.add('active');
-					// Nếu bạn có logic maxHeight cho hiệu ứng động, có thể thêm lại ở đây. Ví dụ:
-					// if (content.classList.contains('collapsible-content')) {
-					//     setTimeout(() => { if (content.classList.contains('active')) content.style.maxHeight = content.scrollHeight + "px"; }, 50);
-					// }
-					if (toggleIcon) {
-						toggleIcon.style.transform = 'rotate(180deg)';
-					}
-				} else {
-					header.classList.remove('active');
-					content.classList.remove('active');
-					// if (content.classList.contains('collapsible-content')) {
-					//     content.style.maxHeight = null;
-					// }
-					if (toggleIcon) {
-						toggleIcon.style.transform = 'rotate(0deg)';
-					}
-				}
-
-				// 3. Gán sự kiện click cho header
-				header.addEventListener('click', () => {
-					console.log(`Header được nhấp cho target: ${contentId}`); // Dòng log để kiểm tra
-
-					// Toggle class 'active' trên header và lấy trạng thái mới của nó
-					const isActiveAfterClick = header.classList.toggle('active');
-					
-					// Đặt class 'active' cho content dựa trên trạng thái mới của header
-					content.classList.toggle('active', isActiveAfterClick);
-
-					// Lưu trạng thái mới vào localStorage
-					localStorage.setItem(`collapsibleState_${contentId}`, isActiveAfterClick ? 'expanded' : 'collapsed');
-					
-					// Cập nhật trạng thái xoay của icon (NẾU CÓ ICON)
-					if (toggleIcon) {
-						toggleIcon.style.transform = isActiveAfterClick ? 'rotate(180deg)' : 'rotate(0deg)';
-					}
-
-					// Nếu bạn có logic maxHeight cho hiệu ứng động, xử lý nó ở đây:
-					// if (content.classList.contains('collapsible-content')) { // Giả sử chỉ content chính mới có hiệu ứng này
-					//     if (isActiveAfterClick) {
-					//         content.style.maxHeight = content.scrollHeight + "px";
-					//     } else {
-					//         content.style.maxHeight = null;
-					//     }
-					// }
-				});
-			});
-
-			// PHẦN COLLAPSIBLE CHO DANH SÁCH CON (ví dụ: danh sách hạng mục)
-			// Đoạn mã này có vẻ ổn và xử lý các header khác (.collapsible-list-header)
-			// Bạn có thể giữ lại đoạn mã này nếu nó hoạt động tốt cho các danh sách con.
-			const listHeaders = document.querySelectorAll('.collapsible-list-header');
-			listHeaders.forEach(header => {
-				const contentId = header.dataset.collapsibleTarget;
-				const contentList = document.getElementById(contentId);
-				if (!contentList) { console.error(`Collapsible List Error: Content UL ID '${contentId}' not found.`, header); return; }
-				
-				const toggleIconList = header.querySelector('.toggle-icon'); // Lấy icon cho list header
-
-				// Khôi phục trạng thái (nếu bạn muốn lưu trạng thái cho các list con này)
-				// const storedListState = localStorage.getItem(`collapsibleListState_${contentId}`);
-				// let isListActive = header.classList.contains('active');
-				// if (storedListState === 'expanded') isListActive = true;
-				// if (storedListState === 'collapsed') isListActive = false;
-				// Bỏ qua localStorage cho list con để đơn giản, mặc định theo HTML
-
-				let isListActive = header.classList.contains('active'); // Mặc định theo HTML
-
-				if (isListActive) {
-					contentList.classList.add('active'); // Phải có class active để CSS transition maxHeight hoạt động
-					setTimeout(() => { // Chờ DOM render để scrollHeight tính đúng
-						 if (contentList.classList.contains('active')) contentList.style.maxHeight = contentList.scrollHeight + "px";
-					}, 150); // Tăng nhẹ timeout
-					if (toggleIconList) toggleIconList.style.transform = 'rotate(180deg)';
-				} else {
-					contentList.classList.remove('active');
-					contentList.style.maxHeight = null;
-					if (toggleIconList) toggleIconList.style.transform = 'rotate(0deg)';
-				}
-
-				header.addEventListener('click', () => {
-					const isListNowActive = header.classList.toggle('active');
-					contentList.classList.toggle('active', isListNowActive);
-					// localStorage.setItem(`collapsibleListState_${contentId}`, isListNowActive ? 'expanded' : 'collapsed');
-
-					if (isListNowActive) {
-						contentList.style.maxHeight = contentList.scrollHeight + "px";
-					} else {
-						contentList.style.maxHeight = null;
-					}
-					if (toggleIconList) {
-						toggleIconList.style.transform = isListNowActive ? 'rotate(180deg)' : 'rotate(0deg)';
-					}
-				});
-			});
-			// KẾT THÚC PHẦN COLLAPSIBLE MỚI
-
-			// Event listener cho bộ chọn kiểu biểu đồ chi tiêu
-			if (expenseChartTypeSelector) {
-				expenseChartTypeSelector.addEventListener('change', toggleExpenseChartDisplay);
-			} else {
-				console.warn("[APP] expenseChartTypeSelector not found.");
-			}
-
-			// Nút "Thêm 000"
-			if (addTripleZeroButton && amountTextInput) {
-				addTripleZeroButton.addEventListener('click', function() { /* ... code của bạn ... */ });
-			}
-					
-		// Đặt hàm này ở đâu đó trong phần script của bạn, có thể ở đầu phần script cho các hàm tiện ích
-		function formatAndPreserveCursor(inputElement, valueToFormat) {
-			const originalValue = valueToFormat;
-			let cursorPos = inputElement.selectionStart;
-			const originalLength = originalValue.length;
-
-			// 1. Loại bỏ các ký tự không hợp lệ và dấu phẩy cũ, chỉ giữ lại số và một dấu chấm thập phân
-			let cleanValue = originalValue.replace(/[^0-9.]/g, "");
-			const parts = cleanValue.split('.');
-			let integerPart = parts[0];
-			let decimalPart = parts.length > 1 ? parts.slice(1).join('') : ""; // Nối lại nếu có nhiều dấu chấm
-
-			// Chỉ cho phép một dấu chấm thập phân
-			if (parts.length > 2) {
-				decimalPart = parts[1] + parts.slice(2).join(''); // Lấy phần đầu tiên sau dấu chấm và nối phần còn lại
-			}
-			 if (decimalPart.length > 2 && inputElement.id === 'amount-input' && document.getElementById('form-currency-selector').value === 'USD') {
-				// Giới hạn 2 số thập phân cho USD, có thể mở rộng cho các tiền tệ khác nếu cần
-				// decimalPart = decimalPart.substring(0, 2);
-				// Với VND, bạn có thể không muốn giới hạn số thập phân khi nhập,
-				// việc làm tròn sẽ do hàm parseAmountInput đảm nhiệm khi submit.
-				// Hiện tại, không giới hạn số chữ số thập phân khi nhập để linh hoạt.
-			}
-
-
-			// 2. Định dạng phần nguyên với dấu phẩy
-			let formattedInteger = "";
-			if (integerPart) {
-				// Bỏ qua việc parse thành số rồi format lại nếu đang gõ số 0 ở đầu (ví dụ: 007)
-				if (/^0+$/.test(integerPart) && integerPart.length > 1 && (decimalPart === "" || decimalPart === undefined)) {
-					 // Giữ nguyên nếu chỉ là các số 0 (ví dụ 00) để cho phép nhập 0.5 sau đó
-					 // formattedInteger = integerPart; // Tạm thời để người dùng nhập 007
-				} else {
-					const num = parseInt(integerPart, 10); // Parse để bỏ số 0 ở đầu (vd: 007 -> 7)
-					if (!isNaN(num)) {
-						 formattedInteger = new Intl.NumberFormat('en-US').format(num);
-					} else if (integerPart === "" && (decimalPart !== "" || valueToFormat === ".")) {
-						formattedInteger = "0"; // Nếu chỉ có phần thập phân, ví dụ ".5" -> "0.5"
-					} else {
-						formattedInteger = ""; // Nếu integerPart không hợp lệ và không có phần thập phân
-					}
-				}
-			} else if (decimalPart !== "" || valueToFormat === ".") {
-				formattedInteger = "0"; // Nếu không có phần nguyên nhưng có phần thập phân
-			}
-
-
-			// 3. Ghép lại giá trị đã định dạng
-			let newFormattedValue = formattedInteger;
-			if (decimalPart !== "" || (valueToFormat.endsWith('.') && !valueToFormat.endsWith('..'))) { // Cho phép dấu chấm ở cuối khi đang gõ
-				newFormattedValue += "." + decimalPart;
-			}
-			 // Nếu giá trị ban đầu là "." hoặc "0." thì giữ nguyên sau khi thêm số 0
-			if (valueToFormat === ".") newFormattedValue = "0.";
-			if (valueToFormat === "0." && decimalPart==="") newFormattedValue = "0.";
-
-
-			// Xử lý trường hợp đặc biệt: nếu người dùng chỉ nhập "0", thì hiển thị "0"
-			if (integerPart === "0" && decimalPart === "" && !valueToFormat.includes('.')) {
-				newFormattedValue = "0";
-			}
-			// Nếu người dùng xóa hết, newFormattedValue có thể là "0" do Intl.NumberFormat(NaN) hoặc (0)
-			// Cần đảm bảo nếu input rỗng thì hiển thị rỗng
-			if (originalValue.trim() === "") {
-				newFormattedValue = "";
-			}
-
-
-			// 4. Cập nhật giá trị và đặt lại con trỏ
-			inputElement.value = newFormattedValue;
-
-			// Tính toán vị trí con trỏ mới
-			// Logic này cố gắng giữ vị trí con trỏ tương đối dựa trên số lượng chữ số đã thay đổi.
-			// Nó không hoàn hảo 100% cho mọi trường hợp phức tạp (xóa/chèn ở giữa)
-			// nhưng sẽ tốt hơn là chỉ đặt con trỏ về cuối.
-			if (cursorPos !== null) {
-				let newCursorPos = cursorPos;
-				const newLength = newFormattedValue.length;
-
-				// Đếm số dấu phẩy trong giá trị cũ và mới trước vị trí con trỏ ước tính
-				const oldCommasBefore = (originalValue.substring(0, cursorPos).match(/,/g) || []).length;
-				// Ước tính vị trí con trỏ mới trước khi điều chỉnh dấu phẩy
-				let tempNewCursorPos = cursorPos + (newLength - originalLength);
-				if (tempNewCursorPos < 0) tempNewCursorPos = 0;
-				if (tempNewCursorPos > newLength) tempNewCursorPos = newLength;
-
-				const newCommasBefore = (newFormattedValue.substring(0, tempNewCursorPos).match(/,/g) || []).length;
-
-				newCursorPos = tempNewCursorPos + (newCommasBefore - oldCommasBefore);
-
-				// Đảm bảo con trỏ không vượt quá giới hạn
-				if (newCursorPos < 0) newCursorPos = 0;
-				if (newCursorPos > newLength) newCursorPos = newLength;
-
-				// Đặc biệt khi xóa lùi và ký tự bị xóa là dấu phẩy
-				if (inputElement.id === 'amount-input' && originalValue.charAt(cursorPos -1) === ',' && newLength < originalLength) {
-					// Nếu người dùng vừa xóa dấu phẩy, vị trí con trỏ nên ở trước dấu phẩy đó
-					// (giờ đã biến mất), tức là vị trí hiện tại của ký tự đứng trước dấu phẩy
-					// newCursorPos = cursorPos -1; // Đã được xử lý bởi logic trên
-				}
-
-
-				inputElement.setSelectionRange(newCursorPos, newCursorPos);
-			}
-		}
-
-
-		// Đảm bảo biến amountTextInput đã được khai báo ở phạm vi có thể truy cập
-		// const amountTextInput = document.getElementById('amount-input');
-
-		if (amountTextInput) {
-			amountTextInput.addEventListener('input', function(e) {
-				// Chỉ định dạng nếu không phải là xóa (để tránh xung đột khi xóa dấu phẩy)
-				// Hoặc nếu bạn muốn nó luôn định dạng:
-				formatAndPreserveCursor(e.target, e.target.value);
-			});
-
-			amountTextInput.addEventListener('keydown', function(e) {
-				// Cho phép: backspace, delete, tab, escape, enter, home, end, left, right arrows
-				if ([46, 8, 9, 27, 13, 35, 36, 37, 39].indexOf(e.keyCode) !== -1 ||
-					// Cho phép: Ctrl+A, Command+A, Ctrl+C, Ctrl+V, Ctrl+X
-					((e.keyCode === 65 || e.keyCode === 88 || e.keyCode === 67 || e.keyCode === 86) && (e.ctrlKey === true || e.metaKey === true)) ||
-					// Cho phép: số từ 0-9 trên bàn phím chính
-					(e.keyCode >= 48 && e.keyCode <= 57 && !e.shiftKey) ||
-					// Cho phép: số từ 0-9 trên numpad
-					(e.keyCode >= 96 && e.keyCode <= 105) ||
-					// Cho phép: dấu chấm (period) và dấu chấm trên numpad (decimal point)
-					(e.keyCode === 190 || e.keyCode === 110)) {
-					// Nếu là dấu chấm, kiểm tra xem đã có dấu chấm chưa
-					if ((e.keyCode === 190 || e.keyCode === 110) && this.value.includes('.')) {
-						e.preventDefault(); // Ngăn nhập nhiều hơn một dấu chấm
-					}
-					return; // Cho phép các phím này
-				}
-				// Ngăn chặn tất cả các phím khác không được liệt kê ở trên
-				e.preventDefault();
-			});
-		}
-			
-
-			// ----- VIRTUAL KEYBOARD LOGIC -----
-			const virtualKeyboardEl = document.getElementById('virtualNumericKeyboard');
-			const amountInputForKeyboard = document.getElementById('amount-input'); // Đổi tên biến để tránh nhầm lẫn với amountTextInput toàn cục nếu có
-
-			if (amountInputForKeyboard && virtualKeyboardEl) {
-				console.log('[Keyboard] Initializing event listeners for virtual keyboard.');
-
-				// Sử dụng 'click' để có kiểm soát tốt hơn trên mobile và ngăn bàn phím OS
-				amountInputForKeyboard.addEventListener('click', function(event) {
-					// Chỉ kích hoạt bàn phím ảo trên thiết bị cảm ứng
-					if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-						console.log("[Keyboard] Amount input CLICKED on touch device.");
-						event.preventDefault(); // QUAN TRỌNG: Ngăn hành vi mặc định (mở bàn phím OS)
-						
-						// Nếu bàn phím ảo đang ẩn hoặc chưa được hiển thị cho input này, thì hiện nó
-						if (virtualKeyboardEl.style.display === 'none' || virtualKeyboardEl.style.display === '' || activeInputForVirtualKeyboard !== this) {
-							showVirtualKeyboard(this);
-						}
-						// Ngăn việc focus thực sự vào input để tránh bàn phím OS tự động bật lên sau đó
-						this.blur(); 
-					}
-				});
-
-				// Xử lý khi focus vào input (ví dụ bằng phím Tab trên desktop)
-				// Trên mobile, chúng ta muốn click là chính, focus có thể gây ra hiện bàn phím OS không mong muốn
-				amountInputForKeyboard.addEventListener('focus', function(e) {
-					if ('ontouchstart' in window || navigator.maxTouchPoints > 0) { // Nếu là thiết bị cảm ứng
-						console.log("[Keyboard] Amount input FOCUSED on touch device - attempting to blur and show virtual.");
-						e.target.blur(); // LUÔN BLUR ngay để ngăn bàn phím OS
-						// Sau đó, nếu bàn phím ảo đang ẩn, hiện nó.
-						if (virtualKeyboardEl.style.display === 'none' || virtualKeyboardEl.style.display === '') {
-							showVirtualKeyboard(this);
-						}
-					} else {
-						// Trên desktop, cho phép focus bình thường, không hiện bàn phím ảo tự động khi focus
-						console.log("[Keyboard] Amount input FOCUSED on non-touch device.");
-					}
-				});
-
-				// Gán sự kiện cho các nút trên bàn phím ảo
-				virtualKeyboardEl.addEventListener('touchstart', function(event) {
-					if (!activeInputForVirtualKeyboard) {
-						console.warn("[Keyboard] Virtual keyboard key pressed, but no active input target.");
-						return;
-					}
-
-					const targetButton = event.target.closest('button.virtual-key');
-					if (!targetButton) return; // Chỉ xử lý nếu click vào nút có class 'virtual-key'
-
-					const key = targetButton.dataset.key;
-					console.log("[Keyboard] Virtual key pressed:", key);
-
-					let currentValue = activeInputForVirtualKeyboard.value;
-
-					if (key === 'backspace') {
-						activeInputForVirtualKeyboard.value = currentValue.slice(0, -1);
-					} else if (key === 'done') {
-						hideVirtualKeyboard();
-						// Tùy chọn: chuyển focus sang nút submit hoặc một hành động khác
-						if (submitButton) submitButton.focus();
-					} else if (key === '.') {
-						if (!currentValue.includes('.')) { // Chỉ cho phép một dấu chấm
-							activeInputForVirtualKeyboard.value += key;
-						}
-					} else if (key) { // Các phím số (0-9) và '000'
-						activeInputForVirtualKeyboard.value += key;
-					}
-					formatAndPreserveCursor(activeInputForVirtualKeyboard, activeInputForVirtualKeyboard.value);					
-					// Không nên gọi activeInputForVirtualKeyboard.focus() ở đây vì có thể kích hoạt lại bàn phím OS
-				});
-			} else {
-				if (!virtualKeyboardEl) console.warn("[Keyboard] Virtual keyboard element with ID 'virtualNumericKeyboard' not found.");
-				if (!amountInputForKeyboard) console.warn("[Keyboard] Amount input element with ID 'amount-input' not found for virtual keyboard.");
-
-			}
-
-			// Xử lý click ra ngoài để ẩn bàn phím ảo
-			document.addEventListener('mousedown', function(event) {
-				if (virtualKeyboardEl && virtualKeyboardEl.style.display !== 'none') {
-					const isClickOnKeyboard = virtualKeyboardEl.contains(event.target);
-					// activeInputForVirtualKeyboard có thể là null nếu bàn phím vừa được ẩn
-					const isClickOnActiveInput = activeInputForVirtualKeyboard && activeInputForVirtualKeyboard.contains(event.target);
-
-					if (!isClickOnKeyboard && !isClickOnActiveInput) {
-						console.log("[Keyboard] Clicked outside, hiding virtual keyboard.");
-						hideVirtualKeyboard();
-					}
-				}
-			});
-			
-			document.querySelectorAll('.virtual-key').forEach(button => {
-				let lastTap = 0;
-				button.addEventListener('touchend', function(event) {
-					const currentTime = new Date().getTime();
-					const tapLength = currentTime - lastTap;
-					if (tapLength < 300 && tapLength > 0) { 
-						event.preventDefault();
-						// console.log("Rapid touchend prevented on virtual key"); // Dòng log này có thể có hoặc không
-					}
-					lastTap = currentTime;
-				});
-			});	
-
-			document.addEventListener('mousedown', function(event) {
-				if (virtualKeyboard && virtualKeyboard.style.display !== 'none') {
-					const isClickOnKeyboard = virtualKeyboard.contains(event.target);
-					const isClickOnActiveInput = activeInputForVirtualKeyboard && activeInputForVirtualKeyboard.contains(event.target);
-					if (!isClickOnKeyboard && !isClickOnActiveInput) {
-						hideVirtualKeyboard();
-					}
-				}
-			});
-			// ----- END VIRTUAL KEYBOARD LOGIC -----
-		    const fieldsForSuggestion = [
-				...document.querySelectorAll('input[name="type"]'), // Tất cả các radio button loại
-				categoryInput, 
-				// accountInput // Thêm accountInput nếu muốn nó cũng kích hoạt gợi ý
-			];
-
-			fieldsForSuggestion.forEach(field => {
-				if (field) { // Kiểm tra field tồn tại
-					field.addEventListener('change', findAndDisplayTransactionSuggestion);
-				}
-			});
-
-			// Gán sự kiện cho các nút trong khu vực gợi ý
-			if (applySuggestionButtonEl) {
-				applySuggestionButtonEl.addEventListener('click', applyTransactionSuggestion);
-			}
-			if (dismissSuggestionButtonEl) {
-				dismissSuggestionButtonEl.addEventListener('click', hideTransactionSuggestion);
-			}
-
-			// Khi reset form, cũng ẩn gợi ý
-			transactionForm.addEventListener('reset', hideTransactionSuggestion);	
-
-			// Đăng ký các event listeners khác
-			if(transactionForm) transactionForm.addEventListener('submit', handleTransactionSubmit);
-			if (filterMonthSelect) {
-				filterMonthSelect.addEventListener('change', applyMainFilter);
-			}
-			if (filterSpecificDateInput) {
-				filterSpecificDateInput.addEventListener('change', applyMainFilter);
-			}
-			if (clearDateFilterButton && filterSpecificDateInput) {
-				clearDateFilterButton.addEventListener('click', () => {
-					filterSpecificDateInput.value = ""; // Xóa giá trị ngày
-					applyMainFilter(); // Áp dụng lại bộ lọc
-				});
-			}
-			if(typeRadioButtons) typeRadioButtons.forEach(radio => {
-				radio.addEventListener('change', () => {
-					toggleFormFields(); 
-					const currentType = document.querySelector('input[name="type"]:checked');
-					if (currentType && currentType.value !== 'Transfer') {
-						populateCategories();
-					}
-				});
-			});
-
-			
-			if (exportButton) exportButton.addEventListener('click', exportData);
-			if (exportCsvButton) exportCsvButton.addEventListener('click', exportToCSV);
-			if (importButton && importFileInput) importButton.addEventListener('click', () => importFileInput.click());
-			if (importFileInput) importFileInput.addEventListener('change', handleImportFile);
-			if (addIncomeCategoryButton && newIncomeCategoryNameInput) addIncomeCategoryButton.addEventListener('click', () => { if (addCategory(newIncomeCategoryNameInput.value, 'income')) newIncomeCategoryNameInput.value = ''; });
-			if (addExpenseCategoryButton && newExpenseCategoryNameInput) addExpenseCategoryButton.addEventListener('click', () => { if (addCategory(newExpenseCategoryNameInput.value, 'expense')) newExpenseCategoryNameInput.value = ''; });
-			if (addAccountButton && newAccountNameInput) { addAccountButton.addEventListener('click', () => { if (addAccount(newAccountNameInput.value)) { newAccountNameInput.value = ''; } }); }
-		
-			// Quan trọng: Gán listener cho dark mode toggle
-			if (darkModeToggleCheckbox) {
-				// console.log('[Debug] Attaching change listener to darkModeToggleCheckbox'); // Bạn có thể bỏ log này nếu dark mode đã ổn
-				darkModeToggleCheckbox.addEventListener('change', toggleTheme);
-			} else {
-				console.error('[APP] darkModeToggleCheckbox NOT FOUND during listener attachment!');
-			}
-			console.log("[APP] initializeApp COMPLETED");
-		}
-
-		// KHỞI CHẠY ỨNG DỤNG
-        initializeApp();
+        tableHead.innerHTML = '';
+        tableBody.innerHTML = '';
+
+        if (!accounts || accounts.length === 0) {
+            const headerRowForMessage = tableHead.insertRow();
+            const th = headerRowForMessage.insertCell();
+            th.colSpan = 1;
+            th.textContent = "Mục / Tài khoản";
+
+            const bodyRowForMessage = tableBody.insertRow();
+            const td = bodyRowForMessage.insertCell();
+            td.colSpan = 1;
+            td.className = 'text-center py-4 text-gray-500 dark:text-gray-400';
+            td.textContent = 'Chưa có tài khoản nào để đối soát.';
+            return;
+        }
+
+        // Build header
+        const headerRow = tableHead.insertRow();
+        headerRow.insertCell().outerHTML = `<th class="sticky left-0 z-10 bg-gray-50 dark:bg-gray-700 border-r dark:border-gray-600">Mục / Tài khoản</th>`;
+        accounts.forEach(acc => {
+            headerRow.insertCell().outerHTML = `<th>${acc.text}</th>`;
+        });
+
+        // Define measures
+        const measures = [
+            {
+                id: 'systemBalance',
+                label: 'Số dư hệ thống',
+                type: 'display',
+                getValue: (accountId) => Utils.formatCurrency(this.getAccountBalance(accountId), 'VND'),
+            },
+            {
+                id: 'actualBalance',
+                label: 'Số dư thực tế <br><span class="font-normal normal-case text-xs">(Nhập vào)</span>',
+                type: 'input'
+            },
+            {
+                id: 'difference',
+                label: 'Chênh lệch',
+                type: 'displayCell',
+            },
+            {
+                id: 'reconcileAction',
+                label: 'Thao tác',
+                type: 'actionButton',
+                buttonText: 'Đối soát',
+                buttonClass: 'btn-secondary btn-reconcile-pivot py-2 px-3 text-sm rounded'
+            },
+            {
+                id: 'recordDifferenceAction',
+                label: 'Ghi nhận chênh lệch',
+                type: 'actionButton',
+                buttonText: 'Ghi nhận',
+                buttonClass: 'btn-primary btn-record-diff-pivot py-2 px-3 text-sm rounded',
+                initialStyle: 'display:none;'
+            }
+        ];
+
+        // Build body
+        measures.forEach(measure => {
+            const row = tableBody.insertRow();
+            row.insertCell().outerHTML = `<td class="sticky left-0 z-10 bg-white dark:bg-gray-800 font-medium border-r dark:border-gray-600 p-2">${measure.label}</td>`;
+
+            accounts.forEach(acc => {
+                const cell = row.insertCell();
+                cell.setAttribute('data-account', acc.value);
+                cell.classList.add('text-right', 'p-2');
+
+                switch (measure.type) {
+                    case 'display':
+                        cell.innerHTML = measure.getValue(acc.value);
+                        if (measure.id === 'systemBalance') {
+                            cell.id = `system-balance-pivot-${acc.value}`;
+                        }
+                        break;
+                    case 'input':
+                        cell.innerHTML = `<input type="text" inputmode="decimal"
+                                                class="input-actual-balance-pivot p-2 border dark:border-gray-600 rounded w-full text-right bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                                                data-account="${acc.value}"
+                                                placeholder="Nhập số dư">`;
+                        const inputEl = cell.querySelector('input');
+                        if (inputEl) {
+                            this.setupInputEvents(inputEl);
+                        }
+                        break;
+                    case 'displayCell':
+                        cell.id = `diff-pivot-${acc.value}`;
+                        break;
+                    case 'actionButton':
+                        const button = document.createElement('button');
+                        button.innerHTML = measure.buttonText;
+                        button.className = measure.buttonClass;
+                        button.dataset.account = acc.value;
+                        button.dataset.accountName = acc.text;
+                        if (measure.initialStyle) {
+                            button.style.cssText = measure.initialStyle;
+                        }
+
+                        if (measure.id === 'reconcileAction') {
+                            button.id = `reconcile-btn-pivot-${acc.value}`;
+                        } else if (measure.id === 'recordDifferenceAction') {
+                            button.id = `record-diff-btn-pivot-${acc.value}`;
+                        }
+                        cell.appendChild(button);
+                        cell.classList.add('text-center');
+                        cell.classList.remove('text-right');
+                        break;
+                }
+            });
+        });
+
+        // Attach event listeners
+        this.attachReconcileEvents();
+        InputManager.setupThousandSeparators();
+        console.log("[RenderTable] Reconciliation pivot table rendered and event listeners attached.");
+    },
+
+    // Setup input events for reconciliation inputs
+    setupInputEvents(inputEl) {
+        inputEl.addEventListener('input', (e) => {
+            if (typeof Utils.formatAndPreserveCursor === 'function') {
+                Utils.formatAndPreserveCursor(e.target, e.target.value);
+            }
+        });
+
+        inputEl.addEventListener('keydown', function(e) {
+            if ([46, 8, 9, 27, 13, 35, 36, 37, 39].indexOf(e.keyCode) !== -1 ||
+                ((e.keyCode === 65 || e.keyCode === 88 || e.keyCode === 67 || e.keyCode === 86) && (e.ctrlKey === true || e.metaKey === true)) ||
+                (e.keyCode >= 48 && e.keyCode <= 57 && !e.shiftKey) ||
+                (e.keyCode >= 96 && e.keyCode <= 105) ||
+                (e.keyCode === 190 || e.keyCode === 110)) {
+                if ((e.keyCode === 190 || e.keyCode === 110) && this.value.includes('.')) {
+                    e.preventDefault();
+                }
+                return;
+            }
+            e.preventDefault();
+        });
+
+        inputEl.addEventListener('click', function(event) {
+            if (('ontouchstart' in window || navigator.maxTouchPoints > 0) && DOM.virtualKeyboard) {
+                event.preventDefault();
+                if (DOM.virtualKeyboard.style.display === 'none' || DOM.virtualKeyboard.style.display === '' || activeInputForVirtualKeyboard !== this) {
+                    VirtualKeyboard.show(this);
+                }
+                this.blur();
+            }
+        });
+
+        inputEl.addEventListener('focus', function(e) {
+            if (('ontouchstart' in window || navigator.maxTouchPoints > 0) && DOM.virtualKeyboard) {
+                e.target.blur();
+                if (DOM.virtualKeyboard.style.display === 'none' || DOM.virtualKeyboard.style.display === '') {
+                    VirtualKeyboard.show(this);
+                }
+            }
+        });
+    },
+
+    // Attach reconcile button events
+    attachReconcileEvents() {
+        document.querySelectorAll('.btn-reconcile-pivot').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const accountId = this.dataset.account;
+                const accountName = this.dataset.accountName;
+                console.log(`[ReconcilePivot] 'Reconcile' button clicked for account: ${accountName} (ID: ${accountId})`);
+
+                const actualBalanceInputElement = document.querySelector(`input.input-actual-balance-pivot[data-account="${accountId}"]`);
+                const diffCellElement = document.getElementById(`diff-pivot-${accountId}`);
+                const recordButtonElement = document.getElementById(`record-diff-btn-pivot-${accountId}`);
+                const systemBalanceDisplayElement = document.getElementById(`system-balance-pivot-${accountId}`);
+
+                if (!actualBalanceInputElement || !diffCellElement || !recordButtonElement || !systemBalanceDisplayElement) {
+                    console.error(`[ReconcilePivot] Missing DOM elements for account: ${accountId}`);
+                    Utils.showMessage('Lỗi hệ thống khi tìm các thành phần đối soát.', 'error');
+                    return;
+                }
+                
+                const systemBalanceValue = ReconciliationManager.getAccountBalance(accountId);
+                systemBalanceDisplayElement.textContent = Utils.formatCurrency(systemBalanceValue, 'VND');
+
+                const actualBalanceNormalized = Utils.normalizeAmountString(actualBalanceInputElement.value);
+                const actualBalance = parseFloat(actualBalanceNormalized);
+
+                if (isNaN(actualBalance) || actualBalanceInputElement.value.trim() === '') {
+                    Utils.showMessage('Vui lòng nhập số dư thực tế hợp lệ cho tài khoản ' + accountName + '.', 'error');
+                    diffCellElement.textContent = '';
+                    diffCellElement.className = 'text-right p-2';
+                    recordButtonElement.style.display = 'none';
+                    return;
+                }
+
+                const differenceValue = actualBalance - systemBalanceValue;
+                console.log(`[ReconcilePivot] Account: ${accountName}, SystemBalance: ${systemBalanceValue}, ActualBalance: ${actualBalance}, Difference: ${differenceValue}`);
+
+                diffCellElement.textContent = Utils.formatCurrency(differenceValue, 'VND');
+                diffCellElement.className = 'text-right p-2 font-semibold ';
+                if (differenceValue > 0) {
+                    diffCellElement.classList.add('text-green-600', 'dark:text-green-400');
+                } else if (differenceValue < 0) {
+                    diffCellElement.classList.add('text-red-600', 'dark:text-red-400');
+                } else {
+                    diffCellElement.classList.add('text-blue-600', 'dark:text-blue-400');
+                }
+
+                DataManager.saveReconciliationResult(accountId, systemBalanceValue, actualBalance, differenceValue);
+
+                if (differenceValue !== 0) {
+                    recordButtonElement.style.display = 'inline-block';
+                    recordButtonElement.dataset.difference = differenceValue;
+                    
+                    if (differenceValue > 0) {
+                        recordButtonElement.classList.remove('negative', 'btn-secondary');
+                        recordButtonElement.classList.add('positive', 'btn-primary');
+                    } else {
+                        recordButtonElement.classList.remove('positive', 'btn-secondary');
+                        recordButtonElement.classList.add('negative', 'btn-danger');
+                    }
+                    console.log(`[ReconcilePivot] Showing record button for ${accountName} with difference: ${differenceValue}`);
+
+                    recordButtonElement.onclick = function() {
+                        const currentAccountId = this.dataset.account;
+                        const currentAccountName = this.dataset.accountName;
+                        const currentDifference = parseFloat(this.dataset.difference);
+
+                        console.log(`[RecordDiffPivot] 'Record' clicked. Account: ${currentAccountName}, Difference: ${currentDifference}`);
+
+                        if (confirm(`Bạn có chắc chắn muốn ghi nhận chênh lệch ${Utils.formatCurrency(currentDifference, 'VND')} cho tài khoản ${currentAccountName}?`)) {
+                            ReconciliationManager.handleRecordDifference(currentAccountId, currentAccountName, currentDifference);
+                            ReconciliationManager.updateSystemBalanceDisplayOnTable(currentAccountId);
+
+                            this.style.display = 'none';
+                            actualBalanceInputElement.value = '';
+                            diffCellElement.textContent = Utils.formatCurrency(0, 'VND');
+                            diffCellElement.className = 'text-right p-2 font-semibold text-blue-600 dark:text-blue-400';
+
+                            Utils.showMessage(`Đã ghi nhận chênh lệch cho tài khoản ${currentAccountName}.`, 'success');
+                        }
+                    };
+                } else {
+                    recordButtonElement.style.display = 'none';
+                    diffCellElement.innerHTML += ' <span class="text-xs">(Đã khớp)</span>';
+                    console.log(`[ReconcilePivot] Hiding record button for ${accountName} as difference is 0.`);
+                }
+            });
+        });
+    },
+
+    // Get account balance
+    getAccountBalance(accountValue) {
+        let balance = 0;
+        transactions.forEach(tx => {
+            if (tx.account === accountValue) {
+                if (tx.type === "Thu") balance += tx.amount;
+                else if (tx.type === "Chi") balance -= tx.amount;
+            }
+        });
+        return balance;
+    },
+
+    // Handle record difference
+    handleRecordDifference(accountId, accountName, difference) {
+        if (isNaN(difference) || difference === 0) {
+            Utils.showMessage('Không có chênh lệch để ghi nhận hoặc chênh lệch không hợp lệ.', 'error');
+            return;
+        }
+
+        const type = difference > 0 ? 'Thu' : 'Chi';
+        const amount = Math.abs(difference);
+        const category = difference > 0 ? CONFIG.RECONCILE_ADJUST_INCOME_CAT : CONFIG.RECONCILE_ADJUST_EXPENSE_CAT;
+        const description = `Điều chỉnh đối soát tài khoản ${accountName || accountId}`;
+        const transactionDateTime = Utils.formatIsoDateTime(new Date());
+
+        if (type === 'Thu' && !incomeCategories.some(cat => cat.value === CONFIG.RECONCILE_ADJUST_INCOME_CAT)) {
+            incomeCategories.push({ value: CONFIG.RECONCILE_ADJUST_INCOME_CAT, text: CONFIG.RECONCILE_ADJUST_INCOME_CAT });
+            DataManager.saveUserPreferences();
+        } else if (type === 'Chi' && !expenseCategories.some(cat => cat.value === CONFIG.RECONCILE_ADJUST_EXPENSE_CAT)) {
+            expenseCategories.push({ value: CONFIG.RECONCILE_ADJUST_EXPENSE_CAT, text: CONFIG.RECONCILE_ADJUST_EXPENSE_CAT });
+            DataManager.saveUserPreferences();
+        }
+
+        const newTransaction = {
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+            datetime: transactionDateTime,
+            description: description,
+            category: category,
+            amount: amount,
+            type: type,
+            account: accountId,
+            currency: 'VND',
+            isTransfer: false,
+            transferPairId: null,
+            originalAmount: amount,
+            originalCurrency: 'VND'
+        };
+
+        transactions.push(newTransaction);
+        DataManager.saveTransactions();
+        FilterManager.applyMainFilter();
+    },
+
+    // Update system balance display on table
+    updateSystemBalanceDisplayOnTable(accountId) {
+        const newSystemBalance = this.getAccountBalance(accountId);
+        const systemBalanceCell = document.getElementById(`system-balance-pivot-${accountId}`);
+
+        if (systemBalanceCell) {
+            systemBalanceCell.textContent = Utils.formatCurrency(newSystemBalance, 'VND');
+        } else {
+            console.warn(`System balance cell not found for account ${accountId}. Re-rendering entire table.`);
+            this.renderReconciliationTable();
+        }
+    }
+};
+
+// ========================================================================================
+// 19. MAIN APPLICATION
+// ========================================================================================
+
+const App = {
+    // Initialize DOM elements
+    initializeDOM() {
+        DOM.darkModeToggle = document.getElementById('darkModeToggleCheckbox');
+        DOM.transactionForm = document.getElementById('transaction-form');
+        DOM.formTitle = document.getElementById('form-title');
+        DOM.submitButton = document.getElementById('submit-transaction-button');
+        DOM.datetimeInput = document.getElementById('datetime-input');
+        DOM.categoryInput = document.getElementById('category');
+        DOM.amountInput = document.getElementById('amount-input');
+        DOM.formCurrencySelector = document.getElementById('form-currency-selector');
+        DOM.descriptionInput = document.getElementById('description');
+        DOM.accountInput = document.getElementById('account');
+        DOM.accountLabel = document.getElementById('account-label');
+        DOM.toAccountInput = document.getElementById('to-account');
+        DOM.addTripleZeroButton = document.getElementById('add-triple-zero-button');
+        
+        DOM.filterMonthSelect = document.getElementById('filter-month');
+        DOM.filterSpecificDateInput = document.getElementById('filter-specific-date');
+        DOM.clearDateFilterButton = document.getElementById('clear-date-filter-button');
+        DOM.filterComparisonYearInput = document.getElementById('filter-comparison-year');
+        DOM.filterComparisonWeekSelect = document.getElementById('filter-comparison-week');
+        
+        DOM.messageBox = document.getElementById('message-box');
+        DOM.transactionList = document.getElementById('transaction-list');
+        DOM.noTransactionsMessage = document.getElementById('no-transactions');
+        DOM.totalIncomeEl = document.getElementById('total-income');
+        DOM.totalExpensesEl = document.getElementById('total-expenses');
+        DOM.currentBalanceEl = document.getElementById('current-balance');
+        DOM.accountBalanceListEl = document.getElementById('account-balance-list');
+        
+        DOM.incomeExpenseChartCanvas = document.getElementById('incomeExpenseChart')?.getContext('2d');
+        DOM.expenseCategoryChartCanvas = document.getElementById('expenseCategoryChart')?.getContext('2d');
+        DOM.expenseCategoryBarCtx = document.getElementById('expenseCategoryBarChart')?.getContext('2d');
+        DOM.last7DaysChartCanvas = document.getElementById('last7DaysChart')?.getContext('2d');
+        DOM.monthComparisonChartCanvas = document.getElementById('monthComparisonChart')?.getContext('2d');
+        DOM.expenseChartTypeSelector = document.getElementById('expenseChartTypeSelector');
+        DOM.expensePieChartContainer = document.getElementById('expensePieChartContainer');
+        DOM.expenseBarChartContainer = document.getElementById('expenseBarChartContainer');
+        
+        DOM.newIncomeCategoryNameInput = document.getElementById('new-income-category-name');
+        DOM.addIncomeCategoryButton = document.getElementById('add-income-category-button');
+        DOM.incomeCategoryListAdmin = document.getElementById('income-category-list-admin');
+        DOM.newExpenseCategoryNameInput = document.getElementById('new-expense-category-name');
+        DOM.addExpenseCategoryButton = document.getElementById('add-expense-category-button');
+        DOM.expenseCategoryListAdmin = document.getElementById('expense-category-list-admin');
+        DOM.newAccountNameInput = document.getElementById('new-account-name');
+        DOM.addAccountButton = document.getElementById('add-account-button');
+        DOM.accountListAdmin = document.getElementById('account-list-admin');
+        
+        DOM.exportButton = document.getElementById('export-button');
+        DOM.exportCsvButton = document.getElementById('export-csv-button');
+        DOM.importButton = document.getElementById('import-button');
+        DOM.importFileInput = document.getElementById('import-file-input');
+        
+        DOM.virtualKeyboard = document.getElementById('virtualNumericKeyboard');
+        
+        DOM.transactionSuggestionArea = document.getElementById('transaction-suggestion-area');
+        DOM.suggestedDescription = document.getElementById('suggested-description');
+        DOM.suggestedAmount = document.getElementById('suggested-amount');
+        DOM.applySuggestionButton = document.getElementById('apply-suggestion-button');
+        DOM.dismissSuggestionButton = document.getElementById('dismiss-suggestion-button');
+
+        DOM.summaryIncomeMonthDisplay = document.getElementById('summary-income-month-display');
+        DOM.summaryExpenseMonthDisplay = document.getElementById('summary-expense-month-display');
+        DOM.summaryBalanceMonthDisplay = document.getElementById('summary-balance-month-display');
+    },
+
+    // Attach event listeners
+    attachEventListeners() {
+        // Form events
+        if (DOM.transactionForm) {
+            DOM.transactionForm.addEventListener('submit', (e) => TransactionManager.handleSubmit(e));
+        }
+
+        // Filter events
+        if (DOM.filterMonthSelect) {
+            DOM.filterMonthSelect.addEventListener('change', () => FilterManager.applyMainFilter());
+        }
+        if (DOM.filterSpecificDateInput) {
+            DOM.filterSpecificDateInput.addEventListener('change', () => FilterManager.applyMainFilter());
+        }
+        if (DOM.clearDateFilterButton && DOM.filterSpecificDateInput) {
+            DOM.clearDateFilterButton.addEventListener('click', () => {
+                DOM.filterSpecificDateInput.value = "";
+                FilterManager.applyMainFilter();
+            });
+        }
+
+        // Transaction type radio buttons
+        const typeRadioButtons = document.querySelectorAll('input[name="type"]');
+        if (typeRadioButtons) {
+            typeRadioButtons.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    FormManager.toggleFormFields(); 
+                    const currentType = document.querySelector('input[name="type"]:checked');
+                    if (currentType && currentType.value !== 'Transfer') {
+                        CategoryManager.populateCategories();
+                    }
+                });
+            });
+        }
+
+        // Chart type selector
+        if (DOM.expenseChartTypeSelector) {
+            DOM.expenseChartTypeSelector.addEventListener('change', () => ChartManager.toggleExpenseChartDisplay());
+        }
+
+        // Category management
+        if (DOM.addIncomeCategoryButton && DOM.newIncomeCategoryNameInput) {
+            DOM.addIncomeCategoryButton.addEventListener('click', () => {
+                if (CategoryManager.addCategory(DOM.newIncomeCategoryNameInput.value, 'income')) {
+                    DOM.newIncomeCategoryNameInput.value = '';
+                }
+            });
+        }
+        if (DOM.addExpenseCategoryButton && DOM.newExpenseCategoryNameInput) {
+            DOM.addExpenseCategoryButton.addEventListener('click', () => {
+                if (CategoryManager.addCategory(DOM.newExpenseCategoryNameInput.value, 'expense')) {
+                    DOM.newExpenseCategoryNameInput.value = '';
+                }
+            });
+        }
+        if (DOM.addAccountButton && DOM.newAccountNameInput) {
+            DOM.addAccountButton.addEventListener('click', () => {
+                if (CategoryManager.addAccount(DOM.newAccountNameInput.value)) {
+                    DOM.newAccountNameInput.value = '';
+                }
+            });
+        }
+
+        // Import/Export
+        if (DOM.exportButton) {
+            DOM.exportButton.addEventListener('click', () => ImportExportManager.exportData());
+        }
+        if (DOM.exportCsvButton) {
+            DOM.exportCsvButton.addEventListener('click', () => ImportExportManager.exportToCSV());
+        }
+        if (DOM.importButton && DOM.importFileInput) {
+            DOM.importButton.addEventListener('click', () => DOM.importFileInput.click());
+        }
+        if (DOM.importFileInput) {
+            DOM.importFileInput.addEventListener('change', (e) => ImportExportManager.handleImportFile(e));
+        }
+
+        // Theme toggle
+        if (DOM.darkModeToggle) {
+            DOM.darkModeToggle.addEventListener('change', () => ThemeManager.toggleTheme());
+        } else {
+            console.error('[APP] darkModeToggle NOT FOUND during listener attachment!');
+        }
+
+        // Triple zero button
+        if (DOM.addTripleZeroButton && DOM.amountInput) {
+            DOM.addTripleZeroButton.addEventListener('click', function() {
+                const currentValue = DOM.amountInput.value;
+                DOM.amountInput.value = currentValue + '000';
+                Utils.formatAndPreserveCursor(DOM.amountInput, DOM.amountInput.value);
+            });
+        }
+    },
+
+    // Initialize application
+    initialize() {
+        console.log("[APP] initializeApp CALLED");
+        
+        this.initializeDOM();
+        
+        ChartManager.init();
+        ThemeManager.loadThemePreference();
+        DataManager.loadUserPreferences();
+
+        if (DOM.formCurrencySelector) DOM.formCurrencySelector.value = 'VND';
+        FormManager.setDefaults();
+        
+        const typeChiRadio = document.getElementById('type-chi');
+        if (typeChiRadio) typeChiRadio.checked = true;
+
+        CategoryManager.populateAccountDropdowns();
+        FormManager.toggleFormFields();
+        UIRenderer.renderCustomCategoryLists();
+        UIRenderer.renderAccountListAdmin();
+
+        FilterManager.populateMonthFilter();
+        FilterManager.applyMainFilter();
+
+        CollapsibleManager.init();
+        InputManager.init();
+        VirtualKeyboard.init();
+        SuggestionManager.init();
+        
+        // Initialize reconciliation
+        ReconciliationManager.renderReconciliationTable();
+
+        this.attachEventListeners();
+
+        console.log("[APP] initializeApp COMPLETED");
+    }
+};
+
+// ========================================================================================
+// 20. GLOBAL FUNCTIONS (for backward compatibility)
+// ========================================================================================
+
+// Make functions available globally for HTML onclick handlers
+window.loadTransactionForEdit = function(transactionId) {
+    TransactionManager.loadForEdit(transactionId);
+};
+
+window.deleteTransaction = function(transactionId) {
+    TransactionManager.deleteTransaction(transactionId);
+};
+
+// ========================================================================================
+// 21. APPLICATION STARTUP
+// ========================================================================================
+
+// Initialize the application when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    App.initialize();
+});
+
+// Handle system theme changes
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    document.body.classList.toggle('dark-mode', e.matches);
+});
+
+if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.body.classList.add('dark-mode');
+} else {
+    document.body.classList.remove('dark-mode');
+}
+
+// Thêm vào cuối file script.js
+
+// Đăng ký Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+            .then(function(registration) {
+                console.log('ServiceWorker registration successful');
+            })
+            .catch(function(err) {
+                console.log('ServiceWorker registration failed: ', err);
+            });
+    });
+}

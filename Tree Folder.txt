@@ -1,0 +1,17 @@
+Okay, đây là sơ đồ cấu trúc thư mục và tệp dự kiến cho dự án của bạn sau khi đã tách các tệp JavaScript:
+
+PROJECT_ROOT/
+├── index.html
+├── Styles.css
+├── Logo Finance.png
+├── js/
+│   ├── constants.js
+│   ├── utils.js
+│   ├── storage.js
+│   ├── summary.js
+│   ├── theme.js
+│   ├── form.js
+│   ├── transaction-list.js
+│   ├── app-logic.js  // (Hoặc các tệp con như filter.js, settings.js, etc.)
+│   └── app.js
+└── README.md (Tùy chọn, nhưng nên có)

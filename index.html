@@ -2,25 +2,48 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Sổ Theo Dõi Tài Chính Cá Nhân</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Meta tags cho PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Tài Chính">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Theme color -->
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="msapplication-navbutton-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    <!-- Icons cho iOS - QUAN TRỌNG! -->
+    <link rel="apple-touch-icon" href="Logo Finance.png">
+    <link rel="apple-touch-icon" sizes="57x57" href="Logo Finance.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="Logo Finance.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="Logo Finance.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="Logo Finance.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="Logo Finance.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="Logo Finance.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="Logo Finance.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="Logo Finance.png">
     <link rel="apple-touch-icon" sizes="180x180" href="Logo Finance.png">
+    
+    <!-- Icons cho Android -->
     <link rel="icon" type="image/png" sizes="192x192" href="Logo Finance.png">
     <link rel="icon" type="image/png" sizes="512x512" href="Logo Finance.png">
     <link rel="icon" type="image/png" sizes="32x32" href="Logo Finance.png">
     <link rel="icon" type="image/png" sizes="16x16" href="Logo Finance.png">
     <link rel="shortcut icon" href="Logo Finance.png" type="image/png">
 
+    <!-- CSS và JS libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="Styles.css">
-
 </head>
 <body>
     <div class="theme-switch-wrapper">
@@ -125,70 +148,33 @@
         </div>
 		
 	<section class="section" id="reconciliation-section">
-		<h2 class="section-header collapsible-header active" data-collapsible-target="reconciliation-content">
-            <div class="header-text-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 6.75A2.25 2.25 0 015.25 4.5h13.5A2.25 2.25 0 0121 6.75v10.5A2.25 2.25 0 0118.75 19.5H5.25A2.25 2.25 0 013 17.25V6.75zM3 12h18M6 12h.008v.008H6V12zm3 0h.008v.008H9V12zm3 0h.008v.008H12V12zm3 0h.008v.008H15V12z"/>
-                </svg>
-                Đối Soát Số Dư Tài Khoản (Bảng Xoay)
-            </div>
-            <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-            </svg>
-        </h2>
+		<div class="section-header collapsible-header active" data-collapsible-target="reconciliation-content">
+			<span class="header-text-icon">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px; margin-right: 8px;">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0l.879-.659M9 8.5v6M15 8.5v6"></path>
+				</svg>
+				Đối Soát Số Dư Tài Khoản
+			</span>
+			<svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
+			</svg>
+		</div>
 		<div class="collapsible-content active" id="reconciliation-content">
-            <div class="overflow-x-auto">
-                <table class="w-full" id="reconciliation-table">
-                    <thead>
-                        <tr>
-                            <th>Mục / Tài khoản</th> 
-                            </tr>
-                    </thead>
-                    <tbody id="reconciliation-table-body">
-                        </tbody>
-                </table>
-            </div>
-        </div>
+			<div class="overflow-x-auto">
+				<table id="reconciliation-table">
+					<thead>
+						<!-- Table head sẽ được tạo bởi JavaScript -->
+					</thead>
+					<tbody id="reconciliation-table-body">
+						<!-- Table body sẽ được tạo bởi JavaScript -->
+					</tbody>
+				</table>
+			</div>
+			<p class="text-sm text-gray-500 dark:text-gray-400 mt-3">
+				💡 <strong>Hướng dẫn:</strong> Nhập số dư thực tế từ sao kê/ví → nhấn "Đối soát" → nếu có chênh lệch, nhấn "Ghi nhận" để điều chỉnh.
+			</p>
+		</div>
 	</section>
-
-        <div class="section table-section">
-             <h2 class="section-header collapsible-header active" data-collapsible-target="table-content">
-                <div class="header-text-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5M3.375 19.5l1.95-1.95M12.375 19.5h8.875M12.375 19.5l-1.95-1.95M20.625 19.5a1.125 1.125 0 001.125-1.125M20.625 19.5l-1.95-1.95M3.75 4.5h16.5M3.75 4.5a2.25 2.25 0 00-2.25 2.25v11.25c0 1.24 1.01 2.25 2.25 2.25h16.5c1.24 0 2.25-1.01 2.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25M3.75 4.5v.75m16.5-.75v.75m0 0a2.25 2.25 0 01-2.25 2.25h-5.25a2.25 2.25 0 01-2.25-2.25m-5.25 0h5.25m-5.25 0a2.25 2.25 0 01-2.25-2.25M3.75 7.5v.75m16.5-.75v.75"></path></svg>
-                    Danh Sách Giao Dịch
-                </div>
-                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
-            </h2>
-			<div class="collapsible-content active" id="table-content">
-				<div class="table-actions" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1rem; padding:0.5rem;">
-					<div class="filter-container">
-						<label for="filter-specific-date" class="text-sm font-medium text-gray-700 dark:text-gray-300">Lọc theo ngày cụ thể:</label>
-						<input type="date" id="filter-specific-date" class="p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300" style="min-width: 160px;">
-					</div>
-					<button id="clear-date-filter-button" class="btn-secondary py-2 px-3 text-sm rounded-md" title="Hiển thị tất cả các ngày trong tháng đã chọn">Tất cả ngày</button>
-				</div>
-				<div class="overflow-x-auto">
-				</div>		
-                <div class="overflow-x-auto">
-                    <table id="transaction-table">
-                        <thead>
-                            <tr>
-                                <th>Ngày &amp; Giờ</th>
-                                <th>Nội dung</th>
-                                <th>Hạng mục</th>
-                                <th>Số tiền (VNĐ)</th>
-                                <th>Loại</th>
-                                <th>Tài khoản</th>
-                                <th>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transaction-list">
-                            </tbody>
-                    </table>
-                </div>
-                <p id="no-transactions" class="text-center text-gray-500 mt-4" style="display: none;">Chưa có giao dịch nào.</p>
-            </div>
-        </div>
 
         <div class="section summary-section">
             <h2 class="section-header collapsible-header active" data-collapsible-target="summary-content-wrapper">
@@ -205,24 +191,22 @@
 						<option value="all">Tất cả các tháng</option>
 						</select>
 				</div>
+				<div id="summary-content">
+		</div>
+            <div class="collapsible-content active" id="summary-content-wrapper">
                 <div id="summary-content">
                     <div class="summary-item"><span>Tổng Thu <span id="summary-income-month-display">(Tháng Lọc)</span>:</span><span id="total-income" class="text-green-600 font-semibold">0</span></div>
                     <div class="summary-item"><span>Tổng Chi <span id="summary-expense-month-display">(Tháng Lọc)</span>:</span><span id="total-expenses" class="text-red-600 font-semibold">0</span></div>
                     <div class="summary-item"><span>Số Dư <span id="summary-balance-month-display">(Tháng Lọc)</span>:</span><span id="current-balance" class="text-blue-600 font-bold">0</span></div>
                 </div>
-                <div id="account-balance-list" class="account-balance-list">
-                    </div>
+                <div id="account-balance-list" class="account-balance-list"><h3>Số Dư Theo Tài Khoản (Tổng thể - VNĐ):</h3><div class="summary-item"><span>Tiền mặt: </span><span class="text-red-600">-22.500&nbsp;₫</span></div><div class="summary-item"><span>Momo: </span><span class="text-green-600">0&nbsp;₫</span></div><div class="summary-item"><span>Thẻ tín dụng A: </span><span class="text-green-600">0&nbsp;₫</span></div><div class="summary-item"><span>Techcombank: </span><span class="text-green-600">0&nbsp;₫</span></div><div class="summary-item"><span>BIDV: </span><span class="text-green-600">0&nbsp;₫</span></div><div class="summary-item"><span>Khác: </span><span class="text-green-600">0&nbsp;₫</span></div><div class="summary-item"><span>Sacombank: </span><span class="text-green-600">0&nbsp;₫</span></div></div>
             </div>
         </div>
 
 		<div class="section expense-breakdown-section">
 			<h2 class="section-header collapsible-header active" data-collapsible-target="expense-breakdown-content">
-                <div class="header-text-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 100 15 7.5 7.5 0 000-15zM21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"></path></svg>
-                    <span id="expense-breakdown-title-text">Phân Loại Chi Tiêu (Tháng Lọc) - VNĐ</span>
-                </div>
-                 <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
-			</h2>
+				<span id="expense-breakdown-title-text">Phân Loại Chi Tiêu Tháng 05/2025 - VNĐ</span>
+				</h2>
 			<div class="collapsible-content active" id="expense-breakdown-content">
 				<div class="md:flex md:gap-6">
 					<div class="md:w-1/2"> <div class="mb-4"> <label for="expenseChartTypeSelector" class="mr-2 font-medium">Kiểu biểu đồ:</label>
@@ -233,19 +217,25 @@
 						</div>
 
 						<div id="expensePieChartContainer" class="chart-container" style="display: block;">
-							<canvas id="expenseCategoryChart"></canvas>
+							<canvas id="expenseCategoryChart" style="display: block; box-sizing: border-box; height: 350px; width: 24px;" height="437" width="31"></canvas>
 						</div>
 
 						<div id="expenseBarChartContainer" class="chart-container" style="display: none;">
-							<canvas id="expenseCategoryBarChart"></canvas>
-                        </div>
+							<canvas id="expenseCategoryBarChart" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" height="0" width="0"></canvas> </div>
 						<p id="no-expense-data-chart" class="text-center text-gray-500 mt-4" style="display: none;">Không có dữ liệu chi tiêu để vẽ biểu đồ.</p>
 
 					</div>
 
-					<div id="expense-category-list-container" class="expense-category-list md:w-1/2">
-                        <p id="no-expense-data-list" class="text-center text-gray-500 mt-4" style="display: none;">Không có dữ liệu chi tiêu để liệt kê.</p>
-                    </div>
+					<div id="expense-category-list-container" class="expense-category-list md:w-1/2"><ul class="space-y-2"><li class="flex justify-between items-center text-sm">
+									<div class="flex items-center">
+										<span class="inline-block w-3 h-3 rounded-full mr-2" style="background-color: #FF6384"></span>
+										<span>Ăn uống</span>
+									</div>
+									<div class="text-right">
+										<span class="font-semibold">22.500&nbsp;₫</span>
+										<span class="text-gray-500 dark:text-gray-400 ml-2">(100.0%)</span>
+									</div>
+								 </li></ul></div>
 				</div>
 			</div>
 		</div>
@@ -256,7 +246,7 @@
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px; margin-right: 8px;" class="text-blue-600 dark:text-blue-400">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"></path>
 					</svg>
-					Thống Kê Chi Tiết <span id="stats-table-month-display">(Tháng Lọc)</span>
+					Thống Kê Chi Tiết <span id="stats-table-month-display">(Tháng 05/2025)</span>
 				</div>
 				<svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
@@ -267,15 +257,15 @@
 					<tbody id="detailed-stats-tbody">
 						<tr>
 							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 font-medium text-gray-700 dark:text-gray-300">Tổng Thu Nhập:</td>
-							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right font-semibold text-green-600 dark:text-green-400" id="stats-total-income">0</td>
+							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right font-semibold text-green-600 dark:text-green-400" id="stats-total-income">0&nbsp;₫</td>
 						</tr>
 						<tr>
 							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 font-medium text-gray-700 dark:text-gray-300">Tổng Chi Tiêu:</td>
-							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right font-semibold text-red-600 dark:text-red-400" id="stats-total-expense">0</td>
+							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right font-semibold text-red-600 dark:text-red-400" id="stats-total-expense">22.500&nbsp;₫</td>
 						</tr>
 						<tr>
 							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 font-medium text-gray-700 dark:text-gray-300">Dòng tiền ròng (Thu - Chi):</td>
-							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right font-bold text-blue-600 dark:text-blue-400" id="stats-net-cashflow">0</td>
+							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right font-bold text-red-600 dark:text-red-400" id="stats-net-cashflow">-22.500&nbsp;₫</td>
 						</tr>
 						<tr>
 							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 font-medium text-gray-700 dark:text-gray-300">Số lượng giao dịch Thu:</td>
@@ -283,14 +273,14 @@
 						</tr>
 						<tr>
 							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 font-medium text-gray-700 dark:text-gray-300">Số lượng giao dịch Chi:</td>
-							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right text-gray-800 dark:text-gray-200" id="stats-expense-tx-count">0</td>
+							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right text-gray-800 dark:text-gray-200" id="stats-expense-tx-count">1</td>
 						</tr>
 						<tr>
 							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 font-medium text-gray-700 dark:text-gray-300">Hạng mục chi nhiều nhất:</td>
-							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right text-gray-800 dark:text-gray-200" id="stats-top-expense-cat">-</td>
+							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right text-gray-800 dark:text-gray-200" id="stats-top-expense-cat">Ăn uống</td>
 						</tr>
 						<tr>
-							<td class="py-2 px-4 font-medium text-gray-700 dark:text-gray-300">Số tiền (Hạng mục chi nhiều nhất):</td> <td class="py-2 px-4 text-right text-red-600 dark:text-red-400 font-semibold" id="stats-top-expense-cat-amount">0</td>
+							<td class="py-2 px-4 font-medium text-gray-700 dark:text-gray-300">Số tiền (Hạng mục chi nhiều nhất):</td> <td class="py-2 px-4 text-right text-red-600 dark:text-red-400 font-semibold" id="stats-top-expense-cat-amount">22.500&nbsp;₫</td>
 						</tr>
 					</tbody>
 				</table>
@@ -307,16 +297,16 @@
             </h2>
             <div class="collapsible-content" id="charts-grid-content">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div> <h3 class="text-lg font-semibold mb-2 text-center" id="income-expense-chart-title">Biểu Đồ Thu vs Chi (Tháng Lọc) - VNĐ</h3>
-                        <div class="chart-container"><canvas id="incomeExpenseChart"></canvas></div>
+                    <div> <h3 class="text-lg font-semibold mb-2 text-center" id="income-expense-chart-title">Biểu Đồ Thu vs Chi Tháng 05/2025 - VNĐ</h3>
+                        <div class="chart-container"><canvas id="incomeExpenseChart" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" height="0" width="0"></canvas></div>
                     </div>
                     <div>
                         <h3 class="text-lg font-semibold mb-2 text-center">Chi Tiêu 7 Ngày Qua (Biểu đồ đường - VNĐ)</h3>
-                        <div class="chart-container"><canvas id="last7DaysChart"></canvas></div>
+                        <div class="chart-container"><canvas id="last7DaysChart" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" height="0" width="0"></canvas></div>
                     </div>
                     <div class="md:col-span-2">
                         <h3 class="text-lg font-semibold mb-2 text-center">So Sánh Tháng Này &amp; Tháng Trước (VNĐ)</h3>
-                        <div class="chart-container"><canvas id="monthComparisonChart"></canvas></div>
+                        <div class="chart-container"><canvas id="monthComparisonChart" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" height="0" width="0"></canvas></div>
                     </div>
                 </div>
             </div>
@@ -333,14 +323,13 @@
             <div class="collapsible-content active" id="comparison-content">
                 <div class="filter-container">
                     <div class="flex items-center"><label for="filter-comparison-year">Năm:</label><input type="number" id="filter-comparison-year" class="p-2 border rounded-md w-24" min="2000" max="2100"></div>
-                    <div class="flex items-center flex-grow"><label for="filter-comparison-week">Tuần:</label><select id="filter-comparison-week" class="p-2 border rounded-md w-full">
-                        </select></div>
+                    <div class="flex items-center flex-grow"><label for="filter-comparison-week">Tuần:</label><select id="filter-comparison-week" class="p-2 border rounded-md w-full"><option value="none">-- Chọn tuần --</option><option value="2025-W52">Tuần 52 (22/12/2025 - 28/12/2025)</option><option value="2025-W51">Tuần 51 (15/12/2025 - 21/12/2025)</option><option value="2025-W50">Tuần 50 (8/12/2025 - 14/12/2025)</option><option value="2025-W49">Tuần 49 (1/12/2025 - 7/12/2025)</option><option value="2025-W48">Tuần 48 (24/11/2025 - 30/11/2025)</option><option value="2025-W47">Tuần 47 (17/11/2025 - 23/11/2025)</option><option value="2025-W46">Tuần 46 (10/11/2025 - 16/11/2025)</option><option value="2025-W45">Tuần 45 (3/11/2025 - 9/11/2025)</option><option value="2025-W44">Tuần 44 (27/10/2025 - 2/11/2025)</option><option value="2025-W43">Tuần 43 (20/10/2025 - 26/10/2025)</option><option value="2025-W42">Tuần 42 (13/10/2025 - 19/10/2025)</option><option value="2025-W41">Tuần 41 (6/10/2025 - 12/10/2025)</option><option value="2025-W40">Tuần 40 (29/9/2025 - 5/10/2025)</option><option value="2025-W39">Tuần 39 (22/9/2025 - 28/9/2025)</option><option value="2025-W38">Tuần 38 (15/9/2025 - 21/9/2025)</option><option value="2025-W37">Tuần 37 (8/9/2025 - 14/9/2025)</option><option value="2025-W36">Tuần 36 (1/9/2025 - 7/9/2025)</option><option value="2025-W35">Tuần 35 (25/8/2025 - 31/8/2025)</option><option value="2025-W34">Tuần 34 (18/8/2025 - 24/8/2025)</option><option value="2025-W33">Tuần 33 (11/8/2025 - 17/8/2025)</option><option value="2025-W32">Tuần 32 (4/8/2025 - 10/8/2025)</option><option value="2025-W31">Tuần 31 (28/7/2025 - 3/8/2025)</option><option value="2025-W30">Tuần 30 (21/7/2025 - 27/7/2025)</option><option value="2025-W29">Tuần 29 (14/7/2025 - 20/7/2025)</option><option value="2025-W28">Tuần 28 (7/7/2025 - 13/7/2025)</option><option value="2025-W27">Tuần 27 (30/6/2025 - 6/7/2025)</option><option value="2025-W26">Tuần 26 (23/6/2025 - 29/6/2025)</option><option value="2025-W25">Tuần 25 (16/6/2025 - 22/6/2025)</option><option value="2025-W24">Tuần 24 (9/6/2025 - 15/6/2025)</option><option value="2025-W23">Tuần 23 (2/6/2025 - 8/6/2025)</option><option value="2025-W22">Tuần 22 (26/5/2025 - 1/6/2025)</option><option value="2025-W21">Tuần 21 (19/5/2025 - 25/5/2025)</option><option value="2025-W20">Tuần 20 (12/5/2025 - 18/5/2025)</option><option value="2025-W19">Tuần 19 (5/5/2025 - 11/5/2025)</option><option value="2025-W18">Tuần 18 (28/4/2025 - 4/5/2025)</option><option value="2025-W17">Tuần 17 (21/4/2025 - 27/4/2025)</option><option value="2025-W16">Tuần 16 (14/4/2025 - 20/4/2025)</option><option value="2025-W15">Tuần 15 (7/4/2025 - 13/4/2025)</option><option value="2025-W14">Tuần 14 (31/3/2025 - 6/4/2025)</option><option value="2025-W13">Tuần 13 (24/3/2025 - 30/3/2025)</option><option value="2025-W12">Tuần 12 (17/3/2025 - 23/3/2025)</option><option value="2025-W11">Tuần 11 (10/3/2025 - 16/3/2025)</option><option value="2025-W10">Tuần 10 (3/3/2025 - 9/3/2025)</option><option value="2025-W09">Tuần 09 (24/2/2025 - 2/3/2025)</option><option value="2025-W08">Tuần 08 (17/2/2025 - 23/2/2025)</option><option value="2025-W07">Tuần 07 (10/2/2025 - 16/2/2025)</option><option value="2025-W06">Tuần 06 (3/2/2025 - 9/2/2025)</option><option value="2025-W05">Tuần 05 (27/1/2025 - 2/2/2025)</option><option value="2025-W04">Tuần 04 (20/1/2025 - 26/1/2025)</option><option value="2025-W03">Tuần 03 (13/1/2025 - 19/1/2025)</option><option value="2025-W02">Tuần 02 (6/1/2025 - 12/1/2025)</option><option value="2025-W01">Tuần 01 (30/12/2024 - 5/1/2025)</option></select></div>
                 </div>
                 <div id="weekly-comparison-content" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4" style="display: none;">
                     <div><h3 class="text-lg font-semibold mb-2 text-blue-700">Tuần Được Chọn (<span id="selected-week-display"></span>)</h3><div class="summary-item"><span>Số Dư Đầu Tuần:</span><span id="current-week-start-balance" class="text-blue-600">0</span></div><div class="summary-item"><span>Tổng Thu Tuần Này:</span><span id="current-week-income" class="text-green-600">0</span></div><div class="summary-item"><span>Tổng Chi Tuần Này:</span><span id="current-week-expenses" class="text-red-600">0</span></div><div class="summary-item"><span>Thay Đổi Ròng:</span><span id="current-week-net-change" class="font-bold">0</span></div></div>
                     <div><h3 class="text-lg font-semibold mb-2 text-gray-700">Tuần Trước Đó (<span id="previous-week-display"></span>)</h3><div class="summary-item"><span>Tổng Chi Tuần Trước:</span><span id="previous-week-expenses" class="text-red-600">0</span></div><hr class="my-3 border-gray-300"><h3 class="text-lg font-semibold mb-2 text-purple-700">So Sánh Chi Tiêu</h3><div class="summary-item"><span>Chênh Lệch (Này - Trước):</span><span id="spending-difference" class="font-bold">0</span></div></div>
                 </div>
-                <p id="no-comparison-data" class="text-center text-gray-500 mt-4">Chọn một năm và tuần để xem thống kê.</p>
+                <p id="no-comparison-data" class="text-center text-gray-500 mt-4" style="display: block;">Chọn một năm và tuần để xem thống kê.</p>
             </div>
         </div>
 
@@ -348,7 +337,7 @@
             <h2 class="section-header collapsible-header active" data-collapsible-target="category-customization-content">
                 <div class="header-text-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12a7.5 7.5 0 0015 0m-15 0a7.5 7.5 0 1115 0m-15 0H3m18 0h-1.5m-15.036-7.026A7.5 7.5 0 015.974 3.474m12.052 0A7.5 7.5 0 0118.026 4.974m0 14.052a7.5 7.5 0 01-1.526 1.526M5.974 19.026A7.5 7.5 0 014.5 18m0-12a7.5 7.5 0 00-1.526 1.526M18 4.5a7.5 7.5 0 00-1.526-1.526"></path></svg>
-                    Tùy Chỉnh Hạng Mục & Tài Khoản
+                    Tùy Chỉnh Hạng Mục
                 </div>
                 <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
             </h2>
@@ -369,8 +358,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
                             </svg>
                         </h4>
-                        <ul id="income-category-list-admin" class="category-list collapsible-list-content active">
-                            </ul>
+                        <ul id="income-category-list-admin" class="category-list collapsible-list-content active" style="max-height: 326px;"><li>Lương<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Thưởng<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Tiền được trả nợ<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Nhận tiền chuyển khoản<span> <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-lock-fill inline-block ml-2 text-gray-400" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"></path></svg></span></li><li>Lãi tiết kiệm<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Thu nhập từ đầu tư<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Thu nhập phụ<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Thu nhập khác (chung)<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li></ul>
 						</div>
 					<div> <h3>Hạng Mục Chi</h3>
 						<div class="mb-4"> <label for="new-expense-category-name">Tên hạng mục chi mới:</label>
@@ -387,8 +375,7 @@
 								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
 							</svg>
 						</h4>
-						<ul id="expense-category-list-admin" class="category-list collapsible-list-content active">
-                            </ul>
+						<ul id="expense-category-list-admin" class="category-list collapsible-list-content active" style="max-height: 489px;"><li>Ăn uống<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Đi lại<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Nhà ở<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Hóa đơn (Điện, nước, internet)<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Mua sắm (Quần áo, đồ dùng)<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Giải trí<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Sức khỏe<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Giáo dục<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Chi cho đầu tư<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Trả nợ (cho người khác)<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Chuyển tiền đi<span> <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-lock-fill inline-block ml-2 text-gray-400" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"></path></svg></span></li><li>Chi phí khác (chung)<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li></ul>
 						</div>
 					<div> <h3>Quản Lý Tài Khoản</h3>
 						<div class="mb-4"> <label for="new-account-name">Tên tài khoản mới:</label>
@@ -407,8 +394,7 @@
 								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
 							</svg>
 						</h4>
-						<ul id="account-list-admin" class="category-list collapsible-list-content active">
-                            </ul>
+						<ul id="account-list-admin" class="category-list collapsible-list-content active" style="max-height: 285px;"><li>Tiền mặt<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Momo<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Thẻ tín dụng A<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Techcombank<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>BIDV<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Khác<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li><li>Sacombank<button class="btn-delete text-xs px-2 py-1 ml-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></li></ul>
 						</div>
                     </div>
                 </div>
