@@ -1599,7 +1599,52 @@ select:focus-visible {
         min-height: 40px;
     }
 }
+/* /* Thêm vào cuối file Styles.css để fix spacing giữa sections */
 
-/* =========================================================================================
-   END OF STYLES
-========================================================================================= */
+/* Fix spacing giữa các sections */
+.section {
+    margin-bottom: 1.5rem !important; /* Force margin bottom */
+}
+
+@media (min-width: 768px) {
+    .section {
+        margin-bottom: 2rem !important; /* Larger spacing on desktop */
+    }
+}
+
+/* Đảm bảo sections không bị collapse margin */
+.section + .section {
+    margin-top: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .section + .section {
+        margin-top: 2rem;
+    }
+}
+
+/* Fix riêng cho mobile để tránh sections dính nhau */
+@media (max-width: 767px) {
+    .section {
+        margin-bottom: 1rem !important;
+        border-radius: 8px;
+        background-color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .dark-mode .section {
+        background-color: #334155;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* Đảm bảo container có padding đủ */
+.container {
+    padding-bottom: 2rem; /* Thêm padding bottom */
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0.5rem 0.5rem 1.5rem 0.5rem; /* Top, Right, Bottom, Left */
+    }
+}
