@@ -626,8 +626,21 @@ td:last-child {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.5rem;
+	margin-bottom: 0.5rem;
+}
+/* Styling cho locked categories */
+.category-list li .inline-block {
+    opacity: 0.6;
 }
 
+.category-list li:has(.inline-block) {
+    background-color: #fafafa;
+    font-style: italic;
+}
+
+body.dark-mode .category-list li:has(.inline-block) {
+    background-color: #2d3748;
+}
 @media (min-width: 768px) {
     .category-management {
         grid-template-columns: repeat(2, 1fr);
@@ -644,19 +657,76 @@ td:last-child {
     list-style: none;
     padding: 0;
     margin-top: 1rem;
+    /* Thêm chiều cao tối đa và scroll */
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background-color: #ffffff;
+    /* Smooth scrolling */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 
 .category-list li {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 0;
+    padding: 0.75rem 1rem;
     border-bottom: 1px solid #f1f5f9;
     font-size: 0.875rem;
+    background-color: white;
+    transition: background-color 0.2s ease;
 }
 
 .category-list li:last-child {
     border-bottom: none;
+}
+/* Scrollbar styling cho webkit browsers */
+.category-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.category-list::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+.category-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.category-list::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Dark mode cho category lists */
+body.dark-mode .category-list {
+    border-color: #475569;
+    background-color: #334155;
+}
+
+body.dark-mode .category-list li {
+    background-color: #334155;
+    border-bottom-color: #475569;
+}
+
+body.dark-mode .category-list li:hover {
+    background-color: #475569;
+}
+
+body.dark-mode .category-list::-webkit-scrollbar-track {
+    background: #475569;
+}
+
+body.dark-mode .category-list::-webkit-scrollbar-thumb {
+    background: #64748b;
+}
+
+body.dark-mode .category-list::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 
 /* Collapsible List */
@@ -679,9 +749,12 @@ td:last-child {
 }
 
 .collapsible-list-content.active {
-    max-height: 500px; /* Adjust as needed */
+    max-height: 400px; /* Adjust as needed */
 }
-
+/* Fix cho container của category management */
+.category-management > div {
+    min-height: 200px; /* Đảm bảo có đủ không gian */
+}
 /* =========================================================================================
    11. MESSAGES
 ========================================================================================= */
@@ -1101,7 +1174,12 @@ form[data-transaction-mode="Transfer"] .form-field-normal {
         align-items: center;
     }
 }
-
+/* Better spacing cho add category buttons */
+.btn-add-category {
+    margin-top: 0.5rem;
+    width: 100%;
+    justify-content: center;
+}
 /* =========================================================================================
    18. SCROLL INDICATORS & HINTS
 ========================================================================================= */
@@ -1142,6 +1220,25 @@ body.dark-mode .table-actions {
 @media (max-width: 768px) {
     .overflow-x-auto::before {
         opacity: 1;
+    }
+    .category-list::after {
+        content: "↕ Vuốt để xem thêm";
+        display: block;
+        text-align: center;
+        font-size: 0.7rem;
+        color: #64748b;
+        padding: 0.5rem;
+        background-color: #f8fafc;
+        border-top: 1px solid #e5e7eb;
+        font-style: italic;
+        position: sticky;
+        bottom: 0;
+    }
+    
+    body.dark-mode .category-list::after {
+        background-color: #475569;
+        color: #cbd5e1;
+        border-top-color: #64748b;
     }
 }
 

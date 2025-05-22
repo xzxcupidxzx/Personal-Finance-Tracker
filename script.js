@@ -1183,6 +1183,15 @@ const UIRenderer = {
                         this.renderCustomCategoryLists();
                         CategoryManager.populateCategories();
                         FilterManager.applyMainFilter();
+                        
+                        // Refresh scroll sau khi xóa
+                        setTimeout(() => {
+                            if (type === 'income') {
+                                CollapsibleManager.refreshCategoryListScroll('income-category-list-admin');
+                            } else {
+                                CollapsibleManager.refreshCategoryListScroll('expense-category-list-admin');
+                            }
+                        }, 100);
                     }
                 };
                 li.appendChild(deleteButton);
@@ -1193,6 +1202,17 @@ const UIRenderer = {
             }
             listElement.appendChild(li);
         });
+        
+        // Refresh scroll heights sau khi render
+        setTimeout(() => {
+            if (listElement.id === 'income-category-list-admin') {
+                CollapsibleManager.refreshCategoryListScroll('income-category-list-admin');
+            } else if (listElement.id === 'expense-category-list-admin') {
+                CollapsibleManager.refreshCategoryListScroll('expense-category-list-admin');
+            } else if (listElement.id === 'account-list-admin') {
+                CollapsibleManager.refreshCategoryListScroll('account-list-admin');
+            }
+        }, 100);
     },
 
     renderAccountListAdmin() {
@@ -1213,6 +1233,11 @@ const UIRenderer = {
                     CategoryManager.populateAccountDropdowns();
                     this.updateAccountBalances();
                     Utils.showMessage(`Đã xóa tài khoản "${acc.text}".`, 'success');
+                    
+                    // Refresh scroll sau khi xóa
+                    setTimeout(() => {
+                        CollapsibleManager.refreshCategoryListScroll('account-list-admin');
+                    }, 100);
                 }
             };
             li.appendChild(deleteButton);
@@ -1272,6 +1297,7 @@ const UIRenderer = {
         }
         return withParentheses ? `(${text})` : text;
     }
+	
 };
 
 // ========================================================================================
@@ -1980,7 +2006,7 @@ const VirtualKeyboard = {
             DOM.virtualKeyboard.style.display = 'grid';
             activeInputForVirtualKeyboard = inputElement;
 
-            setTimeout(() => {
+            setTimeout(() => {				
                 const keyboardHeight = DOM.virtualKeyboard.offsetHeight;
                 const inputRect = activeInputForVirtualKeyboard.getBoundingClientRect();
                 const viewportHeight = window.innerHeight;
@@ -1993,6 +2019,7 @@ const VirtualKeyboard = {
                     window.scrollBy(0, scrollAmount);
                     console.log(`[Keyboard] Scrolled by: ${scrollAmount}px`);
                 }
+				CollapsibleManager.refreshCategoryListScroll('account-list-admin');
             }, 100);
         } else {
             console.error("[Keyboard] Cannot show virtual keyboard. Element missing.");
@@ -2394,7 +2421,12 @@ const CollapsibleManager = {
             if (isListActive) {
                 contentList.classList.add('active');
                 setTimeout(() => {
-                    if (contentList.classList.contains('active')) contentList.style.maxHeight = contentList.scrollHeight + "px";
+                    if (contentList.classList.contains('active')) {
+                        // Tính toán chiều cao động dựa trên số lượng items
+                        const itemCount = contentList.children.length;
+                        const estimatedHeight = Math.min(itemCount * 60 + 50, 350); // Max 350px
+                        contentList.style.maxHeight = estimatedHeight + "px";
+                    }
                 }, 150);
                 if (toggleIconList) toggleIconList.style.transform = 'rotate(180deg)';
             } else {
@@ -2408,15 +2440,33 @@ const CollapsibleManager = {
                 contentList.classList.toggle('active', isListNowActive);
 
                 if (isListNowActive) {
-                    contentList.style.maxHeight = contentList.scrollHeight + "px";
+                    // Tính toán chiều cao động
+                    const itemCount = contentList.children.length;
+                    const estimatedHeight = Math.min(itemCount * 60 + 50, 350);
+                    contentList.style.maxHeight = estimatedHeight + "px";
+                    
+                    // Scroll to top của list khi mở
+                    setTimeout(() => {
+                        contentList.scrollTop = 0;
+                    }, 300);
                 } else {
                     contentList.style.maxHeight = null;
                 }
+                
                 if (toggleIconList) {
                     toggleIconList.style.transform = isListNowActive ? 'rotate(180deg)' : 'rotate(0deg)';
                 }
             });
         });
+    },
+    // Thêm method mới để refresh scroll sau khi thêm/xóa items
+    refreshCategoryListScroll(listId) {
+        const listElement = document.getElementById(listId);
+        if (listElement && listElement.classList.contains('active')) {
+            const itemCount = listElement.children.length;
+            const estimatedHeight = Math.min(itemCount * 60 + 50, 350);
+            listElement.style.maxHeight = estimatedHeight + "px";
+        }
     }
 };
 
