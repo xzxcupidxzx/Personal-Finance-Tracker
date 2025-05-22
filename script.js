@@ -2019,7 +2019,6 @@ const VirtualKeyboard = {
                     window.scrollBy(0, scrollAmount);
                     console.log(`[Keyboard] Scrolled by: ${scrollAmount}px`);
                 }
-				CollapsibleManager.refreshCategoryListScroll('account-list-admin');
             }, 100);
         } else {
             console.error("[Keyboard] Cannot show virtual keyboard. Element missing.");
