@@ -145,33 +145,53 @@
         </div>
 		
 	<section class="section" id="reconciliation-section">
-		<div class="section-header collapsible-header active" data-collapsible-target="reconciliation-content">
+		<div class="section-header" id="reconciliation-header">
 			<span class="header-text-icon">
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px; margin-right: 8px;">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0l.879-.659M9 8.5v6M15 8.5v6"></path>
+				<svg class="toggle-icon" id="reconciliation-toggle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.5v15m7.5-7.5h-15"></path>
 				</svg>
 				Đối Soát Số Dư Tài Khoản
 			</span>
-			<svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
-			</svg>
 		</div>
 		<div class="collapsible-content active" id="reconciliation-content">
-			<div class="overflow-x-auto">
-				<table id="reconciliation-table">
-					<thead>
-						<!-- Table head sẽ được tạo bởi JavaScript -->
-					</thead>
-					<tbody id="reconciliation-table-body">
-						<!-- Table body sẽ được tạo bởi JavaScript -->
-					</tbody>
-				</table>
-			</div>
-			<p class="text-sm text-gray-500 dark:text-gray-400 mt-3">
-				💡 <strong>Hướng dẫn:</strong> Nhập số dư thực tế từ sao kê/ví → nhấn "Đối soát" → nếu có chênh lệch, nhấn "Ghi nhận" để điều chỉnh.
-			</p>
+			<table class="table-auto w-full" id="reconciliation-table">
+				<thead>
+					<tr>
+						<th>Tài khoản</th>
+						<th>Số dư hệ thống</th>
+						<th>Số dư thực tế<br><span class="font-normal normal-case">(Nhập vào cuối tuần)</span></th>
+						<th>Chênh lệch</th>
+						<th>Thao tác</th>
+					</tr>
+				</thead>
+				<tbody id="reconciliation-table-body"></tbody>
+			</table>
+
+			<!-- Có thể bổ sung thêm lịch sử đối soát ở đây nếu cần -->
 		</div>
 	</section>
+        <div class="section table-section">
+             <h2 class="section-header collapsible-header active" data-collapsible-target="table-content">
+                <div class="header-text-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5M3.375 19.5l1.95-1.95M12.375 19.5h8.875M12.375 19.5l-1.95-1.95M20.625 19.5a1.125 1.125 0 001.125-1.125M20.625 19.5l-1.95-1.95M3.75 4.5h16.5M3.75 4.5a2.25 2.25 0 00-2.25 2.25v11.25c0 1.24 1.01 2.25 2.25 2.25h16.5c1.24 0 2.25-1.01 2.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25M3.75 4.5v.75m16.5-.75v.75m0 0a2.25 2.25 0 01-2.25 2.25h-5.25a2.25 2.25 0 01-2.25-2.25m-5.25 0h5.25m-5.25 0a2.25 2.25 0 01-2.25-2.25M3.75 7.5v.75m16.5-.75v.75"></path></svg>
+                    Danh Sách Giao Dịch
+                </div>
+                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
+            </h2>
+			<div class="collapsible-content active" id="table-content">
+				<div class="table-actions" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1rem; padding:0.5rem;">
+					<div class="filter-container">
+						<label for="filter-specific-date" class="text-sm font-medium text-gray-700 dark:text-gray-300">Lọc theo ngày cụ thể:</label>
+						<input type="date" id="filter-specific-date" class="p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300" style="min-width: 160px;">
+					</div>
+					<button id="clear-date-filter-button" class="btn-secondary py-2 px-3 text-sm rounded-md" title="Hiển thị tất cả các ngày trong tháng đã chọn">Tất cả ngày</button>
+				</div>
+				<div class="overflow-x-auto">
+				</div>		
+                <div class="overflow-x-auto"><table id="transaction-table"><thead><tr><th>Ngày &amp; Giờ</th><th>Nội dung</th><th>Hạng mục</th><th>Số tiền (VNĐ)</th><th>Loại</th><th>Tài khoản</th><th>Thao tác</th></tr></thead><tbody id="transaction-list"><tr><td>11/05/2025 02:23</td><td></td><td>Ăn uống</td><td class="text-red-600">22.500&nbsp;₫</td><td>Chi Tiêu</td><td>Tiền mặt</td><td class="text-center"><button class="btn-edit"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square mr-1" viewBox="0 0 16 16"> <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path> <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"></path> </svg>Sửa</button><button class="btn-delete"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path> </svg>Xóa</button></td></tr></tbody></table></div>
+                <p id="no-transactions" class="text-center text-gray-500 mt-4" style="display: none;">Chưa có giao dịch nào.</p>
+            </div>
+        </div>
 
         <div class="section summary-section">
             <h2 class="section-header collapsible-header active" data-collapsible-target="summary-content-wrapper">
@@ -186,19 +206,15 @@
 					<label for="filter-month" class="text-sm font-medium text-gray-700 dark:text-gray-300">Tháng Lọc (Chung):</label>
 					<select id="filter-month" class="p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300" style="min-width: 200px;">
 						<option value="all">Tất cả các tháng</option>
-						</select>
-				</div>
-				<div id="summary-content">
-		</div>
-            <div class="collapsible-content active" id="summary-content-wrapper">
-                <div id="summary-content">
-                    <div class="summary-item"><span>Tổng Thu <span id="summary-income-month-display">(Tháng Lọc)</span>:</span><span id="total-income" class="text-green-600 font-semibold">0</span></div>
-                    <div class="summary-item"><span>Tổng Chi <span id="summary-expense-month-display">(Tháng Lọc)</span>:</span><span id="total-expenses" class="text-red-600 font-semibold">0</span></div>
-                    <div class="summary-item"><span>Số Dư <span id="summary-balance-month-display">(Tháng Lọc)</span>:</span><span id="current-balance" class="text-blue-600 font-bold">0</span></div>
-                </div>
-                <div id="account-balance-list" class="account-balance-list"><h3>Số Dư Theo Tài Khoản (Tổng thể - VNĐ):</h3><div class="summary-item"><span>Tiền mặt: </span><span class="text-red-600">-22.500&nbsp;₫</span></div><div class="summary-item"><span>Momo: </span><span class="text-green-600">0&nbsp;₫</span></div><div class="summary-item"><span>Thẻ tín dụng A: </span><span class="text-green-600">0&nbsp;₫</span></div><div class="summary-item"><span>Techcombank: </span><span class="text-green-600">0&nbsp;₫</span></div><div class="summary-item"><span>BIDV: </span><span class="text-green-600">0&nbsp;₫</span></div><div class="summary-item"><span>Khác: </span><span class="text-green-600">0&nbsp;₫</span></div><div class="summary-item"><span>Sacombank: </span><span class="text-green-600">0&nbsp;₫</span></div></div>
+                    </select>
             </div>
+            <div id="summary-content"> <div class="summary-item"><span>Tổng Thu <span id="summary-income-month-display">(Tháng Lọc)</span>:</span><span id="total-income" class="text-green-600 font-semibold">0</span></div>
+                <div class="summary-item"><span>Tổng Chi <span id="summary-expense-month-display">(Tháng Lọc)</span>:</span><span id="total-expenses" class="text-red-600 font-semibold">0</span></div>
+                <div class="summary-item"><span>Số Dư <span id="summary-balance-month-display">(Tháng Lọc)</span>:</span><span id="current-balance" class="text-blue-600 font-bold">0</span></div>
+            </div>
+            <div id="account-balance-list" class="account-balance-list"><h3>Số Dư Theo Tài Khoản (Tổng thể - VNĐ):</h3>...</div>
         </div>
+    </div>
 
 		<div class="section expense-breakdown-section">
 			<h2 class="section-header collapsible-header active" data-collapsible-target="expense-breakdown-content">

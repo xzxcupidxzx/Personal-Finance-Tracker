@@ -305,6 +305,13 @@ button svg {
     padding: 0.5rem 0.75rem;
     font-size: 0.75rem;
     margin-right: 0.5rem;
+    padding: 0.4rem; /* Ví dụ: giảm padding để nút nhỏ lại */
+    font-size: 0;    /* Ẩn chữ nếu không sửa JS */
+    gap: 0;          /* Bỏ khoảng cách nếu không có chữ */
+    /* Đảm bảo nút căn giữa icon nếu chỉ có icon */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-edit:hover,
@@ -317,6 +324,12 @@ button svg {
     color: white;
     padding: 0.5rem 0.75rem;
     font-size: 0.75rem;
+    padding: 0.4rem; /* Ví dụ: giảm padding */
+    font-size: 0;    /* Ẩn chữ nếu không sửa JS */
+    gap: 0;          /* Bỏ khoảng cách nếu không có chữ */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-delete:hover,
@@ -330,6 +343,13 @@ button svg {
     flex-wrap: wrap;
     gap: 0.75rem;
     margin-top: 1rem;
+}
+
+/* Add Category Button specific styling (from merged section) */
+.btn-add-category {
+    margin-top: 0.5rem;
+    width: 100%;
+    justify-content: center;
 }
 
 /* =========================================================================================
@@ -570,9 +590,9 @@ td:last-child {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
-    align-items: end;
-    margin-bottom: 1rem;
-    padding: 1rem;
+    align-items: center;
+    margin-bottom: 0.1rem;
+    padding: 0.5rem;
     background-color: #f8fafc;
     border-radius: 8px;
     border: 1px solid #e2e8f0;
@@ -583,7 +603,33 @@ td:last-child {
     font-size: 0.8rem;
     color: #475569;
 }
-
+.filter-container label[for="filter-specific-date"] {
+    display: inline-block; /* Cho phép label nằm trên cùng hàng với input */
+    margin-bottom: 0;      /* Bỏ margin dưới vì đã inline */
+    margin-right: 0.5rem;  /* Khoảng cách giữa label và ô input */
+    font-weight: normal;   /* Giảm độ đậm nếu muốn khi inline */
+    font-size: 0.875rem;   /* Giữ kích thước chữ nhất quán */
+    flex-shrink: 0;        /* Không cho label bị co lại quá nhiều */
+}
+.filter-container input#filter-specific-date { /* Nhắm cụ thể đến ID */
+    width: auto;         /* Ghi đè width: 100% mặc định của input */
+    min-width: 150px;    /* Đặt chiều rộng tối thiểu đủ hiển thị ngày, có thể điều chỉnh */
+                         /* Bỏ qua min-width: 140px từ .filter-container input nếu nó gây rộng không cần thiết */
+    padding: 0.5rem 0.6rem; /* GIẢM padding của input (mặc định là 0.75rem) */
+    font-size: 0.875rem;
+    flex-grow: 0;        /* Không cho ô input tự động mở rộng chiếm hết không gian */
+    /* flex-shrink: 1;      Cho phép co lại nếu cần thiết (mặc định là 1) */
+}
+body.dark-mode .filter-container label[for="filter-specific-date"] {
+    /* color: #cbd5e1;  Màu này có thể đã được kế thừa từ label chung trong dark mode */
+}
+/* Style cho nút "Tất cả ngày" (hoặc "Xóa Lọc Ngày") */
+.filter-container button#clear-date-filter-button { /* Nhắm cụ thể đến ID */
+    padding: 0.5rem 0.8rem; /* GIẢM padding của nút */
+    font-size: 0.875rem;
+    flex-shrink: 0;         /* Không cho nút bị co lại quá nhiều */
+    /* Các style màu sắc từ .btn-secondary sẽ được áp dụng */
+}
 .filter-container input,
 .filter-container select {
     min-width: 140px;
@@ -628,19 +674,7 @@ td:last-child {
     gap: 1.5rem;
 	margin-bottom: 0.5rem;
 }
-/* Styling cho locked categories */
-.category-list li .inline-block {
-    opacity: 0.6;
-}
 
-.category-list li:has(.inline-block) {
-    background-color: #fafafa;
-    font-style: italic;
-}
-
-body.dark-mode .category-list li:has(.inline-block) {
-    background-color: #2d3748;
-}
 @media (min-width: 768px) {
     .category-management {
         grid-template-columns: repeat(2, 1fr);
@@ -653,22 +687,27 @@ body.dark-mode .category-list li:has(.inline-block) {
     }
 }
 
+/* Styling cho input trong category management (from merged section) */
+.category-management input[type="text"] {
+    margin-bottom: 0.5rem;
+}
+
+/* Category list containers với scroll */
 .category-list {
     list-style: none;
     padding: 0;
     margin-top: 1rem;
-    /* Thêm chiều cao tối đa và scroll */
     max-height: 300px;
     overflow-y: auto;
     overflow-x: hidden;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
     background-color: #ffffff;
-    /* Smooth scrolling */
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
 }
 
+/* Styling cho từng item trong list */
 .category-list li {
     display: flex;
     justify-content: space-between;
@@ -683,6 +722,21 @@ body.dark-mode .category-list li:has(.inline-block) {
 .category-list li:last-child {
     border-bottom: none;
 }
+
+.category-list li:hover { /* Added hover from merged section */
+    background-color: #f8fafc;
+}
+
+/* Styling cho locked categories */
+.category-list li .inline-block { /* class for lock icon container */
+    opacity: 0.6;
+}
+
+.category-list li:has(.inline-block) { /* If li contains the lock icon */
+    background-color: #fafafa;
+    font-style: italic;
+}
+
 /* Scrollbar styling cho webkit browsers */
 .category-list::-webkit-scrollbar {
     width: 6px;
@@ -702,31 +756,33 @@ body.dark-mode .category-list li:has(.inline-block) {
     background: #94a3b8;
 }
 
-/* Dark mode cho category lists */
-body.dark-mode .category-list {
-    border-color: #475569;
-    background-color: #334155;
+/* Responsive adjustments for category list (from merged section) */
+@media (max-width: 768px) {
+    .category-list {
+        max-height: 250px;
+    }
+    
+    .category-list li {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
 }
 
-body.dark-mode .category-list li {
-    background-color: #334155;
-    border-bottom-color: #475569;
-}
-
-body.dark-mode .category-list li:hover {
-    background-color: #475569;
-}
-
-body.dark-mode .category-list::-webkit-scrollbar-track {
-    background: #475569;
-}
-
-body.dark-mode .category-list::-webkit-scrollbar-thumb {
-    background: #64748b;
-}
-
-body.dark-mode .category-list::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+/* Scroll indicator cho mobile category list (from merged section) */
+@media (max-width: 768px) {
+    .category-list::after {
+        content: "↕ Vuốt để xem thêm";
+        display: block;
+        text-align: center;
+        font-size: 0.7rem;
+        color: #64748b;
+        padding: 0.5rem;
+        background-color: #f8fafc;
+        border-top: 1px solid #e5e7eb;
+        font-style: italic;
+        position: sticky;
+        bottom: 0;
+    }
 }
 
 /* Collapsible List */
@@ -745,16 +801,18 @@ body.dark-mode .category-list::-webkit-scrollbar-thumb:hover {
 .collapsible-list-content {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease-out;
+    transition: max-height 0.3s ease-out; /* Animation from merged section */
 }
 
 .collapsible-list-content.active {
-    max-height: 400px; /* Adjust as needed */
+    max-height: 400px; /* Adjust as needed, was 500px, 400px is from merged */
 }
+
 /* Fix cho container của category management */
 .category-management > div {
     min-height: 200px; /* Đảm bảo có đủ không gian */
 }
+
 /* =========================================================================================
    11. MESSAGES
 ========================================================================================= */
@@ -939,6 +997,7 @@ body.dark-mode .container {
 body.dark-mode .section {
     background-color: #334155;
     border-color: #475569;
+    box-shadow: none; /* Added: Remove or adjust shadow for dark mode */
 }
 
 body.dark-mode .section-header {
@@ -975,13 +1034,56 @@ body.dark-mode textarea:focus {
     box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
 }
 
-body.dark-mode th {
+/* Added: Dark mode placeholder color */
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+    color: #94a3b8;
+}
+
+/* Added: Dark mode select arrow */
+body.dark-mode select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+}
+
+/* Added: Dark mode radio accent color (optional) */
+body.dark-mode .radio-group input[type="radio"] {
+    accent-color: #60a5fa;
+}
+
+/* Added: Dark mode for .btn-primary (shadow adjustment) */
+body.dark-mode .btn-primary {
+    box-shadow: none; /* Or a darker, more subtle shadow */
+}
+body.dark-mode .btn-primary:hover,
+body.dark-mode .btn-primary:active {
+    box-shadow: none; /* Or a darker, more subtle shadow */
+}
+
+/* Added: Dark mode for .btn-secondary */
+body.dark-mode .btn-secondary {
+    background-color: #475569;
+    color: #e2e8f0;
+    border-color: #64748b;
+}
+body.dark-mode .btn-secondary:hover,
+body.dark-mode .btn-secondary:active {
+    background-color: #64748b;
+    border-color: #94a3b8;
+}
+
+/* Added: Dark mode for general table */
+body.dark-mode table {
+    background-color: #334155; /* Match td background */
+    box-shadow: none;
+}
+
+body.dark-mode th { /* General th, already styled but good to confirm */
     background-color: #475569;
     color: #f1f5f9;
 }
 
 body.dark-mode td,
-body.dark-mode th {
+body.dark-mode th { /* General td & th border, already styled */
     border-color: #475569;
 }
 
@@ -1003,6 +1105,46 @@ body.dark-mode .filter-container {
     background-color: #475569;
     border-color: #64748b;
 }
+
+/* Dark mode cho category lists (already present and mostly correct) */
+body.dark-mode .category-list {
+    border-color: #475569;
+    background-color: #334155;
+}
+body.dark-mode .category-list li {
+    background-color: #334155;
+    border-bottom-color: #475569;
+}
+body.dark-mode .category-list li:hover {
+    background-color: #475569;
+}
+body.dark-mode .category-list::-webkit-scrollbar-track {
+    background: #475569;
+}
+body.dark-mode .category-list::-webkit-scrollbar-thumb {
+    background: #64748b;
+}
+body.dark-mode .category-list::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+/* Added: Dark mode for .collapsible-list-header */
+body.dark-mode .collapsible-list-header {
+    color: #e2e8f0;
+    border-bottom-color: #475569;
+}
+/* Dark mode styling cho locked categories in list */
+body.dark-mode .category-list li:has(.inline-block) {
+    background-color: #2d3748; /* Already present */
+}
+/* Dark mode for scroll indicator in category list (mobile) */
+@media (max-width: 768px) {
+    body.dark-mode .category-list::after { /* Already present */
+        background-color: #475569;
+        color: #cbd5e1;
+        border-top-color: #64748b;
+    }
+}
+
 
 body.dark-mode .message-success {
     background-color: #064e3b;
@@ -1030,13 +1172,13 @@ body.dark-mode #reconciliation-table thead th {
 }
 
 body.dark-mode #reconciliation-table thead th:first-child {
-    background-color: #475569;
+    background-color: #475569; /* Ensures sticky header column matches row sticky column */
 }
 
 body.dark-mode #reconciliation-table th,
-body.dark-mode #reconciliation-table td {
+body.dark-mode #reconciliation-table td { /* General cells in this specific table */
     border-color: #475569;
-    background-color: #334155;
+    background-color: #334155; /* Ensure all cells get this if not overridden */
 }
 
 body.dark-mode .input-actual-balance-pivot {
@@ -1044,6 +1186,22 @@ body.dark-mode .input-actual-balance-pivot {
     color: #f1f5f9;
     border-color: #475569;
 }
+
+/* Added: Dark mode for .btn-reconcile-pivot */
+body.dark-mode .btn-reconcile-pivot {
+    background-color: #475569;
+    color: #e2e8f0;
+}
+body.dark-mode .btn-reconcile-pivot:hover,
+body.dark-mode .btn-reconcile-pivot:active {
+    background-color: #64748b;
+}
+
+/* Added: Dark mode for reconciliation scroll indicator text */
+body.dark-mode #reconciliation-content::after {
+    color: #9ca3af;
+}
+
 
 body.dark-mode #virtualNumericKeyboard {
     background-color: #334155;
@@ -1064,8 +1222,20 @@ body.dark-mode .virtual-key:active {
     background-color: #64748b;
 }
 
+/* Dark mode for scroll hint */
+body.dark-mode .table-actions { /* Already present */
+    background-color: #475569;
+    border-color: #64748b;
+}
+body.dark-mode .overflow-x-auto::before { /* Already present */
+    background-color: #475569;
+    color: #cbd5e1;
+}
+
+
 /* =========================================================================================
-   15. RESPONSIVE UTILITIES
+   15. RESPONSIVE UTILITIES 
+   (Existing responsive rules - no changes needed for dark mode sync here, they apply to both)
 ========================================================================================= */
 @media (max-width: 480px) {
     .container {
@@ -1092,7 +1262,6 @@ body.dark-mode .virtual-key:active {
         font-size: 0.8rem;
     }
     
-    /* Make reconciliation table more compact on small screens */
     #reconciliation-table {
         min-width: 800px;
     }
@@ -1148,7 +1317,6 @@ form[data-transaction-mode="Transfer"] .form-field-normal {
    17. MOBILE TOUCH IMPROVEMENTS
 ========================================================================================= */
 @media (hover: none) and (pointer: coarse) {
-    /* Touch-specific improvements */
     button:active {
         transform: scale(0.98);
     }
@@ -1157,14 +1325,12 @@ form[data-transaction-mode="Transfer"] .form-field-normal {
         transform: scale(0.99);
     }
     
-    /* Increase touch targets */
     .btn-edit,
     .btn-delete {
         min-height: 44px;
         padding: 0.75rem;
     }
     
-    /* Better spacing for form elements */
     .radio-group {
         gap: 1.5rem;
     }
@@ -1174,14 +1340,10 @@ form[data-transaction-mode="Transfer"] .form-field-normal {
         align-items: center;
     }
 }
-/* Better spacing cho add category buttons */
-.btn-add-category {
-    margin-top: 0.5rem;
-    width: 100%;
-    justify-content: center;
-}
+
 /* =========================================================================================
-   18. SCROLL INDICATORS & HINTS
+   18. SCROLL INDICATORS & HINTS 
+   (Dark mode for these already handled in Section 14 or earlier)
 ========================================================================================= */
 .table-actions {
     display: flex;
@@ -1195,12 +1357,6 @@ form[data-transaction-mode="Transfer"] .form-field-normal {
     border: 1px solid #e2e8f0;
 }
 
-body.dark-mode .table-actions {
-    background-color: #475569;
-    border-color: #64748b;
-}
-
-/* Scroll hint for tables */
 .overflow-x-auto::before {
     content: "💡 Vuốt ngang để xem thêm";
     position: absolute;
@@ -1221,30 +1377,6 @@ body.dark-mode .table-actions {
     .overflow-x-auto::before {
         opacity: 1;
     }
-    .category-list::after {
-        content: "↕ Vuốt để xem thêm";
-        display: block;
-        text-align: center;
-        font-size: 0.7rem;
-        color: #64748b;
-        padding: 0.5rem;
-        background-color: #f8fafc;
-        border-top: 1px solid #e5e7eb;
-        font-style: italic;
-        position: sticky;
-        bottom: 0;
-    }
-    
-    body.dark-mode .category-list::after {
-        background-color: #475569;
-        color: #cbd5e1;
-        border-top-color: #64748b;
-    }
-}
-
-body.dark-mode .overflow-x-auto::before {
-    background-color: #475569;
-    color: #cbd5e1;
 }
 
 /* =========================================================================================
@@ -1267,7 +1399,7 @@ body.dark-mode .overflow-x-auto::before {
         opacity: 0;
     }
     to {
-        max-height: 500px;
+        max-height: 500px; /* Consistent with collapsible-list-content if it uses this directly */
         opacity: 1;
     }
 }
@@ -1280,7 +1412,6 @@ body.dark-mode .overflow-x-auto::before {
     animation: fadeIn 0.5s ease-out;
 }
 
-/* Smooth transitions for interactive elements */
 * {
     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
@@ -1383,7 +1514,6 @@ body.dark-mode .overflow-x-auto::before {
 /* =========================================================================================
    22. ACCESSIBILITY IMPROVEMENTS
 ========================================================================================= */
-/* Focus indicators */
 button:focus-visible,
 input:focus-visible,
 select:focus-visible {
@@ -1391,7 +1521,6 @@ select:focus-visible {
     outline-offset: 2px;
 }
 
-/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -1402,7 +1531,6 @@ select:focus-visible {
     }
 }
 
-/* High contrast mode support */
 @media (prefers-contrast: high) {
     .section-header {
         border: 2px solid;
@@ -1421,23 +1549,19 @@ select:focus-visible {
 /* =========================================================================================
    23. FINAL MOBILE OPTIMIZATIONS
 ========================================================================================= */
-/* iOS Safari specific fixes */
 @supports (-webkit-touch-callout: none) {
-    /* iOS-specific styles */
     input[type="date"],
     input[type="datetime-local"] {
         -webkit-appearance: none;
         background-color: white;
     }
     
-    /* Fix for iOS input zoom */
     input[type="text"],
     input[type="number"],
     select {
         font-size: 16px !important;
     }
     
-    /* Fix for sticky position on iOS */
     #reconciliation-table th:first-child,
     #reconciliation-table td:first-child {
         -webkit-transform: translateZ(0);
@@ -1445,14 +1569,12 @@ select:focus-visible {
     }
 }
 
-/* Android specific fixes */
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
-    select {
+    select { /* Ensure this is the intended general select, might conflict with dark mode if not careful */
         background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
     }
 }
 
-/* Landscape orientation adjustments for mobile */
 @media screen and (max-height: 500px) and (orientation: landscape) {
     .container {
         padding: 0.5rem;
