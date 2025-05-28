@@ -3,470 +3,887 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Sổ Theo Dõi Tài Chính Cá Nhân</title>
+    <title>Quản Lý Tài Chính Cá Nhân</title>
 
     <link rel="manifest" href="./manifest.json">
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Tài Chính">
     <meta name="mobile-web-app-capable" content="yes">
-    
     <meta name="theme-color" content="#3b82f6">
     <meta name="msapplication-navbutton-color" content="#3b82f6">
 
-    <link rel="apple-touch-icon" href="./LogoFinance.png">
-    <link rel="apple-touch-icon" sizes="57x57" href="./LogoFinance.png">
-    <link rel="apple-touch-icon" sizes="60x60" href="./LogoFinance.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="./LogoFinance.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="./LogoFinance.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="./LogoFinance.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="./LogoFinance.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="./LogoFinance.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="./LogoFinance.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="./LogoFinance.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="./LogoFinance.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="./LogoFinance.png">
-    <link rel="shortcut icon" href="./LogoFinance.png" type="image/png">
+    <link rel="apple-touch-icon" href="./logo-finance.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./logo-finance.png">
+    <link rel="shortcut icon" href="./logo-finance.png" type="image/png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="Styles.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="./styles.css">
 </head>
-<body>
+<body class="font-sans antialiased ...">
     <div class="theme-switch-wrapper">
         <label class="theme-switch" for="darkModeToggleCheckbox">
             <input type="checkbox" id="darkModeToggleCheckbox">
             <div class="slider round">
-                <span class="sun-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16px" height="16px" style="display: block; margin: auto;"><path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.106a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.836 17.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18.75a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-1.5a.75.75 0 01.75-.75zM5.106 17.836a.75.75 0 001.061-1.06l-1.591-1.59a.75.75 0 00-1.06 1.061l1.591 1.59zM3 12a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5H2.25A.75.75 0 013 12zM6.106 5.106a.75.75 0 00-1.06 1.061l1.59 1.591a.75.75 0 001.061-1.06l-1.59-1.591z"></path></svg></span>
-                <span class="moon-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16px" height="16px" style="display: block; margin: auto;"><path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-3.51 1.713-6.636 4.362-8.442a.75.75 0 01.819.162z" clip-rule="evenodd"></path></svg></span>
+                <span class="sun-icon">☀️</span>
+                <span class="moon-icon">🌙</span>
             </div>
         </label>
     </div>
 
-    <div class="container">
-        <header class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-blue-600">Sổ Theo Dõi Tài Chính Cá Nhân</h1>
-            <p class="text-gray-600">Ghi chép, quản lý thu chi hàng ngày và so sánh theo tuần.</p>
-        </header>
-
-        <div id="message-box" style="display: none;"></div>
-
-        <div class="section form-section">
-            <h2 class="section-header collapsible-header active" data-collapsible-target="form-content">
-                <div class="header-text-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"></path>
-                    </svg>
-                    <span id="form-title">Thêm Giao Dịch Mới</span>
+    <header class="app-header">
+        <div class="header-content">
+            <h1 class="header-title">
+                <span class="header-icon">💰</span>
+                Quản Lý Tài Chính
+            </h1>
+            <div class="header-summary">
+                <div class="summary-card income">
+                    <span class="summary-label">Thu nhập tháng</span>
+                    <span class="summary-value" id="header-income">0 ₫</span>
                 </div>
-                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
-            </h2>
-            <div class="collapsible-content active" id="form-content">
-				<form id="transaction-form" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3" data-transaction-mode="Chi">
-					<div>
-						<label for="datetime-input">Ngày &amp; Giờ:</label>
-						<input type="datetime-local" id="datetime-input" required="">
-					</div>
-					
-					<div>
-						<label>Loại giao dịch:</label>
-						<div class="radio-group">
-							<label for="type-thu"><input type="radio" id="type-thu" name="type" value="Thu" required=""> Thu</label>
-							<label for="type-chi"><input type="radio" id="type-chi" name="type" value="Chi" checked="" required=""> Chi</label>
-							<label for="type-transfer"><input type="radio" id="type-transfer" name="type" value="Transfer" required=""> Chuyển tiền</label>
-						</div>
-					</div>
-
-					<div class="form-field-normal">
-						<label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hạng mục:</label>
-						<select id="category" required="" class="block w-full h-11 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300">
-							</select>
-					</div>
-
-					<div>
-						<label for="account" id="account-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tài khoản:</label>
-						<select id="account" required="" class="block w-full h-11 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300 appearance-none">
-							</select>
-					</div>
-					
-					<div class="form-field-transfer" style="display: none;"> 
-						<label for="to-account" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Đến Tài khoản:</label>
-						<select id="to-account" class="block w-full h-11 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300">
-							</select>
-					</div>
-					
-					<div>
-						<label for="amount-input">Số tiền:</label>
-						<div class="amount-currency-group">
-							<input type="text" inputmode="decimal" id="amount-input" placeholder="Nhập số tiền (VD: 22500)" required="">
-							<select id="form-currency-selector">
-								<option value="VND">VNĐ</option>
-								<option value="USD">USD (quy đổi)</option>
-							</select>
-						</div>
-						<button type="button" id="add-triple-zero-button" class="btn-secondary py-2 px-3 mt-2 text-sm rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Thêm 000</button>
-					</div>
-					
-					<div>
-						<label for="description">Nội dung chi tiết:</label>
-						<input type="text" id="description" placeholder="VD: Chuyển tiền học, Ăn trưa" list="description-suggestions">
-						<datalist id="description-suggestions">
-							</datalist>
-					</div>
-
-					<div id="transaction-suggestion-area" class="mt-3 mb-2 md:col-span-2" style="display: none;">
-						<p class="text-sm text-gray-600 dark:text-gray-400">
-							Gợi ý từ giao dịch cũ: 
-							<span id="suggested-description" class="font-semibold"></span> 
-							- <span id="suggested-amount" class="font-semibold"></span>
-							<button type="button" id="apply-suggestion-button" class="ml-2 text-sm btn-secondary-outline">Áp dụng</button>
-							<button type="button" id="dismiss-suggestion-button" class="ml-1 text-xs text-gray-500 hover:text-red-500">&times;</button>
-						</p>
-					</div>
-					
-					<div class="md:col-span-2 mt-4">
-						<button type="submit" id="submit-transaction-button" class="btn-primary w-full">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>
-							Thêm Giao Dịch
-						</button>
-					</div>
-				</form>
+                <div class="summary-card expense">
+                    <span class="summary-label">Chi tiêu tháng</span>
+                    <span class="summary-value" id="header-expense">0 ₫</span>
+                </div>
+                <div class="summary-card balance">
+                    <span class="summary-label">Số dư</span>
+                    <span class="summary-value" id="header-balance">0 ₫</span>
+                </div>
             </div>
         </div>
-		
-		<section class="section" id="reconciliation-section">
-			<h2 class="section-header collapsible-header active" data-collapsible-target="reconciliation-content"> <div class="header-text-icon">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-2 text-blue-600 dark:text-blue-400"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5"></path></svg>
-					Đối Soát Số Dư Tài Khoản
-				</div>
-                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
-			</h2>
-			<div class="collapsible-content active" id="reconciliation-content">
-				<div id="reconciliation-account-list" class="space-y-6">
-					</div>
-				<p id="no-reconciliation-accounts" class="text-center text-gray-500 mt-4" style="display: none;">Không có tài khoản nào để đối soát.</p>
-			</div>
-		</section>
+    </header>
 
-        <div class="section table-section">
-             <h2 class="section-header collapsible-header active" data-collapsible-target="table-content">
-                <div class="header-text-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5M3.375 19.5l1.95-1.95M12.375 19.5h8.875M12.375 19.5l-1.95-1.95M20.625 19.5a1.125 1.125 0 001.125-1.125M20.625 19.5l-1.95-1.95M3.75 4.5h16.5M3.75 4.5a2.25 2.25 0 00-2.25 2.25v11.25c0 1.24 1.01 2.25 2.25 2.25h16.5c1.24 0 2.25-1.01 2.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25M3.75 4.5v.75m16.5-.75v.75m0 0a2.25 2.25 0 01-2.25 2.25h-5.25a2.25 2.25 0 01-2.25-2.25m-5.25 0h5.25m-5.25 0a2.25 2.25 0 01-2.25-2.25M3.75 7.5v.75m16.5-.75v.75"></path></svg>
-                    Danh Sách Giao Dịch
-                </div>
-                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
-            </h2>
-			<div class="collapsible-content active" id="table-content">
-				<div class="table-actions" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1rem; padding:0.5rem;">
-					<div class="filter-container">
-						<label for="filter-specific-date" class="text-sm font-medium text-gray-700 dark:text-gray-300">Lọc theo ngày cụ thể:</label>
-						<input type="date" id="filter-specific-date" class="p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300" style="min-width: 160px;">
-					</div>
-					<button id="clear-date-filter-button" class="btn-secondary py-2 px-3 text-sm rounded-md" title="Hiển thị tất cả các ngày trong tháng đã chọn">Tất cả ngày</button>
-				</div>
-				<div class="overflow-x-auto">
-					<table id="transaction-table">
-						<thead>
-							<tr>
-								<th>Ngày &amp; Giờ</th>
-								<th>Nội dung</th>
-								<th>Hạng mục</th>
-								<th>Số tiền (VNĐ)</th>
-								<th>Loại</th>
-								<th>Tài khoản</th>
-								<th>Thao tác</th>
-							</tr>
-						</thead>
-						<tbody id="transaction-list">
-							</tbody>
-					</table>
-				</div>
-                <p id="no-transactions" class="text-center text-gray-500 mt-4" style="display: none;">Chưa có giao dịch nào.</p>
-            </div>
-        </div>
+    <div id="message-box" class="message-box" style="display: none;"></div>
 
-        <div class="section summary-section">
-            <h2 class="section-header collapsible-header active" data-collapsible-target="summary-content-area"> <div class="header-text-icon">
-                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0l.879-.659M18 10.2F18 6.57 15.314 4 12 4s-6 2.57-6 6.2c0 1.707.673 3.293 1.758 4.45l.149.149A6.086 6.086 0 0012 20.25a6.086 6.086 0 004.093-1.45l.149-.149A5.99 5.99 0 0018 10.2z"></path></svg>
-                    Tóm Tắt Tài Chính (VNĐ)
-                </div>
-                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
-            </h2>
-			<div class="collapsible-content active" id="summary-content-area"> <div class="filter-container" style="padding: 0.5rem; margin-bottom: 0.5rem;">
-					<label for="filter-month" class="text-sm font-medium text-gray-700 dark:text-gray-300">Tháng Lọc (Chung):</label>
-					<select id="filter-month" class="p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300" style="min-width: 200px;">
-						<option value="all">Tất cả các tháng</option>
-					</select>
-				</div>
-				<div id="summary-content"> <div class="summary-item"><span>Tổng Thu <span id="summary-income-month-display">(Tháng Lọc)</span>:</span><span id="total-income" class="text-green-600 font-semibold">0</span></div>
-                    <div class="summary-item"><span>Tổng Chi <span id="summary-expense-month-display">(Tháng Lọc)</span>:</span><span id="total-expenses" class="text-red-600 font-semibold">0</span></div>
-                    <div class="summary-item"><span>Số Dư <span id="summary-balance-month-display">(Tháng Lọc)</span>:</span><span id="current-balance" class="text-blue-600 font-bold">0</span></div>
-                </div>
-                <div id="account-balance-list" class="account-balance-list"><h3>Số Dư Theo Tài Khoản (Tổng thể - VNĐ):</h3>
-                    </div>
-            </div>
-        </div>
+    <main class="main-container">
+        <div class="tab-content-container">
+            <section id="tab-transactions" class="tab-content active">
+                <div class="quick-add-section">
+                    <h2 class="section-title">
+                        <span class="section-icon">✏️</span>
+                        Thêm Giao Dịch Nhanh
+                    </h2>
 
-		<div class="section expense-breakdown-section">
-			<h2 class="section-header collapsible-header active" data-collapsible-target="expense-breakdown-content">
-				<div class="header-text-icon">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-2 text-blue-600 dark:text-blue-400"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 100 15 7.5 7.5 0 000-15zM21 21l-5.2-5.2"></path></svg>
-					<span id="expense-breakdown-title-text">Phân Loại Chi Tiêu</span>
-				</div>
-                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
-			</h2>
-			<div class="collapsible-content active" id="expense-breakdown-content">
-				<div class="md:flex md:gap-6">
-					<div class="md:w-1/2">
-                        <div class="mb-4">
-                            <label for="expenseChartTypeSelector" class="mr-2 font-medium">Kiểu biểu đồ:</label>
-							<select id="expenseChartTypeSelector" class="p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300 border-gray-300 dark:border-gray-600">
-								<option value="pie" selected="">Biểu đồ tròn</option>
-								<option value="bar">Biểu đồ cột</option>
-							</select>
-						</div>
-
-						<div id="expensePieChartContainer" class="chart-container" style="display: block;">
-							<canvas id="expenseCategoryChart"></canvas>
-						</div>
-
-						<div id="expenseBarChartContainer" class="chart-container" style="display: none;">
-							<canvas id="expenseCategoryBarChart"></canvas>
-                        </div>
-						<p id="no-expense-data-chart" class="text-center text-gray-500 dark:text-gray-400 mt-4" style="display: none;">Không có dữ liệu chi tiêu để vẽ biểu đồ.</p>
-					</div>
-
-					<div class="md:w-1/2">
-                        <h3 class="text-md font-semibold mb-2 text-gray-700 dark:text-gray-300">Chi tiết theo hạng mục:</h3>
-                        <div id="expense-category-list-container" class="expense-category-list">
+                    <form id="transaction-form" class="transaction-form">
+                        <div class="form-row">
+                            <label class="form-label">Loại giao dịch</label>
+                            <div class="radio-group">
+                                <label class="radio-option income-option">
+                                    <input type="radio" name="type" value="Thu" required>
+                                    <span class="radio-custom"></span>
+                                    <span class="radio-text">Thu nhập</span>
+                                </label>
+                                <label class="radio-option expense-option">
+                                    <input type="radio" name="type" value="Chi" checked required>
+                                    <span class="radio-custom"></span>
+                                    <span class="radio-text">Chi tiêu</span>
+                                </label>
+                                <label class="radio-option transfer-option">
+                                    <input type="radio" name="type" value="Transfer" required>
+                                    <span class="radio-custom"></span>
+                                    <span class="radio-text">Chuyển tiền</span>
+                                </label>
                             </div>
-                        <p id="no-expense-data-list" class="text-center text-gray-500 dark:text-gray-400 mt-4" style="display: none;">Không có chi tiêu nào trong kỳ này.</p>
+                        </div>
+
+                        <div class="form-row">
+							<label for="amount-input" class="form-label">Số tiền</label>
+							<div class="amount-input-group flex items-center bg-[var(--bg-tertiary)] rounded-2xl border border-[var(--border-color)] px-4 py-3 mt-1" style="min-height:58px;">
+								<input type="text"
+									   id="amount-input"
+									   class="amount-input flex-1 bg-transparent outline-none border-0 text-xl text-[var(--text-primary)] h-[24px] min-h-[24px] px-1"
+									   placeholder="Nhập số tiền"
+									   inputmode="decimal"
+									   required>
+								<select id="currency-selector" class="currency-selector ml-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-xl px-3 py-2 border border-[var(--border-color)]">
+									<option value="VND">VNĐ</option>
+									<option value="USD">USD</option>
+								</select>
+							</div>
+						</div>
+
+                        <div class="form-row" id="category-row">
+                            <label for="category-select" class="form-label">Hạng mục</label>
+                            <select id="category-select" class="form-select" required>
+                                <option value="">Chọn hạng mục...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="account-from" class="form-label" id="account-from-label">Tài khoản</label>
+                            <select id="account-from" class="form-select" required>
+                                <option value="">Chọn tài khoản...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row" id="to-account-row" style="display: none;">
+                            <label for="account-to" class="form-label">Đến tài khoản</label>
+                            <select id="account-to" class="form-select">
+                                <option value="">Chọn tài khoản nhận...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="description-input" class="form-label">Mô tả</label>
+                            <input type="text"
+                                   id="description-input"
+                                   class="form-input"
+                                   placeholder="Mô tả giao dịch (tùy chọn)"
+                                   list="description-suggestions">
+                            <datalist id="description-suggestions"></datalist>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="datetime-input" class="form-label">Ngày & Giờ</label>
+                            <input type="datetime-local"
+                                   id="datetime-input"
+                                   class="form-input"
+                                   required>
+                        </div>
+
+                        <div id="suggestion-area" class="suggestion-area" style="display: none;">
+                            <div class="suggestion-content">
+                                <span class="suggestion-text">
+                                    Gợi ý: <strong id="suggestion-desc"></strong> - <strong id="suggestion-amount"></strong>
+                                </span>
+                                <div class="suggestion-actions">
+                                    <button type="button" id="apply-suggestion" class="btn-suggestion apply">Áp dụng</button>
+                                    <button type="button" id="dismiss-suggestion" class="btn-suggestion dismiss">Bỏ qua</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="submit-btn" id="submit-btn">
+                            <span class="btn-icon">➕</span>
+                            <span class="btn-text">Thêm Giao Dịch</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="transaction-list-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <span class="section-icon">📋</span>
+                            Giao Dịch Gần Đây
+                        </h2>
+                        <div class="filter-controls">
+                            <select id="filter-period" class="filter-select">
+                                <option value="today">Hôm nay</option>
+                                <option value="week">Tuần này</option>
+                                <option value="month" selected>Tháng này</option>
+                                <option value="all">Tất cả</option>
+                            </select>
+                            <input type="date" id="filter-date" class="filter-date">
+                        </div>
                     </div>
+
+                    <div class="transaction-list" id="transaction-list">
+                        </div>
+
+                    <div id="no-transactions" class="no-data" style="display: none;">
+                        <span class="no-data-icon">📝</span>
+                        <span class="no-data-text">Chưa có giao dịch nào</span>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tab-history" class="tab-content">
+				<div class="transaction-calendar-section">
+					<h3 class="subsection-title">📅 Lịch Giao Dịch</h3>
+					
+					<div class="calendar-container">
+						<div class="calendar-header">
+							<div class="month-navigation">
+								<button class="nav-btn" id="prev-month-btn">‹</button>
+								<div class="current-month" id="current-month-display">Tháng này</div>
+								<button class="nav-btn" id="next-month-btn">›</button>
+							</div>
+							
+							<div class="month-summary-cards">
+								<div class="summary-card income">
+									<div class="summary-label">Tổng thu nhập</div>
+									<div class="summary-value" id="calendar-total-income">0 ₫</div>
+								</div>
+								<div class="summary-card expense">
+									<div class="summary-label">Tổng đã chi</div>
+									<div class="summary-value" id="calendar-total-expense">0 ₫</div>
+								</div>
+							</div>
+						</div>
+						
+						<div class="calendar-grid">
+							<div class="calendar-weekdays">
+								<div class="weekday">T2</div>
+								<div class="weekday">T3</div>
+								<div class="weekday">T4</div>
+								<div class="weekday">T5</div>
+								<div class="weekday">T6</div>
+								<div class="weekday">T7</div>
+								<div class="weekday">CN</div>
+							</div>
+							
+							<div class="calendar-days-grid" id="calendar-days-grid">
+								<!-- Days will be generated by JavaScript -->
+							</div>
+						</div>
+					</div>
 				</div>
-			</div>
-		</div>
 
-		<div class="section statistics-table-section">
-			<h2 class="section-header collapsible-header active" data-collapsible-target="statistics-table-content">
-				<div class="header-text-icon">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px; margin-right: 8px;" class="text-blue-600 dark:text-blue-400">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"></path>
-					</svg>
-					Thống Kê Chi Tiết <span id="stats-table-month-display"></span>
+				<!-- Transaction Detail Modal -->
+				<div id="day-detail-modal" class="modal" style="display: none;">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h3 id="modal-day-title">Giao dịch ngày</h3>
+							<button class="modal-close" id="close-day-modal">&times;</button>
+						</div>
+						<div class="modal-body" id="modal-day-transactions">
+							<!-- Transaction details will be loaded here -->
+						</div>
+					</div>
 				</div>
-				<svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
-				</svg>
-			</h2>
-			<div class="collapsible-content active" id="statistics-table-content">
-				<table class="w-full mt-3">
-					<tbody id="detailed-stats-tbody">
-						<tr>
-							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 font-medium text-gray-700 dark:text-gray-300">Tổng Thu Nhập:</td>
-							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right font-semibold text-green-600 dark:text-green-400" id="stats-total-income">0</td>
-						</tr>
-						<tr>
-							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 font-medium text-gray-700 dark:text-gray-300">Tổng Chi Tiêu:</td>
-							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right font-semibold text-red-600 dark:text-red-400" id="stats-total-expense">0</td>
-						</tr>
-						<tr>
-							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 font-medium text-gray-700 dark:text-gray-300">Dòng tiền ròng (Thu - Chi):</td>
-							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right font-bold" id="stats-net-cashflow">0</td>
-						</tr>
-						<tr>
-							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 font-medium text-gray-700 dark:text-gray-300">Số lượng giao dịch Thu:</td>
-							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right text-gray-800 dark:text-gray-200" id="stats-income-tx-count">0</td>
-						</tr>
-						<tr>
-							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 font-medium text-gray-700 dark:text-gray-300">Số lượng giao dịch Chi:</td>
-							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right text-gray-800 dark:text-gray-200" id="stats-expense-tx-count">0</td>
-						</tr>
-						<tr>
-							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 font-medium text-gray-700 dark:text-gray-300">Hạng mục chi nhiều nhất:</td>
-							<td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-right text-gray-800 dark:text-gray-200" id="stats-top-expense-cat">-</td>
-						</tr>
-						<tr>
-							<td class="py-2 px-4 font-medium text-gray-700 dark:text-gray-300">Số tiền (Hạng mục chi nhiều nhất):</td>
-                            <td class="py-2 px-4 text-right text-red-600 dark:text-red-400 font-semibold" id="stats-top-expense-cat-amount">0</td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
-		</div>
-
-        <div class="section chart-section">
-            <h2 class="section-header collapsible-header" data-collapsible-target="charts-grid-content">
-                <div class="header-text-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M7.5 14.25V18a2.25 2.25 0 002.25 2.25h3.5A2.25 2.25 0 0015 18v-3.75M3.375 4.5c-.621 0-1.125.504-1.125 1.125v14.25c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125V5.625c0-.621-.504-1.125-1.125-1.125H3.375z"></path></svg>
-                    Biểu Đồ Tổng Quan
+				<div class="tab-header">
+                    <h2 class="tab-title">
+                        <span class="tab-icon">🏦</span>
+                        Lịch Sử & Đối Soát
+                    </h2>
                 </div>
-                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
-            </h2>
-            <div class="collapsible-content" id="charts-grid-content">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <h3 class="text-lg font-semibold mb-2 text-center text-gray-700 dark:text-gray-300" id="income-expense-chart-title">Biểu Đồ Thu vs Chi</h3>
-                        <div class="chart-container"><canvas id="incomeExpenseChart"></canvas></div>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-semibold mb-2 text-center text-gray-700 dark:text-gray-300">Chi Tiêu 7 Ngày Qua (VNĐ)</h3>
-                        <div class="chart-container"><canvas id="last7DaysChart"></canvas></div>
-                    </div>
-                    <div class="md:col-span-2">
-                        <h3 class="text-lg font-semibold mb-2 text-center text-gray-700 dark:text-gray-300">So Sánh Tháng Này &amp; Tháng Trước (VNĐ)</h3>
-                        <div class="chart-container"><canvas id="monthComparisonChart"></canvas></div>
+
+                <div class="account-balances-section">
+                    <h3 class="subsection-title">Số Dư Tài Khoản</h3>
+                    <div class="account-balance-grid" id="account-balance-grid">
+                        </div>
+                </div>
+
+                <div class="reconciliation-section">
+                    <h3 class="subsection-title">Đối Soát Tài Khoản</h3>
+                    <div class="reconciliation-container">
+                        <div class="reconciliation-scroll">
+                            <table class="reconciliation-table" id="reconciliation-table">
+                                <thead>
+                                    <tr>
+                                        <th class="sticky-col">Mục / Tài khoản</th>
+                                        </tr>
+                                </thead>
+                                <tbody>
+                                    </tbody>
+                            </table>
+                        </div>
+                        <div class="scroll-hint">← Vuốt ngang để xem thêm cột →</div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="section comparison-section">
-            <h2 class="section-header collapsible-header active" data-collapsible-target="comparison-content">
-                <div class="header-text-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-3.75h.008v.008H12v-.008zM12 12.75h.008v.008H12v-.008z"></path></svg>
-                    Thống Kê &amp; So Sánh Tuần (VNĐ)
+                <div class="reconciliation-history-section">
+                    <h3 class="subsection-title">Lịch Sử Đối Soát</h3>
+                    <div class="reconciliation-history" id="reconciliation-history">
+                        </div>
                 </div>
-                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
-            </h2>
-            <div class="collapsible-content active" id="comparison-content">
-                <div class="filter-container">
-                    <div class="flex items-center"><label for="filter-comparison-year" class="text-sm font-medium text-gray-700 dark:text-gray-300">Năm:</label><input type="number" id="filter-comparison-year" class="p-2 border rounded-md w-24 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300 border-gray-300 dark:border-gray-600" min="2000" max="2100"></div>
-                    <div class="flex items-center flex-grow"><label for="filter-comparison-week" class="text-sm font-medium text-gray-700 dark:text-gray-300">Tuần:</label><select id="filter-comparison-week" class="p-2 border rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300 border-gray-300 dark:border-gray-600"><option value="none">-- Chọn tuần --</option></select></div>
-                </div>
-                <div id="weekly-comparison-content" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4" style="display: none;">
-                    <div><h3 class="text-lg font-semibold mb-2 text-blue-700 dark:text-blue-400">Tuần Được Chọn (<span id="selected-week-display"></span>)</h3><div class="summary-item"><span>Số Dư Đầu Tuần:</span><span id="current-week-start-balance" class="text-blue-600 dark:text-blue-400">0</span></div><div class="summary-item"><span>Tổng Thu Tuần Này:</span><span id="current-week-income" class="text-green-600 dark:text-green-400">0</span></div><div class="summary-item"><span>Tổng Chi Tuần Này:</span><span id="current-week-expenses" class="text-red-600 dark:text-red-400">0</span></div><div class="summary-item"><span>Thay Đổi Ròng:</span><span id="current-week-net-change" class="font-bold">0</span></div></div>
-                    <div><h3 class="text-lg font-semibold mb-2 text-gray-700 dark:text-gray-300">Tuần Trước Đó (<span id="previous-week-display"></span>)</h3><div class="summary-item"><span>Tổng Chi Tuần Trước:</span><span id="previous-week-expenses" class="text-red-600 dark:text-red-400">0</span></div><hr class="my-3 border-gray-300 dark:border-gray-600"><h3 class="text-lg font-semibold mb-2 text-purple-700 dark:text-purple-400">So Sánh Chi Tiêu</h3><div class="summary-item"><span>Chênh Lệch (Này - Trước):</span><span id="spending-difference" class="font-bold">0</span></div></div>
-                </div>
-                <p id="no-comparison-data" class="text-center text-gray-500 dark:text-gray-400 mt-4" style="display: block;">Chọn một năm và tuần để xem thống kê.</p>
-            </div>
-        </div>
+            </section>
 
-        <div class="section category-customization-section">
-            <h2 class="section-header collapsible-header active" data-collapsible-target="category-customization-content">
-                <div class="header-text-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12a7.5 7.5 0 0015 0m-15 0a7.5 7.5 0 1115 0m-15 0H3m18 0h-1.5m-15.036-7.026A7.5 7.5 0 015.974 3.474m12.052 0A7.5 7.5 0 0118.026 4.974m0 14.052a7.5 7.5 0 01-1.526 1.526M5.974 19.026A7.5 7.5 0 014.5 18m0-12a7.5 7.5 0 00-1.526 1.526M18 4.5a7.5 7.5 0 00-1.526-1.526"></path></svg>
-                    Tùy Chỉnh Hạng Mục & Tài Khoản
+            <section id="tab-statistics" class="tab-content">
+                <div class="tab-header">
+                    <h2 class="tab-title">
+                        <span class="tab-icon">📊</span>
+                        Thống Kê & Biểu Đồ
+                    </h2>
+                    <select id="stats-period" class="bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-xl px-4 py-2">
+                        <option value="month">Tháng này</option>
+                        <option value="quarter">Quý này</option>
+                        <option value="year">Năm này</option>
+                        <option value="custom">Tùy chỉnh</option>
+                    </select>
                 </div>
-                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
-            </h2>
-            <div class="collapsible-content active" id="category-customization-content">
-                <div class="category-management">
-					<div>
-                        <h3>Hạng Mục Thu</h3>
-						<div class="mb-4">
-                            <label for="new-income-category-name">Tên hạng mục thu mới:</label>
-							<input type="text" id="new-income-category-name" placeholder="VD: Tiền cho thuê nhà">
-							<button id="add-income-category-button" class="btn-primary btn-add-category">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>
-								Thêm Hạng Mục Thu
-							</button>
-						</div>
 
-                        <h4 class="collapsible-list-header active" data-collapsible-target="income-category-list-admin">
-                            <span>Danh sách hạng mục thu:</span>
-                            <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 16px; height: 16px; margin-left: auto;">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
-                            </svg>
-                        </h4>
-                        <ul id="income-category-list-admin" class="category-list collapsible-list-content active">
-                            </ul>
+                <div class="stats-summary">
+                    <div class="stats-card income-card">
+                        <div class="stats-icon">💰</div>
+                        <div class="stats-content">
+                            <div class="stats-label">Tổng Thu Nhập</div>
+                            <div class="stats-value" id="stats-total-income">0 ₫</div>
+                            <div class="stats-change" id="stats-income-change">0%</div>
+                        </div>
+                    </div>
+
+                    <div class="stats-card expense-card">
+                        <div class="stats-icon">💸</div>
+                        <div class="stats-content">
+                            <div class="stats-label">Tổng Chi Tiêu</div>
+                            <div class="stats-value" id="stats-total-expense">0 ₫</div>
+                            <div class="stats-change" id="stats-expense-change">0%</div>
+                        </div>
+                    </div>
+
+                    <div class="stats-card balance-card">
+                        <div class="stats-icon">⚖️</div>
+                        <div class="stats-content">
+                            <div class="stats-label">Số Dư Ròng</div>
+                            <div class="stats-value" id="stats-net-balance">0 ₫</div>
+                            <div class="stats-change" id="stats-balance-change">0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-section">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Chi Tiêu Theo Danh Mục</h3>
+                        <div class="chart-controls">
+                            <select id="chart-type" class="chart-type-selector">
+                                <option value="doughnut">Biểu đồ tròn</option>
+                                <option value="bar">Biểu đồ cột</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="chart-container-wrapper">
+                        <div class="chart-container" id="expense-chart-container">
+                            <canvas id="expense-chart"></canvas>
+                        </div>
+
+                        <div class="chart-legend" id="expense-legend">
+                            </div>
+                    </div>
+                </div>
+
+                <div class="trend-section">
+                    <h3 class="subsection-title">Xu Hướng 7 Ngày Qua</h3>
+                    <div class="trend-chart-container">
+                        <canvas id="trend-chart"></canvas>
+                    </div>
+                </div>
+
+                <div class="comparison-section">
+                    <h3 class="subsection-title">So Sánh Tháng</h3>
+                    <div class="comparison-chart-container">
+                        <canvas id="comparison-chart"></canvas>
+                    </div>
+                </div>
+
+				<div class="detailed-stats-section">
+					<h3 class="subsection-title">Thống Kê Chi Tiết</h3>
+					<div class="stats-table-container">
+						<table class="stats-table">
+							<thead>
+								<tr>
+									<th class="text-left">Danh Mục</th>
+									<th class="text-right">Số Tiền</th>
+									<th class="text-right">%</th>
+									<th class="text-center">Tỷ Lệ</th>
+								</tr>
+							</thead>
+							<tbody id="detailed-stats-tbody">
+								<!-- Dữ liệu sẽ được render bởi JavaScript -->
+							</tbody>
+						</table>
 					</div>
-					<div>
-                        <h3>Hạng Mục Chi</h3>
-						<div class="mb-4">
-                            <label for="new-expense-category-name">Tên hạng mục chi mới:</label>
-							<input type="text" id="new-expense-category-name" placeholder="VD: Du lịch">
-							<button id="add-expense-category-button" class="btn-primary btn-add-category">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>
-								Thêm Hạng Mục Chi
-							</button>
-						</div>
+				</div>
+            </section>
 
-						<h4 class="collapsible-list-header active" data-collapsible-target="expense-category-list-admin">
-							<span>Danh sách hạng mục chi:</span>
-							<svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 16px; height: 16px; margin-left: auto;">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
-							</svg>
-						</h4>
-						<ul id="expense-category-list-admin" class="category-list collapsible-list-content active">
+            <section id="tab-categories" class="tab-content">
+                <div class="tab-header">
+                    <h2 class="tab-title">
+                        <span class="tab-icon">🏷️</span>
+                        Quản Lý Danh Mục
+                    </h2>
+                </div>
+
+                <div class="category-section">
+                    <h3 class="category-section-title">
+                        <span class="category-icon income">💰</span>
+                        Danh Mục Thu Nhập
+                    </h3>
+
+                    <div class="add-category-form">
+                        <div class="form-group">
+                            <input type="text"
+                                   id="new-income-category"
+                                   class="category-input"
+                                   placeholder="Tên danh mục thu nhập mới">
+                            <button id="add-income-category" class="add-category-btn">
+                                <span class="btn-icon">➕</span>
+                                Thêm
+                            </button>
+                        </div>
+                        <div id="new-income-category-error" class="input-error-message" style="display: none;"></div>
+                    </div>
+
+                    <div class="category-list">
+                        <ul id="income-category-list" class="category-items">
                             </ul>
-					</div>
-					<div>
-                        <h3>Quản Lý Tài Khoản</h3>
-						<div class="mb-4">
-                            <label for="new-account-name">Tên tài khoản mới:</label>
-							<input type="text" id="new-account-name" placeholder="VD: Ví ShopeePay, Tiết kiệm Ngân hàng X" class="p-2 border rounded-md w-full mb-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300 border-gray-300 dark:border-gray-600">
-							<button id="add-account-button" class="btn-primary btn-add-category">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:20px; height:20px; margin-right:6px;">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
-								</svg>
-								Thêm Tài Khoản
-							</button>
-						</div>
+                    </div>
+                </div>
 
-						<h4 class="collapsible-list-header active" data-collapsible-target="account-list-admin">
-							<span>Danh sách tài khoản hiện có:</span>
-							<svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 16px; height: 16px; margin-left: auto;">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
-							</svg>
-						</h4>
-						<ul id="account-list-admin" class="category-list collapsible-list-content active">
+                <div class="category-section">
+                    <h3 class="category-section-title">
+                        <span class="category-icon expense">💸</span>
+                        Danh Mục Chi Tiêu
+                    </h3>
+
+                    <div class="add-category-form">
+                        <div class="form-group">
+                            <input type="text"
+                                   id="new-expense-category"
+                                   class="category-input"
+                                   placeholder="Tên danh mục chi tiêu mới">
+                            <button id="add-expense-category" class="add-category-btn">
+                                <span class="btn-icon">➕</span>
+                                Thêm
+                            </button>
+                        </div>
+                        <div id="new-expense-category-error" class="input-error-message" style="display: none;"></div>
+                    </div>
+
+                    <div class="category-list">
+                        <ul id="expense-category-list" class="category-items">
                             </ul>
-					</div>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="section data-io-section">
-            <h2 class="section-header collapsible-header active" data-collapsible-target="data-io-content">
-                <div class="header-text-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"></path></svg>
-                    Quản lý Dữ liệu
+                <div class="category-section">
+                    <h3 class="category-section-title">
+                        <span class="category-icon account">🏦</span>
+                        Tài Khoản
+                    </h3>
+
+                    <div class="add-category-form">
+                        <div class="form-group">
+                            <input type="text"
+                                   id="new-account"
+                                   class="category-input"
+                                   placeholder="Tên tài khoản mới">
+                            <button id="add-account" class="add-category-btn">
+                                <span class="btn-icon">➕</span>
+                                Thêm
+                            </button>
+                        </div>
+                        <div id="new-account-error" class="input-error-message" style="display: none;"></div>
+                    </div>
+
+                    <div class="category-list">
+                        <ul id="account-list" class="category-items">
+                            </ul>
+                    </div>
                 </div>
-                <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
-            </h2>
-            <div class="collapsible-content active" id="data-io-content">
-                <div class="button-group">
-                    <button id="export-button" class="btn-secondary"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"></path></svg>Xuất Dữ Liệu (JSON)</button>
-                    <button id="export-csv-button" class="btn-secondary">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="mr-1">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"></path>
-                        </svg>
-                        Xuất Dữ Liệu (CSV)
-                    </button>
-                    <button id="import-button" class="btn-secondary"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"></path></svg>Nhập Dữ Liệu (JSON)</button>
-                    <input type="file" id="import-file-input" accept=".json" style="display: none;">
+            </section>
+
+            <section id="tab-settings" class="tab-content">
+                <div class="tab-header">
+                    <h2 class="tab-title">
+                        <span class="tab-icon">⚙️</span>
+                        Cài Đặt & Backup
+                    </h2>
                 </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-3">Lưu ý: Nhập dữ liệu sẽ ghi đè toàn bộ dữ liệu hiện tại.</p>
-            </div>
+
+                <div class="settings-section">
+                    <h3 class="settings-section-title">
+                        <span class="settings-icon">🎨</span>
+                        Giao Diện
+                    </h3>
+
+				<div class="theme-options">
+				  <label class="theme-option">
+					<input type="radio" name="theme" value="light" checked>
+					<span class="theme-preview">🌞</span>
+					<span class="theme-label">Sáng</span>
+				  </label>
+				  <label class="theme-option">
+					<input type="radio" name="theme" value="dark">
+					<span class="theme-preview">🌙</span>
+					<span class="theme-label">Tối</span>
+				  </label>
+				  <label class="theme-option">
+					<input type="radio" name="theme" value="auto">
+					<span class="theme-preview">🔄</span>
+					<span class="theme-label">Tự động</span>
+				  </label>
+				</div>
+                <div class="settings-section">
+                    <h3 class="settings-section-title">
+                        <span class="settings-icon">💾</span>
+                        Quản Lý Dữ Liệu
+                    </h3>
+
+                    <div class="data-actions">
+                        <button id="export-json" class="action-btn export">
+                            <span class="btn-icon">📥</span>
+                            <div class="btn-content">
+                                <span class="btn-title">Xuất JSON</span>
+                                <span class="btn-subtitle">Backup toàn bộ dữ liệu</span>
+                            </div>
+                        </button>
+
+                        <button id="export-csv" class="action-btn export">
+                            <span class="btn-icon">📊</span>
+                            <div class="btn-content">
+                                <span class="btn-title">Xuất CSV</span>
+                                <span class="btn-subtitle">Dữ liệu giao dịch</span>
+                            </div>
+                        </button>
+
+                        <button id="import-data" class="action-btn import">
+                            <span class="btn-icon">📤</span>
+                            <div class="btn-content">
+                                <span class="btn-title">Nhập Dữ Liệu</span>
+                                <span class="btn-subtitle">Khôi phục từ file JSON</span>
+                            </div>
+                        </button>
+
+                        <input type="file" id="import-file" accept=".json" style="display: none;">
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3 class="settings-section-title">
+                        <span class="settings-icon">💱</span>
+                        Tiền Tệ
+                    </h3>
+
+                    <div class="currency-settings">
+                        <div class="setting-item">
+                            <label class="setting-label">Tỷ giá USD/VNĐ</label>
+                            <input type="number"
+                                   id="usd-rate"
+                                   class="setting-input"
+                                   value="25000"
+                                   min="1000"
+                                   max="50000">
+                            <div id="usd-rate-error" class="input-error-message" style="display: none;"></div>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">Tiền tệ mặc định</label>
+                            <select id="default-currency" class="setting-select">
+                                <option value="VND">Việt Nam Đồng (₫)</option>
+                                <option value="USD">US Dollar ($)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3 class="settings-section-title">
+                        <span class="settings-icon">ℹ️</span>
+                        Thông Tin Ứng Dụng
+                    </h3>
+
+                    <div class="app-info">
+                        <div class="info-item">
+                            <span class="info-label">Phiên bản</span>
+                            <span class="info-value">2.0.0</span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Tổng giao dịch</span>
+                            <span class="info-value" id="total-transactions">0</span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Dung lượng dữ liệu</span>
+                            <span class="info-value" id="data-size">0 KB</span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Lần backup cuối</span>
+                            <span class="info-value" id="last-backup">Chưa backup</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section danger-section">
+                    <h3 class="settings-section-title">
+                        <span class="settings-icon">⚠️</span>
+                        Vùng Nguy Hiểm
+                    </h3>
+
+                    <div class="danger-actions">
+                        <button id="clear-data" class="action-btn danger">
+                            <span class="btn-icon">🗑️</span>
+                            <div class="btn-content">
+                                <span class="btn-title">Xóa Toàn Bộ Dữ Liệu</span>
+                                <span class="btn-subtitle">Không thể khôi phục</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </section>
         </div>
-		
-		 <div id="virtualNumericKeyboard" class="fixed bottom-0 left-0 right-0 bg-gray-200 dark:bg-gray-800 p-2 shadow-lg z-50" style="display: none;">
-			<div class="grid grid-cols-4 gap-1 text-center">
-				<button data-key="1" class="virtual-key py-3 text-lg sm:text-xl">1</button>
-				<button data-key="2" class="virtual-key py-3 text-lg sm:text-xl">2</button>
-				<button data-key="3" class="virtual-key py-3 text-lg sm:text-xl">3</button>
-				<button data-key="backspace" class="virtual-key key-action row-span-2 flex items-center justify-center py-3">
-					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-						<path d="M5.83 5.146a.5.5 0 0 0 0 .708L7.975 8l-2.147 2.146a.5.5 0 0 0 .707.708L8.683 8.707l2.147 2.147a.5.5 0 0 0 .707-.708L9.39 8l2.147-2.146a.5.5 0 0 0-.707-.708L8.683 7.293 6.536 5.146a.5.5 0 0 0-.707 0z"></path>
-						<path d="M13.683 1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-7.08a2 2 0 0 1-1.519-.698L.241 8.65a1 1 0 0 1 0-1.302L5.084 1.7A2 2 0 0 1 6.603 1h7.08zm-7.08 1a1 1 0 0 0-.76.35L1 7.35a.5.5 0 0 0 0 .65l4.284 4.284a1 1 0 0 0 .759.35h7.08a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1h-7.08z"></path>
-					</svg>
-				</button>
-				<button data-key="4" class="virtual-key py-3 text-lg sm:text-xl">4</button>
-				<button data-key="5" class="virtual-key py-3 text-lg sm:text-xl">5</button>
-				<button data-key="6" class="virtual-key py-3 text-lg sm:text-xl">6</button>
-				<button data-key="7" class="virtual-key py-3 text-lg sm:text-xl">7</button>
-				<button data-key="8" class="virtual-key py-3 text-lg sm:text-xl">8</button>
-				<button data-key="9" class="virtual-key py-3 text-lg sm:text-xl">9</button>
-				<button data-key="done" class="virtual-key key-done row-span-2 flex items-center justify-center py-3 text-lg sm:text-xl">Tiếp</button>
-				<button data-key="000" class="virtual-key key-action py-3 text-lg sm:text-xl">000</button>
-				<button data-key="0" class="virtual-key py-3 text-lg sm:text-xl">0</button>
-				<button data-key="." class="virtual-key key-action py-3 text-lg sm:text-xl">.</button>
-			</div>
-		</div>
+    </main>
+
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-tab="transactions">
+            <span class="nav-icon">💳</span>
+            <span class="nav-label">Giao Dịch</span>
+        </button>
+
+        <button class="nav-item" data-tab="history">
+            <span class="nav-icon">🏦</span>
+            <span class="nav-label">Lịch Sử</span>
+        </button>
+
+        <button class="nav-item" data-tab="statistics">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">Thống Kê</span>
+        </button>
+
+        <button class="nav-item" data-tab="categories">
+            <span class="nav-icon">🏷️</span>
+            <span class="nav-label">Danh Mục</span>
+        </button>
+
+        <button class="nav-item" data-tab="settings">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Cài Đặt</span>
+        </button>
+    </nav>
+
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <span class="loading-text">Đang tải...</span>
+        </div>
     </div>
-    <script src="script.js" defer></script>
+
+    <script src="./js/utils.js"></script>
+	<script src="./js/categories.js"></script>
+	<script src="./js/settings.js"></script>
+	<script src="./js/transactions.js"></script>
+	<script src="./js/history.js"></script>
+	<script src="./js/statistics.js"></script>
+	<script src="./js/app.js"></script>
+    <script>
+		if (typeof Utils !== 'undefined' && Utils.UIUtils) {
+			// Mapping icons cho các danh mục phổ biến
+			Utils.UIUtils.categoryIcons = {
+				// Danh mục chi tiêu
+				'Ăn uống': '🍴',
+				'An uong': '🍴',
+				'Thức ăn': '🍽️',
+				'Nhà hàng': '🏪',
+				'Cà phê': '☕',
+				
+				'Đi lại': '🚗',
+				'Di lai': '🚗',
+				'Xe cộ': '🚙',
+				'Xăng dầu': '⛽',
+				'Giao thông': '🚌',
+				'Taxi': '🚕',
+				'Grab': '🚗',
+				
+				'Mua sắm': '🛒',
+				'Mua sam': '🛒',
+				'Shopping': '🛍️',
+				'Quần áo': '👔',
+				'Thời trang': '👗',
+				
+				'Giải trí': '🎮',
+				'Giai tri': '🎮',
+				'Phim ảnh': '🎬',
+				'Game': '🎯',
+				'Du lịch': '🏖️',
+				'Du lich': '🏖️',
+				
+				'Nhà cửa': '🏠',
+				'Nha cua': '🏠',
+				'Tiền nhà': '🏡',
+				'Điện nước': '💡',
+				'Dien nuoc': '💡',
+				'Internet': '📶',
+				'Wifi': '📡',
+				
+				'Y tế': '🏥',
+				'Y te': '🏥',
+				'Thuốc': '💊',
+				'Thuoc': '💊',
+				'Khám bệnh': '⚕️',
+				'Kham benh': '⚕️',
+				
+				'Học tập': '📚',
+				'Hoc tap': '📚',
+				'Giáo dục': '🎓',
+				'Giao duc': '🎓',
+				'Sách vở': '📖',
+				'Sach vo': '📖',
+				
+				'Làm đẹp': '💄',
+				'Lam dep': '💄',
+				'Spa': '💆',
+				'Tóc': '💇',
+				'Toc': '💇',
+				
+				'Thể thao': '⚽',
+				'The thao': '⚽',
+				'Gym': '🏋️',
+				'Bơi lội': '🏊',
+				'Boi loi': '🏊',
+				
+				'Công việc': '💼',
+				'Cong viec': '💼',
+				'Văn phòng phẩm': '📝',
+				'Van phong pham': '📝',
+				
+				'Gia đình': '👨‍👩‍👧‍👦',
+				'Gia dinh': '👨‍👩‍👧‍👦',
+				'Con cái': '👶',
+				'Con cai': '👶',
+				
+				'Từ thiện': '❤️',
+				'Tu thien': '❤️',
+				'Quyên góp': '🤝',
+				'Quyen gop': '🤝',
+				
+				'Khác': '📦',
+				'Khac': '📦',
+				'Không phân loại': '❓',
+				'Khong phan loai': '❓',
+				
+				// Danh mục thu nhập
+				'Lương': '💰',
+				'Luong': '💰',
+				'Tiền lương': '💵',
+				'Tien luong': '💵',
+				'Thưởng': '🎁',
+				'Thuong': '🎁',
+				'Freelance': '💻',
+				'Đầu tư': '📈',
+				'Dau tu': '📈',
+				'Lãi suất': '📊',
+				'Lai suat': '📊',
+				'Bán hàng': '🛒',
+				'Ban hang': '🛒',
+				'Kinh doanh': '🏪',
+				'Kinh doanh': '🏪',
+				'Thu nhập khác': '💎',
+				'Thu nhap khac': '💎',
+				
+				// Tài khoản
+				'Tiền mặt': '💵',
+				'Tien mat': '💵',
+				'Ngân hàng': '🏦',
+				'Ngan hang': '🏦',
+				'Ví điện tử': '📱',
+				'Vi dien tu': '📱',
+				'Thẻ tín dụng': '💳',
+				'The tin dung': '💳',
+				'Tiết kiệm': '🏛️',
+				'Tiet kiem': '🏛️'
+			};
+			
+			// Hàm lấy icon cho danh mục
+			Utils.UIUtils.getCategoryIcon = function(categoryName) {
+				if (!categoryName || typeof categoryName !== 'string') {
+					return '📦'; // Icon mặc định
+				}
+				
+				// Tìm kiếm chính xác trước
+				if (this.categoryIcons[categoryName]) {
+					return this.categoryIcons[categoryName];
+				}
+				
+				// Tìm kiếm không phân biệt hoa thường
+				const lowerCaseName = categoryName.toLowerCase();
+				for (const [key, icon] of Object.entries(this.categoryIcons)) {
+					if (key.toLowerCase() === lowerCaseName) {
+						return icon;
+					}
+				}
+				
+				// Tìm kiếm từ khóa chứa trong tên danh mục
+				for (const [key, icon] of Object.entries(this.categoryIcons)) {
+					if (lowerCaseName.includes(key.toLowerCase()) || key.toLowerCase().includes(lowerCaseName)) {
+						return icon;
+					}
+				}
+				
+				// Icon mặc định dựa trên từ khóa
+				if (lowerCaseName.includes('ăn') || lowerCaseName.includes('an') || lowerCaseName.includes('food')) {
+					return '🍴';
+				} else if (lowerCaseName.includes('xe') || lowerCaseName.includes('di') || lowerCaseName.includes('transport')) {
+					return '🚗';
+				} else if (lowerCaseName.includes('mua') || lowerCaseName.includes('shop')) {
+					return '🛒';
+				} else if (lowerCaseName.includes('nhà') || lowerCaseName.includes('nha') || lowerCaseName.includes('house')) {
+					return '🏠';
+				} else if (lowerCaseName.includes('y tế') || lowerCaseName.includes('y te') || lowerCaseName.includes('health')) {
+					return '🏥';
+				} else if (lowerCaseName.includes('học') || lowerCaseName.includes('hoc') || lowerCaseName.includes('education')) {
+					return '📚';
+				} else if (lowerCaseName.includes('lương') || lowerCaseName.includes('luong') || lowerCaseName.includes('salary')) {
+					return '💰';
+				} else if (lowerCaseName.includes('ngân hàng') || lowerCaseName.includes('ngan hang') || lowerCaseName.includes('bank')) {
+					return '🏦';
+				}
+				
+				return '📦'; // Icon mặc định cuối cùng
+			};
+			
+			// Hàm lấy màu cho danh mục (nếu chưa có)
+			if (!Utils.UIUtils.getCategoryColor) {
+				Utils.UIUtils.categoryColors = [
+					'#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
+					'#06b6d4', '#84cc16', '#f97316', '#ec4899', '#6366f1',
+					'#14b8a6', '#f43f5e', '#a855f7', '#22c55e', '#eab308',
+					'#0ea5e9', '#8b5cf6', '#f97316', '#ec4899', '#6366f1'
+				];
+				
+				Utils.UIUtils.getCategoryColor = function(categoryName, index = 0) {
+					// Hash function để tạo màu consistent cho mỗi tên danh mục
+					let hash = 0;
+					if (categoryName && typeof categoryName === 'string') {
+						for (let i = 0; i < categoryName.length; i++) {
+							const char = categoryName.charCodeAt(i);
+							hash = ((hash << 5) - hash) + char;
+							hash = hash & hash; // Convert to 32bit integer
+						}
+					}
+					
+					const colorIndex = Math.abs(hash + index) % this.categoryColors.length;
+					return this.categoryColors[colorIndex];
+				};
+			}
+			
+			// Hàm hex to rgba nếu chưa có
+			if (!Utils.UIUtils.hexToRgba) {
+				Utils.UIUtils.hexToRgba = function(hex, alpha = 1) {
+					const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+					if (result) {
+						const r = parseInt(result[1], 16);
+						const g = parseInt(result[2], 16);
+						const b = parseInt(result[3], 16);
+						return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+					}
+					return hex; // Trả về hex gốc nếu không parse được
+				};
+			}
+		}
+		
+		// Thêm functions cho icons nếu chưa có
+		if (typeof Utils !== 'undefined' && Utils.UIUtils) {
+			Utils.UIUtils.getCategoryIcon = function(categoryName) {
+				const icons = {
+					'Giải trí': '🎮',
+					'Ăn uống': '🍴', 
+					'Đi lại': '🚗',
+					'Mua sắm': '🛒',
+					'Nhà cửa': '🏠',
+					'Y tế': '🏥',
+					'Học tập': '📚',
+					'Làm đẹp': '💄',
+					'Thể thao': '⚽',
+					'Công việc': '💼'
+				};
+				return icons[categoryName] || ['📦','🎯','⭐','🔥','💎'][Math.floor(Math.random()*5)];
+			};
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => console.log('SW registered'))
+                    .catch(error => console.log('SW registration failed'));
+            });
+        }
+    </script>
 </body>
 </html>
