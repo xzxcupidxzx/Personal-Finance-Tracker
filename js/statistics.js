@@ -216,7 +216,19 @@ class StatisticsModule {
         const now = new Date();
 
         switch (this.currentPeriod) {
-            case 'month':
+            case 'week': // <<< THÊM KHỐI NÀY
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Bắt đầu ngày hôm nay
+                const dayOfWeek = today.getDay(); // 0 = CN, 1 = T2, ..., 6 = T7
+                const monday = new Date(today);
+                // Lấy ngày T2 của tuần này
+                monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); 
+
+                prevEnd = new Date(monday.getTime() - 1); // CN tuần trước 23:59:59
+                prevStart = new Date(prevEnd.getTime() - (7 * 24 * 60 * 60 * 1000) + 1); // T2 tuần trước 00:00:00
+                prevStart.setHours(0, 0, 0, 0); // Đảm bảo là 00:00:00
+                break; // <<< KẾT THÚC KHỐI THÊM
+			case 'month':
                 prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
                 prevEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
                 break;

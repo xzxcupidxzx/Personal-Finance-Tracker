@@ -356,36 +356,57 @@ class TransactionsModule {
     /**
      * FIXED: Update form visibility based on transaction type
      */
-    updateFormVisibility() {
-        const selectedType = document.querySelector('input[name="type"]:checked')?.value;
-        console.log('🔧 Updating form visibility for type:', selectedType);
-        
-        if (!selectedType) return;
+	updateFormVisibility() {
+		const selectedType = document.querySelector('input[name="type"]:checked')?.value;
+		console.log('🔧 Updating form visibility for type:', selectedType);
 
-        if (this.elements.toAccountRow) {
-            this.elements.toAccountRow.style.display = selectedType === 'Transfer' ? 'flex' : 'none';
-        }
-        if (this.elements.categoryRow) {
-            this.elements.categoryRow.style.display = selectedType !== 'Transfer' ? 'flex' : 'none';
-        }
-        if (this.elements.submitBtn) {
-            const btnText = this.elements.submitBtn.querySelector('.btn-text');
-            const btnIcon = this.elements.submitBtn.querySelector('.btn-icon');
-            
-            if (btnText) {
-                btnText.textContent = selectedType === 'Transfer' ? 'Thêm Chuyển Khoản' : 'Thêm Giao Dịch';
-            }
-            if (btnIcon) {
-                btnIcon.textContent = selectedType === 'Transfer' ? '↔️' : '➕';
-            }
-        }
+		if (!selectedType) return;
 
-        // Update account label
-        const accountFromLabel = document.getElementById('account-from-label');
-        if (accountFromLabel) {
-            accountFromLabel.textContent = selectedType === 'Transfer' ? 'Từ tài khoản' : 'Tài khoản';
-        }
-    }
+		// 1. Ẩn/hiện trường đến tài khoản
+		if (this.elements.toAccountRow) {
+			this.elements.toAccountRow.style.display = selectedType === 'Transfer' ? 'flex' : 'none';
+		}
+
+		// 2. Ẩn/hiện trường hạng mục và xử lý required
+		if (this.elements.categoryRow) {
+			this.elements.categoryRow.style.display = selectedType !== 'Transfer' ? 'flex' : 'none';
+		}
+		if (this.elements.categorySelect) {
+			// Nếu đang chuyển tiền, loại required (vì bị ẩn sẽ báo lỗi)
+			if (selectedType === 'Transfer') {
+				this.elements.categorySelect.removeAttribute('required');
+			} else {
+				this.elements.categorySelect.setAttribute('required', 'required');
+			}
+		}
+
+		// 3. Chỉnh nút & icon
+		if (this.elements.submitBtn) {
+			const btnText = this.elements.submitBtn.querySelector('.btn-text');
+			const btnIcon = this.elements.submitBtn.querySelector('.btn-icon');
+			if (btnText) {
+				btnText.textContent = selectedType === 'Transfer' ? 'Thêm Chuyển Khoản' : 'Thêm Giao Dịch';
+			}
+			if (btnIcon) {
+				btnIcon.textContent = selectedType === 'Transfer' ? '↔️' : '➕';
+			}
+		}
+
+		// 4. Đổi label tài khoản
+		const accountFromLabel = document.getElementById('account-from-label');
+		if (accountFromLabel) {
+			accountFromLabel.textContent = selectedType === 'Transfer' ? 'Từ tài khoản' : 'Tài khoản';
+		}
+
+		// 5. Khi là chuyển khoản, cập nhật lại tài khoản nhận (KHÔNG GỌI populateAccounts nếu nó lại gọi lại updateFormVisibility)
+		// Sửa: Chỉ cập nhật account-to khi là Transfer hoặc khi account-from thay đổi
+		if (typeof this.populateAccounts === 'function') {
+			if (selectedType === 'Transfer') {
+				// Cập nhật dropdown account-to để tránh bị trùng với account-from
+				this.populateAccounts();
+			}
+		}
+	}
 
     /**
      * FIXED: Populate category and account dropdowns
@@ -595,10 +616,18 @@ class TransactionsModule {
                 return { isValid: false, error: 'Tài khoản nguồn không tồn tại' };
             }
 
-            if (data.type === 'Transfer' && !this.accountExists(data.toAccount)) {
-                console.error('❌ Target account does not exist:', data.toAccount);
-                return { isValid: false, error: 'Tài khoản đích không tồn tại' };
+            if (data.type === 'Transfer') {
+                if (!this.accountExists(data.toAccount)) {
+                    console.error('❌ Target account does not exist:', data.toAccount);
+                    return { isValid: false, error: 'Tài khoản đích không tồn tại' };
+                }
+                // <<< THÊM ĐOẠN KIỂM TRA NÀY >>>
+                if (data.account === data.toAccount) {
+                    return { isValid: false, error: 'Tài khoản nguồn và đích phải khác nhau' };
+                }
+                // <<< KẾT THÚC ĐOẠN THÊM >>>
             }
+
 
             // FIXED: Check category for non-transfer transactions
             if (data.type !== 'Transfer') {

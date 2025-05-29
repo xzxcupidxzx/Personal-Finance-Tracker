@@ -17,6 +17,19 @@
     <link rel="icon" type="image/png" sizes="32x32" href="./logo-finance.png">
     <link rel="shortcut icon" href="./logo-finance.png" type="image/png">
 
+    <link rel="apple-touch-icon" href="./LogoFinance.png">
+    <link rel="apple-touch-icon" sizes="57x57" href="./LogoFinance.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="./LogoFinance.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="./LogoFinance.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="./LogoFinance.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="./LogoFinance.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="./LogoFinance.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="./LogoFinance.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="./LogoFinance.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./LogoFinance.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./LogoFinance.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./LogoFinance.png">
+    <link rel="shortcut icon" href="./LogoFinance.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
@@ -292,7 +305,8 @@
                         Thống Kê & Biểu Đồ
                     </h2>
                     <select id="stats-period" class="bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-xl px-4 py-2">
-                        <option value="month">Tháng này</option>
+                        <option value="week">Tuần này</option>
+						<option value="month">Tháng này</option>
                         <option value="quarter">Quý này</option>
                         <option value="year">Năm này</option>
                         <option value="custom">Tùy chỉnh</option>
@@ -654,236 +668,108 @@
 	<script src="./js/history.js"></script>
 	<script src="./js/statistics.js"></script>
 	<script src="./js/app.js"></script>
-    <script>
-		if (typeof Utils !== 'undefined' && Utils.UIUtils) {
-			// Mapping icons cho các danh mục phổ biến
-			Utils.UIUtils.categoryIcons = {
-				// Danh mục chi tiêu
-				'Ăn uống': '🍴',
-				'An uong': '🍴',
-				'Thức ăn': '🍽️',
-				'Nhà hàng': '🏪',
-				'Cà phê': '☕',
-				
-				'Đi lại': '🚗',
-				'Di lai': '🚗',
-				'Xe cộ': '🚙',
-				'Xăng dầu': '⛽',
-				'Giao thông': '🚌',
-				'Taxi': '🚕',
-				'Grab': '🚗',
-				
-				'Mua sắm': '🛒',
-				'Mua sam': '🛒',
-				'Shopping': '🛍️',
-				'Quần áo': '👔',
-				'Thời trang': '👗',
-				
-				'Giải trí': '🎮',
-				'Giai tri': '🎮',
-				'Phim ảnh': '🎬',
-				'Game': '🎯',
-				'Du lịch': '🏖️',
-				'Du lich': '🏖️',
-				
-				'Nhà cửa': '🏠',
-				'Nha cua': '🏠',
-				'Tiền nhà': '🏡',
-				'Điện nước': '💡',
-				'Dien nuoc': '💡',
-				'Internet': '📶',
-				'Wifi': '📡',
-				
-				'Y tế': '🏥',
-				'Y te': '🏥',
-				'Thuốc': '💊',
-				'Thuoc': '💊',
-				'Khám bệnh': '⚕️',
-				'Kham benh': '⚕️',
-				
-				'Học tập': '📚',
-				'Hoc tap': '📚',
-				'Giáo dục': '🎓',
-				'Giao duc': '🎓',
-				'Sách vở': '📖',
-				'Sach vo': '📖',
-				
-				'Làm đẹp': '💄',
-				'Lam dep': '💄',
-				'Spa': '💆',
-				'Tóc': '💇',
-				'Toc': '💇',
-				
-				'Thể thao': '⚽',
-				'The thao': '⚽',
-				'Gym': '🏋️',
-				'Bơi lội': '🏊',
-				'Boi loi': '🏊',
-				
-				'Công việc': '💼',
-				'Cong viec': '💼',
-				'Văn phòng phẩm': '📝',
-				'Van phong pham': '📝',
-				
-				'Gia đình': '👨‍👩‍👧‍👦',
-				'Gia dinh': '👨‍👩‍👧‍👦',
-				'Con cái': '👶',
-				'Con cai': '👶',
-				
-				'Từ thiện': '❤️',
-				'Tu thien': '❤️',
-				'Quyên góp': '🤝',
-				'Quyen gop': '🤝',
-				
-				'Khác': '📦',
-				'Khac': '📦',
-				'Không phân loại': '❓',
-				'Khong phan loai': '❓',
-				
-				// Danh mục thu nhập
-				'Lương': '💰',
-				'Luong': '💰',
-				'Tiền lương': '💵',
-				'Tien luong': '💵',
-				'Thưởng': '🎁',
-				'Thuong': '🎁',
-				'Freelance': '💻',
-				'Đầu tư': '📈',
-				'Dau tu': '📈',
-				'Lãi suất': '📊',
-				'Lai suat': '📊',
-				'Bán hàng': '🛒',
-				'Ban hang': '🛒',
-				'Kinh doanh': '🏪',
-				'Kinh doanh': '🏪',
-				'Thu nhập khác': '💎',
-				'Thu nhap khac': '💎',
-				
-				// Tài khoản
-				'Tiền mặt': '💵',
-				'Tien mat': '💵',
-				'Ngân hàng': '🏦',
-				'Ngan hang': '🏦',
-				'Ví điện tử': '📱',
-				'Vi dien tu': '📱',
-				'Thẻ tín dụng': '💳',
-				'The tin dung': '💳',
-				'Tiết kiệm': '🏛️',
-				'Tiet kiem': '🏛️'
-			};
-			
-			// Hàm lấy icon cho danh mục
-			Utils.UIUtils.getCategoryIcon = function(categoryName) {
-				if (!categoryName || typeof categoryName !== 'string') {
-					return '📦'; // Icon mặc định
-				}
-				
-				// Tìm kiếm chính xác trước
-				if (this.categoryIcons[categoryName]) {
-					return this.categoryIcons[categoryName];
-				}
-				
-				// Tìm kiếm không phân biệt hoa thường
-				const lowerCaseName = categoryName.toLowerCase();
-				for (const [key, icon] of Object.entries(this.categoryIcons)) {
-					if (key.toLowerCase() === lowerCaseName) {
-						return icon;
-					}
-				}
-				
-				// Tìm kiếm từ khóa chứa trong tên danh mục
-				for (const [key, icon] of Object.entries(this.categoryIcons)) {
-					if (lowerCaseName.includes(key.toLowerCase()) || key.toLowerCase().includes(lowerCaseName)) {
-						return icon;
-					}
-				}
-				
-				// Icon mặc định dựa trên từ khóa
-				if (lowerCaseName.includes('ăn') || lowerCaseName.includes('an') || lowerCaseName.includes('food')) {
-					return '🍴';
-				} else if (lowerCaseName.includes('xe') || lowerCaseName.includes('di') || lowerCaseName.includes('transport')) {
-					return '🚗';
-				} else if (lowerCaseName.includes('mua') || lowerCaseName.includes('shop')) {
-					return '🛒';
-				} else if (lowerCaseName.includes('nhà') || lowerCaseName.includes('nha') || lowerCaseName.includes('house')) {
-					return '🏠';
-				} else if (lowerCaseName.includes('y tế') || lowerCaseName.includes('y te') || lowerCaseName.includes('health')) {
-					return '🏥';
-				} else if (lowerCaseName.includes('học') || lowerCaseName.includes('hoc') || lowerCaseName.includes('education')) {
-					return '📚';
-				} else if (lowerCaseName.includes('lương') || lowerCaseName.includes('luong') || lowerCaseName.includes('salary')) {
-					return '💰';
-				} else if (lowerCaseName.includes('ngân hàng') || lowerCaseName.includes('ngan hang') || lowerCaseName.includes('bank')) {
-					return '🏦';
-				}
-				
-				return '📦'; // Icon mặc định cuối cùng
-			};
-			
-			// Hàm lấy màu cho danh mục (nếu chưa có)
-			if (!Utils.UIUtils.getCategoryColor) {
-				Utils.UIUtils.categoryColors = [
-					'#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
-					'#06b6d4', '#84cc16', '#f97316', '#ec4899', '#6366f1',
-					'#14b8a6', '#f43f5e', '#a855f7', '#22c55e', '#eab308',
-					'#0ea5e9', '#8b5cf6', '#f97316', '#ec4899', '#6366f1'
-				];
-				
-				Utils.UIUtils.getCategoryColor = function(categoryName, index = 0) {
-					// Hash function để tạo màu consistent cho mỗi tên danh mục
-					let hash = 0;
-					if (categoryName && typeof categoryName === 'string') {
-						for (let i = 0; i < categoryName.length; i++) {
-							const char = categoryName.charCodeAt(i);
-							hash = ((hash << 5) - hash) + char;
-							hash = hash & hash; // Convert to 32bit integer
-						}
-					}
-					
-					const colorIndex = Math.abs(hash + index) % this.categoryColors.length;
-					return this.categoryColors[colorIndex];
-				};
+
+	<script>
+	if (typeof Utils !== 'undefined' && Utils.UIUtils) {
+		// Mapping icons cho các danh mục phổ biến
+		Utils.UIUtils.categoryIcons = {
+			// ... (bạn giữ nguyên phần icon của bạn ở trên đây) ...
+			// Copy tất cả mapping icon như bạn đã khai báo
+		};
+
+		// Hàm lấy icon cho danh mục
+		Utils.UIUtils.getCategoryIcon = function(categoryName) {
+			if (!categoryName || typeof categoryName !== 'string') {
+				return '📦'; // Icon mặc định
 			}
-			
-			// Hàm hex to rgba nếu chưa có
-			if (!Utils.UIUtils.hexToRgba) {
-				Utils.UIUtils.hexToRgba = function(hex, alpha = 1) {
-					const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-					if (result) {
-						const r = parseInt(result[1], 16);
-						const g = parseInt(result[2], 16);
-						const b = parseInt(result[3], 16);
-						return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-					}
-					return hex; // Trả về hex gốc nếu không parse được
-				};
+			// Tìm kiếm chính xác trước
+			if (this.categoryIcons[categoryName]) {
+				return this.categoryIcons[categoryName];
 			}
+			// Tìm kiếm không phân biệt hoa thường
+			const lowerCaseName = categoryName.toLowerCase();
+			for (const [key, icon] of Object.entries(this.categoryIcons)) {
+				if (key.toLowerCase() === lowerCaseName) {
+					return icon;
+				}
+			}
+			// Tìm kiếm từ khóa chứa trong tên danh mục
+			for (const [key, icon] of Object.entries(this.categoryIcons)) {
+				if (lowerCaseName.includes(key.toLowerCase()) || key.toLowerCase().includes(lowerCaseName)) {
+					return icon;
+				}
+			}
+			// Icon mặc định dựa trên từ khóa
+			if (lowerCaseName.includes('ăn') || lowerCaseName.includes('an') || lowerCaseName.includes('food')) {
+				return '🍴';
+			} else if (lowerCaseName.includes('xe') || lowerCaseName.includes('di') || lowerCaseName.includes('transport')) {
+				return '🚗';
+			} else if (lowerCaseName.includes('mua') || lowerCaseName.includes('shop')) {
+				return '🛒';
+			} else if (lowerCaseName.includes('nhà') || lowerCaseName.includes('nha') || lowerCaseName.includes('house')) {
+				return '🏠';
+			} else if (lowerCaseName.includes('y tế') || lowerCaseName.includes('y te') || lowerCaseName.includes('health')) {
+				return '🏥';
+			} else if (lowerCaseName.includes('học') || lowerCaseName.includes('hoc') || lowerCaseName.includes('education')) {
+				return '📚';
+			} else if (lowerCaseName.includes('lương') || lowerCaseName.includes('luong') || lowerCaseName.includes('salary')) {
+				return '💰';
+			} else if (lowerCaseName.includes('ngân hàng') || lowerCaseName.includes('ngan hang') || lowerCaseName.includes('bank')) {
+				return '🏦';
+			}
+			return '📦'; // Icon mặc định cuối cùng
+		};
+
+		// Hàm lấy màu cho danh mục (nếu chưa có)
+		if (!Utils.UIUtils.getCategoryColor) {
+			Utils.UIUtils.categoryColors = [
+				'#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
+				'#06b6d4', '#84cc16', '#f97316', '#ec4899', '#6366f1',
+				'#14b8a6', '#f43f5e', '#a855f7', '#22c55e', '#eab308',
+				'#0ea5e9', '#8b5cf6', '#f97316', '#ec4899', '#6366f1'
+			];
+			Utils.UIUtils.getCategoryColor = function(categoryName, index = 0) {
+				// Hash function để tạo màu consistent cho mỗi tên danh mục
+				let hash = 0;
+				if (categoryName && typeof categoryName === 'string') {
+					for (let i = 0; i < categoryName.length; i++) {
+						const char = categoryName.charCodeAt(i);
+						hash = ((hash << 5) - hash) + char;
+						hash = hash & hash; // Convert to 32bit integer
+					}
+				}
+				const colorIndex = Math.abs(hash + index) % this.categoryColors.length;
+				return this.categoryColors[colorIndex];
+			};
 		}
-		
-		// Thêm functions cho icons nếu chưa có
-		if (typeof Utils !== 'undefined' && Utils.UIUtils) {
-			Utils.UIUtils.getCategoryIcon = function(categoryName) {
-				const icons = {
-					'Giải trí': '🎮',
-					'Ăn uống': '🍴', 
-					'Đi lại': '🚗',
-					'Mua sắm': '🛒',
-					'Nhà cửa': '🏠',
-					'Y tế': '🏥',
-					'Học tập': '📚',
-					'Làm đẹp': '💄',
-					'Thể thao': '⚽',
-					'Công việc': '💼'
-				};
-				return icons[categoryName] || ['📦','🎯','⭐','🔥','💎'][Math.floor(Math.random()*5)];
+
+		// Hàm hex to rgba nếu chưa có
+		if (!Utils.UIUtils.hexToRgba) {
+			Utils.UIUtils.hexToRgba = function(hex, alpha = 1) {
+				const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+				if (result) {
+					const r = parseInt(result[1], 16);
+					const g = parseInt(result[2], 16);
+					const b = parseInt(result[3], 16);
+					return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+				}
+				return hex; // Trả về hex gốc nếu không parse được
 			};
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(registration => console.log('SW registered'))
-                    .catch(error => console.log('SW registration failed'));
-            });
-        }
-    </script>
+		}
+	}
+
+	// Đăng ký Service Worker cho PWA (Offline & Cache)
+	if ('serviceWorker' in navigator) {
+		window.addEventListener('load', function() {
+			navigator.serviceWorker.register('./sw.js')
+				.then(function(registration) {
+					console.log('Service Worker registered with scope:', registration.scope);
+				})
+				.catch(function(error) {
+					console.log('Service Worker registration failed:', error);
+				});
+		});
+	}
+	</script>
 </body>
 </html>

@@ -815,11 +815,13 @@ class FinancialApp {
                 // Ensure tx and tx.amount are valid before parsing
                 const amount = parseFloat(tx?.amount) || 0;
 
-                if (tx?.type === 'Thu' && !tx?.isTransfer) {
+                // <<< SỬA LẠI 2 DÒNG NÀY >>>
+                if (tx?.type === 'Thu' && !tx?.isTransfer) { // Thêm !tx?.isTransfer
                     totalIncome += amount;
-                } else if (tx?.type === 'Chi' && !tx?.isTransfer) {
+                } else if (tx?.type === 'Chi' && !tx?.isTransfer) { // Thêm !tx?.isTransfer
                     totalExpense += amount;
                 }
+                // <<< KẾT THÚC SỬA >>>
             });
 
             const balance = totalIncome - totalExpense;

@@ -8,41 +8,37 @@
     --primary-color: #3b82f6;
     --primary-dark: #1d4ed8;
     --secondary-color: #64748b;
-    --accent-color: #10b981; /* Green for Income */
+    --accent-color: #10b981;
     --warning-color: #f59e0b;
-    --danger-color: #ef4444; /* Red for Expense */
-    --accent-light: rgba(16, 185, 129, 0.1);
-    --danger-light: rgba(239, 68, 68, 0.1);
-    --accent-border: rgba(16, 185, 129, 0.3);
-    --danger-border: rgba(239, 68, 68, 0.3);
-
+    --danger-color: #ef4444;
+    
     /* Text Colors */
     --text-primary: #1e293b;
     --text-secondary: #64748b;
     --text-muted: #94a3b8;
-
+    
     /* Background Colors */
     --bg-primary: #ffffff;
     --bg-secondary: #f8fafc;
     --bg-tertiary: #f1f5f9;
-
+    
     /* Border & Shadow */
     --border-color: #e2e8f0;
     --border-radius: 12px;
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
     --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-
+    
     /* Spacing */
     --spacing-xs: 0.25rem;
     --spacing-sm: 0.5rem;
     --spacing-md: 1rem;
     --spacing-lg: 1.5rem;
     --spacing-xl: 2rem;
-
+    
     /* Font */
     --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-
+    
     /* Z-index */
     --z-nav: 1000;
     --z-modal: 2000;
@@ -54,17 +50,12 @@
     --text-primary: #f1f5f9;
     --text-secondary: #cbd5e1;
     --text-muted: #94a3b8;
-
+    
     --bg-primary: #1e293b;
     --bg-secondary: #0f172a;
     --bg-tertiary: #334155;
-
+    
     --border-color: #475569;
-
-    --accent-light: rgba(16, 185, 129, 0.15);
-    --danger-light: rgba(239, 68, 68, 0.15);
-    --accent-border: rgba(16, 185, 129, 0.4);
-    --danger-border: rgba(239, 68, 68, 0.4);
 }
 
 /* === BASE STYLES === */
@@ -1296,21 +1287,17 @@ input:checked + .slider:before {
 }
 
 .reconciliation-scroll {
-    overflow-x: auto; /* Đã có: Đảm bảo cuộn ngang được bật */
-    -webkit-overflow-scrolling: touch; /* Hỗ trợ cuộn mượt trên mobile */
-    padding-bottom: 10px; /* Thêm khoảng đệm để thanh cuộn dễ nhìn hơn */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .reconciliation-table {
-    width: 100%; /* Giữ lại để nó cố gắng lấp đầy */
-    min-width: 900px; /* TĂNG/THAY ĐỔI: Đặt chiều rộng tối thiểu LỚN HƠN cho bảng.
-                         Bạn có thể điều chỉnh giá trị này (ví dụ: 800px, 900px, 1000px)
-                         tùy thuộc vào số lượng cột và chiều rộng bạn muốn. */
+    width: 100%;
+    min-width: 800px;
     border-collapse: collapse;
     background: var(--bg-primary);
     border-radius: var(--border-radius);
     overflow: hidden;
-    table-layout: auto; /* Đảm bảo bảng không tự động co cột quá mức */
 }
 
 .reconciliation-table th,
@@ -1319,8 +1306,6 @@ input:checked + .slider:before {
     border: 1px solid var(--border-color);
     text-align: center;
     vertical-align: middle;
-    white-space: nowrap; /* THÊM: Ngăn văn bản/nút xuống dòng, giữ cột rộng */
-    min-width: 130px; /* THÊM: Đặt chiều rộng tối thiểu cho mỗi cột (trừ cột đầu) */
 }
 
 .reconciliation-table th {
@@ -1339,15 +1324,11 @@ input:checked + .slider:before {
     z-index: 11;
     text-align: left;
     font-weight: 600;
-    min-width: 160px; /* THÊM/ĐIỀU CHỈNH: Chiều rộng tối thiểu cho cột đầu tiên */
-    /* Nếu cột đầu cũng bị co, hãy thêm: */
-    width: 160px;
-    max-width: 160px;
+    min-width: 150px;
 }
 
 .reconciliation-input {
     width: 100%;
-    min-width: 110px; /* Đảm bảo input có độ rộng tối thiểu */
     padding: var(--spacing-sm);
     border: 1px solid var(--border-color);
     border-radius: 6px;
@@ -1367,8 +1348,6 @@ input:checked + .slider:before {
     cursor: pointer;
     transition: all 0.2s ease;
     width: 100%;
-    min-width: 80px; /* Đảm bảo nút có độ rộng tối thiểu */
-    white-space: nowrap; /* Ngăn chữ trên nút xuống dòng */
 }
 
 .reconcile-btn {
@@ -1542,41 +1521,41 @@ input:checked + .slider:before {
         --spacing-lg: 1rem;
         --spacing-xl: 1.5rem;
     }
-
+    
     .header-summary {
         grid-template-columns: 1fr;
     }
-
+    
     .summary-card {
         padding: var(--spacing-md);
     }
-
+    
     .radio-group {
         flex-direction: column;
     }
-
+    
     .radio-option {
         justify-content: flex-start;
     }
-
+    
     .chart-container-wrapper {
         grid-template-columns: 1fr;
     }
-
+    
     .chart-legend {
         min-width: auto;
         margin-top: var(--spacing-md);
     }
-
+    
     .filter-controls {
         flex-direction: column;
         align-items: stretch;
     }
-
+    
     .stats-summary {
         grid-template-columns: 1fr;
     }
-
+    
 	.theme-options {
 	  display: grid;
 	  grid-template-columns: repeat(3, 1fr);
@@ -1638,26 +1617,26 @@ input:checked + .slider:before {
     .main-container {
         padding: 0 var(--spacing-xl);
     }
-
+    
     .transaction-form {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: var(--spacing-lg);
     }
-
+    
     .form-row.full-width {
         grid-column: 1 / -1;
     }
-
+    
     .bottom-nav {
         padding: var(--spacing-md) 0;
     }
-
+    
     .nav-item {
         max-width: 100px;
         padding: var(--spacing-md);
     }
-
+    
     .nav-label {
         font-size: 0.8rem;
     }
@@ -1667,7 +1646,7 @@ input:checked + .slider:before {
     body {
         padding-bottom: 0;
     }
-
+    
     .bottom-nav {
         position: static;
         background: var(--bg-primary);
@@ -1677,7 +1656,7 @@ input:checked + .slider:before {
         max-width: 600px;
         box-shadow: var(--shadow-md);
     }
-
+    
     .main-container {
         margin-bottom: var(--spacing-xl);
     }
@@ -1773,490 +1752,4 @@ input:checked + .slider:before {
 .border-l { border-left: 1px solid var(--border-color); }
 .border-r { border-right: 1px solid var(--border-color); }
 
-/* ===== TRANSACTION CALENDAR STYLES ===== */
-.transaction-calendar-section {
-    margin-bottom: 2rem;
-}
 
-.calendar-container {
-    background: var(--bg-secondary);
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
-}
-
-.calendar-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 1.5rem;
-    text-align: center;
-}
-
-.month-navigation {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-.nav-btn {
-    background: rgba(255,255,255,0.2);
-    border: none;
-    color: white;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    font-weight: 600;
-    transition: all 0.2s ease;
-}
-
-.nav-btn:hover {
-    background: rgba(255,255,255,0.3);
-    transform: translateY(-1px);
-}
-
-.current-month {
-    font-size: 18px;
-    font-weight: 600;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-}
-
-.month-summary-cards {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-/* Make sure summary card styles in header and calendar don't conflict */
-.calendar-header .summary-card {
-    background: rgba(255,255,255,0.1);
-    padding: 1rem;
-    border-radius: 12px;
-    text-align: center;
-    backdrop-filter: blur(10px);
-}
-
-.calendar-header .summary-label {
-    font-size: 0.875rem;
-    opacity: 0.9;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-}
-
-.calendar-header .summary-value {
-    font-size: 1rem;
-    font-weight: 700;
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-}
-
-.calendar-grid {
-    padding: 1.5rem;
-}
-
-.calendar-weekdays {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.weekday {
-    text-align: center;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    padding: 0.75rem 0.25rem;
-    background: var(--bg-tertiary);
-    border-radius: 8px;
-}
-
-.calendar-days-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 0.5rem;
-}
-
-.calendar-day-cell {
-    aspect-ratio: 1;
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    position: relative;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background: var(--bg-primary);
-    display: flex;
-    flex-direction: column; /* Changed to column */
-    padding: 0.5rem;
-    min-height: 80px; /* Increased height */
-    overflow: hidden;
-    justify-content: flex-start; /* Align from top */
-}
-
-.calendar-day-cell:hover {
-    border-color: var(--primary-color);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-.calendar-day-cell.other-month {
-    background: var(--bg-tertiary);
-    color: var(--text-muted);
-    opacity: 0.6;
-}
-
-.calendar-day-cell.today {
-    border-color: var(--primary-color);
-    background: var(--primary-light); /* Ensure --primary-light is defined or use rgba */
-    border-width: 2px;
-}
-
-.calendar-day-cell.has-transactions:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
-}
-
-.day-number {
-    font-size: 0.6rem; /* Adjusted size */
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.15rem; /* Space */
-    text-align: center;
-}
-
-.transaction-indicators {
-    flex: 1;
-    display: flex;
-    flex-direction: column; /* Stack vertically */
-    gap: 0.2rem; /* Gap between income/expense */
-    font-size: 0.55rem; /* Smaller font */
-    line-height: 1.15;
-    width: 100%;
-	margin-top: 1px; /* Thêm một chút khoảng trống phía trên khối thu/chi */
-}
-
-.transaction-indicator {
-    padding: 0.2rem 0.3rem;
-    border-radius: 4px;
-    text-align: right; /* Align right */
-    font-weight: 500;
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-    min-height: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end; /* Align right */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    border-width: 1px;
-    border-style: solid;
-}
-
-.transaction-indicator.income {
-    background: var(--accent-light);
-    color: var(--accent-color);
-    border-color: var(--accent-border);
-}
-
-.transaction-indicator.expense {
-    background: var(--danger-light);
-    color: var(--danger-color);
-    border-color: var(--danger-border);
-}
-
-/* Remove or comment out .both if it exists */
-/* .transaction-indicator.both { ... } */
-
-
-/* Modal Styles */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    backdrop-filter: blur(4px);
-}
-
-.modal-content {
-    background: var(--bg-primary);
-    border-radius: 16px;
-    width: 90%;
-    max-width: 500px;
-    max-height: 80vh;
-    overflow: hidden;
-    box-shadow: var(--shadow-lg); /* Changed to -lg for better visibility */
-    border: 1px solid var(--border-color);
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem;
-    border-bottom: 1px solid var(--border-color);
-    background: var(--bg-secondary);
-}
-
-.modal-header h3 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.modal-close {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: var(--text-secondary);
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-}
-
-.modal-close:hover {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-}
-
-.modal-body {
-    padding: 1.5rem;
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.day-transaction-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.75rem;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    margin-bottom: 0.5rem;
-    background: var(--bg-secondary);
-    transition: all 0.2s ease;
-}
-
-.day-transaction-item:hover {
-    border-color: var(--primary-color);
-    transform: translateY(-1px);
-}
-
-.transaction-type-indicator {
-    width: 8px;
-    height: 40px;
-    border-radius: 4px;
-    flex-shrink: 0;
-}
-
-.transaction-type-indicator.income {
-    background: var(--accent-color); /* Changed to accent */
-}
-
-.transaction-type-indicator.expense {
-    background: var(--danger-color);
-}
-
-.day-transaction-details {
-    flex: 1;
-}
-
-.day-transaction-description {
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.25rem;
-}
-
-.day-transaction-meta {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-}
-
-.day-transaction-amount {
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-    font-weight: 700;
-    font-size: 1rem;
-}
-
-.day-transaction-amount.income {
-    color: var(--accent-color); /* Changed to accent */
-}
-
-.day-transaction-amount.expense {
-    color: var(--danger-color);
-}
-
-.no-transactions-day {
-    text-align: center;
-    color: var(--text-muted);
-    padding: 2rem;
-    font-style: italic;
-}
-
-/* Responsive Design for Calendar */
-@media (max-width: 768px) {
-    .calendar-container {
-        border-radius: 12px;
-    }
-
-    .calendar-header {
-        padding: 1rem;
-    }
-
-    .month-summary-cards {
-        gap: 0.75rem;
-    }
-
-    .calendar-header .summary-card {
-        padding: 0.75rem;
-    }
-
-    .calendar-grid {
-        padding: 1rem;
-    }
-
-    .calendar-day-cell {
-        min-height: 70px; /* Adjust if needed */
-        padding: 0.375rem;
-    }
-
-    .day-number {
-        font-size: 0.75rem;
-    }
-
-    .transaction-indicator {
-        font-size: 0.6rem; /* Further adjust */
-        padding: 0.15rem 0.25rem;
-        min-height: 14px;
-    }
-
-    .weekday {
-        font-size: 0.75rem;
-        padding: 0.5rem 0.125rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .calendar-day-cell {
-        min-height: 55px; /* Adjust if needed */
-        padding: 0.2rem;
-        gap: 0.3rem; /* Adjust gap in cell */
-    }
-
-    .transaction-indicator {
-        font-size: 0.55rem; /* Further adjust */
-        min-height: 12px;
-    }
-
-    .day-number {
-        font-size: 0.6rem;
-        margin-bottom: 0.15rem;
-    }
-
-    .modal-content {
-        width: 95%;
-        margin: 1rem;
-    }
-
-    .modal-header,
-    .modal-body {
-        padding: 1rem;
-    }
-}
-
-.detailed-stats-section {
-    /* Đảm bảo section này chiếm đủ không gian hoặc được căn giữa nếu cần */
-    /* Ví dụ: width: 100%; */
-    margin-bottom: var(--spacing-xl); /* Thêm khoảng cách dưới nếu cần */
-}
-
-.stats-table-container {
-    width: 100%; /* Cho phép container của bảng chiếm toàn bộ chiều rộng của section cha */
-    overflow-x: auto; /* Thêm thanh cuộn ngang nếu bảng rộng hơn vùng chứa */
-    background: var(--bg-primary); /* Thêm màu nền nếu cần, đồng bộ với thiết kế */
-    border-radius: var(--border-radius); /* Bo góc cho container */
-    border: 1px solid var(--border-color); /* Thêm viền nếu muốn */
-    box-shadow: var(--shadow-sm); /* Thêm bóng đổ nhẹ */
-    padding: var(--spacing-sm) 0; /* Thêm padding trên dưới, không thêm padding trái phải để bảng chiếm full */
-}
-
-.stats-table {
-    width: 100%; /* Quan trọng: Đặt chiều rộng của bảng là 100% của .stats-table-container */
-    border-collapse: collapse; /* Loại bỏ khoảng trống giữa các ô */
-    /* Nếu bạn muốn bảng có chiều rộng cố định và căn giữa, bạn có thể dùng: */
-    /* width: 800px; /* Hoặc một giá trị cụ thể */
-    /* margin-left: auto; */
-    /* margin-right: auto; */
-}
-
-.stats-table th,
-.stats-table td {
-    padding: var(--spacing-md) var(--spacing-lg); /* Điều chỉnh padding cho các ô */
-    text-align: left; /* Căn lề trái mặc định cho các ô */
-    border-bottom: 1px solid var(--border-color);
-    /* white-space: nowrap; /* Bỏ comment nếu muốn nội dung không xuống dòng */
-}
-
-.stats-table thead th {
-    background-color: var(--bg-secondary); /* Màu nền cho header của bảng */
-    font-weight: 600; /* Chữ đậm cho header */
-    color: var(--text-primary);
-}
-
-.stats-table tbody tr:last-child td {
-    border-bottom: none; /* Loại bỏ viền dưới cho dòng cuối cùng trong tbody */
-}
-
-.stats-table tbody tr:hover {
-    background-color: var(--bg-tertiary); /* Hiệu ứng khi di chuột qua dòng */
-}
-
-/* Căn chỉnh cụ thể cho các cột nếu cần */
-/* Ví dụ: Căn phải cho cột "Số Tiền" và "% Tỷ Lệ" */
-.stats-table th:nth-child(2), /* Cột Số Tiền - header */
-.stats-table td:nth-child(2) { /* Cột Số Tiền - data */
-    text-align: right;
-}
-
-.stats-table th:nth-child(3), /* Cột % Tỷ Lệ - header */
-.stats-table td:nth-child(3) { /* Cột % Tỷ Lệ - data */
-    text-align: right; /* Hoặc text-align: center; tùy ý bạn */
-}
-.stats-table th:nth-child(4), /* Cột Tỷ Lệ (thanh progress) - header */
-.stats-table td:nth-child(4) { /* Cột Tỷ Lệ (thanh progress) - data */
-    text-align: center;
-    min-width: 100px; /* Đảm bảo cột progress bar có đủ không gian */
-}
-
-/* Style cho thanh progress bar (ví dụ) */
-.stats-table .progress-bar-container {
-    width: 100%;
-    background-color: var(--bg-tertiary);
-    border-radius: var(--border-radius);
-    height: 8px; /* Hoặc chiều cao bạn muốn */
-    overflow: hidden;
-}
-
-.stats-table .progress-bar-fill {
-    height: 100%;
-    background-color: var(--primary-color);
-    border-radius: var(--border-radius);
-    transition: width 0.3s ease-in-out;
-}

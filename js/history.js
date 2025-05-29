@@ -23,7 +23,8 @@ class HistoryModule {
 
         // Calendar specific properties
         this.currentCalendarDate = new Date();
-        this.calendarElements = {};
+        // calendarElements is not used in the provided code,
+        // this.elements already holds calendar related DOM elements.
     }
 
     /**
@@ -35,11 +36,11 @@ class HistoryModule {
 
         try {
             this.initializeElements();
-            this.initializeCalendarEvents(); // Add this line
+            this.initializeCalendarEvents(); // Ensure this is called
             this.initializeReconciliation();
 
             this.renderAccountBalances();
-            this.renderTransactionCalendar(); // Add this line
+            this.renderTransactionCalendar(); // This will render the calendar grid
             this.renderReconciliationTable();
             this.renderReconciliationHistory();
 
@@ -84,17 +85,17 @@ class HistoryModule {
      * Initialize reconciliation functionality with validation
      */
     initializeReconciliation() {
-        if (!this.app || !this.app.data || !Array.isArray(this.app.data.accounts)) {
+        if (!this.app || !this.app.data || !Array.isArray(this.app.data.accounts)) { //
             console.error('Invalid app data for reconciliation initialization');
             return;
         }
 
         try {
             // Initialize reconciliation data for each account
-            this.app.data.accounts.forEach(account => {
+            this.app.data.accounts.forEach(account => { //
                 if (account && account.value) {
                     this.reconciliationData[account.value] = {
-                        systemBalance: this.app.getAccountBalance(account.value),
+                        systemBalance: this.app.getAccountBalance(account.value), //
                         actualBalance: null,
                         difference: null,
                         lastReconciled: null
@@ -114,7 +115,7 @@ class HistoryModule {
             if (this.elements.prevMonthBtn) {
                 const prevHandler = () => this.changeCalendarMonth(-1);
                 this.elements.prevMonthBtn.addEventListener('click', prevHandler);
-                this.eventListeners.push({
+                this.eventListeners.push({ //
                     element: this.elements.prevMonthBtn,
                     event: 'click',
                     handler: prevHandler
@@ -123,7 +124,7 @@ class HistoryModule {
             if (this.elements.nextMonthBtn) {
                 const nextHandler = () => this.changeCalendarMonth(1);
                 this.elements.nextMonthBtn.addEventListener('click', nextHandler);
-                this.eventListeners.push({
+                this.eventListeners.push({ //
                     element: this.elements.nextMonthBtn,
                     event: 'click',
                     handler: nextHandler
@@ -132,7 +133,7 @@ class HistoryModule {
             if (this.elements.closeDayModal) {
                 const closeHandler = () => this.closeDayDetailModal();
                 this.elements.closeDayModal.addEventListener('click', closeHandler);
-                this.eventListeners.push({
+                this.eventListeners.push({ //
                     element: this.elements.closeDayModal,
                     event: 'click',
                     handler: closeHandler
@@ -146,7 +147,7 @@ class HistoryModule {
                     }
                 };
                 this.elements.dayDetailModal.addEventListener('click', modalHandler);
-                this.eventListeners.push({
+                this.eventListeners.push({ //
                     element: this.elements.dayDetailModal,
                     event: 'click',
                     handler: modalHandler
@@ -161,8 +162,8 @@ class HistoryModule {
      * Change calendar month
      */
     changeCalendarMonth(delta) {
-        this.currentCalendarDate.setMonth(this.currentCalendarDate.getMonth() + delta);
-        this.renderTransactionCalendar();
+        this.currentCalendarDate.setMonth(this.currentCalendarDate.getMonth() + delta); //
+        this.renderTransactionCalendar(); //
     }
 
     /**
@@ -171,37 +172,33 @@ class HistoryModule {
     groupTransactionsByDate(year, month) {
         const grouped = {};
 
-        if (!this.app || !this.app.data || !Array.isArray(this.app.data.transactions)) {
+        if (!this.app || !this.app.data || !Array.isArray(this.app.data.transactions)) { //
             return grouped;
         }
 
-        this.app.data.transactions.forEach(tx => {
-            if (!tx || !tx.datetime || tx.isTransfer) return;
+        this.app.data.transactions.forEach(tx => { //
+            if (!tx || !tx.datetime || tx.isTransfer) return; // // Correctly excludes transfers
 
             try {
-                const txDate = new Date(tx.datetime);
-                if (txDate.getFullYear() === year && txDate.getMonth() === month) {
-                    const dateKey = txDate.getDate();
+                const txDate = new Date(tx.datetime); //
+                if (txDate.getFullYear() === year && txDate.getMonth() === month) { //
+                    const dateKey = txDate.getDate(); //
 
                     if (!grouped[dateKey]) {
                         grouped[dateKey] = {
                             income: 0,
                             expense: 0,
-                            incomeCount: 0,
-                            expenseCount: 0,
-                            transactions: []
+                            transactions: [] // Keep transactions for modal
                         };
                     }
 
-                    grouped[dateKey].transactions.push(tx);
+                    grouped[dateKey].transactions.push(tx); //
 
-                    const amount = parseFloat(tx.amount) || 0;
-                    if (tx.type === 'Thu') {
+                    const amount = parseFloat(tx.amount) || 0; //
+                    if (tx.type === 'Thu') { //
                         grouped[dateKey].income += amount;
-                        grouped[dateKey].incomeCount++;
-                    } else if (tx.type === 'Chi') {
+                    } else if (tx.type === 'Chi') { //
                         grouped[dateKey].expense += amount;
-                        grouped[dateKey].expenseCount++;
                     }
                 }
             } catch (error) {
@@ -213,7 +210,7 @@ class HistoryModule {
     }
 
     /**
-     * Render transaction calendar
+     * Render transaction calendar (main orchestrator)
      */
     renderTransactionCalendar() {
         if (!this.elements.calendarDaysGrid || !this.elements.currentMonthDisplay) {
@@ -221,24 +218,24 @@ class HistoryModule {
             return;
         }
         try {
-            const year = this.currentCalendarDate.getFullYear();
-            const month = this.currentCalendarDate.getMonth();
+            const year = this.currentCalendarDate.getFullYear(); //
+            const month = this.currentCalendarDate.getMonth(); //
 
             // Update month display
             this.elements.currentMonthDisplay.textContent =
-                this.currentCalendarDate.toLocaleDateString('vi-VN', {
+                this.currentCalendarDate.toLocaleDateString('vi-VN', { //
                     month: 'long',
                     year: 'numeric'
                 });
 
             // Group transactions by date
-            const dailyData = this.groupTransactionsByDate(year, month);
+            const dailyData = this.groupTransactionsByDate(year, month); //
 
             // Calculate monthly totals
             const monthlyTotals = Object.values(dailyData).reduce(
                 (totals, day) => ({
-                    income: totals.income + day.income,
-                    expense: totals.expense + day.expense
+                    income: totals.income + (day.income || 0),
+                    expense: totals.expense + (day.expense || 0)
                 }),
                 { income: 0, expense: 0 }
             );
@@ -246,15 +243,15 @@ class HistoryModule {
             // Update summary cards
             if (this.elements.calendarTotalIncome) {
                 this.elements.calendarTotalIncome.textContent =
-                    Utils.CurrencyUtils.formatCurrency(monthlyTotals.income);
+                    Utils.CurrencyUtils.formatCurrency(monthlyTotals.income); //
             }
             if (this.elements.calendarTotalExpense) {
                 this.elements.calendarTotalExpense.textContent =
-                    Utils.CurrencyUtils.formatCurrency(monthlyTotals.expense);
+                    Utils.CurrencyUtils.formatCurrency(monthlyTotals.expense); //
             }
 
             // Render calendar grid
-            this.renderCalendarGrid(year, month, dailyData);
+            this.renderCalendarGrid(year, month, dailyData); //
 
         } catch (error) {
             console.error('Error rendering transaction calendar:', error);
@@ -269,101 +266,94 @@ class HistoryModule {
     }
 
     /**
-     * Render calendar grid with days
+     * Render calendar grid with days (this is effectively renderCalendarDays)
      */
     renderCalendarGrid(year, month, dailyData) {
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        const daysInMonth = lastDay.getDate();
-        const startingDayOfWeek = (firstDay.getDay() + 6) % 7; // Monday = 0
+        if (!this.elements.calendarDaysGrid) return; //
 
-        this.elements.calendarDaysGrid.innerHTML = '';
+        const firstDay = new Date(year, month, 1); //
+        const lastDay = new Date(year, month + 1, 0); //
+        const daysInMonth = lastDay.getDate(); //
+        const startingDayOfWeek = (firstDay.getDay() + 6) % 7; // Monday = 0 //
+
+        this.elements.calendarDaysGrid.innerHTML = ''; //
 
         const today = new Date();
-        const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+        const isCurrentMonthView = today.getFullYear() === year && today.getMonth() === month; //
 
         // Previous month days
-        const prevMonthLastDay = new Date(year, month, 0).getDate();
+        const prevMonthLastDay = new Date(year, month, 0).getDate(); //
         for (let i = startingDayOfWeek - 1; i >= 0; i--) {
-            const dayCell = this.createCalendarDayCell(prevMonthLastDay - i, true, false, null);
+            const dayCell = this.createCalendarDayCell(prevMonthLastDay - i, true, false, null); //
             this.elements.calendarDaysGrid.appendChild(dayCell);
         }
 
         // Current month days
         for (let day = 1; day <= daysInMonth; day++) {
-            const isToday = isCurrentMonth && today.getDate() === day;
-            const dayData = dailyData[day] || null;
-            const dayCell = this.createCalendarDayCell(day, false, isToday, dayData);
+            const isToday = isCurrentMonthView && today.getDate() === day; //
+            const dayDataForCell = dailyData[day] || { income: 0, expense: 0, transactions: [] }; // Ensure dayDataForCell is always an object
+            const dayCell = this.createCalendarDayCell(day, false, isToday, dayDataForCell); //
             this.elements.calendarDaysGrid.appendChild(dayCell);
         }
 
         // Next month days to fill the grid
-        const totalCells = this.elements.calendarDaysGrid.children.length;
-        const remainingCells = Math.ceil(totalCells / 7) * 7 - totalCells;
-        for (let day = 1; day <= remainingCells && remainingCells < 7; day++) {
-            const dayCell = this.createCalendarDayCell(day, true, false, null);
+        const totalCells = this.elements.calendarDaysGrid.children.length; //
+        const remainingCells = Math.ceil(totalCells / 7) * 7 - totalCells; //
+        for (let day = 1; day <= remainingCells && remainingCells < 7; day++) { //
+            const dayCell = this.createCalendarDayCell(day, true, false, null); //
             this.elements.calendarDaysGrid.appendChild(dayCell);
         }
     }
 
     /**
-     * Create calendar day cell
+     * Create calendar day cell - UPDATED for new income/expense display
      */
     createCalendarDayCell(dayNumber, isOtherMonth, isToday, dayData) {
         const dayCell = document.createElement('div');
-        dayCell.className = `calendar-day-cell ${isOtherMonth ? 'other-month' : ''} ${isToday ? 'today' : ''}`;
+        dayCell.className = `calendar-day-cell ${isOtherMonth ? 'other-month' : ''} ${isToday ? 'today' : ''}`; //
 
-        if (dayData && dayData.transactions.length > 0) {
-            dayCell.classList.add('has-transactions');
+        // Check if there are any transactions to mark the cell
+        if (dayData && (dayData.income > 0 || dayData.expense > 0)) { //
+            dayCell.classList.add('has-transactions'); //
         }
 
         // Day number
         const dayNumberEl = document.createElement('div');
-        dayNumberEl.className = 'day-number';
-        dayNumberEl.textContent = dayNumber;
+        dayNumberEl.className = 'day-number'; //
+        dayNumberEl.textContent = dayNumber; //
         dayCell.appendChild(dayNumberEl);
 
         // Transaction indicators
-        if (dayData && !isOtherMonth) {
-            const indicators = document.createElement('div');
-            indicators.className = 'transaction-indicators';
+        if (dayData && !isOtherMonth) { //
+            const indicatorsDiv = document.createElement('div');
+            indicatorsDiv.className = 'transaction-indicators'; // CSS class from previous step
 
-            const hasIncome = dayData.incomeCount > 0;
-            const hasExpense = dayData.expenseCount > 0;
-
-            if (hasIncome && hasExpense) {
-                // Show both in one indicator
-                const combinedIndicator = document.createElement('div');
-                combinedIndicator.className = 'transaction-indicator both';
-                const incomeK = Math.round(dayData.income / 1000);
-                const expenseK = Math.round(dayData.expense / 1000);
-                combinedIndicator.textContent = `+${incomeK}/-${expenseK}`;
-                indicators.appendChild(combinedIndicator);
-            } else {
-                if (hasIncome) {
-                    const incomeIndicator = document.createElement('div');
-                    incomeIndicator.className = 'transaction-indicator income';
-                    const amountK = Math.round(dayData.income / 1000);
-                    incomeIndicator.textContent = `${amountK} N`;
-                    indicators.appendChild(incomeIndicator);
-                }
-
-                if (hasExpense) {
-                    const expenseIndicator = document.createElement('div');
-                    expenseIndicator.className = 'transaction-indicator expense';
-                    const amountK = Math.round(dayData.expense / 1000);
-                    expenseIndicator.textContent = `${amountK} N`;
-                    indicators.appendChild(expenseIndicator);
-                }
+            if (dayData.income > 0) {
+                const incomeIndicatorEl = document.createElement('div');
+                incomeIndicatorEl.className = 'transaction-indicator income'; // CSS class
+                // Use Utils.CurrencyUtils.formatCurrency, assuming it handles short format or default is okay
+                incomeIndicatorEl.textContent = `+${Utils.CurrencyUtils.formatCurrency(dayData.income)}`; //
+                indicatorsDiv.appendChild(incomeIndicatorEl);
             }
 
-            dayCell.appendChild(indicators);
+            if (dayData.expense > 0) {
+                const expenseIndicatorEl = document.createElement('div');
+                expenseIndicatorEl.className = 'transaction-indicator expense'; // CSS class
+                expenseIndicatorEl.textContent = `-${Utils.CurrencyUtils.formatCurrency(dayData.expense)}`; //
+                indicatorsDiv.appendChild(expenseIndicatorEl);
+            }
 
-            // Add click handler for day details
-            dayCell.onclick = () => this.showDayDetails(dayNumber, dayData);
-            dayCell.style.cursor = 'pointer';
+            if (indicatorsDiv.hasChildNodes()) {
+                dayCell.appendChild(indicatorsDiv);
+            }
+
+
+            // Add click handler for day details if there are transactions
+            if (dayData.transactions && dayData.transactions.length > 0) {
+                dayCell.onclick = () => this.showDayDetails(dayNumber, dayData); //
+                dayCell.style.cursor = 'pointer'; //
+            }
         }
-
         return dayCell;
     }
 
@@ -371,28 +361,28 @@ class HistoryModule {
      * Show day transaction details in modal
      */
     showDayDetails(day, dayData) {
-        if (!this.elements.dayDetailModal || !dayData) return;
+        if (!this.elements.dayDetailModal || !dayData) return; //
 
         try {
-            const monthName = this.currentCalendarDate.toLocaleDateString('vi-VN', {
+            const monthName = this.currentCalendarDate.toLocaleDateString('vi-VN', { //
                 month: 'long',
                 year: 'numeric'
             });
 
             // Set modal title
             if (this.elements.modalDayTitle) {
-                this.elements.modalDayTitle.textContent = `Giao dịch ngày ${day} ${monthName}`;
+                this.elements.modalDayTitle.textContent = `Giao dịch ngày ${day} ${monthName}`; //
             }
 
             // Render transactions
-            this.renderDayTransactions(dayData.transactions);
+            this.renderDayTransactions(dayData.transactions); //
 
             // Show modal
-            this.elements.dayDetailModal.style.display = 'flex';
+            this.elements.dayDetailModal.style.display = 'flex'; //
 
         } catch (error) {
             console.error('Error showing day details:', error);
-            Utils.UIUtils.showMessage('Có lỗi khi hiển thị chi tiết giao dịch', 'error');
+            Utils.UIUtils.showMessage('Có lỗi khi hiển thị chi tiết giao dịch', 'error'); //
         }
     }
 
@@ -400,11 +390,11 @@ class HistoryModule {
      * Render transactions for a specific day
      */
     renderDayTransactions(transactions) {
-        if (!this.elements.modalDayTransactions) return;
+        if (!this.elements.modalDayTransactions) return; //
 
-        this.elements.modalDayTransactions.innerHTML = '';
+        this.elements.modalDayTransactions.innerHTML = ''; //
 
-        if (!transactions || transactions.length === 0) {
+        if (!transactions || transactions.length === 0) { //
             this.elements.modalDayTransactions.innerHTML = `
                 <div class="no-transactions-day">
                     📝 Không có giao dịch nào trong ngày này
@@ -414,12 +404,12 @@ class HistoryModule {
         }
 
         // Sort transactions by time
-        const sortedTransactions = transactions.sort((a, b) =>
-            new Date(b.datetime) - new Date(a.datetime)
+        const sortedTransactions = transactions.sort((a, b) => //
+            new Date(b.datetime) - new Date(a.datetime) //
         );
 
         sortedTransactions.forEach(tx => {
-            const item = this.createDayTransactionItem(tx);
+            const item = this.createDayTransactionItem(tx); //
             if (item) {
                 this.elements.modalDayTransactions.appendChild(item);
             }
@@ -430,13 +420,13 @@ class HistoryModule {
      * Create transaction item for day detail modal
      */
     createDayTransactionItem(transaction) {
-        if (!transaction) return null;
+        if (!transaction) return null; //
 
         try {
             const item = document.createElement('div');
-            item.className = 'day-transaction-item';
+            item.className = 'day-transaction-item'; //
 
-            const typeClass = transaction.type === 'Thu' ? 'income' : 'expense';
+            const typeClass = transaction.type === 'Thu' ? 'income' : 'expense'; //
 
             item.innerHTML = `
                 <div class="transaction-type-indicator ${typeClass}"></div>
@@ -446,13 +436,13 @@ class HistoryModule {
                     </div>
                     <div class="day-transaction-meta">
                         ${this.escapeHtml(transaction.category || '')} •
-                        ${Utils.DateUtils.formatDisplayDateTime(transaction.datetime)}
+                        ${Utils.DateUtils.formatDisplayDateTime(transaction.datetime)} 
                     </div>
                 </div>
                 <div class="day-transaction-amount ${typeClass}">
                     ${Utils.CurrencyUtils.formatCurrency(transaction.amount || 0)}
                 </div>
-            `;
+            `; //
 
             return item;
         } catch (error) {
@@ -466,7 +456,7 @@ class HistoryModule {
      */
     closeDayDetailModal() {
         if (this.elements.dayDetailModal) {
-            this.elements.dayDetailModal.style.display = 'none';
+            this.elements.dayDetailModal.style.display = 'none'; //
         }
     }
 
@@ -475,30 +465,30 @@ class HistoryModule {
      * Render account balance cards with error handling
      */
     renderAccountBalances() {
-        if (!this.elements.accountBalanceGrid) {
+        if (!this.elements.accountBalanceGrid) { //
             console.warn('Account balance grid element not found');
             return;
         }
 
         try {
-            this.elements.accountBalanceGrid.innerHTML = '';
+            this.elements.accountBalanceGrid.innerHTML = ''; //
 
-            const balances = this.getAllAccountBalancesWithCache();
+            const balances = this.getAllAccountBalancesWithCache(); //
 
-            if (!this.app.data.accounts || !Array.isArray(this.app.data.accounts)) {
+            if (!this.app.data.accounts || !Array.isArray(this.app.data.accounts)) { //
                 console.error('Invalid accounts data');
                 return;
             }
 
-            this.app.data.accounts.forEach(account => {
-                if (!account || !account.value) {
+            this.app.data.accounts.forEach(account => { //
+                if (!account || !account.value) { //
                     console.warn('Invalid account object:', account);
                     return;
                 }
 
                 try {
                     const balance = balances[account.value] || 0;
-                    const card = this.createAccountBalanceCard(account, balance);
+                    const card = this.createAccountBalanceCard(account, balance); //
                     if (card) {
                         this.elements.accountBalanceGrid.appendChild(card);
                     }
@@ -523,19 +513,19 @@ class HistoryModule {
         const now = Date.now();
 
         // Return cached data if still valid
-        if (this.cache.accountBalances &&
-            this.cache.lastCacheTime &&
-            (now - this.cache.lastCacheTime) < this.cache.cacheDuration) {
+        if (this.cache.accountBalances && //
+            this.cache.lastCacheTime && //
+            (now - this.cache.lastCacheTime) < this.cache.cacheDuration) { //
             return this.cache.accountBalances;
         }
 
         // Calculate fresh balances
         try {
-            const balances = this.app.getAllAccountBalances();
+            const balances = this.app.getAllAccountBalances(); //
 
             // Update cache
-            this.cache.accountBalances = balances;
-            this.cache.lastCacheTime = now;
+            this.cache.accountBalances = balances; //
+            this.cache.lastCacheTime = now; //
 
             return balances;
         } catch (error) {
@@ -548,18 +538,18 @@ class HistoryModule {
      * Create account balance card with validation
      */
     createAccountBalanceCard(account, balance) {
-        if (!account || !account.value || !account.text) {
+        if (!account || !account.value || !account.text) { //
             console.warn('Invalid account data for card creation');
             return null;
         }
 
         try {
             const card = document.createElement('div');
-            card.className = 'account-balance-card';
+            card.className = 'account-balance-card'; //
 
-            const numBalance = parseFloat(balance) || 0;
-            const balanceClass = numBalance >= 0 ? 'positive' : 'negative';
-            const balanceIcon = numBalance >= 0 ? '📈' : '📉';
+            const numBalance = parseFloat(balance) || 0; //
+            const balanceClass = numBalance >= 0 ? 'positive' : 'negative'; //
+            const balanceIcon = numBalance >= 0 ? '📈' : '📉'; //
 
             card.innerHTML = `
                 <div class="account-name">
@@ -568,7 +558,7 @@ class HistoryModule {
                 <div class="account-balance ${balanceClass}">
                     ${balanceIcon} ${Utils.CurrencyUtils.formatCurrency(numBalance)}
                 </div>
-            `;
+            `; //
 
             return card;
         } catch (error) {
@@ -584,15 +574,15 @@ class HistoryModule {
      * Attach event listeners to input fields and buttons for reconciliation.
      */
     renderReconciliationTable() {
-        if (!this.elements.reconciliationTable) {
+        if (!this.elements.reconciliationTable) { //
             console.warn('Reconciliation table element not found');
             return;
         }
 
         try {
-            const table = this.elements.reconciliationTable;
-            const thead = table.querySelector('thead tr');
-            const tbody = table.querySelector('tbody');
+            const table = this.elements.reconciliationTable; //
+            const thead = table.querySelector('thead tr'); //
+            const tbody = table.querySelector('tbody'); //
 
             if (!thead || !tbody) {
                 console.error('Reconciliation table header or body not found.');
@@ -600,22 +590,22 @@ class HistoryModule {
             }
 
             // Clear previous content and listeners
-            thead.innerHTML = '<th class="sticky-col">Mục / Tài khoản</th>';
-            tbody.innerHTML = '';
-            this.eventListeners = this.eventListeners.filter(listener => !listener.element.closest('#reconciliation-table'));
+            thead.innerHTML = '<th class="sticky-col">Mục / Tài khoản</th>'; //
+            tbody.innerHTML = ''; //
+            this.eventListeners = this.eventListeners.filter(listener => !listener.element.closest('#reconciliation-table')); //
 
 
-            const accounts = this.app.data.accounts || [];
+            const accounts = this.app.data.accounts || []; //
 
             // Add account columns to header
             accounts.forEach(account => {
                 const th = document.createElement('th');
-                th.textContent = account.text;
+                th.textContent = account.text; //
                 thead.appendChild(th);
             });
 
             // Add rows for system balance, actual balance, difference, and actions
-            const rowsConfig = [{
+            const rowsConfig = [{ //
                 id: 'system-balance',
                 label: 'Số dư hệ thống',
                 type: 'display'
@@ -636,61 +626,61 @@ class HistoryModule {
             rowsConfig.forEach(rowConfig => {
                 const tr = document.createElement('tr');
                 const labelCell = document.createElement('td');
-                labelCell.className = 'sticky-col';
-                labelCell.textContent = rowConfig.label;
+                labelCell.className = 'sticky-col'; //
+                labelCell.textContent = rowConfig.label; //
                 tr.appendChild(labelCell);
 
                 accounts.forEach(account => {
                     const cell = document.createElement('td');
-                    if (!account || !account.value) { // Basic validation for account object
+                    if (!account || !account.value) { // Basic validation for account object //
                         cell.textContent = 'Lỗi TK';
                         tr.appendChild(cell);
                         return;
                     }
-                    const accountValue = account.value;
+                    const accountValue = account.value; //
 
-                    switch (rowConfig.type) {
+                    switch (rowConfig.type) { //
                         case 'display':
                             const span = document.createElement('span');
-                            span.id = `${rowConfig.id}-${accountValue}`;
-                            if (rowConfig.id === 'system-balance') {
-                                const balance = this.app.getAccountBalance(accountValue);
-                                span.textContent = Utils.CurrencyUtils.formatCurrency(balance);
-                            } else if (rowConfig.id === 'difference') {
-                                span.textContent = '-'; // Initial state
+                            span.id = `${rowConfig.id}-${accountValue}`; //
+                            if (rowConfig.id === 'system-balance') { //
+                                const balance = this.app.getAccountBalance(accountValue); //
+                                span.textContent = Utils.CurrencyUtils.formatCurrency(balance); //
+                            } else if (rowConfig.id === 'difference') { //
+                                span.textContent = '-'; // Initial state //
                             }
                             cell.appendChild(span);
                             break;
                         case 'input':
                             const input = document.createElement('input');
-                            input.type = 'text';
-                            input.placeholder = 'Nhập số dư';
-                            input.className = 'reconciliation-input';
-                            input.dataset.account = accountValue;
-                            input.inputMode = 'decimal';
-                            const inputHandler = () => this.calculateDifference(accountValue);
+                            input.type = 'text'; //
+                            input.placeholder = 'Nhập số dư'; //
+                            input.className = 'reconciliation-input'; //
+                            input.dataset.account = accountValue; //
+                            input.inputMode = 'decimal'; //
+                            const inputHandler = () => this.calculateDifference(accountValue); //
                             input.addEventListener('input', inputHandler);
-                            this.eventListeners.push({ element: input, event: 'input', handler: inputHandler });
+                            this.eventListeners.push({ element: input, event: 'input', handler: inputHandler }); //
                             cell.appendChild(input);
                             break;
                         case 'actions':
                             const reconcileBtn = document.createElement('button');
-                            reconcileBtn.textContent = 'Đối soát';
-                            reconcileBtn.className = 'reconcile-btn';
-                            reconcileBtn.dataset.account = accountValue;
-                            const reconcileHandler = () => this.performReconciliation(accountValue);
+                            reconcileBtn.textContent = 'Đối soát'; //
+                            reconcileBtn.className = 'reconcile-btn'; //
+                            reconcileBtn.dataset.account = accountValue; //
+                            const reconcileHandler = () => this.performReconciliation(accountValue); //
                             reconcileBtn.addEventListener('click', reconcileHandler);
-                            this.eventListeners.push({ element: reconcileBtn, event: 'click', handler: reconcileHandler });
+                            this.eventListeners.push({ element: reconcileBtn, event: 'click', handler: reconcileHandler }); //
                             cell.appendChild(reconcileBtn);
 
                             const recordBtn = document.createElement('button');
-                            recordBtn.textContent = 'Ghi nhận chênh lệch';
-                            recordBtn.className = 'record-btn mt-2';
-                            recordBtn.dataset.account = accountValue;
-                            recordBtn.style.display = 'none'; // Initially hidden
-                            const recordHandler = () => this.recordDifference(accountValue);
+                            recordBtn.textContent = 'Ghi nhận chênh lệch'; //
+                            recordBtn.className = 'record-btn mt-2'; //
+                            recordBtn.dataset.account = accountValue; //
+                            recordBtn.style.display = 'none'; // Initially hidden //
+                            const recordHandler = () => this.recordDifference(accountValue); //
                             recordBtn.addEventListener('click', recordHandler);
-                            this.eventListeners.push({ element: recordBtn, event: 'click', handler: recordHandler });
+                            this.eventListeners.push({ element: recordBtn, event: 'click', handler: recordHandler }); //
                             cell.appendChild(recordBtn);
                             break;
                     }
@@ -700,7 +690,7 @@ class HistoryModule {
             });
 
             // Re-initialize reconciliation data after rendering new inputs
-            this.initializeReconciliation();
+            this.initializeReconciliation(); //
 
         } catch (error) {
             console.error('Error rendering reconciliation table:', error);
@@ -715,90 +705,90 @@ class HistoryModule {
      * Escape HTML to prevent XSS
      */
     escapeHtml(text) {
-        if (!text || typeof text !== 'string') return '';
+        if (!text || typeof text !== 'string') return ''; //
 
         const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+        div.textContent = text; //
+        return div.innerHTML; //
     }
 
     /**
      * Calculate difference for reconciliation with comprehensive validation
      */
     calculateDifference(accountValue) {
-        if (!accountValue || typeof accountValue !== 'string') {
+        if (!accountValue || typeof accountValue !== 'string') { //
             console.warn('Invalid account value for difference calculation');
             return;
         }
 
-        const input = document.querySelector(`input[data-account="${accountValue}"]`);
-        const differenceCell = document.getElementById(`difference-${accountValue}`);
+        const input = document.querySelector(`input[data-account="${accountValue}"]`); //
+        const differenceCell = document.getElementById(`difference-${accountValue}`); //
 
         // Validate required elements
-        if (!input) {
+        if (!input) { //
             console.warn('Input element not found for account:', accountValue);
             return;
         }
 
-        if (!differenceCell) {
+        if (!differenceCell) { //
             console.warn('Difference cell not found for account:', accountValue);
             return;
         }
 
         // Validate input value
-        if (!input.value || input.value.trim() === '') {
-            differenceCell.textContent = '-';
-            differenceCell.className = '';
+        if (!input.value || input.value.trim() === '') { //
+            differenceCell.textContent = '-'; //
+            differenceCell.className = ''; //
             return;
         }
 
         try {
-            const actualBalance = Utils.CurrencyUtils.parseAmountInput(input.value);
+            const actualBalance = Utils.CurrencyUtils.parseAmountInput(input.value); //
 
-            if (isNaN(actualBalance)) {
-                differenceCell.textContent = 'Lỗi';
-                differenceCell.className = 'text-danger';
-                Utils.UIUtils.showMessage('Số dư thực tế không hợp lệ', 'error');
+            if (isNaN(actualBalance)) { //
+                differenceCell.textContent = 'Lỗi'; //
+                differenceCell.className = 'text-danger'; //
+                Utils.UIUtils.showMessage('Số dư thực tế không hợp lệ', 'error'); //
                 return;
             }
 
-            const systemBalance = this.app.getAccountBalance(accountValue);
+            const systemBalance = this.app.getAccountBalance(accountValue); //
 
-            if (isNaN(systemBalance)) {
+            if (isNaN(systemBalance)) { //
                 console.error('Invalid system balance for account:', accountValue);
-                differenceCell.textContent = 'Lỗi hệ thống';
-                differenceCell.className = 'text-danger';
+                differenceCell.textContent = 'Lỗi hệ thống'; //
+                differenceCell.className = 'text-danger'; //
                 return;
             }
 
-            const difference = actualBalance - systemBalance;
+            const difference = actualBalance - systemBalance; //
 
             // Update difference display
-            differenceCell.textContent = Utils.CurrencyUtils.formatCurrency(difference);
+            differenceCell.textContent = Utils.CurrencyUtils.formatCurrency(difference); //
 
             // Update difference cell styling
-            differenceCell.className = '';
-            if (Math.abs(difference) < 0.01) { // Consider as equal if difference < 1 cent
-                differenceCell.classList.add('text-muted');
-            } else if (difference > 0) {
-                differenceCell.classList.add('text-success');
+            differenceCell.className = ''; //
+            if (Math.abs(difference) < 0.01) { // Consider as equal if difference < 1 cent //
+                differenceCell.classList.add('text-muted'); //
+            } else if (difference > 0) { //
+                differenceCell.classList.add('text-success'); //
             } else {
-                differenceCell.classList.add('text-danger');
+                differenceCell.classList.add('text-danger'); //
             }
 
             // Store reconciliation data with validation
-            this.reconciliationData[accountValue] = {
+            this.reconciliationData[accountValue] = { //
                 systemBalance: systemBalance,
                 actualBalance: actualBalance,
                 difference: difference,
-                lastReconciled: new Date().toISOString()
+                lastReconciled: new Date().toISOString() //
             };
 
         } catch (error) {
             console.error('Error calculating difference for account:', accountValue, error);
-            differenceCell.textContent = 'Lỗi';
-            differenceCell.className = 'text-danger';
-            Utils.UIUtils.showMessage('Có lỗi khi tính toán chênh lệch', 'error');
+            differenceCell.textContent = 'Lỗi'; //
+            differenceCell.className = 'text-danger'; //
+            Utils.UIUtils.showMessage('Có lỗi khi tính toán chênh lệch', 'error'); //
         }
     }
 
@@ -806,62 +796,62 @@ class HistoryModule {
      * Perform reconciliation with enhanced validation
      */
     performReconciliation(accountValue) {
-        if (!accountValue || typeof accountValue !== 'string') {
-            Utils.UIUtils.showMessage('Tài khoản không hợp lệ', 'error');
+        if (!accountValue || typeof accountValue !== 'string') { //
+            Utils.UIUtils.showMessage('Tài khoản không hợp lệ', 'error'); //
             return;
         }
 
-        const input = document.querySelector(`input[data-account="${accountValue}"]`);
-        const recordBtn = document.querySelector(`button.record-btn[data-account="${accountValue}"]`);
+        const input = document.querySelector(`input[data-account="${accountValue}"]`); //
+        const recordBtn = document.querySelector(`button.record-btn[data-account="${accountValue}"]`); //
 
-        if (!input) {
-            Utils.UIUtils.showMessage('Không tìm thấy ô nhập số dư', 'error');
+        if (!input) { //
+            Utils.UIUtils.showMessage('Không tìm thấy ô nhập số dư', 'error'); //
             return;
         }
 
         // Trigger input validation first
-        this.calculateDifference(accountValue);
+        this.calculateDifference(accountValue); //
 
         // Then check if the input is valid after calculation
-        if (input.value === '' || input.classList.contains('input-invalid')) {
-            Utils.UIUtils.showMessage('Vui lòng nhập số dư thực tế hợp lệ', 'error');
-            input.focus();
+        if (input.value === '' || input.classList.contains('input-invalid')) { //
+            Utils.UIUtils.showMessage('Vui lòng nhập số dư thực tế hợp lệ', 'error'); //
+            input.focus(); //
             return;
         }
 
         try {
-            const data = this.reconciliationData[accountValue];
+            const data = this.reconciliationData[accountValue]; //
 
-            if (!data) {
-                Utils.UIUtils.showMessage('Không có dữ liệu đối soát', 'error');
+            if (!data) { //
+                Utils.UIUtils.showMessage('Không có dữ liệu đối soát', 'error'); //
                 return;
             }
 
-            const absDifference = Math.abs(data.difference || 0);
+            const absDifference = Math.abs(data.difference || 0); //
 
-            if (absDifference > 0.01) { // Show record button if there's a significant difference
+            if (absDifference > 0.01) { // Show record button if there's a significant difference //
                 if (recordBtn) {
-                    recordBtn.style.display = 'block';
+                    recordBtn.style.display = 'block'; //
                 }
 
-                const accountName = this.getAccountName(accountValue);
-                Utils.UIUtils.showMessage(
-                    `Có chênh lệch ${Utils.CurrencyUtils.formatCurrency(data.difference)} trong tài khoản ${accountName}`,
-                    'info'
+                const accountName = this.getAccountName(accountValue); //
+                Utils.UIUtils.showMessage( //
+                    `Có chênh lệch ${Utils.CurrencyUtils.formatCurrency(data.difference)} trong tài khoản ${accountName}`, //
+                    'info' //
                 );
             } else {
                 if (recordBtn) {
-                    recordBtn.style.display = 'none';
+                    recordBtn.style.display = 'none'; //
                 }
-                Utils.UIUtils.showMessage('Số dư đã khớp với hệ thống', 'success');
+                Utils.UIUtils.showMessage('Số dư đã khớp với hệ thống', 'success'); //
             }
 
             // Save reconciliation to history
-            this.saveReconciliationHistory(accountValue, data);
+            this.saveReconciliationHistory(accountValue, data); //
 
         } catch (error) {
             console.error('Error performing reconciliation:', error);
-            Utils.UIUtils.showMessage('Có lỗi khi thực hiện đối soát', 'error');
+            Utils.UIUtils.showMessage('Có lỗi khi thực hiện đối soát', 'error'); //
         }
     }
 
@@ -869,90 +859,90 @@ class HistoryModule {
      * Get account name safely
      */
     getAccountName(accountValue) {
-        if (!this.app || !this.app.data || !Array.isArray(this.app.data.accounts)) {
+        if (!this.app || !this.app.data || !Array.isArray(this.app.data.accounts)) { //
             return accountValue;
         }
 
-        const account = this.app.data.accounts.find(acc => acc && acc.value === accountValue);
-        return account ? account.text : accountValue;
+        const account = this.app.data.accounts.find(acc => acc && acc.value === accountValue); //
+        return account ? account.text : accountValue; //
     }
 
     /**
      * Record difference as adjustment transaction with validation
      */
     recordDifference(accountValue) {
-        if (!accountValue) {
-            Utils.UIUtils.showMessage('Tài khoản không hợp lệ', 'error');
+        if (!accountValue) { //
+            Utils.UIUtils.showMessage('Tài khoản không hợp lệ', 'error'); //
             return;
         }
 
-        const data = this.reconciliationData[accountValue];
+        const data = this.reconciliationData[accountValue]; //
 
-        if (!data) {
-            Utils.UIUtils.showMessage('Không có dữ liệu đối soát', 'error');
+        if (!data) { //
+            Utils.UIUtils.showMessage('Không có dữ liệu đối soát', 'error'); //
             return;
         }
 
-        const absDifference = Math.abs(data.difference || 0);
+        const absDifference = Math.abs(data.difference || 0); //
 
-        if (absDifference < 0.01) {
-            Utils.UIUtils.showMessage('Không có chênh lệch để ghi nhận', 'error');
+        if (absDifference < 0.01) { //
+            Utils.UIUtils.showMessage('Không có chênh lệch để ghi nhận', 'error'); //
             return;
         }
 
-        const accountName = this.getAccountName(accountValue);
+        const accountName = this.getAccountName(accountValue); //
 
-        if (!confirm(`Bạn có chắc chắn muốn ghi nhận chênh lệch ${Utils.CurrencyUtils.formatCurrency(data.difference)} cho tài khoản ${accountName}?`)) {
+        if (!confirm(`Bạn có chắc chắn muốn ghi nhận chênh lệch ${Utils.CurrencyUtils.formatCurrency(data.difference)} cho tài khoản ${accountName}?`)) { //
             return;
         }
 
         try {
             // Create adjustment transaction
-            const adjustmentData = {
-                type: data.difference > 0 ? 'Thu' : 'Chi',
-                datetime: Utils.DateUtils.formatDateTimeLocal(),
-                amount: absDifference,
-                account: accountValue,
-                category: data.difference > 0
-                    ? Utils.CONFIG.RECONCILE_ADJUST_INCOME_CAT
-                    : Utils.CONFIG.RECONCILE_ADJUST_EXPENSE_CAT,
-                description: `Điều chỉnh đối soát tài khoản ${accountName}`,
-                originalAmount: absDifference,
-                originalCurrency: 'VND'
+            const adjustmentData = { //
+                type: data.difference > 0 ? 'Thu' : 'Chi', //
+                datetime: Utils.DateUtils.formatDateTimeLocal(), //
+                amount: absDifference, //
+                account: accountValue, //
+                category: data.difference > 0 //
+                    ? Utils.CONFIG.RECONCILE_ADJUST_INCOME_CAT //
+                    : Utils.CONFIG.RECONCILE_ADJUST_EXPENSE_CAT, //
+                description: `Điều chỉnh đối soát tài khoản ${accountName}`, //
+                originalAmount: absDifference, //
+                originalCurrency: 'VND' //
             };
 
             // Validate adjustment data
-            const validation = Utils.ValidationUtils.validateTransaction(adjustmentData);
-            if (!validation.isValid) {
-                throw new Error(validation.errors[0]);
+            const validation = Utils.ValidationUtils.validateTransaction(adjustmentData); //
+            if (!validation.isValid) { //
+                throw new Error(validation.errors[0]); //
             }
 
             // Ensure adjustment categories exist (This function is in app.js and should be called via app instance)
-            if (this.app && typeof this.app.ensureAdjustmentCategories === 'function') {
-                this.app.ensureAdjustmentCategories();
+            if (this.app && typeof this.app.ensureAdjustmentCategories === 'function') { //
+                this.app.ensureAdjustmentCategories(); //
             } else {
                 console.warn("App.ensureAdjustmentCategories is not available. Categories might not be created.");
             }
 
 
             // Add adjustment transaction
-            this.app.addTransaction(adjustmentData);
+            this.app.addTransaction(adjustmentData); //
 
             // Update reconciliation display
-            this.updateReconciliationDisplay(accountValue);
+            this.updateReconciliationDisplay(accountValue); //
 
             // Clear cache to force refresh
-            this.cache.accountBalances = null;
+            this.cache.accountBalances = null; //
 
             // Refresh other modules
-            this.app.refreshAllModules();
-            this.renderAccountBalances();
+            this.app.refreshAllModules(); //
+            this.renderAccountBalances(); //
 
-            Utils.UIUtils.showMessage(`Đã ghi nhận điều chỉnh cho tài khoản ${accountName}`, 'success');
+            Utils.UIUtils.showMessage(`Đã ghi nhận điều chỉnh cho tài khoản ${accountName}`, 'success'); //
 
         } catch (error) {
             console.error('Error recording difference:', error);
-            Utils.UIUtils.showMessage(`Lỗi khi ghi nhận điều chỉnh: ${error.message}`, 'error');
+            Utils.UIUtils.showMessage(`Lỗi khi ghi nhận điều chỉnh: ${error.message}`, 'error'); //
         }
     }
 
@@ -961,28 +951,28 @@ class HistoryModule {
      */
     updateReconciliationDisplay(accountValue) {
         try {
-            const systemBalanceCell = document.getElementById(`system-balance-${accountValue}`);
-            const differenceCell = document.getElementById(`difference-${accountValue}`);
-            const input = document.querySelector(`input[data-account="${accountValue}"]`);
-            const recordBtn = document.querySelector(`button.record-btn[data-account="${accountValue}"]`);
+            const systemBalanceCell = document.getElementById(`system-balance-${accountValue}`); //
+            const differenceCell = document.getElementById(`difference-${accountValue}`); //
+            const input = document.querySelector(`input[data-account="${accountValue}"]`); //
+            const recordBtn = document.querySelector(`button.record-btn[data-account="${accountValue}"]`); //
 
-            if (systemBalanceCell) {
-                const newBalance = this.app.getAccountBalance(accountValue);
-                systemBalanceCell.textContent = Utils.CurrencyUtils.formatCurrency(newBalance);
+            if (systemBalanceCell) { //
+                const newBalance = this.app.getAccountBalance(accountValue); //
+                systemBalanceCell.textContent = Utils.CurrencyUtils.formatCurrency(newBalance); //
             }
 
-            if (differenceCell) {
-                differenceCell.textContent = Utils.CurrencyUtils.formatCurrency(0);
-                differenceCell.className = 'text-muted';
+            if (differenceCell) { //
+                differenceCell.textContent = Utils.CurrencyUtils.formatCurrency(0); //
+                differenceCell.className = 'text-muted'; //
             }
 
-            if (input) {
-                input.value = ''; // Clear input field
-                input.classList.remove('input-valid', 'input-invalid'); // Clear any validation classes
+            if (input) { //
+                input.value = ''; // Clear input field //
+                input.classList.remove('input-valid', 'input-invalid'); // Clear any validation classes //
             }
 
-            if (recordBtn) {
-                recordBtn.style.display = 'none';
+            if (recordBtn) { //
+                recordBtn.style.display = 'none'; //
             }
         } catch (error) {
             console.error('Error updating reconciliation display:', error);
@@ -993,50 +983,50 @@ class HistoryModule {
      * Save reconciliation to history with validation
      */
     saveReconciliationHistory(accountValue, data) {
-        if (!accountValue || !data) {
+        if (!accountValue || !data) { //
             console.warn('Invalid data for reconciliation history');
             return;
         }
 
         try {
-            const historyItem = {
-                id: Utils.UIUtils.generateId(),
-                account: accountValue,
-                systemBalance: parseFloat(data.systemBalance) || 0,
-                actualBalance: parseFloat(data.actualBalance) || 0,
-                difference: parseFloat(data.difference) || 0,
-                timestamp: new Date().toISOString(),
+            const historyItem = { //
+                id: Utils.UIUtils.generateId(), //
+                account: accountValue, //
+                systemBalance: parseFloat(data.systemBalance) || 0, //
+                actualBalance: parseFloat(data.actualBalance) || 0, //
+                difference: parseFloat(data.difference) || 0, //
+                timestamp: new Date().toISOString(), //
                 // Use getISOWeek and getFullYear for week and year in history
-                week: Utils.DateUtils.getISOWeek(new Date()),
-                year: new Date().getFullYear()
+                week: Utils.DateUtils.getISOWeek(new Date()), //
+                year: new Date().getFullYear() //
             };
 
             // Validate history item
-            if (isNaN(historyItem.systemBalance) || isNaN(historyItem.actualBalance)) {
+            if (isNaN(historyItem.systemBalance) || isNaN(historyItem.actualBalance)) { //
                 console.error('Invalid balance values for history item');
                 return;
             }
 
             // Load existing history
-            let history = Utils.StorageUtils.load(Utils.CONFIG.STORAGE_KEYS.RECONCILIATION_HISTORY, []);
+            let history = Utils.StorageUtils.load(Utils.CONFIG.STORAGE_KEYS.RECONCILIATION_HISTORY, []); //
 
-            if (!Array.isArray(history)) {
+            if (!Array.isArray(history)) { //
                 console.warn('Invalid history data, resetting to empty array');
-                history = [];
+                history = []; //
             }
 
             // Add new item
-            history.push(historyItem);
+            history.push(historyItem); //
 
             // Keep only last 100 items for performance
-            if (history.length > 100) {
-                history = history.slice(-100);
+            if (history.length > 100) { //
+                history = history.slice(-100); //
             }
 
             // Save history
-            if (Utils.StorageUtils.save(Utils.CONFIG.STORAGE_KEYS.RECONCILIATION_HISTORY, history)) {
+            if (Utils.StorageUtils.save(Utils.CONFIG.STORAGE_KEYS.RECONCILIATION_HISTORY, history)) { //
                 // Re-render history
-                this.renderReconciliationHistory();
+                this.renderReconciliationHistory(); //
             } else {
                 console.error('Failed to save reconciliation history');
             }
@@ -1050,15 +1040,15 @@ class HistoryModule {
      * Render reconciliation history with error handling
      */
     renderReconciliationHistory() {
-        if (!this.elements.reconciliationHistory) {
+        if (!this.elements.reconciliationHistory) { //
             console.warn('Reconciliation history element not found');
             return;
         }
 
         try {
-            const history = Utils.StorageUtils.load(Utils.CONFIG.STORAGE_KEYS.RECONCILIATION_HISTORY, []);
+            const history = Utils.StorageUtils.load(Utils.CONFIG.STORAGE_KEYS.RECONCILIATION_HISTORY, []); //
 
-            if (!Array.isArray(history)) {
+            if (!Array.isArray(history)) { //
                 console.warn('Invalid history data format');
                 this.elements.reconciliationHistory.innerHTML = `
                     <div class="error-message">
@@ -1068,7 +1058,7 @@ class HistoryModule {
                 return;
             }
 
-            if (history.length === 0) {
+            if (history.length === 0) { //
                 this.elements.reconciliationHistory.innerHTML = `
                     <div class="no-data">
                         <span class="no-data-icon">📋</span>
@@ -1079,19 +1069,19 @@ class HistoryModule {
             }
 
             // Sort by timestamp (newest first)
-            const sortedHistory = history
-                .filter(item => item && item.timestamp) // Filter out invalid items
-                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            const sortedHistory = history //
+                .filter(item => item && item.timestamp) // Filter out invalid items //
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); //
 
             // Take only recent 20 items for performance
-            const recentHistory = sortedHistory.slice(0, 20);
+            const recentHistory = sortedHistory.slice(0, 20); //
 
-            this.elements.reconciliationHistory.innerHTML = '';
+            this.elements.reconciliationHistory.innerHTML = ''; //
 
             recentHistory.forEach(item => {
                 try {
-                    const historyCard = this.createReconciliationHistoryCard(item);
-                    if (historyCard) {
+                    const historyCard = this.createReconciliationHistoryCard(item); //
+                    if (historyCard) { //
                         this.elements.reconciliationHistory.appendChild(historyCard);
                     }
                 } catch (error) {
@@ -1113,20 +1103,20 @@ class HistoryModule {
      * Create reconciliation history card with validation
      */
     createReconciliationHistoryCard(item) {
-        if (!item || !item.account || !item.timestamp) {
+        if (!item || !item.account || !item.timestamp) { //
             console.warn('Invalid history item for card creation');
             return null;
         }
 
         try {
             const card = document.createElement('div');
-            card.className = 'reconciliation-history-card';
+            card.className = 'reconciliation-history-card'; //
 
-            const accountName = this.getAccountName(item.account);
-            const difference = parseFloat(item.difference) || 0;
-            const differenceClass = difference > 0 ? 'text-success' :
-                difference < 0 ? 'text-danger' : 'text-muted';
-            const statusIcon = Math.abs(difference) < 0.01 ? '✅' : '⚠️';
+            const accountName = this.getAccountName(item.account); //
+            const difference = parseFloat(item.difference) || 0; //
+            const differenceClass = difference > 0 ? 'text-success' : //
+                difference < 0 ? 'text-danger' : 'text-muted'; //
+            const statusIcon = Math.abs(difference) < 0.01 ? '✅' : '⚠️'; //
 
             card.innerHTML = `
                 <div class="history-header">
@@ -1153,7 +1143,7 @@ class HistoryModule {
                         </span>
                     </div>
                 </div>
-            `;
+            `; //
 
             return card;
         } catch (error) {
@@ -1165,25 +1155,25 @@ class HistoryModule {
     /**
      * Cleanup method to prevent memory leaks
      */
-    destroy() { // This is the correct destroy method for HistoryModule
+    destroy() { 
         // Cleanup event listeners
-        this.eventListeners.forEach(({ element, event, handler }) => {
-            if (element && typeof element.removeEventListener === 'function') {
-                element.removeEventListener(event, handler);
+        this.eventListeners.forEach(({ element, event, handler }) => { //
+            if (element && typeof element.removeEventListener === 'function') { //
+                element.removeEventListener(event, handler); //
             }
         });
-        this.eventListeners = [];
+        this.eventListeners = []; //
 
         // Clear cache
-        this.cache = {
+        this.cache = { //
             accountBalances: null,
             lastCacheTime: null,
             cacheDuration: 5000
         };
 
         // Clear DOM references
-        this.elements = {};
-        this.reconciliationData = {};
+        this.elements = {}; //
+        this.reconciliationData = {}; //
     }
 
     /**
@@ -1192,16 +1182,16 @@ class HistoryModule {
     refresh() {
         try {
             // Clear cache to ensure fresh data
-            this.cache.accountBalances = null;
+            this.cache.accountBalances = null; //
 
-            this.initializeReconciliation(); // Re-initialize reconciliation data structure
-            this.renderAccountBalances();
-            this.renderTransactionCalendar(); // Add this line
-            this.renderReconciliationTable(); // Re-render table with new balances and listeners
-            this.renderReconciliationHistory();
+            this.initializeReconciliation(); // Re-initialize reconciliation data structure //
+            this.renderAccountBalances(); //
+            this.renderTransactionCalendar(); //
+            this.renderReconciliationTable(); // Re-render table with new balances and listeners //
+            this.renderReconciliationHistory(); //
         } catch (error) {
             console.error('Error refreshing history module:', error);
-            Utils.UIUtils.showMessage('Có lỗi khi cập nhật module lịch sử', 'error');
+            Utils.UIUtils.showMessage('Có lỗi khi cập nhật module lịch sử', 'error'); //
         }
     }
 }
@@ -1294,4 +1284,4 @@ if (!document.getElementById('history-css')) {
 }
 
 // Create global instance
-window.HistoryModule = new HistoryModule();
+window.HistoryModule = new HistoryModule(); //
