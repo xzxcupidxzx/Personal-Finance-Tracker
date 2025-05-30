@@ -103,12 +103,16 @@ const Utils = {
 			try {
 				const num = parseFloat(amount) || 0;
 				if (currency === 'VND') {
-					return new Intl.NumberFormat('vi-VN', {
+					// Đảm bảo luôn dùng dấu phẩy cho hàng nghìn
+					const formatted = new Intl.NumberFormat('vi-VN', {
 						style: 'currency',
 						currency: 'VND',
 						minimumFractionDigits: 0,
 						maximumFractionDigits: 0
 					}).format(num);
+					
+					// Fallback: nếu vẫn hiển thị dấu chấm, thay thế thủ công
+					return formatted.replace(/\./g, ',');
 				} else {
 					return new Intl.NumberFormat('en-US', {
 						style: 'currency',
@@ -122,7 +126,63 @@ const Utils = {
 				return `${amount || 0} ${currency}`;
 			}
 		},
+        formatCurrencyShort(amount, currency = 'VND') {
+            try {
+                const num = parseFloat(amount) || 0;
 
+                if (currency === 'VND') {
+                    const sign = num < 0 ? '-' : '';
+                    const absNum = Math.abs(num);
+                    let formattedNum;
+                    let unit = '';
+
+                    if (absNum < 1000) {
+                        // Dưới 1 Ngàn: Hiển thị số (không có 'đ' cho gọn)
+                        formattedNum = new Intl.NumberFormat('vi-VN').format(absNum);
+                        return sign + formattedNum;
+                    } else if (absNum < 1000000) {
+                        // Ngàn (Ng)
+                        formattedNum = new Intl.NumberFormat('vi-VN', {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 3
+                        }).format(absNum / 1000);
+                        unit = ' Ng';
+                    } else if (absNum < 1000000000) {
+                        // Triệu (Tr)
+                        formattedNum = new Intl.NumberFormat('vi-VN', {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 3
+                        }).format(absNum / 1000000);
+                        unit = ' Tr';
+                    } else {
+                        // Tỷ (Tỷ)
+                        formattedNum = new Intl.NumberFormat('vi-VN', {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 3
+                        }).format(absNum / 1000000000);
+                        unit = ' Tỷ';
+                    }
+
+                    // Loại bỏ ",000" nếu có
+                    if (formattedNum.includes(',')) {
+                         formattedNum = formattedNum.replace(/,0+$/, '').replace(/(\,\d*?[1-9])0+$/, '$1');
+                    }
+
+                    return sign + formattedNum + unit;
+                } else {
+                    // Với tiền tệ khác, dùng hàm gốc
+					return new Intl.NumberFormat('en-US', {
+						style: 'currency',
+						currency: currency,
+						minimumFractionDigits: 2,
+						maximumFractionDigits: 2
+					}).format(num);
+                }
+            } catch (error) {
+                console.error('formatCurrencyShort error:', error);
+                return `${amount || 0} ${currency}`;
+            }
+        },
 		parseAmountInput(value, currency = 'VND') {
 			try {
 				if (!value) return 0;
@@ -202,7 +262,27 @@ const Utils = {
                 return datetime;
             }
         },
-
+		formatCompactDateTime(datetime) {
+			try {
+				const date = new Date(datetime);
+				const hours = String(date.getHours()).padStart(2, '0');
+				const minutes = String(date.getMinutes()).padStart(2, '0');
+				const day = String(date.getDate()).padStart(2, '0');
+				const month = String(date.getMonth() + 1).padStart(2, '0');
+				const year = String(date.getFullYear()).slice(-2); // Lấy 2 số cuối
+				
+				return {
+					time: `${hours}:${minutes}`,
+					date: `${day}-${month}-${year}`
+				};
+			} catch (error) {
+				console.error('formatCompactDateTime error:', error);
+				return {
+					time: '00:00',
+					date: '00-00-00'
+				};
+			}
+		},
         getPeriodDates(period) {
             const now = new Date();
             let start, end;

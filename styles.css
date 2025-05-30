@@ -1,20 +1,17 @@
 /* =============================================================================
-   FINANCIAL APP STYLES - Mobile First Design
+   FINANCIAL APP STYLES - Optimized for Desktop, Tablet, and Mobile
    ============================================================================= */
 
 /* === ROOT VARIABLES === */
+/* Kích thước font và spacing cơ bản, sẽ được điều chỉnh cho các thiết bị khác */
 :root {
     /* Colors */
     --primary-color: #3b82f6;
     --primary-dark: #1d4ed8;
     --secondary-color: #64748b;
-    --accent-color: #10b981; /* Green for Income */
+    --accent-color: #10b981;
     --warning-color: #f59e0b;
-    --danger-color: #ef4444; /* Red for Expense */
-    --accent-light: rgba(16, 185, 129, 0.1);
-    --danger-light: rgba(239, 68, 68, 0.1);
-    --accent-border: rgba(16, 185, 129, 0.3);
-    --danger-border: rgba(239, 68, 68, 0.3);
+    --danger-color: #ef4444;
 
     /* Text Colors */
     --text-primary: #1e293b;
@@ -25,6 +22,12 @@
     --bg-primary: #ffffff;
     --bg-secondary: #f8fafc;
     --bg-tertiary: #f1f5f9;
+    --accent-light: rgba(16, 185, 129, 0.12); /* Nền xanh mờ */
+    --accent-color: #10b981; /* Chữ xanh đậm */
+    --accent-border: rgba(16, 185, 129, 0.35); /* Viền xanh */
+    --danger-light: rgba(239, 68, 68, 0.12); /* Nền đỏ mờ */
+    --danger-color: #ef4444; /* Chữ đỏ đậm */
+    --danger-border: rgba(239, 68, 68, 0.35); /* Viền đỏ */
 
     /* Border & Shadow */
     --border-color: #e2e8f0;
@@ -32,23 +35,47 @@
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
     --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 8px 10px rgba(0, 0, 0, 0.04);
 
-    /* Spacing */
-    --spacing-xs: 0.25rem;
-    --spacing-sm: 0.5rem;
-    --spacing-md: 1rem;
-    --spacing-lg: 1.5rem;
-    --spacing-xl: 2rem;
+    /* Spacing - Default for Mobile (smallest) */
+    --spacing-xs: 0.25rem; /* 4px */
+    --spacing-sm: 0.5rem;  /* 8px */
+    --spacing-md: 1rem;    /* 16px */
+    --spacing-lg: 1.5rem;  /* 24px */
+    --spacing-xl: 2rem;    /* 32px */
+    --spacing-2xl: 3rem;   /* 48px */
 
     /* Font */
     --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-size-base: 16px;
 
     /* Z-index */
     --z-nav: 1000;
     --z-modal: 2000;
     --z-keyboard: 3000;
-}
 
+    /* Custom Colors for Income/Expense (chỉ dùng cho màu chữ chính) */
+    --income-color: #22c55e; /* Màu xanh lá cây tươi cho chữ thu */
+    --expense-color: #ef4444; /* Màu đỏ cho chữ chi */
+
+    /* Màu nền nhẹ cho các phần tử income/expense (được giữ nguyên hoặc điều chỉnh theo ý muốn) */
+    --income-bg-light: rgba(34, 197, 94, 0.1);
+    --expense-bg-light: rgba(239, 68, 68, 0.1);
+    
+    /* Đồng bộ hóa với success/danger để nhất quán toàn ứng dụng */
+    --success-light: var(--income-bg-light);
+    --success-color: var(--income-color); /* Đồng bộ với --income-color */
+    --danger-light: var(--expense-bg-light);
+    --danger-color: var(--expense-color); /* Đồng bộ với --expense-color */
+}
+[data-theme="dark"] {
+    --accent-light: rgba(16, 185, 129, 0.18); /* Xanh mờ trong dark mode */
+    --accent-border: rgba(16, 185, 129, 0.45); /* Viền xanh đậm hơn */
+}
+[data-theme="dark"] {
+    --danger-light: rgba(239, 68, 68, 0.18); /* Đỏ mờ trong dark mode */
+    --danger-border: rgba(239, 68, 68, 0.45); /* Viền đỏ đậm hơn */
+}
 /* Dark Mode Variables */
 [data-theme="dark"] {
     --text-primary: #f1f5f9;
@@ -60,11 +87,6 @@
     --bg-tertiary: #334155;
 
     --border-color: #475569;
-
-    --accent-light: rgba(16, 185, 129, 0.15);
-    --danger-light: rgba(239, 68, 68, 0.15);
-    --accent-border: rgba(16, 185, 129, 0.4);
-    --danger-border: rgba(239, 68, 68, 0.4);
 }
 
 /* === BASE STYLES === */
@@ -74,6 +96,10 @@
     padding: 0;
 }
 
+html {
+    font-size: var(--font-size-base); /* Cơ sở cho rem */
+}
+
 body {
     font-family: var(--font-family);
     background-color: var(--bg-secondary);
@@ -81,15 +107,74 @@ body {
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    padding-bottom: 80px; /* Space for bottom nav */
+    padding-bottom: 80px; /* Space for bottom nav on mobile */
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Utility classes */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-wrap { flex-wrap: wrap; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: var(--spacing-sm); }
+.gap-4 { gap: var(--spacing-md); }
+.gap-6 { gap: var(--spacing-lg); }
+.p-2 { padding: var(--spacing-sm); }
+.p-4 { padding: var(--spacing-md); }
+.p-6 { padding: var(--spacing-lg); }
+.m-2 { margin: var(--spacing-sm); }
+.m-4 { margin: var(--spacing-md); }
+.m-6 { margin: var(--spacing-lg); }
+.mb-2 { margin-bottom: var(--spacing-sm); }
+.mb-4 { margin-bottom: var(--spacing-md); }
+.mb-6 { margin-bottom: var(--spacing-lg); }
+.mt-2 { margin-top: var(--spacing-sm); }
+.mt-4 { margin-top: var(--spacing-md); }
+.mt-6 { margin-top: var(--spacing-lg); }
+.rounded { border-radius: 6px; }
+.rounded-lg { border-radius: var(--border-radius); }
+.shadow { box-shadow: var(--shadow-sm); }
+.shadow-md { box-shadow: var(--shadow-md); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+.cursor-pointer { cursor: pointer; }
+.select-none { user-select: none; }
+.transition { transition: all 0.2s ease; }
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
+.text-success { color: var(--accent-color); }
+.text-warning { color: var(--warning-color); }
+.text-danger { color: var(--danger-color); }
+.bg-primary { background-color: var(--bg-primary); }
+.bg-secondary { background-color: var(--bg-secondary); }
+.bg-tertiary { background-color: var(--bg-tertiary); }
+.border { border: 1px solid var(--border-color); }
+.border-t { border-top: 1px solid var(--border-color); }
+.border-b { border-bottom: 1px solid var(--border-color); }
+.border-l { border-left: 1px solid var(--border-color); }
+.border-r { border-right: 1px solid var(--border-color); }
+.hidden { display: none !important; }
+.visible { display: block !important; }
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-left { text-align: left; }
+
+.moon-icon {
+  margin-left: 9px; /* Hoặc 8px nếu muốn cách xa hơn */
+  /* Có thể tùy chỉnh số px tùy cảm giác cân đối của bạn */
+}
+.sun-icon {
+  margin-left: 2px;
+}
 /* === THEME SWITCH === */
 .theme-switch-wrapper {
     position: fixed;
-    top: 1rem;
-    left: 1rem;
+    top: var(--spacing-md);
+    left: var(--spacing-md);
     z-index: var(--z-nav);
 }
 
@@ -149,8 +234,8 @@ input:checked + .slider:before {
 .app-header {
     background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     color: white;
-    padding: 1rem;
-    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
     border-radius: 0 0 var(--border-radius) var(--border-radius);
 }
 
@@ -190,12 +275,13 @@ input:checked + .slider:before {
     font-size: 0.875rem;
     opacity: 0.9;
     display: block;
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
 }
 
 .summary-value {
     font-size: 1.1rem;
-    font-weight: 600;
+    font-weight: 700;
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
 }
 
@@ -209,15 +295,15 @@ input:checked + .slider:before {
 }
 
 .message-box.success {
-    background-color: #d1fae5;
-    color: #065f46;
-    border-left: 4px solid var(--accent-color);
+    background-color: var(--success-light);
+    color: var(--income-color); /* Chữ màu xanh */
+    border-left: 4px solid var(--income-color);
 }
 
 .message-box.error {
-    background-color: #fee2e2;
-    color: #991b1b;
-    border-left: 4px solid var(--danger-color);
+    background-color: var(--danger-light);
+    color: var(--expense-color); /* Chữ màu đỏ */
+    border-left: 4px solid var(--expense-color);
 }
 
 .message-box.info {
@@ -230,7 +316,7 @@ input:checked + .slider:before {
 .main-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 var(--spacing-md);
+    padding: 0 var(--spacing-md); /* Default padding for mobile */
 }
 
 /* === TAB CONTENT === */
@@ -318,13 +404,6 @@ input:checked + .slider:before {
     color: var(--text-secondary);
     font-size: 0.875rem;
 }
-.moon-icon {
-  margin-left: 9px; /* Hoặc 8px nếu muốn cách xa hơn */
-  /* Có thể tùy chỉnh số px tùy cảm giác cân đối của bạn */
-}
-.sun-icon {
-  margin-left: 2px;
-}
 
 .form-input,
 .form-select {
@@ -367,8 +446,8 @@ input:checked + .slider:before {
     border: 2px solid var(--border-color);
     background: var(--bg-primary);
     transition: all 0.2s ease;
-    flex: 1;
-    min-width: 120px;
+    flex: 1; /* Cho phép flex item tự co giãn */
+    min-width: 120px; /* Đảm bảo kích thước tối thiểu */
     justify-content: center;
 }
 
@@ -387,6 +466,7 @@ input:checked + .slider:before {
     border-radius: 50%;
     position: relative;
     transition: all 0.2s ease;
+    flex-shrink: 0; /* Ngăn không cho icon bị co lại */
 }
 
 .radio-option input[type="radio"]:checked + .radio-custom {
@@ -411,22 +491,23 @@ input:checked + .slider:before {
     font-weight: 600;
 }
 
+/* Income/Expense Radio Options - Using custom colors */
 .income-option input[type="radio"]:checked + .radio-custom {
-    border-color: var(--accent-color);
-    background: var(--accent-color);
+    border-color: var(--income-color);
+    background: var(--income-color);
 }
 
 .income-option input[type="radio"]:checked ~ .radio-text {
-    color: var(--accent-color);
+    color: var(--income-color); /* Chữ màu xanh */
 }
 
 .expense-option input[type="radio"]:checked + .radio-custom {
-    border-color: var(--danger-color);
-    background: var(--danger-color);
+    border-color: var(--expense-color);
+    background: var(--expense-color);
 }
 
 .expense-option input[type="radio"]:checked ~ .radio-text {
-    color: var(--danger-color);
+    color: var(--expense-color); /* Chữ màu đỏ */
 }
 
 /* Amount Input Group */
@@ -606,13 +687,13 @@ input:checked + .slider:before {
 }
 
 .transaction-type-icon.income {
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--accent-color);
+    background: var(--income-bg-light);
+    color: var(--income-color); /* Chữ màu xanh */
 }
 
 .transaction-type-icon.expense {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--danger-color);
+    background: var(--expense-bg-light);
+    color: var(--expense-color); /* Chữ màu đỏ */
 }
 
 .transaction-type-icon.transfer {
@@ -628,7 +709,7 @@ input:checked + .slider:before {
 .transaction-description {
     font-weight: 500;
     color: var(--text-primary);
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: 0.25rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -661,11 +742,11 @@ input:checked + .slider:before {
 }
 
 .transaction-amount.income {
-    color: var(--accent-color);
+    color: #16a34a !important;       /* Xanh đậm */
 }
 
 .transaction-amount.expense {
-    color: var(--danger-color);
+    color: #dc2626 !important;       /* Đỏ đậm */
 }
 
 .transaction-amount.transfer {
@@ -692,8 +773,8 @@ input:checked + .slider:before {
 }
 
 .action-btn-small.delete {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--danger-color);
+    background: var(--expense-bg-light);
+    color: var(--expense-color); /* Chữ màu đỏ */
 }
 
 /* No Data State */
@@ -713,206 +794,396 @@ input:checked + .slider:before {
     font-size: 1.1rem;
 }
 
-/* === STATISTICS STYLES === */
+/* ===== IMPROVED STATISTICS STYLES ===== */
 .stats-summary {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--spacing-md);
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-lg);
     margin-bottom: var(--spacing-xl);
 }
-
 .stats-card {
     background: var(--bg-primary);
     border-radius: var(--border-radius);
-    padding: var(--spacing-lg);
+    padding: var(--spacing-xl);
     box-shadow: var(--shadow-md);
     border: 1px solid var(--border-color);
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
+    gap: var(--spacing-lg);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
-
+.stats-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary-color);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+.stats-card:hover::before {
+    opacity: 1;
+}
+.income-card::before {
+    background: var(--income-color); /* Màu xanh cho viền trên */
+}
+.expense-card::before {
+    background: var(--expense-color); /* Màu đỏ cho viền trên */
+}
+.balance-card::before {
+    background: var(--primary-color);
+}
 .stats-icon {
-    font-size: 2rem;
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
+    font-size: 2.5rem;
+    width: 70px;
+    height: 70px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    position: relative;
 }
-
+.stats-icon::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    background: inherit;
+    opacity: 0.1;
+}
 .income-card .stats-icon {
-    background: rgba(16, 185, 129, 0.1);
+    background: var(--income-bg-light);
+    color: var(--income-color); /* Chữ màu xanh */
 }
 
 .expense-card .stats-icon {
-    background: rgba(239, 68, 68, 0.1);
+    background: var(--expense-bg-light);
+    color: var(--expense-color).; /* Chữ màu đỏ */
 }
-
 .balance-card .stats-icon {
     background: rgba(59, 130, 246, 0.1);
-}
-
-.stats-content {
-    flex: 1;
-}
-
-.stats-label {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    margin-bottom: var(--spacing-xs);
+    color: var(--primary-color);
 }
 
 .stats-value {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--text-primary);
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: inherit;
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
     margin-bottom: var(--spacing-xs);
+    line-height: 1.2;
+}
+#stats-total-income {
+    color: #16a34a !important;       /* Xanh đậm */
 }
 
+#stats-total-expense {
+    color: #dc2626 !important;       /* Đỏ đậm */
+}
 .stats-change {
-    font-size: 0.8rem;
-    font-weight: 500;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
-
 .stats-change.positive {
-    color: var(--accent-color);
+    color: var(--income-color); /* Chữ màu xanh */
+    background: var(--income-bg-light);
 }
-
+.stats-change.positive::before {
+    content: '↗️';
+}
 .stats-change.negative {
-    color: var(--danger-color);
+    color: var(--expense-color); /* Chữ màu đỏ */
+    background: var(--expense-bg-light);
+}
+.stats-change.negative::before {
+    content: '↘️';
+}
+.stats-change.neutral {
+    color: var(--text-muted);
+    background: var(--bg-tertiary);
+}
+.stats-change.neutral::before {
+    content: '➡️';
 }
 
 /* === CHART STYLES === */
 .chart-section {
     background: var(--bg-primary);
     border-radius: var(--border-radius);
-    padding: var(--spacing-lg);
+    padding: var(--spacing-xl);
     margin-bottom: var(--spacing-lg);
     box-shadow: var(--shadow-md);
     border: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
 }
-
+.chart-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    opacity: 0.7;
+}
 .chart-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
 }
-
 .chart-title {
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: 1.25rem;
+    font-weight: 700;
     color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
 }
-
+.chart-title::before {
+    content: '📊';
+    font-size: 1.3rem;
+}
 .chart-type-selector {
     padding: var(--spacing-sm) var(--spacing-md);
     border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background: var(--bg-primary);
+    border-radius: 8px;
+    background: var(--bg-secondary);
     color: var(--text-primary);
-    font-size: 0.875rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.chart-type-selector:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+.chart-type-selector:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 .chart-container-wrapper {
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: var(--spacing-lg);
+    gap: var(--spacing-xl);
     align-items: start;
+    min-height: 400px;
 }
-
 .chart-container {
     position: relative;
-    height: 300px;
+    height: 350px;
     width: 100%;
+    padding: var(--spacing-md);
 }
 
+/* Enhanced Legend Styles */
 .chart-legend {
-    min-width: 200px;
+    min-width: 250px;
+    max-width: 300px;
+    padding: var(--spacing-md);
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    height: fit-content;
 }
-
 .legend-item {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm);
-    margin-bottom: var(--spacing-xs);
-    border-radius: 6px;
-    transition: background-color 0.2s ease;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: 1px solid transparent;
+    background: var(--bg-primary);
 }
-
 .legend-item:hover {
     background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    transform: translateX(2px);
+    box-shadow: var(--shadow-sm);
 }
-
-.legend-color {
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
-    flex-shrink: 0;
+.legend-item:last-child {
+    margin-bottom: 0;
 }
-
+.legend-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: var(--spacing-sm);
+}
+.legend-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex: 1;
+    min-width: 0;
+}
 .legend-icon {
-    font-size: 1.2rem;
-    width: 24px;
-    height: 24px;
+    font-size: 1.4rem;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     background: var(--bg-tertiary);
     flex-shrink: 0;
+    transition: transform 0.2s ease;
 }
-
-.legend-content {
+.legend-item:hover .legend-icon {
+    transform: scale(1.1);
+}
+.legend-label-wrapper {
+    display: flex;
+    flex-direction: column;
     flex: 1;
     min-width: 0;
 }
-
 .legend-label {
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-size: 0.95rem;
+    font-weight: 600;
     color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     margin-bottom: 2px;
 }
-
-.legend-stats {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.legend-amount-percentage {
     font-size: 0.8rem;
     color: var(--text-secondary);
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
 }
-
 .legend-amount {
     font-weight: 600;
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    color: var(--text-primary);
 }
-
 .legend-percentage {
     color: var(--text-muted);
+    font-weight: 500;
+}
+.legend-color {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 2px solid var(--bg-primary);
+    transition: transform 0.2s ease;
+}
+.legend-item:hover .legend-color {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* Trend & Comparison Charts */
-.trend-section,
-.comparison-section {
+/* Enhanced Detailed Stats Table */
+.stats-table-container {
     background: var(--bg-primary);
     border-radius: var(--border-radius);
-    padding: var(--spacing-lg);
-    margin-bottom: var(--spacing-lg);
-    box-shadow: var(--shadow-md);
+    overflow: hidden;
     border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto; /* Cho phép cuộn ngang trên thiết bị nhỏ */
+}
+.stats-table {
+    width: 100%;
+    min-width: 600px; /* Đảm bảo bảng không quá hẹp trên mobile */
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+.stats-table thead {
+    background: var(--bg-tertiary);
+    border-bottom: 2px solid var(--border-color);
+}
+.stats-table th {
+    padding: var(--spacing-lg) var(--spacing-md);
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.stats-table th:last-child {
+    text-align: center;
+}
+.stats-table th:nth-child(2),
+.stats-table th:nth-child(3) {
+    text-align: right;
+}
+.stats-table tbody tr {
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid var(--border-color);
+}
+.stats-table tbody tr:hover {
+    background: var(--bg-secondary);
+}
+.stats-table tbody tr:last-child {
+    border-bottom: none;
+}
+.stats-table td {
+    padding: var(--spacing-md);
+    vertical-align: middle;
 }
 
-.trend-chart-container,
-.comparison-chart-container {
-    position: relative;
-    height: 250px;
+/* Progress Bar Styles */
+.progress-container {
     width: 100%;
+    max-width: 120px;
+}
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+.progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s ease-out;
+    position: relative;
+    overflow: hidden;
+}
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 1.5s ease-out;
+}
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
 }
 
 /* === CATEGORY MANAGEMENT === */
@@ -946,11 +1217,11 @@ input:checked + .slider:before {
 }
 
 .category-icon.income {
-    background: rgba(16, 185, 129, 0.1);
+    background: var(--income-bg-light);
 }
 
 .category-icon.expense {
-    background: rgba(239, 68, 68, 0.1);
+    background: var(--expense-bg-light);
 }
 
 .category-icon.account {
@@ -1033,8 +1304,8 @@ input:checked + .slider:before {
 
 .delete-btn {
     padding: var(--spacing-xs) var(--spacing-sm);
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--danger-color);
+    background: var(--expense-bg-light);
+    color: var(--expense-color); /* Chữ màu đỏ */
     border: none;
     border-radius: 4px;
     font-size: 0.75rem;
@@ -1161,7 +1432,7 @@ input:checked + .slider:before {
 }
 
 .action-btn.export .btn-icon {
-    background: rgba(16, 185, 129, 0.1);
+    background: var(--income-bg-light);
 }
 
 .action-btn.import .btn-icon {
@@ -1169,7 +1440,7 @@ input:checked + .slider:before {
 }
 
 .action-btn.danger .btn-icon {
-    background: rgba(239, 68, 68, 0.1);
+    background: var(--expense-bg-light);
 }
 
 .btn-content {
@@ -1241,7 +1512,7 @@ input:checked + .slider:before {
 }
 
 .danger-actions .btn-title {
-    color: var(--danger-color);
+    color: var(--expense-color); /* Chữ màu đỏ */
 }
 
 /* === RECONCILIATION === */
@@ -1283,34 +1554,28 @@ input:checked + .slider:before {
 }
 
 .account-balance.positive {
-    color: var(--accent-color);
+    color: var(--income-color); /* Chữ màu xanh */
 }
 
 .account-balance.negative {
-    color: var(--danger-color);
+    color: var(--expense-color); /* Chữ màu đỏ */
 }
 
 /* Reconciliation Table */
 .reconciliation-container {
     position: relative;
-}
-
-.reconciliation-scroll {
-    overflow-x: auto; /* Đã có: Đảm bảo cuộn ngang được bật */
-    -webkit-overflow-scrolling: touch; /* Hỗ trợ cuộn mượt trên mobile */
-    padding-bottom: 10px; /* Thêm khoảng đệm để thanh cuộn dễ nhìn hơn */
+    overflow-x: auto; /* Cho phép cuộn ngang */
+    -webkit-overflow-scrolling: touch;
 }
 
 .reconciliation-table {
-    width: 100%; /* Giữ lại để nó cố gắng lấp đầy */
-    min-width: 900px; /* TĂNG/THAY ĐỔI: Đặt chiều rộng tối thiểu LỚN HƠN cho bảng.
-                         Bạn có thể điều chỉnh giá trị này (ví dụ: 800px, 900px, 1000px)
-                         tùy thuộc vào số lượng cột và chiều rộng bạn muốn. */
+    width: 100%;
+    min-width: 900px;
+    table-layout: fixed; /* Thêm dòng này */
     border-collapse: collapse;
     background: var(--bg-primary);
     border-radius: var(--border-radius);
     overflow: hidden;
-    table-layout: auto; /* Đảm bảo bảng không tự động co cột quá mức */
 }
 
 .reconciliation-table th,
@@ -1319,8 +1584,6 @@ input:checked + .slider:before {
     border: 1px solid var(--border-color);
     text-align: center;
     vertical-align: middle;
-    white-space: nowrap; /* THÊM: Ngăn văn bản/nút xuống dòng, giữ cột rộng */
-    min-width: 130px; /* THÊM: Đặt chiều rộng tối thiểu cho mỗi cột (trừ cột đầu) */
 }
 
 .reconciliation-table th {
@@ -1339,15 +1602,11 @@ input:checked + .slider:before {
     z-index: 11;
     text-align: left;
     font-weight: 600;
-    min-width: 160px; /* THÊM/ĐIỀU CHỈNH: Chiều rộng tối thiểu cho cột đầu tiên */
-    /* Nếu cột đầu cũng bị co, hãy thêm: */
-    width: 160px;
-    max-width: 160px;
+    min-width: 150px;
 }
 
 .reconciliation-input {
     width: 100%;
-    min-width: 110px; /* Đảm bảo input có độ rộng tối thiểu */
     padding: var(--spacing-sm);
     border: 1px solid var(--border-color);
     border-radius: 6px;
@@ -1367,8 +1626,6 @@ input:checked + .slider:before {
     cursor: pointer;
     transition: all 0.2s ease;
     width: 100%;
-    min-width: 80px; /* Đảm bảo nút có độ rộng tối thiểu */
-    white-space: nowrap; /* Ngăn chữ trên nút xuống dòng */
 }
 
 .reconcile-btn {
@@ -1437,63 +1694,6 @@ input:checked + .slider:before {
     border-radius: 8px;
 }
 
-/* === VIRTUAL KEYBOARD === */
-.virtual-keyboard {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--bg-primary);
-    border-top: 1px solid var(--border-color);
-    padding: var(--spacing-md);
-    z-index: var(--z-keyboard);
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-}
-
-.keyboard-row {
-    display: flex;
-    gap: var(--spacing-sm);
-    margin-bottom: var(--spacing-sm);
-}
-
-.keyboard-row:last-child {
-    margin-bottom: 0;
-}
-
-.key {
-    flex: 1;
-    height: 50px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    font-size: 1.1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.1s ease;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.key:active {
-    background: var(--border-color);
-    transform: scale(0.95);
-}
-
-.key.backspace,
-.key.action {
-    background: var(--bg-tertiary);
-}
-
-.key.done {
-    background: var(--primary-color);
-    color: white;
-}
-
-.key.zero {
-    flex: 2;
-}
-
 /* === LOADING OVERLAY === */
 .loading-overlay {
     position: fixed;
@@ -1535,247 +1735,9 @@ input:checked + .slider:before {
     font-weight: 500;
 }
 
-/* === RESPONSIVE === */
-@media (max-width: 480px) {
-    :root {
-        --spacing-md: 0.75rem;
-        --spacing-lg: 1rem;
-        --spacing-xl: 1.5rem;
-    }
-
-    .header-summary {
-        grid-template-columns: 1fr;
-    }
-
-    .summary-card {
-        padding: var(--spacing-md);
-    }
-
-    .radio-group {
-        flex-direction: column;
-    }
-
-    .radio-option {
-        justify-content: flex-start;
-    }
-
-    .chart-container-wrapper {
-        grid-template-columns: 1fr;
-    }
-
-    .chart-legend {
-        min-width: auto;
-        margin-top: var(--spacing-md);
-    }
-
-    .filter-controls {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .stats-summary {
-        grid-template-columns: 1fr;
-    }
-
-	.theme-options {
-	  display: grid;
-	  grid-template-columns: repeat(3, 1fr);
-	  gap: 1.5rem;
-	  margin: 1.5rem 0;
-	}
-
-	.theme-option {
-	  background: var(--bg-secondary);
-	  color: var(--text-primary);
-	  border: 2px solid var(--border-color);
-	  border-radius: 1.25rem;
-	  padding: 1.25rem 0.5rem;
-	  display: flex;
-	  flex-direction: column;
-	  align-items: center;
-	  transition: background 0.2s, border 0.2s, color 0.2s;
-	  cursor: pointer;
-	  box-shadow: none;
-	  position: relative;
-	  font-size: 1rem;
-	}
-
-	.theme-option input[type="radio"] {
-	  display: none;
-	}
-
-	/* Khi được chọn */
-	.theme-option.selected,
-	.theme-option input[type="radio"]:checked + .theme-preview {
-	  border-color: #3b82f6;
-	  background: var(--bg-tertiary);
-	  box-shadow: 0 0 0 2px #3b82f680;
-	}
-
-	.theme-preview {
-	  font-size: 2rem;
-	  margin-bottom: 0.5rem;
-	  transition: color 0.2s;
-	}
-
-	/* Hiệu ứng hover cho đẹp */
-	.theme-option:hover {
-	  border-color: #818cf8;
-	  background: var(--bg-tertiary);
-	}
-
-	.theme-option .theme-label {
-	  font-weight: 600;
-	  font-size: 1rem;
-	  color: var(--text-primary);
-}
-    .nav-label {
-        font-size: 0.65rem;
-    }
-}
-
-@media (min-width: 768px) {
-    .main-container {
-        padding: 0 var(--spacing-xl);
-    }
-
-    .transaction-form {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--spacing-lg);
-    }
-
-    .form-row.full-width {
-        grid-column: 1 / -1;
-    }
-
-    .bottom-nav {
-        padding: var(--spacing-md) 0;
-    }
-
-    .nav-item {
-        max-width: 100px;
-        padding: var(--spacing-md);
-    }
-
-    .nav-label {
-        font-size: 0.8rem;
-    }
-}
-
-@media (min-width: 1024px) {
-    body {
-        padding-bottom: 0;
-    }
-
-    .bottom-nav {
-        position: static;
-        background: var(--bg-primary);
-        border: 1px solid var(--border-color);
-        border-radius: var(--border-radius);
-        margin: var(--spacing-xl) auto 0;
-        max-width: 600px;
-        box-shadow: var(--shadow-md);
-    }
-
-    .main-container {
-        margin-bottom: var(--spacing-xl);
-    }
-}
-
-/* === DARK MODE SPECIFIC === */
-[data-theme="dark"] .message-box.success {
-    background-color: rgba(16, 185, 129, 0.1);
-    color: #a7f3d0;
-}
-
-[data-theme="dark"] .message-box.error {
-    background-color: rgba(239, 68, 68, 0.1);
-    color: #fecaca;
-}
-
-[data-theme="dark"] .message-box.info {
-    background-color: rgba(59, 130, 246, 0.1);
-    color: #93c5fd;
-}
-
-[data-theme="dark"] .form-select {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 0.5rem center;
-    background-repeat: no-repeat;
-    background-size: 1.5em 1.5em;
-}
-
-/* === UTILITY CLASSES === */
-.hidden { display: none !important; }
-.visible { display: block !important; }
-
-.text-center { text-align: center; }
-.text-right { text-align: right; }
-.text-left { text-align: left; }
-
-.w-full { width: 100%; }
-.h-full { height: 100%; }
-
-.flex { display: flex; }
-.flex-col { flex-direction: column; }
-.flex-wrap { flex-wrap: wrap; }
-.items-center { align-items: center; }
-.justify-center { justify-content: center; }
-.justify-between { justify-content: space-between; }
-
-.gap-2 { gap: var(--spacing-sm); }
-.gap-4 { gap: var(--spacing-md); }
-.gap-6 { gap: var(--spacing-lg); }
-
-.p-2 { padding: var(--spacing-sm); }
-.p-4 { padding: var(--spacing-md); }
-.p-6 { padding: var(--spacing-lg); }
-
-.m-2 { margin: var(--spacing-sm); }
-.m-4 { margin: var(--spacing-md); }
-.m-6 { margin: var(--spacing-lg); }
-
-.mb-2 { margin-bottom: var(--spacing-sm); }
-.mb-4 { margin-bottom: var(--spacing-md); }
-.mb-6 { margin-bottom: var(--spacing-lg); }
-
-.mt-2 { margin-top: var(--spacing-sm); }
-.mt-4 { margin-top: var(--spacing-md); }
-.mt-6 { margin-top: var(--spacing-lg); }
-
-.rounded { border-radius: 6px; }
-.rounded-lg { border-radius: var(--border-radius); }
-
-.shadow { box-shadow: var(--shadow-sm); }
-.shadow-md { box-shadow: var(--shadow-md); }
-.shadow-lg { box-shadow: var(--shadow-lg); }
-
-.cursor-pointer { cursor: pointer; }
-.select-none { user-select: none; }
-
-.transition { transition: all 0.2s ease; }
-
-.text-primary { color: var(--text-primary); }
-.text-secondary { color: var(--text-secondary); }
-.text-muted { color: var(--text-muted); }
-.text-success { color: var(--accent-color); }
-.text-warning { color: var(--warning-color); }
-.text-danger { color: var(--danger-color); }
-
-.bg-primary { background-color: var(--bg-primary); }
-.bg-secondary { background-color: var(--bg-secondary); }
-.bg-tertiary { background-color: var(--bg-tertiary); }
-
-.border { border: 1px solid var(--border-color); }
-.border-t { border-top: 1px solid var(--border-color); }
-.border-b { border-bottom: 1px solid var(--border-color); }
-.border-l { border-left: 1px solid var(--border-color); }
-.border-r { border-right: 1px solid var(--border-color); }
-
 /* ===== TRANSACTION CALENDAR STYLES ===== */
 .transaction-calendar-section {
-    margin-bottom: 2rem;
+    margin-bottom: var(--spacing-2xl);
 }
 
 .calendar-container {
@@ -1834,8 +1796,7 @@ input:checked + .slider:before {
     margin-top: 1rem;
 }
 
-/* Make sure summary card styles in header and calendar don't conflict */
-.calendar-header .summary-card {
+.summary-card {
     background: rgba(255,255,255,0.1);
     padding: 1rem;
     border-radius: 12px;
@@ -1843,14 +1804,14 @@ input:checked + .slider:before {
     backdrop-filter: blur(10px);
 }
 
-.calendar-header .summary-label {
+.summary-label {
     font-size: 0.875rem;
     opacity: 0.9;
     margin-bottom: 0.5rem;
     font-weight: 500;
 }
 
-.calendar-header .summary-value {
+.summary-value {
     font-size: 1rem;
     font-weight: 700;
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
@@ -1877,14 +1838,15 @@ input:checked + .slider:before {
     border-radius: 8px;
 }
 
+
 .calendar-days-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 0.5rem;
+    gap: 0.1rem; /* Cập nhật theo yêu cầu */
 }
 
 .calendar-day-cell {
-    aspect-ratio: 1;
+    /* aspect-ratio: 1; */ /* Bỏ để tránh xung đột height */
     border: 1px solid var(--border-color);
     border-radius: 12px;
     position: relative;
@@ -1892,11 +1854,11 @@ input:checked + .slider:before {
     transition: all 0.2s ease;
     background: var(--bg-primary);
     display: flex;
-    flex-direction: column; /* Changed to column */
-    padding: 0.5rem;
-    min-height: 80px; /* Increased height */
-    overflow: hidden;
-    justify-content: flex-start; /* Align from top */
+    flex-direction: column;
+    padding: 0.6rem;
+    min-height: 90px;
+    overflow: hidden; /* Đổi thành hidden để quản lý tốt hơn */
+    justify-content: flex-start; /* Căn lên đầu */
 }
 
 .calendar-day-cell:hover {
@@ -1913,7 +1875,7 @@ input:checked + .slider:before {
 
 .calendar-day-cell.today {
     border-color: var(--primary-color);
-    background: var(--primary-light); /* Ensure --primary-light is defined or use rgba */
+    background: var(--primary-light);
     border-width: 2px;
 }
 
@@ -1923,39 +1885,35 @@ input:checked + .slider:before {
 }
 
 .day-number {
-    font-size: 0.6rem; /* Adjusted size */
+    font-size: 0.875rem;
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 0.15rem; /* Space */
+    margin-bottom: 0.25rem;
     text-align: center;
 }
 
 .transaction-indicators {
     flex: 1;
     display: flex;
-    flex-direction: column; /* Stack vertically */
-    gap: 0.2rem; /* Gap between income/expense */
-    font-size: 0.55rem; /* Smaller font */
-    line-height: 1.15;
-    width: 100%;
-	margin-top: 1px; /* Thêm một chút khoảng trống phía trên khối thu/chi */
+    flex-direction: column;
+    gap: 0.125rem;
+    font-size: 0.75rem;
+    line-height: 1.2;
 }
 
 .transaction-indicator {
-    padding: 0.2rem 0.3rem;
+    padding: 0.125rem 0.25rem;
     border-radius: 4px;
-    text-align: right; /* Align right */
-    font-weight: 500;
+    text-align: center;
+    font-weight: 600;
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
     min-height: 16px;
     display: flex;
     align-items: center;
-    justify-content: flex-end; /* Align right */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    border-width: 1px;
-    border-style: solid;
+    justify-content: center;
+    overflow: hidden; /* Ẩn nội dung bị tràn */
+    white-space: nowrap; /* Ngăn xuống dòng */
+    text-overflow: ellipsis; /* Hiển thị dấu ba chấm nếu tràn */
 }
 
 .transaction-indicator.income {
@@ -1970,9 +1928,12 @@ input:checked + .slider:before {
     border-color: var(--danger-border);
 }
 
-/* Remove or comment out .both if it exists */
-/* .transaction-indicator.both { ... } */
-
+.transaction-indicator.both {
+    background: linear-gradient(90deg, var(--income-bg-light) 50%, var(--expense-bg-light) 50%);
+    color: var(--text-primary); /* Chữ màu chính */
+    border: 1px solid var(--border-color);
+    font-size: 0.625rem;
+}
 
 /* Modal Styles */
 .modal {
@@ -1987,6 +1948,7 @@ input:checked + .slider:before {
     justify-content: center;
     z-index: 1000;
     backdrop-filter: blur(4px);
+    padding: var(--spacing-md); /* Thêm padding để tránh sát cạnh trên mobile */
 }
 
 .modal-content {
@@ -1996,7 +1958,7 @@ input:checked + .slider:before {
     max-width: 500px;
     max-height: 80vh;
     overflow: hidden;
-    box-shadow: var(--shadow-lg); /* Changed to -lg for better visibility */
+    box-shadow: var(--shadow-xl);
     border: 1px solid var(--border-color);
 }
 
@@ -2067,11 +2029,11 @@ input:checked + .slider:before {
 }
 
 .transaction-type-indicator.income {
-    background: var(--accent-color); /* Changed to accent */
+    background: var(--income-color); /* Nền màu xanh */
 }
 
 .transaction-type-indicator.expense {
-    background: var(--danger-color);
+    background: var(--expense-color); /* Nền màu đỏ */
 }
 
 .day-transaction-details {
@@ -2096,167 +2058,785 @@ input:checked + .slider:before {
 }
 
 .day-transaction-amount.income {
-    color: var(--accent-color); /* Changed to accent */
+    color: #16a34a !important;       /* Xanh đậm */
 }
 
 .day-transaction-amount.expense {
-    color: var(--danger-color);
+    color: #dc2626 !important;       /* Đỏ đậm */
 }
-
 .no-transactions-day {
     text-align: center;
     color: var(--text-muted);
     padding: 2rem;
     font-style: italic;
 }
+/* Summary cards trên header */
+.summary-value.income,
+.summary-card.income .summary-value {
+    color: #16a34a !important;       /* Xanh đậm */
+}
 
-/* Responsive Design for Calendar */
-@media (max-width: 768px) {
+.summary-value.expense, 
+.summary-card.expense .summary-value {
+    color: #dc2626 !important;       /* Đỏ đậm */
+}
+/* Input Error Message & Validation */
+.input-error-message {
+    color: var(--danger-color);
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    display: none; /* Hidden by default */
+}
+
+.form-input.input-invalid,
+.category-input.input-invalid,
+.setting-input.input-invalid {
+    border-color: var(--danger-color);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-input.input-valid,
+.category-input.input-valid,
+.setting-input.input-valid {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+.slide-up {
+    animation: slideUp 0.4s ease-out;
+}
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Custom Scrollbar for Legend */
+.chart-legend::-webkit-scrollbar {
+    width: 6px;
+}
+.chart-legend::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+}
+.chart-legend::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+.chart-legend::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* Enhanced No Data State */
+.no-data-text {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text-muted);
+    font-size: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+.no-data-text::before {
+    content: '📊';
+    font-size: 3rem;
+    opacity: 0.5;
+}
+
+/* Loading States */
+.chart-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    color: var(--text-muted);
+}
+.chart-loading::after {
+    content: '';
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border-color);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: var(--spacing-md);
+}
+
+/* Accessibility Improvements */
+.legend-item:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+.chart-type-selector:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .stats-card {
+        border-width: 2px;
+    }
+    .legend-item {
+        border-width: 2px;
+    }
+    .legend-color {
+        border-width: 3px;
+    }
+}
+
+
+/* =============================================================================
+   RESPONSIVE DESIGN (Media Queries)
+   ============================================================================= */
+
+/* --- IPAD & TABLET (min-width: 768px) --- */
+@media (min-width: 768px) {
+    :root {
+        --spacing-md: 1.25rem;   /* 20px */
+        --spacing-lg: 1.75rem;   /* 28px */
+        --spacing-xl: 2.5rem;    /* 40px */
+        --spacing-2xl: 3.5rem;   /* 56px */
+    }
+
+    .main-container {
+        padding: 0 var(--spacing-lg); /* Larger padding for tablets */
+    }
+
+    .header-summary {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: var(--spacing-lg);
+    }
+
+    .summary-card {
+        padding: var(--spacing-lg);
+    }
+
+    .transaction-form {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-lg);
+    }
+
+    .form-row.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .radio-group {
+        flex-direction: row; /* Trở lại hàng ngang trên tablet */
+        justify-content: flex-start;
+    }
+
+    .radio-option {
+        min-width: 150px; /* Tăng kích thước tối thiểu cho các tùy chọn radio */
+    }
+
+    .bottom-nav {
+        padding: var(--spacing-md) 0;
+    }
+
+    .nav-item {
+        max-width: 100px;
+        padding: var(--spacing-md);
+    }
+
+    .nav-label {
+        font-size: 0.8rem;
+    }
+
+    /* Chart adjustments for tablets */
+    .chart-container-wrapper {
+        grid-template-columns: 1fr 280px; /* Cột biểu đồ và cột legend */
+        gap: var(--spacing-xl);
+    }
+    .chart-container {
+        height: 400px; /* Tăng chiều cao biểu đồ */
+    }
+    .chart-legend {
+        min-width: 250px;
+        max-width: 350px;
+    }
+
+    /* Calendar adjustments */
+    .calendar-header {
+        padding: 2rem;
+    }
+    .month-summary-cards {
+        gap: 1.5rem;
+    }
+    .summary-value {
+        font-size: 1.2rem;
+    }
+    .calendar-grid {
+        padding: 2rem;
+    }
+    .calendar-day-cell {
+        min-height: 80px;
+        padding: 0.75rem;
+    }
+    .day-number {
+        font-size: 1rem;
+    }
+    .transaction-indicator {
+        font-size: 0.75rem;
+        min-height: 18px;
+    }
+    .weekday {
+        font-size: 0.9rem;
+    }
+    .modal-content.extra-compact {
+        max-width: 400px; /* Tăng kích thước cho modal compact trên tablet */
+        max-height: 60vh;
+    }
+}
+
+/* --- DESKTOP (min-width: 1024px) --- */
+@media (min-width: 1024px) {
+    :root {
+        --spacing-md: 1.5rem;   /* 24px */
+        --spacing-lg: 2rem;     /* 32px */
+        --spacing-xl: 3rem;     /* 48px */
+        --spacing-2xl: 4rem;    /* 64px */
+        --font-size-base: 18px; /* Tăng kích thước font cơ sở */
+    }
+
+    body {
+        padding-bottom: 0; /* No bottom nav on desktop */
+    }
+
+    .main-container {
+        padding: 0 var(--spacing-xl); /* Even larger padding for desktops */
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .bottom-nav {
+        position: static; /* Biến thành thanh điều hướng tĩnh */
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        margin: var(--spacing-xl) auto 0;
+        max-width: 600px;
+        box-shadow: var(--shadow-md);
+    }
+
+    .header-title {
+        font-size: 2rem; /* Lớn hơn trên desktop */
+    }
+    .header-icon {
+        font-size: 2.2rem;
+    }
+    .header-summary {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: var(--spacing-xl);
+    }
+    .summary-label {
+        font-size: 0.95rem;
+    }
+    .summary-value {
+        font-size: 1.3rem;
+    }
+
+    .transaction-form {
+        grid-template-columns: repeat(3, 1fr); /* 3 cột trên desktop */
+        gap: var(--spacing-xl);
+    }
+    .form-row.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .radio-option {
+        min-width: 180px; /* Tăng kích thước tối thiểu thêm */
+    }
+
+    /* Chart adjustments for desktops */
+    .chart-container-wrapper {
+        grid-template-columns: 1fr 300px; /* Cột biểu đồ và cột legend */
+        gap: var(--spacing-2xl);
+    }
+    .chart-container {
+        height: 450px; /* Chiều cao biểu đồ lớn hơn */
+    }
+    .chart-legend {
+        min-width: 280px;
+        max-width: 400px;
+        padding: var(--spacing-lg);
+    }
+    .legend-item {
+        padding: var(--spacing-md);
+    }
+    .legend-icon {
+        font-size: 1.6rem;
+        width: 40px;
+        height: 40px;
+    }
+    .legend-label {
+        font-size: 1rem;
+    }
+    .legend-amount-percentage {
+        font-size: 0.85rem;
+    }
+
+    /* Calendar adjustments */
+    .calendar-container {
+        border-radius: 20px;
+    }
+    .calendar-header {
+        padding: 2.5rem;
+    }
+    .month-summary-cards {
+        gap: 2rem;
+    }
+    .summary-value {
+        font-size: 1.4rem;
+    }
+    .calendar-grid {
+        padding: 2.5rem;
+    }
+    .calendar-day-cell {
+        min-height: 90px;
+        padding: 1rem;
+    }
+    .day-number {
+        font-size: 1.1rem;
+    }
+    .transaction-indicator {
+        font-size: 0.8rem;
+        min-height: 20px;
+    }
+    .weekday {
+        font-size: 1rem;
+    }
+
+    .modal-content {
+        max-width: 600px; /* Tăng kích thước cho modal trên desktop */
+        max-height: 70vh;
+    }
+    .modal-content.extra-compact {
+        max-width: 450px;
+        max-height: 50vh;
+    }
+}
+
+/* --- IPHONE & SMALL MOBILE (max-width: 480px) --- */
+/* Các style này đã được đặt ở mặc định hoặc điều chỉnh nhẹ */
+@media (max-width: 480px) {
+    :root {
+        --spacing-md: 0.75rem; /* 12px */
+        --spacing-lg: 1rem;    /* 16px */
+        --spacing-xl: 1.5rem;  /* 24px */
+        --spacing-2xl: 2rem;   /* 32px */
+        --font-size-base: 15px; /* Giảm font cơ sở nhẹ */
+    }
+
+    .header-summary {
+        grid-template-columns: 1fr; /* Mỗi thẻ một hàng */
+    }
+
+    .quick-add-section,
+    .transaction-list-section,
+    .category-section,
+    .settings-section,
+    .account-balances-section,
+    .reconciliation-section,
+    .reconciliation-history-section,
+    .chart-section {
+        padding: var(--spacing-md); /* Giảm padding tổng thể */
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .form-label {
+        font-size: 0.8rem;
+    }
+    .form-input, .form-select {
+        padding: 0.6rem;
+    }
+
+    .radio-group {
+        flex-direction: column; /* Các tùy chọn radio xếp dọc */
+        gap: var(--spacing-sm);
+    }
+
+    .radio-option {
+        width: 100%; /* Chiếm toàn bộ chiều rộng */
+        justify-content: flex-start; /* Căn trái nội dung */
+        padding: var(--spacing-md) var(--spacing-md); /* Tăng padding để dễ chạm */
+    }
+
+    .chart-container-wrapper {
+        grid-template-columns: 1fr; /* Biểu đồ và legend xếp dọc */
+        gap: var(--spacing-lg);
+    }
+    .chart-container {
+        height: 250px; /* Chiều cao biểu đồ nhỏ hơn */
+    }
+    .chart-legend {
+        min-width: auto;
+        max-width: none;
+        width: 100%;
+        margin-top: var(--spacing-md);
+    }
+    .legend-item {
+        padding: var(--spacing-sm);
+    }
+    .legend-icon {
+        font-size: 1.2rem;
+        width: 32px;
+        height: 32px;
+    }
+    .legend-label {
+        font-size: 0.85rem;
+    }
+    .legend-amount-percentage {
+        font-size: 0.7rem;
+    }
+
+    .filter-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .stats-summary {
+        grid-template-columns: 1fr; /* Mỗi thẻ tổng quan một hàng */
+    }
+    .stats-card {
+        flex-direction: column;
+        text-align: center;
+        padding: var(--spacing-lg);
+    }
+    .stats-icon {
+        font-size: 2rem;
+        width: 60px;
+        height: 60px;
+    }
+    .stats-value {
+        font-size: 1.2rem;
+    }
+    .stats-table th,
+    .stats-table td {
+        padding: var(--spacing-sm);
+        font-size: 0.9rem;
+    }
+
+    .nav-label {
+        font-size: 0.65rem;
+    }
+
+    /* Calendar adjustments for small mobile */
     .calendar-container {
         border-radius: 12px;
     }
-
     .calendar-header {
         padding: 1rem;
     }
-
     .month-summary-cards {
         gap: 0.75rem;
     }
-
-    .calendar-header .summary-card {
+    .summary-card {
         padding: 0.75rem;
     }
-
     .calendar-grid {
-        padding: 1rem;
+        padding: 0.75rem;
     }
-
     .calendar-day-cell {
-        min-height: 70px; /* Adjust if needed */
-        padding: 0.375rem;
+        min-height: 55px; /* Giảm chiều cao tối thiểu */
+        padding: 0.25rem;
     }
-
     .day-number {
-        font-size: 0.75rem;
+        font-size: 0.7rem; /* Kích thước số ngày nhỏ hơn */
     }
-
+    .transaction-indicators {
+        gap: 0.0625rem; /* Giảm khoảng cách giữa các chỉ báo */
+    }
     .transaction-indicator {
-        font-size: 0.6rem; /* Further adjust */
-        padding: 0.15rem 0.25rem;
-        min-height: 14px;
+        font-size: 0.55rem;
+        min-height: 12px;
+    }
+    .weekday {
+        font-size: 0.7rem;
+        padding: 0.4rem 0.1rem;
+    }
+    .modal-content {
+        width: 95%;
+        margin: var(--spacing-sm); /* Giảm margin */
+    }
+    .modal-header,
+    .modal-body {
+        padding: var(--spacing-md);
+    }
+    .modal-content.extra-compact {
+        max-width: 280px; /* Nhỏ hơn nữa cho modal compact */
+        max-height: 40vh;
+    }
+    .modal-content.extra-compact .modal-header {
+        padding: 0.4rem;
+    }
+    .modal-content.extra-compact .modal-header h3 {
+        font-size: 0.8rem;
+    }
+    .modal-content.extra-compact .modal-body {
+        padding: 0.4rem;
+        max-height: 150px;
+    }
+    .modal-content.extra-compact .day-transaction-item {
+        padding: 0.2rem;
+        gap: 0.4rem;
+        margin-bottom: 0.2rem;
+    }
+    .modal-content.extra-compact .day-transaction-description {
+        font-size: 0.75rem;
+    }
+    .modal-content.extra-compact .day-transaction-meta {
+        font-size: 0.6rem;
+    }
+    .modal-content.extra-compact .day-transaction-amount {
+        font-size: 0.75rem;
+    }
+}
+/* Thêm vào cuối file styles.css */
+input[inputmode="numeric"],
+input[inputmode="decimal"],
+.amount-input,
+.reconciliation-input,
+.setting-input[type="number"] {
+    inputmode: numeric;
+}
+
+@supports (-webkit-touch-callout: none) {
+    /* iOS specific */
+    input[inputmode="numeric"]::-webkit-outer-spin-button,
+    input[inputmode="numeric"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+}
+
+/* =============================================================================
+   IMPROVED FORM LAYOUT - Responsive Design Fix
+   ============================================================================= */
+
+/* === QUICK ADD SECTION IMPROVEMENTS === */
+.quick-add-section {
+    background: var(--bg-primary);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    /* Giới hạn chiều rộng tối đa để không bị kéo dài */
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* === TRANSACTION FORM RESPONSIVE LAYOUT === */
+.transaction-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+/* --- MOBILE (mặc định) --- */
+.form-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+/* --- TABLET (768px+) --- */
+@media (min-width: 768px) {
+    .transaction-form {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-lg);
+        max-width: 900px; /* Giới hạn chiều rộng */
+        margin: 0 auto;
     }
 
-    .weekday {
-        font-size: 0.75rem;
-        padding: 0.5rem 0.125rem;
+    /* Radio group cần full width */
+    .form-row:has(.radio-group),
+    .form-row.full-width {
+        grid-column: 1 / -1;
+    }
+
+    /* Đặc biệt cho form chuyển tiền */
+    .transaction-form:has(input[name="type"][value="Transfer"]:checked) {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 800px;
+    }
+
+    /* Các trường cần full width trong transfer */
+    .transaction-form:has(input[name="type"][value="Transfer"]:checked) .form-row:has(#description-input),
+    .transaction-form:has(input[name="type"][value="Transfer"]:checked) .form-row:has(#datetime-input),
+    .transaction-form:has(input[name="type"][value="Transfer"]:checked) .form-row:has(.submit-btn) {
+        grid-column: 1 / -1;
+    }
+}
+
+/* --- DESKTOP (1024px+) --- */
+@media (min-width: 1024px) {
+    .transaction-form {
+        /* Giữ 2 cột thay vì 3 cột để tránh kéo dài */
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-xl);
+        max-width: 900px;
+    }
+
+    /* Chỉ một số form thuần có thể dùng 3 cột */
+    .transaction-form:not(:has(input[name="type"][value="Transfer"]:checked)) {
+        grid-template-columns: repeat(3, minmax(250px, 1fr));
+        max-width: 1000px;
+    }
+
+    .form-row.full-width {
+        grid-column: 1 / -1;
+    }
+
+    /* Transfer form vẫn giữ 2 cột trên desktop */
+    .transaction-form:has(input[name="type"][value="Transfer"]:checked) {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 800px;
+    }
+}
+
+/* === RADIO GROUP IMPROVEMENTS === */
+.radio-group {
+    display: flex;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    justify-content: center; /* Căn giữa trên màn hình lớn */
+}
+
+
+@media (min-width: 768px) {
+    .radio-option {
+        flex: 0 1 auto; /* Không co giãn quá mức trên tablet+ */
+        min-width: 140px;
+        max-width: 180px;
+    }
+}
+.transaction-meta {
+    display: grid;
+    grid-template-columns: auto 1fr auto; /* time | category | account */
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    align-items: center;
+}
+
+/* === TIME COLUMN - STACK TIME AND DATE === */
+.transaction-time {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.2;
+    min-width: 60px;
+    flex-shrink: 0;
+}
+
+.transaction-time .time-part {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.transaction-time .date-part {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 1px;
+}
+
+/* === CATEGORY COLUMN - FIXED WIDTH === */
+.transaction-category {
+    background: var(--bg-tertiary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    
+    /* Cố định kích thước và truncate text */
+    max-width: 80px;
+    min-width: 60px;
+    width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+    
+    /* Styling */
+    border: 1px solid var(--border-color);
+    font-weight: 500;
+}
+
+/* === ACCOUNT COLUMN - FIXED WIDTH === */
+.transaction-account {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-align: right;
+    
+    /* Cố định kích thước */
+    max-width: 70px;
+    min-width: 50px;
+    width: 70px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* === HOVER TOOLTIP FOR TRUNCATED TEXT === */
+.transaction-category:hover::after,
+.transaction-account:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+    .transaction-meta {
+        grid-template-columns: auto 1fr; /* Chỉ time và category */
+    }
+    
+    .transaction-account {
+        display: none; /* Ẩn account trên mobile */
+    }
+    
+    .transaction-category {
+        max-width: 90px;
+        width: 90px;
+        text-align: left;
     }
 }
 
 @media (max-width: 480px) {
-    .calendar-day-cell {
-        min-height: 55px; /* Adjust if needed */
-        padding: 0.2rem;
-        gap: 0.3rem; /* Adjust gap in cell */
+    .transaction-time {
+        min-width: 50px;
     }
-
-    .transaction-indicator {
-        font-size: 0.55rem; /* Further adjust */
-        min-height: 12px;
+    
+    .transaction-category {
+        max-width: 70px;
+        width: 70px;
+        font-size: 0.65rem;
     }
-
-    .day-number {
-        font-size: 0.6rem;
-        margin-bottom: 0.15rem;
-    }
-
-    .modal-content {
-        width: 95%;
-        margin: 1rem;
-    }
-
-    .modal-header,
-    .modal-body {
-        padding: 1rem;
-    }
-}
-
-.detailed-stats-section {
-    /* Đảm bảo section này chiếm đủ không gian hoặc được căn giữa nếu cần */
-    /* Ví dụ: width: 100%; */
-    margin-bottom: var(--spacing-xl); /* Thêm khoảng cách dưới nếu cần */
-}
-
-.stats-table-container {
-    width: 100%; /* Cho phép container của bảng chiếm toàn bộ chiều rộng của section cha */
-    overflow-x: auto; /* Thêm thanh cuộn ngang nếu bảng rộng hơn vùng chứa */
-    background: var(--bg-primary); /* Thêm màu nền nếu cần, đồng bộ với thiết kế */
-    border-radius: var(--border-radius); /* Bo góc cho container */
-    border: 1px solid var(--border-color); /* Thêm viền nếu muốn */
-    box-shadow: var(--shadow-sm); /* Thêm bóng đổ nhẹ */
-    padding: var(--spacing-sm) 0; /* Thêm padding trên dưới, không thêm padding trái phải để bảng chiếm full */
-}
-
-.stats-table {
-    width: 100%; /* Quan trọng: Đặt chiều rộng của bảng là 100% của .stats-table-container */
-    border-collapse: collapse; /* Loại bỏ khoảng trống giữa các ô */
-    /* Nếu bạn muốn bảng có chiều rộng cố định và căn giữa, bạn có thể dùng: */
-    /* width: 800px; /* Hoặc một giá trị cụ thể */
-    /* margin-left: auto; */
-    /* margin-right: auto; */
-}
-
-.stats-table th,
-.stats-table td {
-    padding: var(--spacing-md) var(--spacing-lg); /* Điều chỉnh padding cho các ô */
-    text-align: left; /* Căn lề trái mặc định cho các ô */
-    border-bottom: 1px solid var(--border-color);
-    /* white-space: nowrap; /* Bỏ comment nếu muốn nội dung không xuống dòng */
-}
-
-.stats-table thead th {
-    background-color: var(--bg-secondary); /* Màu nền cho header của bảng */
-    font-weight: 600; /* Chữ đậm cho header */
-    color: var(--text-primary);
-}
-
-.stats-table tbody tr:last-child td {
-    border-bottom: none; /* Loại bỏ viền dưới cho dòng cuối cùng trong tbody */
-}
-
-.stats-table tbody tr:hover {
-    background-color: var(--bg-tertiary); /* Hiệu ứng khi di chuột qua dòng */
-}
-
-/* Căn chỉnh cụ thể cho các cột nếu cần */
-/* Ví dụ: Căn phải cho cột "Số Tiền" và "% Tỷ Lệ" */
-.stats-table th:nth-child(2), /* Cột Số Tiền - header */
-.stats-table td:nth-child(2) { /* Cột Số Tiền - data */
-    text-align: right;
-}
-
-.stats-table th:nth-child(3), /* Cột % Tỷ Lệ - header */
-.stats-table td:nth-child(3) { /* Cột % Tỷ Lệ - data */
-    text-align: right; /* Hoặc text-align: center; tùy ý bạn */
-}
-.stats-table th:nth-child(4), /* Cột Tỷ Lệ (thanh progress) - header */
-.stats-table td:nth-child(4) { /* Cột Tỷ Lệ (thanh progress) - data */
-    text-align: center;
-    min-width: 100px; /* Đảm bảo cột progress bar có đủ không gian */
-}
-
-/* Style cho thanh progress bar (ví dụ) */
-.stats-table .progress-bar-container {
-    width: 100%;
-    background-color: var(--bg-tertiary);
-    border-radius: var(--border-radius);
-    height: 8px; /* Hoặc chiều cao bạn muốn */
-    overflow: hidden;
-}
-
-.stats-table .progress-bar-fill {
-    height: 100%;
-    background-color: var(--primary-color);
-    border-radius: var(--border-radius);
-    transition: width 0.3s ease-in-out;
 }

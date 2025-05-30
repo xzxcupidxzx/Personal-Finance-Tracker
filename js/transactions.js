@@ -946,92 +946,94 @@ class TransactionsModule {
     /**
      * Create transaction list item
      */
-    createTransactionItem(transaction) {
-        if (!transaction || !transaction.id) {
-            console.warn('Invalid transaction for item creation');
-            return null;
-        }
+	createTransactionItem(transaction) {
+		if (!transaction || !transaction.id) {
+			console.warn('Invalid transaction for item creation');
+			return null;
+		}
 
-        try {
-            const item = document.createElement('div');
-            item.className = 'transaction-item';
-            item.dataset.transactionId = transaction.id;
+		try {
+			const item = document.createElement('div');
+			item.className = 'transaction-item';
+			item.dataset.transactionId = transaction.id;
 
-            const typeClass = transaction.type === 'Thu' ? 'income' :
-                             (transaction.type === 'Chi' && !transaction.isTransfer) ? 'expense' : 'transfer';
+			const typeClass = transaction.type === 'Thu' ? 'income' :
+							 (transaction.type === 'Chi' && !transaction.isTransfer) ? 'expense' : 'transfer';
 
-            const icon = this.getTransactionIcon(transaction);
-            const accountName = this.getAccountName(transaction.account);
+			const icon = this.getTransactionIcon(transaction);
+			const accountName = this.getAccountName(transaction.account);
 
-            // For transfers, show both accounts
-            let accountDisplay = accountName;
-            if (transaction.isTransfer) {
-                const pairTransaction = transaction.transferPairId ? this.findTransferPair(transaction) : null;
-                if (pairTransaction) {
-                    const pairAccountName = this.getAccountName(pairTransaction.account);
-                    accountDisplay = transaction.type === 'Chi'
-                        ? `${accountName} → ${pairAccountName}`
-                        : `${pairAccountName} → ${accountName}`;
-                } else {
-                    accountDisplay = `${accountName} (Lỗi chuyển khoản)`;
-                }
-            }
+			// For transfers, show both accounts
+			let accountDisplay = accountName;
+			if (transaction.isTransfer) {
+				const pairTransaction = transaction.transferPairId ? this.findTransferPair(transaction) : null;
+				if (pairTransaction) {
+					const pairAccountName = this.getAccountName(pairTransaction.account);
+					accountDisplay = transaction.type === 'Chi'
+						? `${accountName} → ${pairAccountName}`
+						: `${pairAccountName} → ${accountName}`;
+				} else {
+					accountDisplay = `${accountName} (Lỗi chuyển khoản)`;
+				}
+			}
 
-            // Original amount display
-            let amountDisplay = Utils.CurrencyUtils.formatCurrency(transaction.amount || 0);
-            if (transaction.originalCurrency === 'USD' && transaction.originalAmount) {
-                const originalFormatted = Utils.CurrencyUtils.formatCurrency(transaction.originalAmount, 'USD');
-                amountDisplay += ` <span class="original-amount">(${originalFormatted})</span>`;
-            }
+			// Original amount display
+			let amountDisplay = Utils.CurrencyUtils.formatCurrency(transaction.amount || 0);
+			if (transaction.originalCurrency === 'USD' && transaction.originalAmount) {
+				const originalFormatted = Utils.CurrencyUtils.formatCurrency(transaction.originalAmount, 'USD');
+				amountDisplay += ` <span class="original-amount">(${originalFormatted})</span>`;
+			}
 
-            const description = this.escapeHtml(transaction.description || 'Không có mô tả');
-            const categoryDisplay = transaction.isTransfer
-                ? this.escapeHtml(transaction.category || 'Chuyển khoản')
-                : this.escapeHtml(transaction.category || '');
+			const description = this.escapeHtml(transaction.description || 'Không có mô tả');
+			const categoryDisplay = transaction.isTransfer
+				? this.escapeHtml(transaction.category || 'Chuyển khoản')
+				: this.escapeHtml(transaction.category || '');
 
-            const formattedDateTime = Utils.DateUtils.formatDisplayDateTime(transaction.datetime);
+			// SỬA PHẦN NÀY - Dùng compact format
+			const compactDateTime = Utils.DateUtils.formatCompactDateTime(transaction.datetime);
 
-            item.innerHTML = `
-                <div class="transaction-type-icon ${typeClass}">
-                    ${icon}
-                </div>
-                <div class="transaction-content">
-                    <div class="transaction-description">
-                        ${description}
-                    </div>
-                    <div class="transaction-meta">
-                        <span class="transaction-time">
-                            ${formattedDateTime}
-                        </span>
-                        <span class="transaction-category">
-                            ${categoryDisplay}
-                        </span>
-                        <span class="transaction-account">
-                            ${this.escapeHtml(accountDisplay)}
-                        </span>
-                    </div>
-                </div>
-                <div class="transaction-amount-section">
-                    <div class="transaction-amount ${typeClass}">
-                        ${amountDisplay}
-                    </div>
-                    <div class="transaction-actions">
-                        <button class="action-btn-small edit" onclick="window.TransactionsModule.editTransaction('${transaction.id}')" title="Sửa">
-                            ✏️
-                        </button>
-                        <button class="action-btn-small delete" onclick="window.TransactionsModule.deleteTransaction('${transaction.id}')" title="Xóa">
-                            🗑️
-                        </button>
-                    </div>
-                </div>
-            `;
+			item.innerHTML = `
+				<div class="transaction-type-icon ${typeClass}">
+					${icon}
+				</div>
+				<div class="transaction-content">
+					<div class="transaction-description">
+						${description}
+					</div>
+					<div class="transaction-meta">
+						<span class="transaction-time">
+							<span class="time-part">${compactDateTime.time}</span>
+							<span class="date-part">${compactDateTime.date}</span>
+						</span>
+						<span class="transaction-category" title="${this.escapeHtml(categoryDisplay)}">
+							${categoryDisplay}
+						</span>
+						<span class="transaction-account" title="${this.escapeHtml(accountDisplay)}">
+							${this.escapeHtml(accountDisplay)}
+						</span>
+					</div>
+				</div>
+				<div class="transaction-amount-section">
+					<div class="transaction-amount ${typeClass}">
+						${amountDisplay}
+					</div>
+					<div class="transaction-actions">
+						<button class="action-btn-small edit" onclick="window.TransactionsModule.editTransaction('${transaction.id}')" title="Sửa">
+							✏️
+						</button>
+						<button class="action-btn-small delete" onclick="window.TransactionsModule.deleteTransaction('${transaction.id}')" title="Xóa">
+							🗑️
+						</button>
+					</div>
+				</div>
+			`;
 
-            return item;
-        } catch (error) {
-            console.error('Error creating transaction item:', error);
-            return null;
-        }
-    }
+			return item;
+		} catch (error) {
+			console.error('Error creating transaction item:', error);
+			return null;
+		}
+	}
 
     /**
      * Get account name safely

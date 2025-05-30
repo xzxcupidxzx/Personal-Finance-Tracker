@@ -205,6 +205,7 @@ class SettingsModule {
             // Prevent invalid characters
             const keydownHandler = (e) => this.handleUSDRateKeydown(e);
             this.elements.usdRateInput.addEventListener('keydown', keydownHandler);
+			this.elements.usdRateInput.setAttribute('inputmode', 'numeric'); // Thêm dòng này
             this.eventListeners.push({
                 element: this.elements.usdRateInput,
                 event: 'keydown',

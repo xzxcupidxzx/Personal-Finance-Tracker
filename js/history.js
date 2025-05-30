@@ -331,15 +331,22 @@ class HistoryModule {
             if (dayData.income > 0) {
                 const incomeIndicatorEl = document.createElement('div');
                 incomeIndicatorEl.className = 'transaction-indicator income'; // CSS class
-                // Use Utils.CurrencyUtils.formatCurrency, assuming it handles short format or default is okay
-                incomeIndicatorEl.textContent = `+${Utils.CurrencyUtils.formatCurrency(dayData.income)}`; //
+                // ==========================================================
+                // ===== SỬA DÒNG NÀY =====
+                // ==========================================================
+                incomeIndicatorEl.textContent = `+${Utils.CurrencyUtils.formatCurrencyShort(dayData.income)}`; //
                 indicatorsDiv.appendChild(incomeIndicatorEl);
             }
 
             if (dayData.expense > 0) {
                 const expenseIndicatorEl = document.createElement('div');
                 expenseIndicatorEl.className = 'transaction-indicator expense'; // CSS class
-                expenseIndicatorEl.textContent = `-${Utils.CurrencyUtils.formatCurrency(dayData.expense)}`; //
+                // ==========================================================
+                // ===== SỬA DÒNG NÀY =====
+                // ==========================================================
+                expenseIndicatorEl.textContent = `${Utils.CurrencyUtils.formatCurrencyShort(dayData.expense)}`; // Chú ý: không cần dấu '-' vì nó đã có trong formatCurrencyShort nếu là số âm, nhưng ở đây ta đang xử lý số dương nên tự thêm
+                // Sửa lại: Vì expense luôn dương trong dayData, ta phải tự thêm dấu '-'
+                expenseIndicatorEl.textContent = `-${Utils.CurrencyUtils.formatCurrencyShort(dayData.expense)}`;
                 indicatorsDiv.appendChild(expenseIndicatorEl);
             }
 
@@ -657,10 +664,19 @@ class HistoryModule {
                             input.placeholder = 'Nhập số dư'; //
                             input.className = 'reconciliation-input'; //
                             input.dataset.account = accountValue; //
-                            input.inputMode = 'decimal'; //
+                            input.inputMode = 'numeric'; //
+							const formatHandler = (e) => {
+								try {
+									Utils.UIUtils.formatAmountInputWithCursor(e.target, e.target.value);
+								} catch (error) {
+									console.error('Error formatting reconciliation input:', error);
+								}
+							};
                             const inputHandler = () => this.calculateDifference(accountValue); //
+							input.addEventListener('input', formatHandler); // Thêm format handler
                             input.addEventListener('input', inputHandler);
-                            this.eventListeners.push({ element: input, event: 'input', handler: inputHandler }); //
+                            this.eventListeners.push({ element: input, event: 'input', handler: formatHandler });
+							this.eventListeners.push({ element: input, event: 'input', handler: inputHandler }); //
                             cell.appendChild(input);
                             break;
                         case 'actions':
@@ -743,7 +759,7 @@ class HistoryModule {
         }
 
         try {
-            const actualBalance = Utils.CurrencyUtils.parseAmountInput(input.value); //
+            const actualBalance = Utils.CurrencyUtils.parseAmountInput(input.value); //const actualBalance = Utils.CurrencyUtils.parseAmountInput(input.value); // Thay đổi dòng này
 
             if (isNaN(actualBalance)) { //
                 differenceCell.textContent = 'Lỗi'; //
