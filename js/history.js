@@ -811,65 +811,66 @@ class HistoryModule {
     /**
      * Perform reconciliation with enhanced validation
      */
-    performReconciliation(accountValue) {
-        if (!accountValue || typeof accountValue !== 'string') { //
-            Utils.UIUtils.showMessage('Tài khoản không hợp lệ', 'error'); //
-            return;
-        }
+	performReconciliation(accountValue) {
+		if (!accountValue || typeof accountValue !== 'string') {
+			Utils.UIUtils.showMessage('Tài khoản không hợp lệ', 'error');
+			return;
+		}
 
-        const input = document.querySelector(`input[data-account="${accountValue}"]`); //
-        const recordBtn = document.querySelector(`button.record-btn[data-account="${accountValue}"]`); //
+		const input = document.querySelector(`input[data-account="${accountValue}"]`);
+		const recordBtn = document.querySelector(`button.record-btn[data-account="${accountValue}"]`);
 
-        if (!input) { //
-            Utils.UIUtils.showMessage('Không tìm thấy ô nhập số dư', 'error'); //
-            return;
-        }
+		if (!input) {
+			Utils.UIUtils.showMessage('Không tìm thấy ô nhập số dư', 'error');
+			return;
+		}
 
-        // Trigger input validation first
-        this.calculateDifference(accountValue); //
+		// ✅ KHÔNG CLEAR INPUT - CHỈ VALIDATE
+		if (input.value === '' || input.value.trim() === '') {
+			Utils.UIUtils.showMessage('Vui lòng nhập số dư thực tế', 'error');
+			input.focus();
+			return;
+		}
 
-        // Then check if the input is valid after calculation
-        if (input.value === '' || input.classList.contains('input-invalid')) { //
-            Utils.UIUtils.showMessage('Vui lòng nhập số dư thực tế hợp lệ', 'error'); //
-            input.focus(); //
-            return;
-        }
+		// Trigger calculation (đã có từ trước)
+		this.calculateDifference(accountValue);
 
-        try {
-            const data = this.reconciliationData[accountValue]; //
+		try {
+			const data = this.reconciliationData[accountValue];
 
-            if (!data) { //
-                Utils.UIUtils.showMessage('Không có dữ liệu đối soát', 'error'); //
-                return;
-            }
+			if (!data) {
+				Utils.UIUtils.showMessage('Không có dữ liệu đối soát', 'error');
+				return;
+			}
 
-            const absDifference = Math.abs(data.difference || 0); //
+			const absDifference = Math.abs(data.difference || 0);
 
-            if (absDifference > 0.01) { // Show record button if there's a significant difference //
-                if (recordBtn) {
-                    recordBtn.style.display = 'block'; //
-                }
+			if (absDifference > 0.01) {
+				if (recordBtn) {
+					recordBtn.style.display = 'block';
+				}
 
-                const accountName = this.getAccountName(accountValue); //
-                Utils.UIUtils.showMessage( //
-                    `Có chênh lệch ${Utils.CurrencyUtils.formatCurrency(data.difference)} trong tài khoản ${accountName}`, //
-                    'info' //
-                );
-            } else {
-                if (recordBtn) {
-                    recordBtn.style.display = 'none'; //
-                }
-                Utils.UIUtils.showMessage('Số dư đã khớp với hệ thống', 'success'); //
-            }
+				const accountName = this.getAccountName(accountValue);
+				Utils.UIUtils.showMessage(
+					`Có chênh lệch ${Utils.CurrencyUtils.formatCurrency(data.difference)} trong tài khoản ${accountName}`,
+					'info'
+				);
+			} else {
+				if (recordBtn) {
+					recordBtn.style.display = 'none';
+				}
+				Utils.UIUtils.showMessage('Số dư đã khớp với hệ thống', 'success');
+			}
 
-            // Save reconciliation to history
-            this.saveReconciliationHistory(accountValue, data); //
+			// ✅ GIỮ NGUYÊN INPUT VALUE - KHÔNG CLEAR
+			// Save reconciliation to history (không ảnh hưởng input)
+			this.saveReconciliationHistory(accountValue, data);
 
-        } catch (error) {
-            console.error('Error performing reconciliation:', error);
-            Utils.UIUtils.showMessage('Có lỗi khi thực hiện đối soát', 'error'); //
-        }
-    }
+		} catch (error) {
+			console.error('Error performing reconciliation:', error);
+			Utils.UIUtils.showMessage('Có lỗi khi thực hiện đối soát', 'error');
+		}
+	}
 
     /**
      * Get account name safely
@@ -886,82 +887,104 @@ class HistoryModule {
     /**
      * Record difference as adjustment transaction with validation
      */
-    recordDifference(accountValue) {
-        if (!accountValue) { //
-            Utils.UIUtils.showMessage('Tài khoản không hợp lệ', 'error'); //
-            return;
-        }
+	recordDifference(accountValue) {
+		if (!accountValue) {
+			Utils.UIUtils.showMessage('Tài khoản không hợp lệ', 'error');
+			return;
+		}
 
-        const data = this.reconciliationData[accountValue]; //
+		const data = this.reconciliationData[accountValue];
 
-        if (!data) { //
-            Utils.UIUtils.showMessage('Không có dữ liệu đối soát', 'error'); //
-            return;
-        }
+		if (!data) {
+			Utils.UIUtils.showMessage('Không có dữ liệu đối soát', 'error');
+			return;
+		}
 
-        const absDifference = Math.abs(data.difference || 0); //
+		const absDifference = Math.abs(data.difference || 0);
 
-        if (absDifference < 0.01) { //
-            Utils.UIUtils.showMessage('Không có chênh lệch để ghi nhận', 'error'); //
-            return;
-        }
+		if (absDifference < 0.01) {
+			Utils.UIUtils.showMessage('Không có chênh lệch để ghi nhận', 'error');
+			return;
+		}
 
-        const accountName = this.getAccountName(accountValue); //
+		const accountName = this.getAccountName(accountValue);
 
-        if (!confirm(`Bạn có chắc chắn muốn ghi nhận chênh lệch ${Utils.CurrencyUtils.formatCurrency(data.difference)} cho tài khoản ${accountName}?`)) { //
-            return;
-        }
+		if (!confirm(`Bạn có chắc chắn muốn ghi nhận chênh lệch ${Utils.CurrencyUtils.formatCurrency(data.difference)} cho tài khoản ${accountName}?`)) {
+			return;
+		}
 
-        try {
-            // Create adjustment transaction
-            const adjustmentData = { //
-                type: data.difference > 0 ? 'Thu' : 'Chi', //
-                datetime: Utils.DateUtils.formatDateTimeLocal(), //
-                amount: absDifference, //
-                account: accountValue, //
-                category: data.difference > 0 //
-                    ? Utils.CONFIG.RECONCILE_ADJUST_INCOME_CAT //
-                    : Utils.CONFIG.RECONCILE_ADJUST_EXPENSE_CAT, //
-                description: `Điều chỉnh đối soát tài khoản ${accountName}`, //
-                originalAmount: absDifference, //
-                originalCurrency: 'VND' //
-            };
+		try {
+			// Create adjustment transaction
+			const adjustmentData = {
+				type: data.difference > 0 ? 'Thu' : 'Chi',
+				datetime: Utils.DateUtils.formatDateTimeLocal(),
+				amount: absDifference,
+				account: accountValue,
+				category: data.difference > 0
+					? Utils.CONFIG.RECONCILE_ADJUST_INCOME_CAT
+					: Utils.CONFIG.RECONCILE_ADJUST_EXPENSE_CAT,
+				description: `Điều chỉnh đối soát tài khoản ${accountName}`,
+				originalAmount: absDifference,
+				originalCurrency: 'VND'
+			};
 
-            // Validate adjustment data
-            const validation = Utils.ValidationUtils.validateTransaction(adjustmentData); //
-            if (!validation.isValid) { //
-                throw new Error(validation.errors[0]); //
-            }
+			const validation = Utils.ValidationUtils.validateTransaction(adjustmentData);
+			if (!validation.isValid) {
+				throw new Error(validation.errors[0]);
+			}
 
-            // Ensure adjustment categories exist (This function is in app.js and should be called via app instance)
-            if (this.app && typeof this.app.ensureAdjustmentCategories === 'function') { //
-                this.app.ensureAdjustmentCategories(); //
-            } else {
-                console.warn("App.ensureAdjustmentCategories is not available. Categories might not be created.");
-            }
+			if (this.app && typeof this.app.ensureAdjustmentCategories === 'function') {
+				this.app.ensureAdjustmentCategories();
+			}
 
+			// Add adjustment transaction
+			this.app.addTransaction(adjustmentData);
 
-            // Add adjustment transaction
-            this.app.addTransaction(adjustmentData); //
+			// ✅ CHỈ SAU KHI THÀNH CÔNG MỚI CLEAR VÀ UPDATE
+			this.updateReconciliationDisplayAfterRecord(accountValue);
 
-            // Update reconciliation display
-            this.updateReconciliationDisplay(accountValue); //
+			// Clear cache and refresh
+			this.cache.accountBalances = null;
+			this.app.refreshAllModules();
+			this.renderAccountBalances();
 
-            // Clear cache to force refresh
-            this.cache.accountBalances = null; //
+			Utils.UIUtils.showMessage(`Đã ghi nhận điều chỉnh cho tài khoản ${accountName}`, 'success');
 
-            // Refresh other modules
-            this.app.refreshAllModules(); //
-            this.renderAccountBalances(); //
+		} catch (error) {
+			console.error('Error recording difference:', error);
+			Utils.UIUtils.showMessage(`Lỗi khi ghi nhận điều chỉnh: ${error.message}`, 'error');
+		}
+	}
+	updateReconciliationDisplayAfterRecord(accountValue) {
+		try {
+			const systemBalanceCell = document.getElementById(`system-balance-${accountValue}`);
+			const differenceCell = document.getElementById(`difference-${accountValue}`);
+			const input = document.querySelector(`input[data-account="${accountValue}"]`);
+			const recordBtn = document.querySelector(`button.record-btn[data-account="${accountValue}"]`);
 
-            Utils.UIUtils.showMessage(`Đã ghi nhận điều chỉnh cho tài khoản ${accountName}`, 'success'); //
+			if (systemBalanceCell) {
+				const newBalance = this.app.getAccountBalance(accountValue);
+				systemBalanceCell.textContent = Utils.CurrencyUtils.formatCurrency(newBalance);
+			}
 
-        } catch (error) {
-            console.error('Error recording difference:', error);
-            Utils.UIUtils.showMessage(`Lỗi khi ghi nhận điều chỉnh: ${error.message}`, 'error'); //
-        }
-    }
+			if (differenceCell) {
+				differenceCell.textContent = Utils.CurrencyUtils.formatCurrency(0);
+				differenceCell.className = 'text-muted';
+			}
 
+			// ✅ CHỈ CLEAR INPUT SAU KHI GHI NHẬN THÀNH CÔNG
+			if (input) {
+				input.value = '';
+				input.classList.remove('input-valid', 'input-invalid');
+			}
+
+			if (recordBtn) {
+				recordBtn.style.display = 'none';
+			}
+		} catch (error) {
+			console.error('Error updating reconciliation display after record:', error);
+		}
+	}
     /**
      * Update reconciliation display after recording
      */
