@@ -513,16 +513,18 @@ input:checked + .slider:before {
 /* Amount Input Group */
 .amount-input-group {
     display: flex;
+	align-items: center;
     gap: var(--spacing-sm);
 }
 
 .amount-input {
     flex: 1;
+	min-width: 0;
 }
 
 .currency-selector {
-    width: 80px;
-    flex-shrink: 0;
+	min-width: fit-content;
+    flex-shrink: 1;
 }
 
 .add-zeros-btn {
@@ -2838,5 +2840,166 @@ input[inputmode="decimal"],
         max-width: 70px;
         width: 70px;
         font-size: 0.65rem;
+    }
+}
+
+/* 🎯 Smart Reset Toggle Styles */
+.smart-reset-option {
+    margin-top: 1rem;
+    padding: 0.875rem;
+    background: var(--bg-tertiary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.smart-reset-option:hover {
+    background: var(--bg-secondary);
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.smart-reset-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.smart-reset-label input[type="checkbox"] {
+    accent-color: var(--primary-color);
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.smart-reset-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.smart-reset-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.smart-reset-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+.smart-reset-info {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    cursor: help;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.smart-reset-info:hover {
+    opacity: 1;
+}
+
+.smart-reset-description {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Active state */
+.smart-reset-option:has(input:checked) {
+    background: rgba(59, 130, 246, 0.05);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.smart-reset-option:has(input:checked) .smart-reset-title {
+    color: var(--primary-color);
+}
+
+/* Focus state for accessibility */
+.smart-reset-label input[type="checkbox"]:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Animation when toggling */
+.smart-reset-option {
+    animation: none;
+}
+
+.smart-reset-option.toggle-feedback {
+    animation: togglePulse 0.3s ease;
+}
+
+@keyframes togglePulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .smart-reset-option {
+    background: rgba(55, 65, 81, 0.5);
+    border-color: rgba(75, 85, 99, 0.5);
+}
+
+[data-theme="dark"] .smart-reset-option:hover {
+    background: rgba(55, 65, 81, 0.8);
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+[data-theme="dark"] .smart-reset-option:has(input:checked) {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.4);
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+    .smart-reset-option {
+        margin-top: 0.75rem;
+        padding: 0.75rem;
+    }
+    
+    .smart-reset-title {
+        font-size: 0.8rem;
+    }
+    
+    .smart-reset-description {
+        font-size: 0.7rem;
+    }
+    
+    .smart-reset-label input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+    }
+}
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
     }
 }
