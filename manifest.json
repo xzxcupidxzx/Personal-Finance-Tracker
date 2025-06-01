@@ -1,183 +1,52 @@
 {
-  "name": "Quản Lý Tài Chính Cá Nhân",
-  "short_name": "Tài Chính",
-  "description": "Ứng dụng quản lý thu chi cá nhân với giao diện hiện đại và tính năng đầy đủ",
-  "version": "2.0.0",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#3b82f6",
-  "orientation": "portrait-primary",
-  "scope": "./",
-  "categories": ["finance", "productivity", "business"],
-  "lang": "vi",
-  "dir": "ltr",
-  
-  "icons": [
-    {
-      "src": "./logo-finance-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./logo-finance-512.png", 
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./logo-finance-72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "./logo-finance-96.png",
-      "sizes": "96x96", 
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "./logo-finance-128.png",
-      "sizes": "128x128",
-      "type": "image/png", 
-      "purpose": "any"
-    },
-    {
-      "src": "./logo-finance-144.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "./logo-finance-152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "./logo-finance-384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any"
-    }
-  ],
-
   "shortcuts": [
     {
-      "name": "Thêm giao dịch",
-      "short_name": "Giao dịch",
-      "description": "Thêm giao dịch mới nhanh chóng",
-      "url": "./#transactions",
+      "name": "💰 Thêm Thu Nhập",
+      "short_name": "Thu",
+      "description": "Thêm giao dịch thu nhập nhanh",
+      "url": "/quick-add.html?action=income",
       "icons": [
         {
-          "src": "./icon-add-transaction.png",
+          "src": "./LogoFinance.png",
           "sizes": "96x96"
         }
       ]
     },
     {
-      "name": "Xem thống kê",
-      "short_name": "Thống kê", 
-      "description": "Xem biểu đồ và thống kê tài chính",
-      "url": "./#statistics",
+      "name": "💸 Thêm Chi Tiêu", 
+      "short_name": "Chi",
+      "description": "Thêm giao dịch chi tiêu nhanh",
+      "url": "/quick-add.html?action=expense",
       "icons": [
         {
-          "src": "./icon-statistics.png",
+          "src": "./LogoFinance.png", 
           "sizes": "96x96"
         }
       ]
     },
     {
-      "name": "Lịch sử giao dịch",
-      "short_name": "Lịch sử",
-      "description": "Xem lịch sử và đối soát tài khoản",
-      "url": "./#history", 
+      "name": "↔️ Chuyển Tiền",
+      "short_name": "Chuyển",
+      "description": "Tạo giao dịch chuyển tiền",
+      "url": "/quick-add.html?action=transfer", 
       "icons": [
         {
-          "src": "./icon-history.png",
+          "src": "./LogoFinance.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "📊 Ứng Dụng Chính",
+      "short_name": "App", 
+      "description": "Mở ứng dụng đầy đủ",
+      "url": "/",
+      "icons": [
+        {
+          "src": "./LogoFinance.png",
           "sizes": "96x96"
         }
       ]
     }
-  ],
-
-  "screenshots": [
-    {
-      "src": "./screenshot-mobile-1.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Giao diện chính - Thêm giao dịch"
-    },
-    {
-      "src": "./screenshot-mobile-2.png", 
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Biểu đồ thống kê chi tiêu"
-    },
-    {
-      "src": "./screenshot-desktop-1.png",
-      "sizes": "1280x720", 
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Giao diện desktop - Dashboard tổng quan"
-    }
-  ],
-
-  "related_applications": [],
-  "prefer_related_applications": false,
-
-  "protocol_handlers": [
-    {
-      "protocol": "web+finance",
-      "url": "./?action=%s"
-    }
-  ],
-
-  "launch_handler": {
-    "client_mode": "focus-existing"
-  },
-
-  "edge_side_panel": {
-    "preferred_width": 400
-  },
-
-  "display_override": [
-    "window-controls-overlay",
-    "standalone", 
-    "minimal-ui",
-    "browser"
-  ],
-
-  "handle_links": "preferred",
-
-  "file_handlers": [
-    {
-      "action": "./",
-      "accept": {
-        "application/json": [".json"],
-        "text/csv": [".csv"]
-      }
-    }
-  ],
-
-  "share_target": {
-    "action": "./",
-    "method": "POST",
-    "enctype": "multipart/form-data",
-    "params": {
-      "title": "title",
-      "text": "text", 
-      "url": "url",
-      "files": [
-        {
-          "name": "import_file",
-          "accept": ["application/json", "text/csv"]
-        }
-      ]
-    }
-  }
+  ]
 }

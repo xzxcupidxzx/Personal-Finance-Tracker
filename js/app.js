@@ -131,14 +131,79 @@ class FinancialApp {
             if (this.data.transactions.length === 0) {
                 Utils.UIUtils.showMessage('Chào mừng bạn đến với ứng dụng quản lý tài chính!', 'info', 5000);
             }
-
+			this.handlePWAShortcuts();
         } catch (error) {
             console.error('❌ Failed to initialize app:', error);
             Utils.UIUtils.showMessage('Có lỗi xảy ra khi khởi tạo ứng dụng. Vui lòng tải lại trang.', 'error');
             this.initializeFallbackMode();
         }
     }
+    handlePWAShortcuts() {
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const action = urlParams.get('action');
+            
+            if (action) {
+                console.log('🚀 PWA Shortcut detected:', action);
+                
+                // Đợi app khởi tạo xong
+                setTimeout(() => {
+                    this.switchTab('transactions');
+                    
+                    // Clear URL sau khi xử lý
+                    window.history.replaceState({}, '', window.location.pathname);
+                    
+                    switch (action) {
+                        case 'income':
+                            this.setTransactionTypeFromShortcut('Thu');
+                            Utils.UIUtils.showMessage('💰 Sẵn sàng nhập thu nhập!', 'success', 2000);
+                            break;
+                            
+                        case 'expense':
+                            this.setTransactionTypeFromShortcut('Chi');
+                            Utils.UIUtils.showMessage('💸 Sẵn sàng nhập chi tiêu!', 'success', 2000);
+                            break;
+                            
+                        case 'transfer':
+                            this.setTransactionTypeFromShortcut('Transfer');
+                            Utils.UIUtils.showMessage('↔️ Sẵn sàng chuyển tiền!', 'success', 2000);
+                            break;
+                            
+                        default:
+                            console.warn('Unknown shortcut action:', action);
+                    }
+                }, 500);
+            }
+        } catch (error) {
+            console.error('Error handling PWA shortcuts:', error);
+        }
+    }
 
+    /**
+     * Set transaction type from shortcut and focus amount input
+     */
+    setTransactionTypeFromShortcut(type) {
+        try {
+            // Set radio button
+            const typeRadio = document.querySelector(`input[name="type"][value="${type}"]`);
+            if (typeRadio) {
+                typeRadio.checked = true;
+                typeRadio.dispatchEvent(new Event('change'));
+            }
+            
+            // Focus amount input sau khi UI update
+            setTimeout(() => {
+                const amountInput = document.getElementById('amount-input');
+                if (amountInput) {
+                    amountInput.focus();
+                    amountInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 200);
+            
+        } catch (error) {
+            console.error('Error setting transaction type from shortcut:', error);
+        }
+    }
     /**
      * Initialize fallback mode when main initialization fails
      */

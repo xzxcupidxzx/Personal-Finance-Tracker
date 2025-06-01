@@ -98,34 +98,33 @@ const Utils = {
     /**
      * Currency Utilities
      */
-	CurrencyUtils: {
-		formatCurrency(amount, currency = 'VND') {
-			try {
-				const num = parseFloat(amount) || 0;
-				if (currency === 'VND') {
-					// Đảm bảo luôn dùng dấu phẩy cho hàng nghìn
-					const formatted = new Intl.NumberFormat('vi-VN', {
-						style: 'currency',
-						currency: 'VND',
-						minimumFractionDigits: 0,
-						maximumFractionDigits: 0
-					}).format(num);
-					
-					// Fallback: nếu vẫn hiển thị dấu chấm, thay thế thủ công
-					return formatted.replace(/\./g, ',');
-				} else {
-					return new Intl.NumberFormat('en-US', {
-						style: 'currency',
-						currency: currency,
-						minimumFractionDigits: 2,
-						maximumFractionDigits: 2
-					}).format(num);
-				}
-			} catch (error) {
-				console.error('formatCurrency error:', error);
-				return `${amount || 0} ${currency}`;
-			}
-		},
+    CurrencyUtils: {
+        formatCurrency(amount, currency = 'VND') {
+            try {
+                const num = parseFloat(amount) || 0;
+                if (currency === 'VND') {
+                    const formatted = new Intl.NumberFormat('vi-VN', {
+                        style: 'currency',
+                        currency: 'VND',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    }).format(num);
+                    
+                    return formatted.replace(/\./g, ',');
+                } else {
+                    return new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: currency,
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }).format(num);
+                }
+            } catch (error) {
+                console.error('formatCurrency error:', error);
+                return `${amount || 0} ${currency}`;
+            }
+        },
+
         formatCurrencyShort(amount, currency = 'VND') {
             try {
                 const num = parseFloat(amount) || 0;
@@ -137,25 +136,21 @@ const Utils = {
                     let unit = '';
 
                     if (absNum < 1000) {
-                        // Dưới 1 Ngàn: Hiển thị số (không có 'đ' cho gọn)
                         formattedNum = new Intl.NumberFormat('vi-VN').format(absNum);
                         return sign + formattedNum;
                     } else if (absNum < 1000000) {
-                        // Ngàn (Ng)
                         formattedNum = new Intl.NumberFormat('vi-VN', {
                             minimumFractionDigits: 0,
                             maximumFractionDigits: 3
                         }).format(absNum / 1000);
                         unit = ' Ng';
                     } else if (absNum < 1000000000) {
-                        // Triệu (Tr)
                         formattedNum = new Intl.NumberFormat('vi-VN', {
                             minimumFractionDigits: 0,
                             maximumFractionDigits: 3
                         }).format(absNum / 1000000);
                         unit = ' Tr';
                     } else {
-                        // Tỷ (Tỷ)
                         formattedNum = new Intl.NumberFormat('vi-VN', {
                             minimumFractionDigits: 0,
                             maximumFractionDigits: 3
@@ -163,76 +158,73 @@ const Utils = {
                         unit = ' Tỷ';
                     }
 
-                    // Loại bỏ ",000" nếu có
                     if (formattedNum.includes(',')) {
                          formattedNum = formattedNum.replace(/,0+$/, '').replace(/(\,\d*?[1-9])0+$/, '$1');
                     }
 
                     return sign + formattedNum + unit;
                 } else {
-                    // Với tiền tệ khác, dùng hàm gốc
-					return new Intl.NumberFormat('en-US', {
-						style: 'currency',
-						currency: currency,
-						minimumFractionDigits: 2,
-						maximumFractionDigits: 2
-					}).format(num);
+                    return new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: currency,
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }).format(num);
                 }
             } catch (error) {
                 console.error('formatCurrencyShort error:', error);
                 return `${amount || 0} ${currency}`;
             }
         },
-		parseAmountInput(value, currency = 'VND') {
-			try {
-				if (!value) return 0;
-				const cleaned = value.toString().replace(/[^\d.-]/g, '');
-				const amount = parseFloat(cleaned) || 0;
 
-				if (currency === 'USD') {
-					return amount * CONFIG.USD_TO_VND_RATE;
-				}
-				return amount;
-			} catch (error) {
-				console.error('parseAmountInput error:', error);
-				return 0;
-			}
-		},
+        parseAmountInput(value, currency = 'VND') {
+            try {
+                if (!value) return 0;
+                const cleaned = value.toString().replace(/[^\d.-]/g, '');
+                const amount = parseFloat(cleaned) || 0;
 
-		formatAmountInput(amount) {
-			try {
-				if (amount === undefined || amount === null) return '';
-				const str = typeof amount === 'string' ? amount.replace(/[^\d]/g, '') : amount.toString();
-				const num = parseInt(str, 10);
-				if (isNaN(num)) return '';
-				return num.toLocaleString('en-US'); // kết quả: 222,222
-			} catch (error) {
-				console.error('formatAmountInput error:', error);
-				return '';
-			}
-		},
+                if (currency === 'USD') {
+                    return amount * CONFIG.USD_TO_VND_RATE;
+                }
+                return amount;
+            } catch (error) {
+                console.error('parseAmountInput error:', error);
+                return 0;
+            }
+        },
 
+        formatAmountInput(amount) {
+            try {
+                if (amount === undefined || amount === null) return '';
+                const str = typeof amount === 'string' ? amount.replace(/[^\d]/g, '') : amount.toString();
+                const num = parseInt(str, 10);
+                if (isNaN(num)) return '';
+                return num.toLocaleString('en-US');
+            } catch (error) {
+                console.error('formatAmountInput error:', error);
+                return '';
+            }
+        },
 
-		convertCurrency(amount, fromCurrency, toCurrency) {
-			try {
-				if (fromCurrency === toCurrency) return amount;
+        convertCurrency(amount, fromCurrency, toCurrency) {
+            try {
+                if (fromCurrency === toCurrency) return amount;
 
-				if (fromCurrency === 'USD' && toCurrency === 'VND') {
-					return amount * CONFIG.USD_TO_VND_RATE;
-				}
+                if (fromCurrency === 'USD' && toCurrency === 'VND') {
+                    return amount * CONFIG.USD_TO_VND_RATE;
+                }
 
-				if (fromCurrency === 'VND' && toCurrency === 'USD') {
-					return amount / CONFIG.USD_TO_VND_RATE;
-				}
+                if (fromCurrency === 'VND' && toCurrency === 'USD') {
+                    return amount / CONFIG.USD_TO_VND_RATE;
+                }
 
-				return amount;
-			} catch (error) {
-				console.error('convertCurrency error:', error);
-				return amount;
-			}
-		}
-	},
-
+                return amount;
+            } catch (error) {
+                console.error('convertCurrency error:', error);
+                return amount;
+            }
+        }
+    },
 
     /**
      * Date Utilities
@@ -262,27 +254,29 @@ const Utils = {
                 return datetime;
             }
         },
-		formatCompactDateTime(datetime) {
-			try {
-				const date = new Date(datetime);
-				const hours = String(date.getHours()).padStart(2, '0');
-				const minutes = String(date.getMinutes()).padStart(2, '0');
-				const day = String(date.getDate()).padStart(2, '0');
-				const month = String(date.getMonth() + 1).padStart(2, '0');
-				const year = String(date.getFullYear()).slice(-2); // Lấy 2 số cuối
-				
-				return {
-					time: `${hours}:${minutes}`,
-					date: `${day}-${month}-${year}`
-				};
-			} catch (error) {
-				console.error('formatCompactDateTime error:', error);
-				return {
-					time: '00:00',
-					date: '00-00-00'
-				};
-			}
-		},
+
+        formatCompactDateTime(datetime) {
+            try {
+                const date = new Date(datetime);
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = String(date.getFullYear()).slice(-2);
+                
+                return {
+                    time: `${hours}:${minutes}`,
+                    date: `${day}-${month}-${year}`
+                };
+            } catch (error) {
+                console.error('formatCompactDateTime error:', error);
+                return {
+                    time: '00:00',
+                    date: '00-00-00'
+                };
+            }
+        },
+
         getPeriodDates(period) {
             const now = new Date();
             let start, end;
@@ -378,23 +372,23 @@ const Utils = {
             };
         },
 
-		formatAmountInputWithCursor(input, value) {
-			try {
-				const start = input.selectionStart;
-				const oldLength = input.value.length;
+        formatAmountInputWithCursor(input, value) {
+            try {
+                const start = input.selectionStart;
+                const oldLength = input.value.length;
 
-				const cleaned = value.replace(/[^\d]/g, '');
-				const formatted = Utils.CurrencyUtils.formatAmountInput(cleaned);
+                const cleaned = value.replace(/[^\d]/g, '');
+                const formatted = Utils.CurrencyUtils.formatAmountInput(cleaned);
 
-				input.value = formatted;
+                input.value = formatted;
 
-				const newLength = formatted.length;
-				const newPos = start + (newLength - oldLength);
-				input.setSelectionRange(newPos, newPos);
-			} catch (error) {
-				console.error('formatAmountInputWithCursor error:', error);
-				input.value = Utils.CurrencyUtils.formatAmountInput(value);
-			}
+                const newLength = formatted.length;
+                const newPos = start + (newLength - oldLength);
+                input.setSelectionRange(newPos, newPos);
+            } catch (error) {
+                console.error('formatAmountInputWithCursor error:', error);
+                input.value = Utils.CurrencyUtils.formatAmountInput(value);
+            }
         },
 
         getCategoryIcon(category) {
@@ -605,6 +599,141 @@ const Utils = {
     },
 
     /**
+     * Notification Utilities
+     */
+    NotificationUtils: {
+        // Request notification permission
+        async requestPermission() {
+            if (!('Notification' in window)) {
+                console.warn('This browser does not support notifications');
+                return false;
+            }
+            
+            if (Notification.permission === 'granted') {
+                return true;
+            }
+            
+            if (Notification.permission === 'denied') {
+                return false;
+            }
+            
+            const permission = await Notification.requestPermission();
+            return permission === 'granted';
+        },
+        
+        // Show notification
+        showNotification(title, options = {}) {
+            if (Notification.permission === 'granted') {
+                const defaultOptions = {
+                    icon: '/LogoFinance.png',
+                    badge: '/LogoFinance.png',
+                    tag: 'finance-app',
+                    requireInteraction: false,
+                    ...options
+                };
+                
+                return new Notification(title, defaultOptions);
+            }
+            return null;
+        },
+        
+        // Schedule reminder notification
+        scheduleReminder(message, delayMinutes = 60) {
+            if ('serviceWorker' in navigator && 'Notification' in window) {
+                setTimeout(() => {
+                    this.showNotification('💰 Nhắc nhở tài chính', {
+                        body: message,
+                        tag: 'reminder',
+                        requireInteraction: true,
+                        actions: [
+                            {
+                                action: 'add-expense',
+                                title: '💸 Thêm chi tiêu'
+                            },
+                            {
+                                action: 'add-income', 
+                                title: '💰 Thêm thu nhập'
+                            }
+                        ]
+                    });
+                }, delayMinutes * 60 * 1000);
+            }
+        },
+        
+        // Quick action notifications
+        showQuickAddNotification() {
+            this.showNotification('💰 Thêm giao dịch nhanh', {
+                body: 'Nhấn để mở form nhập nhanh',
+                tag: 'quick-add',
+                requireInteraction: true,
+                onclick: () => {
+                    window.open('/quick-add.html', '_blank');
+                }
+            });
+        }
+    },
+
+    /**
+     * Widget Utilities for PWA
+     */
+    WidgetUtils: {
+        // Add to home screen prompt
+        async addToHomeScreen() {
+            if (window.deferredPrompt) {
+                window.deferredPrompt.prompt();
+                const choiceResult = await window.deferredPrompt.userChoice;
+                
+                if (choiceResult.outcome === 'accepted') {
+                    Utils.UIUtils.showMessage('Đã thêm vào màn hình chính!', 'success');
+                }
+                
+                window.deferredPrompt = null;
+            } else {
+                Utils.UIUtils.showMessage('Ứng dụng đã được cài đặt hoặc trình duyệt không hỗ trợ', 'info');
+            }
+        },
+        
+        // Check if app is installed
+        isInstalled() {
+            return window.matchMedia('(display-mode: standalone)').matches ||
+                   window.navigator.standalone === true;
+        },
+        
+        // Register background sync for offline transactions
+        async registerBackgroundSync(data) {
+            if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+                try {
+                    const registration = await navigator.serviceWorker.ready;
+                    
+                    // Store transaction data for background sync
+                    this.storePendingTransaction(data);
+                    
+                    // Register sync event
+                    await registration.sync.register('background-transaction');
+                    
+                    Utils.UIUtils.showMessage('Giao dịch sẽ được đồng bộ khi có kết nối', 'info');
+                    return true;
+                } catch (error) {
+                    console.error('Background sync registration failed:', error);
+                    return false;
+                }
+            }
+            return false;
+        },
+        
+        // Store pending transaction for offline sync
+        storePendingTransaction(transaction) {
+            const pending = Utils.StorageUtils.load('pending_transactions', []);
+            pending.push({
+                ...transaction,
+                timestamp: Date.now(),
+                id: Utils.UIUtils.generateId()
+            });
+            Utils.StorageUtils.save('pending_transactions', pending);
+        }
+    },
+
+    /**
      * Theme Utilities
      */
     ThemeUtils: {
@@ -649,5 +778,25 @@ const Utils = {
         }
     }
 };
+
+// ==========================================
+// PWA CODE - GLOBAL SCOPE
+// ==========================================
+
+// Global variables for PWA
+window.deferredPrompt = null;
+
+// Listen for beforeinstallprompt event
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    window.deferredPrompt = e;
+    Utils.UIUtils.showMessage('💡 Cài đặt ứng dụng để trải nghiệm tốt hơn!', 'info', 5000);
+});
+
+// Check if app is launched from home screen
+window.addEventListener('appinstalled', () => {
+    Utils.UIUtils.showMessage('🎉 Ứng dụng đã được cài đặt thành công!', 'success');
+    window.deferredPrompt = null;
+});
 
 console.log("🛠️ Complete Utils loaded successfully.");
