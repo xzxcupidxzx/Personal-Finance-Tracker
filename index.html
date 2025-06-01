@@ -114,7 +114,7 @@
 									   placeholder="Nhập số tiền"
 									   inputmode="numeric"
 									   required>
-								<select id="currency-selector" class="currency-selector ml-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-xl px-3 py-2 border border-[var(--border-color)]">
+								<select id="currency-selector" class="currency-selector ml-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-xl px-2 md:px-3 py-2 border border-[var(--border-color)]">
 									<option value="VND">VNĐ</option>
 									<option value="USD">USD</option>
 								</select>
@@ -176,6 +176,20 @@
                             <span class="btn-icon">➕</span>
                             <span class="btn-text">Thêm Giao Dịch</span>
                         </button>
+                        <div class="smart-reset-option" style="margin-top: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: 12px; border: 1px solid var(--border-color); transition: all 0.2s ease;">
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" id="smart-reset-enabled" checked style="accent-color: var(--primary-color); width: 18px; height: 18px;">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm font-medium text-[var(--text-primary)]">🎯 Giữ hạng mục & tài khoản sau khi thêm</span>
+                                        <span class="text-xs text-[var(--text-muted)] cursor-help" title="Khi bật, chỉ reset số tiền và mô tả sau khi thêm giao dịch thành công">ℹ️</span>
+                                    </div>
+                                    <p class="text-xs text-[var(--text-muted)] mt-1">
+                                        Tiện lợi khi thêm nhiều giao dịch cùng loại liên tiếp
+                                    </p>
+                                </div>
+                            </label>
+                        </div>
                     </form>
                 </div>
 
