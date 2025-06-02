@@ -777,7 +777,29 @@ const Utils = {
             });
         }
     }
-// THÊM VÀO CUỐI FILE utils.js
+};
+
+// ==========================================
+// PWA CODE - GLOBAL SCOPE
+// ==========================================
+
+// Global variables for PWA
+window.deferredPrompt = null;
+
+// Listen for beforeinstallprompt event
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    window.deferredPrompt = e;
+    Utils.UIUtils.showMessage('💡 Cài đặt ứng dụng để trải nghiệm tốt hơn!', 'info', 5000);
+});
+
+// Check if app is launched from home screen
+window.addEventListener('appinstalled', () => {
+    Utils.UIUtils.showMessage('🎉 Ứng dụng đã được cài đặt thành công!', 'success');
+    window.deferredPrompt = null;
+});
+
+console.log("🛠️ Complete Utils loaded successfully.");
 
 /**
  * Update Manager - Quản lý cập nhật ứng dụng
@@ -908,7 +930,7 @@ Utils.UpdateManager = {
      * Hiển thị thông báo cập nhật
      */
     showUpdateNotification() {
-        if (this.isUpdateAvailable) return; // Tránh hiển thị nhiều lần
+        if (this.isUpdateAvailable && document.getElementById('update-notification')) return; // Tránh hiển thị nhiều lần nếu đã có
         
         this.isUpdateAvailable = true;
         
@@ -976,7 +998,10 @@ Utils.UpdateManager = {
         
         // Auto dismiss after 30 seconds
         setTimeout(() => {
-            this.dismissUpdate();
+            // Only dismiss if the bar still exists (user might have clicked a button)
+            if (document.getElementById('update-notification')) {
+                this.dismissUpdate();
+            }
         }, 30000);
     },
 
@@ -1012,7 +1037,7 @@ Utils.UpdateManager = {
             updateBar.style.animation = 'slideUpAndFade 0.3s ease forwards';
             setTimeout(() => updateBar.remove(), 300);
         }
-        this.isUpdateAvailable = false;
+        this.isUpdateAvailable = false; // Allow re-showing if detected again later
     },
 
     /**
@@ -1060,6 +1085,9 @@ Utils.UpdateManager = {
             </div>
         `;
         
+        const existingLoading = document.getElementById('update-loading');
+        if (existingLoading) existingLoading.remove();
+
         document.body.appendChild(loadingDiv);
     },
 
@@ -1067,6 +1095,8 @@ Utils.UpdateManager = {
      * Hiển thị thông báo cập nhật thành công
      */
     showUpdateAppliedMessage() {
+        const loadingDiv = document.getElementById('update-loading');
+        if (loadingDiv) loadingDiv.remove();
         Utils.UIUtils.showMessage('✅ Ứng dụng đã được cập nhật!', 'success', 2000);
     },
 
@@ -1162,7 +1192,7 @@ Utils.UpdateManager = {
         // This can be called from settings module to add a force refresh button
         const button = document.createElement('button');
         button.innerHTML = '🔄 Làm mới ứng dụng';
-        button.className = 'action-btn import';
+        button.className = 'action-btn import'; // Re-use existing styles if appropriate
         button.style.marginTop = '1rem';
         button.onclick = () => {
             if (confirm('Bạn có chắc muốn làm mới toàn bộ ứng dụng? Điều này sẽ tải lại tất cả dữ liệu mới nhất.')) {
@@ -1172,6 +1202,7 @@ Utils.UpdateManager = {
         return button;
     }
 };
+
 // CSS cho animations
 const updateAnimationCSS = `
 <style>
@@ -1191,29 +1222,8 @@ const updateAnimationCSS = `
 
 // Inject CSS
 if (!document.getElementById('update-animation-css')) {
-    const styleElement = document.createElement('div');
+    const styleElement = document.createElement('div'); // Changed to div as per original, though style tag is more appropriate for CSS
     styleElement.id = 'update-animation-css';
     styleElement.innerHTML = updateAnimationCSS;
     document.head.appendChild(styleElement);
 }
-// ==========================================
-// PWA CODE - GLOBAL SCOPE
-// ==========================================
-
-// Global variables for PWA
-window.deferredPrompt = null;
-
-// Listen for beforeinstallprompt event
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    window.deferredPrompt = e;
-    Utils.UIUtils.showMessage('💡 Cài đặt ứng dụng để trải nghiệm tốt hơn!', 'info', 5000);
-});
-
-// Check if app is launched from home screen
-window.addEventListener('appinstalled', () => {
-    Utils.UIUtils.showMessage('🎉 Ứng dụng đã được cài đặt thành công!', 'success');
-    window.deferredPrompt = null;
-});
-
-console.log("🛠️ Complete Utils loaded successfully.");

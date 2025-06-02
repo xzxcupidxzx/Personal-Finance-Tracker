@@ -4,47 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Quản Lý Tài Chính Cá Nhân</title>
-    
-    <!-- Cache Control - Đã đúng -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    
-    <!-- PWA Settings -->
-    <link rel="manifest" href="./manifest.json?v=1.0.1">
+
+    <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Tài Chính">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#3b82f6">
     <meta name="msapplication-navbutton-color" content="#3b82f6">
-    
-    <!-- Icons với version -->
-    <link rel="apple-touch-icon" href="./logo-finance.png?v=1.0.1">
-    <link rel="icon" type="image/png" sizes="32x32" href="./logo-finance.png?v=1.0.1">
-    <link rel="shortcut icon" href="./logo-finance.png?v=1.0.1" type="image/png">
-    <link rel="apple-touch-icon" href="./LogoFinance.png?v=1.0.1">
-    <link rel="apple-touch-icon" sizes="57x57" href="./LogoFinance.png?v=1.0.1">
-    <link rel="apple-touch-icon" sizes="60x60" href="./LogoFinance.png?v=1.0.1">
-    <link rel="apple-touch-icon" sizes="72x72" href="./LogoFinance.png?v=1.0.1">
-    <link rel="apple-touch-icon" sizes="76x76" href="./LogoFinance.png?v=1.0.1">
-    <link rel="apple-touch-icon" sizes="114x114" href="./LogoFinance.png?v=1.0.1">
-    <link rel="apple-touch-icon" sizes="120x120" href="./LogoFinance.png?v=1.0.1">
-    <link rel="apple-touch-icon" sizes="144x144" href="./LogoFinance.png?v=1.0.1">
-    <link rel="apple-touch-icon" sizes="152x152" href="./LogoFinance.png?v=1.0.1">
-    <link rel="apple-touch-icon" sizes="180x180" href="./LogoFinance.png?v=1.0.1">
-    <link rel="icon" type="image/png" sizes="16x16" href="./LogoFinance.png?v=1.0.1">
-    
-    <!-- External Libraries -->
+
+    <link rel="apple-touch-icon" href="./logo-finance.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./logo-finance.png">
+    <link rel="shortcut icon" href="./logo-finance.png" type="image/png">
+
+    <link rel="apple-touch-icon" href="./LogoFinance.png">
+    <link rel="apple-touch-icon" sizes="57x57" href="./LogoFinance.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="./LogoFinance.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="./LogoFinance.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="./LogoFinance.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="./LogoFinance.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="./LogoFinance.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="./LogoFinance.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="./LogoFinance.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./LogoFinance.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./LogoFinance.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./LogoFinance.png">
+    <link rel="shortcut icon" href="./LogoFinance.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Local Files với version -->
-    <link rel="stylesheet" href="./styles.css?v=1.0.1">
-    <link rel="stylesheet" href="style.css?v=1.0.1">
-    <script src="script.js?v=1.0.1"></script>
+
+    <link rel="stylesheet" href="./styles.css">
 </head>
 <body class="font-sans antialiased ...">
     <div class="theme-switch-wrapper">
@@ -520,6 +512,65 @@
                         Giao Diện
                     </h3>
 
+					<div class="update-controls">
+						<div class="info-item">
+							<span class="info-label">Phiên bản hiện tại</span>
+							<span class="info-value" id="current-app-version">1.0.2</span>
+						</div>
+
+						<div class="info-item">
+							<span class="info-label">Trạng thái cập nhật</span>
+							<span class="info-value" id="update-status">Đang kiểm tra...</span>
+						</div>
+
+						<div class="info-item">
+							<span class="info-label">Lần kiểm tra cuối</span>
+							<span class="info-value" id="last-update-check">Chưa kiểm tra</span>
+						</div>
+
+						<div class="update-actions">
+							<button id="check-updates" class="action-btn import">
+								<span class="btn-icon">🔍</span>
+								<div class="btn-content">
+									<span class="btn-title">Kiểm Tra Cập Nhật</span>
+									<span class="btn-subtitle">Tìm phiên bản mới</span>
+								</div>
+							</button>
+
+							<button id="force-refresh-app" class="action-btn export">
+								<span class="btn-icon">🔄</span>
+								<div class="btn-content">
+									<span class="btn-title">Làm Mới Ứng Dụng</span>
+									<span class="btn-subtitle">Tải lại hoàn toàn từ server</span>
+								</div>
+							</button>
+
+							<button id="clear-app-cache" class="action-btn danger" style="display: none;">
+								<span class="btn-icon">🗑️</span>
+								<div class="btn-content">
+									<span class="btn-title">Xóa Cache Ứng Dụng</span>
+									<span class="btn-subtitle">Chỉ dùng khi có lỗi</span>
+								</div>
+							</button>
+						</div>
+
+						<!-- Update Help -->
+						<div class="update-help" style="
+							background: var(--bg-tertiary);
+							border-radius: 8px;
+							padding: 1rem;
+							margin-top: 1rem;
+							border-left: 4px solid var(--primary-color);
+						">
+							<div style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5;">
+								<strong>💡 Hướng dẫn cập nhật:</strong><br>
+								• <strong>Kiểm tra cập nhật:</strong> Tìm phiên bản mới từ server<br>
+								• <strong>Làm mới ứng dụng:</strong> Tải lại toàn bộ từ server (khuyến nghị)<br>
+								• <strong>Trên iOS:</strong> Nếu ứng dụng không cập nhật, hãy đóng hoàn toàn app và mở lại
+							</div>
+						</div>
+					</div>
+				</div>
 				<div class="theme-options">
 				  <label class="theme-option">
 					<input type="radio" name="theme" value="light" checked>

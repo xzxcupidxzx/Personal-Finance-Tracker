@@ -258,21 +258,17 @@ input:checked + .slider:before {
 }
 
 .header-summary {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap; /* Cho phép xuống dòng trên mobile */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--spacing-md);
 }
 
 .summary-card {
-    flex: 1;
-    min-width: 140px; /* Tăng độ rộng tối thiểu */
-    max-width: 200px; /* Giới hạn độ rộng tối đa */
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
-    border-radius: 12px;
-    padding: 1rem;
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
     text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .summary-label {
@@ -284,11 +280,8 @@ input:checked + .slider:before {
 }
 
 .summary-value {
-    font-size: 1.1rem; /* Giảm font size từ 1.2rem */
+    font-size: 1.1rem;
     font-weight: 700;
-    margin-top: 0.25rem;
-    word-break: break-all; /* Cho phép xuống dòng nếu cần */
-    line-height: 1.2;
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
 }
 
@@ -1557,34 +1550,27 @@ input:checked + .slider:before {
 
 .account-balance-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); /* Tăng minmax */
-    gap: 1rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
 }
 
 .account-balance-card {
     background: var(--bg-secondary);
-    border-radius: 12px;
-    padding: 1.25rem; /* Tăng padding */
+    border-radius: 8px;
+    padding: var(--spacing-lg);
     border: 1px solid var(--border-color);
-    transition: all 0.2s ease;
-    min-width: 160px; /* Tăng độ rộng tối thiểu */
+    text-align: center;
 }
 
 .account-name {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-    margin-bottom: 0.5rem;
-    word-break: break-word;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
 }
 
 .account-balance {
-    font-size: 1rem; /* Giảm từ 1.1rem */
-    font-weight: 600;
-    margin-top: 0.5rem;
-    word-break: break-all;
-    line-height: 1.3;
+    font-size: 1.25rem;
+    font-weight: 700;
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
 }
 
@@ -1605,7 +1591,7 @@ input:checked + .slider:before {
 
 .reconciliation-table {
     width: 100%;
-    min-width: 1200px;
+    min-width: 900px;
     table-layout: fixed; /* Thêm dòng này */
     border-collapse: collapse;
     background: var(--bg-primary);
@@ -1619,32 +1605,25 @@ input:checked + .slider:before {
     border: 1px solid var(--border-color);
     text-align: center;
     vertical-align: middle;
-	font-size: 0.9rem !important;
 }
 
 .reconciliation-table th {
     background: var(--bg-tertiary);
-    font-weight: 500;
+    font-weight: 600;
     color: var(--text-primary);
     position: sticky;
     top: 0;
     z-index: 10;
-	font-size: 0.8rem !important;
 }
 
 .reconciliation-table .sticky-col {
-    min-width: 85px !important;
-    width: 85px !important;
-    max-width: 85px !important;
-    padding: 8px 6px !important;
-    font-size: 0.8rem !important;
-    line-height: 1.2 !important;
-    word-break: break-word !important;
-    white-space: normal !important; /* CHO PHÉP WRAP TEXT */
-    text-align: left !important;
-    vertical-align: middle !important; /* Đổi từ middle sang top khi có wrap */
-    overflow-wrap: break-word !important; /* Bổ sung thêm cho wrap tốt hơn */
-	font-weight: 500;
+    position: sticky;
+    left: 0;
+    background: var(--bg-tertiary);
+    z-index: 11;
+    text-align: left;
+    font-weight: 600;
+    min-width: 150px;
 }
 
 .reconciliation-input {
@@ -1654,8 +1633,8 @@ input:checked + .slider:before {
     border-radius: 6px;
     background: var(--bg-primary);
     color: var(--text-primary);
-    text-align: center;
-	font-size: 0.8rem !important;
+    text-align: right;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
 }
 
 .reconcile-btn,
@@ -2481,16 +2460,9 @@ input:checked + .slider:before {
     }
 
     .header-summary {
-        font-size: 0.9rem;
-		grid-template-columns: 1fr; /* Mỗi thẻ một hàng */
+        grid-template-columns: 1fr; /* Mỗi thẻ một hàng */
     }
-    .account-balance {
-        font-size: 0.8rem;
-    }
-    
-    .account-balance-grid {
-        grid-template-columns: 1fr; /* 1 cột trên mobile nhỏ */
-    }
+
     .quick-add-section,
     .transaction-list-section,
     .category-section,

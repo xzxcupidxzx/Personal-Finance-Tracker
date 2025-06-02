@@ -76,13 +76,22 @@ class SettingsModule {
             lastBackupEl: document.getElementById('last-backup'),
 
             // Loading indicator
-            loadingIndicator: document.getElementById('settings-loading')
+            loadingIndicator: document.getElementById('settings-loading'),
+
+            // 🆕 Update elements
+            checkUpdatesBtn: document.getElementById('check-updates'),
+            forceRefreshBtn: document.getElementById('force-refresh-app'),
+            clearCacheBtn: document.getElementById('clear-app-cache'),
+            currentVersionEl: document.getElementById('current-app-version'),
+            updateStatusEl: document.getElementById('update-status'),
+            lastUpdateCheckEl: document.getElementById('last-update-check')
         };
 
         // Log missing critical elements
-        const criticalElements = ['themeRadios', 'usdRateInput'];
+        const criticalElements = ['themeRadios', 'usdRateInput']; // Add other critical elements if needed
         criticalElements.forEach(key => {
-            if (!this.elements[key] || (Array.isArray(this.elements[key]) && this.elements[key].length === 0)) {
+            const el = this.elements[key];
+            if (!el || (NodeList.prototype.isPrototypeOf(el) && el.length === 0)) { // Check for NodeList too
                 console.warn(`Critical settings element missing: ${key}`);
             }
         });
@@ -115,10 +124,47 @@ class SettingsModule {
             // Currency settings events
             this.initializeCurrencyEvents();
 
+            // 🆕 Update event listeners
+            this.initializeUpdateEvents();
+
         } catch (error) {
             console.error('Error initializing event listeners:', error);
         }
     }
+
+    /**
+     * Initialize update event listeners
+     */
+    initializeUpdateEvents() {
+        if (this.elements.checkUpdatesBtn) {
+            const checkHandler = () => this.checkForUpdates();
+            this.elements.checkUpdatesBtn.addEventListener('click', checkHandler);
+            this.eventListeners.push({
+                element: this.elements.checkUpdatesBtn,
+                event: 'click',
+                handler: checkHandler
+            });
+        }
+        if (this.elements.forceRefreshBtn) {
+            const refreshHandler = () => this.forceRefreshApp();
+            this.elements.forceRefreshBtn.addEventListener('click', refreshHandler);
+            this.eventListeners.push({
+                element: this.elements.forceRefreshBtn,
+                event: 'click',
+                handler: refreshHandler
+            });
+        }
+        if (this.elements.clearCacheBtn) {
+            const clearHandler = () => this.clearAppCache();
+            this.elements.clearCacheBtn.addEventListener('click', clearHandler);
+            this.eventListeners.push({
+                element: this.elements.clearCacheBtn,
+                event: 'click',
+                handler: clearHandler
+            });
+        }
+    }
+
 
     /**
      * Initialize data management event listeners
@@ -205,7 +251,7 @@ class SettingsModule {
             // Prevent invalid characters
             const keydownHandler = (e) => this.handleUSDRateKeydown(e);
             this.elements.usdRateInput.addEventListener('keydown', keydownHandler);
-			this.elements.usdRateInput.setAttribute('inputmode', 'numeric'); // Thêm dòng này
+            this.elements.usdRateInput.setAttribute('inputmode', 'numeric'); // Thêm dòng này
             this.eventListeners.push({
                 element: this.elements.usdRateInput,
                 event: 'keydown',
@@ -860,6 +906,267 @@ class SettingsModule {
     }
 
     /**
+     * Check for app updates
+     */
+    async checkForUpdates() {
+        try {
+            this.updateUpdateStatus('Đang kiểm tra...');
+            this.setButtonLoading(this.elements.checkUpdatesBtn, true);
+            if (window.FinancialApp && window.FinancialApp.updateManager) {
+                await window.FinancialApp.updateManager.checkForUpdates();
+
+                // Get version info
+                const versionInfo = await window.FinancialApp.updateManager.checkVersion();
+
+                if (versionInfo) {
+                    if (window.FinancialApp.updateManager.isUpdateAvailable) {
+                        this.updateUpdateStatus('Có cập nhật mới!');
+                        Utils.UIUtils.showMessage('🆕 Có phiên bản mới! Hãy cập nhật để sử dụng tính năng mới.', 'info', 5000);
+                    } else {
+                        this.updateUpdateStatus('Đã cập nhật');
+                        Utils.UIUtils.showMessage('✅ Bạn đang sử dụng phiên bản mới nhất', 'success');
+                    }
+                } else {
+                    this.updateUpdateStatus('Không thể kiểm tra');
+                    Utils.UIUtils.showMessage('⚠️ Không thể kiểm tra cập nhật. Vui lòng thử lại.', 'warning');
+                }
+            } else {
+                this.updateUpdateStatus('Service Worker không có');
+                Utils.UIUtils.showMessage('Service Worker chưa sẵn sàng. Vui lòng tải lại trang.', 'warning');
+            }
+            this.updateLastCheckTime();
+        } catch (error) {
+            console.error('Error checking for updates:', error);
+            this.updateUpdateStatus('Lỗi kiểm tra');
+            Utils.UIUtils.showMessage('Có lỗi khi kiểm tra cập nhật', 'error');
+        } finally {
+            this.setButtonLoading(this.elements.checkUpdatesBtn, false);
+        }
+    }
+
+    /**
+     * Force refresh the entire app
+     */
+    async forceRefreshApp() {
+        const confirmed = confirm(
+            '🔄 Làm mới ứng dụng sẽ:\n\n' +
+            '• Tải lại toàn bộ từ server\n' +
+            '• Xóa cache cũ\n' +
+            '• Đảm bảo có phiên bản mới nhất\n\n' +
+            'Bạn có muốn tiếp tục không?'
+        );
+        if (!confirmed) return;
+        try {
+            this.setButtonLoading(this.elements.forceRefreshBtn, true);
+
+            if (window.FinancialApp && window.FinancialApp.updateManager) {
+                await window.FinancialApp.updateManager.forceRefresh();
+            } else {
+                // Fallback method
+                this.fallbackForceRefresh();
+            }
+        } catch (error) {
+            console.error('Error force refreshing app:', error);
+            Utils.UIUtils.showMessage('Có lỗi khi làm mới ứng dụng. Đang thử phương pháp khác...', 'warning');
+
+            // Fallback to hard reload
+            setTimeout(() => {
+                this.fallbackForceRefresh();
+            }, 1000);
+        }
+        // Note: setButtonLoading(false) will likely not be reached if forceRefresh succeeds
+        // as the page will reload.
+    }
+
+    /**
+     * Fallback force refresh method
+     */
+    fallbackForceRefresh() {
+        try {
+            // Clear cache manually if possible
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => {
+                        caches.delete(name);
+                    });
+                }).finally(() => {
+                    this.hardReload();
+                });
+            } else {
+                this.hardReload();
+            }
+        } catch (error) {
+            console.error('Fallback refresh failed:', error);
+            this.hardReload();
+        }
+    }
+
+    /**
+     * Hard reload the page
+     */
+    hardReload() {
+        // Multiple methods to ensure reload works
+        if (typeof window.location.reload === 'function') {
+            window.location.reload(true);
+        } else {
+            window.location.href = window.location.href.split('?')[0] + '?refresh=' + Date.now();
+        }
+    }
+
+    /**
+     * Clear app cache (dangerous operation)
+     */
+    async clearAppCache() {
+        const confirmed = confirm(
+            '⚠️ XÓA CACHE ỨNG DỤNG\n\n' +
+            'Điều này sẽ:\n' +
+            '• Xóa toàn bộ cache ứng dụng\n' +
+            '• Buộc tải lại từ server\n' +
+            '• Có thể gây mất kết nối tạm thời\n\n' +
+            'CHỈ LÀM ĐIỀU NÀY KHI CÓ LỖI!\n\n' +
+            'Bạn có chắc chắn muốn tiếp tục?'
+        );
+        if (!confirmed) return;
+        try {
+            this.setButtonLoading(this.elements.clearCacheBtn, true);
+
+            // Clear all caches
+            if ('caches' in window) {
+                const cacheNames = await caches.keys();
+                await Promise.all(cacheNames.map(name => caches.delete(name)));
+                console.log('🗑️ All caches cleared');
+            }
+            // Unregister service worker
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                await Promise.all(registrations.map(reg => reg.unregister()));
+                console.log('🗑️ Service workers unregistered');
+            }
+            Utils.UIUtils.showMessage('✅ Cache đã được xóa. Đang tải lại...', 'success');
+
+            // Reload after short delay
+            setTimeout(() => {
+                this.hardReload();
+            }, 1500);
+        } catch (error) {
+            console.error('Error clearing cache:', error);
+            Utils.UIUtils.showMessage('Có lỗi khi xóa cache. Đang tải lại...', 'error');
+
+            // Fallback to reload
+            setTimeout(() => {
+                this.hardReload();
+            }, 1000);
+        }
+         // Note: setButtonLoading(false) will likely not be reached if clearAppCache succeeds
+        // as the page will reload.
+    }
+
+    /**
+     * Update status display
+     */
+    updateUpdateStatus(status) {
+        if (this.elements.updateStatusEl) {
+            this.elements.updateStatusEl.textContent = status;
+
+            // Add color coding
+            this.elements.updateStatusEl.className = 'info-value'; // Reset class
+            if (status.includes('Có cập nhật')) {
+                this.elements.updateStatusEl.style.color = 'var(--warning-color)';
+            } else if (status.includes('Đã cập nhật')) {
+                this.elements.updateStatusEl.style.color = 'var(--accent-color)';
+            } else if (status.includes('Lỗi')) {
+                this.elements.updateStatusEl.style.color = 'var(--danger-color)';
+            } else {
+                this.elements.updateStatusEl.style.color = 'var(--text-secondary)';
+            }
+        }
+    }
+
+    /**
+     * Update last check time
+     */
+    updateLastCheckTime() {
+        if (this.elements.lastUpdateCheckEl) {
+            const now = new Date();
+            this.elements.lastUpdateCheckEl.textContent = now.toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' });
+        }
+    }
+
+    /**
+     * Set button loading state
+     */
+    setButtonLoading(button, isLoading) {
+        if (!button) return;
+        
+        if (isLoading) {
+            // Store original content if not already stored
+            if (!button.dataset.originalContent) {
+                button.dataset.originalContent = button.innerHTML;
+            }
+            button.disabled = true;
+            button.style.opacity = '0.6';
+            button.style.cursor = 'not-allowed';
+            
+            // Add loading spinner icon if it doesn't exist
+            let spinnerIcon = button.querySelector('.btn-icon.loader');
+            if (!spinnerIcon) {
+                spinnerIcon = document.createElement('span');
+                spinnerIcon.className = 'btn-icon loader'; // Add 'loader' class for specific styling
+                spinnerIcon.innerHTML = '⏳'; // Simple loader, can be replaced with SVG/CSS spinner
+                spinnerIcon.style.animation = 'spin 1s linear infinite';
+                spinnerIcon.style.marginLeft = '0.5em';
+                button.appendChild(spinnerIcon);
+            }
+            spinnerIcon.style.display = 'inline-block';
+
+
+        } else {
+            button.disabled = false;
+            button.style.opacity = '1';
+            button.style.cursor = 'pointer';
+            
+            // Restore original content and remove spinner
+            const spinnerIcon = button.querySelector('.btn-icon.loader');
+            if (spinnerIcon) {
+                spinnerIcon.style.display = 'none'; // Hide spinner
+            }
+            // If original content was stored, restore it (optional, if spinner is added to innerHTML)
+            // if (button.dataset.originalContent) {
+            //     button.innerHTML = button.dataset.originalContent;
+            //     delete button.dataset.originalContent;
+            // }
+        }
+    }
+
+    /**
+     * Update version and update status info
+     */
+    updateVersionInfo() {
+        try {
+            // Update current version
+            if (this.elements.currentVersionEl) {
+                const version = window.FinancialApp?.updateManager?.currentVersion || 'N/A'; // Default to N/A if not found
+                this.elements.currentVersionEl.textContent = version;
+            }
+            // Update status
+            if (window.FinancialApp?.updateManager) {
+                const updateManager = window.FinancialApp.updateManager;
+                if (updateManager.isUpdateAvailable) {
+                    this.updateUpdateStatus('Có cập nhật mới!');
+                } else {
+                    this.updateUpdateStatus('Đã cập nhật');
+                }
+            } else {
+                this.updateUpdateStatus('Chưa sẵn sàng');
+            }
+        } catch (error) {
+            console.error('Error updating version info:', error);
+            this.updateUpdateStatus('Lỗi hiển thị version');
+        }
+    }
+
+
+    /**
      * Cleanup method to prevent memory leaks
      */
     destroy() { // This is the correct destroy method for SettingsModule
@@ -886,6 +1193,8 @@ class SettingsModule {
             this.updateThemeRadios();
             this.updateCurrencySettings();
             this.updateAppInfo();
+            // 🆕 Update version info
+            this.updateVersionInfo();
         } catch (error) {
             console.error('Error refreshing settings module:', error);
             Utils.UIUtils.showMessage('Có lỗi khi cập nhật module cài đặt', 'error');

@@ -60,6 +60,9 @@ class FinancialApp {
                 language: 'vi'
             }
         };
+        
+        // Update manager
+        this.updateManager = null;
     }
 
     /**
@@ -91,6 +94,9 @@ class FinancialApp {
             this.isInitialized = true;
 
             console.log('✅ Financial App initialized successfully');
+
+            // 🆕 THÊM PHẦN NÀY: Initialize Update Manager
+            this.initializeUpdateManager();
 
             // Set initial hash if not present and switch tab
             // This logic is moved here from DOMContentLoaded listener to ensure app is ready
@@ -138,6 +144,46 @@ class FinancialApp {
             this.initializeFallbackMode();
         }
     }
+
+    /**
+    * Initialize Update Manager for PWA updates
+    */
+    initializeUpdateManager() {
+        try {
+            if (typeof Utils.UpdateManager !== 'undefined') {
+                console.log('🔄 Initializing Update Manager...');
+                Utils.UpdateManager.init();
+                this.updateManager = Utils.UpdateManager;
+                
+                // Add update check to app menu or settings if needed
+                this.addUpdateControls();
+            } else {
+                console.warn('⚠️ Update Manager not available');
+            }
+        } catch (error) {
+            console.error('❌ Failed to initialize Update Manager:', error);
+        }
+    }
+
+    /**
+    * Add update controls to the app (optional)
+    */
+    addUpdateControls() {
+        // This method can be called to add update controls to settings
+        // For now, it just logs the availability
+        console.log('📱 Update controls available');
+        
+        // You can add a force refresh button to settings here
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add to settings tab if it exists
+            const settingsSection = document.querySelector('#tab-settings .danger-section');
+            if (settingsSection && this.updateManager) {
+                const updateButton = this.updateManager.addForceRefreshButton();
+                settingsSection.parentNode.insertBefore(updateButton, settingsSection);
+            }
+        });
+    }
+
     handlePWAShortcuts() {
         try {
             const urlParams = new URLSearchParams(window.location.search);
@@ -852,64 +898,67 @@ class FinancialApp {
     /**
      * Update header summary with error handling
      */
-	updateHeaderSummary() {
-		try {
-			// Tính TỔNG thu nhập và chi tiêu từ trước đến nay (không giới hạn thời gian)
-			let totalIncome = 0;
-			let totalExpense = 0;
+    updateHeaderSummary() {
+        try {
+            const { start, end } = Utils.DateUtils.getPeriodDates('month');
 
-			this.data.transactions.forEach(tx => {
-				try {
-					if (!tx || !tx.datetime) return;
-					const amount = parseFloat(tx?.amount) || 0;
+            if (!start || !end) {
+                console.warn('Invalid period dates for header summary');
+                return;
+            }
 
-					if (tx?.type === 'Thu' && !tx?.isTransfer) {
-						totalIncome += amount;
-					} else if (tx?.type === 'Chi' && !tx?.isTransfer) {
-						totalExpense += amount;
-					}
-				} catch (error) {
-					console.warn('Invalid transaction in header summary:', tx, error);
-				}
-			});
+            const currentMonthTransactions = this.data.transactions.filter(tx => {
+                try {
+                    // Ensure tx is valid and tx.datetime is present before creating Date object
+                    if (!tx || !tx.datetime) return false;
+                    const txDate = new Date(tx.datetime);
+                    return !isNaN(txDate.getTime()) && txDate >= start && txDate <= end;
+                } catch (error) {
+                    console.warn('Invalid transaction date in filter (for header summary):', tx?.datetime, error);
+                    return false;
+                }
+            });
 
-			// Tính tổng số dư thực tế của tất cả tài khoản
-			const realTotalBalance = this.getAllAccountBalances();
-			const totalRealBalance = Object.values(realTotalBalance).reduce((sum, balance) => {
-				return sum + (parseFloat(balance) || 0);
-			}, 0);
+            let totalIncome = 0;
+            let totalExpense = 0;
 
-			// Cập nhật giao diện
-			const headerIncome = document.getElementById('header-income');
-			const headerExpense = document.getElementById('header-expense');
-			const headerBalance = document.getElementById('header-balance');
+            currentMonthTransactions.forEach(tx => {
+                // Ensure tx and tx.amount are valid before parsing
+                const amount = parseFloat(tx?.amount) || 0;
 
-			if (headerIncome) {
-				headerIncome.textContent = Utils.CurrencyUtils.formatCurrency(totalIncome);
-			}
+                // <<< SỬA LẠI 2 DÒNG NÀY >>>
+                if (tx?.type === 'Thu' && !tx?.isTransfer) { // Thêm !tx?.isTransfer
+                    totalIncome += amount;
+                } else if (tx?.type === 'Chi' && !tx?.isTransfer) { // Thêm !tx?.isTransfer
+                    totalExpense += amount;
+                }
+                // <<< KẾT THÚC SỬA >>>
+            });
 
-			if (headerExpense) {
-				headerExpense.textContent = Utils.CurrencyUtils.formatCurrency(totalExpense);
-			}
+            const balance = totalIncome - totalExpense;
 
-			if (headerBalance) {
-				headerBalance.textContent = Utils.CurrencyUtils.formatCurrency(totalRealBalance);
-				headerBalance.className = `summary-value ${totalRealBalance >= 0 ? 'text-success' : 'text-danger'}`;
-			}
+            // Update header elements safely
+            const headerIncome = document.getElementById('header-income');
+            const headerExpense = document.getElementById('header-expense');
+            const headerBalance = document.getElementById('header-balance');
 
-			// Cập nhật labels để rõ ràng
-			const incomeLabel = headerIncome?.parentNode?.querySelector('.summary-label');
-			const expenseLabel = headerExpense?.parentNode?.querySelector('.summary-label');
-			const balanceLabel = headerBalance?.parentNode?.querySelector('.summary-label');
-			
-			if (incomeLabel) incomeLabel.textContent = 'Tổng thu nhập';
-			if (expenseLabel) expenseLabel.textContent = 'Tổng chi tiêu';
-			if (balanceLabel) balanceLabel.textContent = 'Số dư hiện tại';
+            if (headerIncome) {
+                headerIncome.textContent = Utils.CurrencyUtils.formatCurrency(totalIncome);
+            }
 
-		} catch (error) {
-			console.error('Error updating header summary:', error);
-		}
-	}
+            if (headerExpense) {
+                headerExpense.textContent = Utils.CurrencyUtils.formatCurrency(totalExpense);
+            }
+
+            if (headerBalance) {
+                headerBalance.textContent = Utils.CurrencyUtils.formatCurrency(balance);
+                headerBalance.className = `summary-value ${balance >= 0 ? 'text-success' : 'text-danger'}`;
+            }
+
+        } catch (error) {
+            console.error('Error updating header summary:', error);
+        }
+    }
 
     /**
      * Cleanup method to prevent memory leaks
@@ -1290,6 +1339,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Initialize the app (this will handle tab switching, popstate, theme toggle etc.)
         await window.FinancialApp.init();
+
+        // Service Worker sẽ được đăng ký bởi UpdateManager
+        // Không cần đăng ký riêng ở đây nữa
 
     } catch (error) {
         console.error('Failed to initialize app from DOMContentLoaded:', error);
