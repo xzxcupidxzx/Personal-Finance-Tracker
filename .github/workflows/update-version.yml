@@ -1,0 +1,42 @@
+name: Auto Update Version
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'js/**'
+      - 'styles.css'
+      - 'index.html'
+      - 'quick-add.html'
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Update version
+      run: |
+        # Get current version
+        CURRENT_VERSION=$(grep -oP "APP_VERSION = '\K[^']+" sw.js)
+        
+        # Increment patch version
+        IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
+        PATCH=$((VERSION_PARTS[2] + 1))
+        NEW_VERSION="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$PATCH"
+        
+        # Update sw.js
+        sed -i "s/APP_VERSION = '$CURRENT_VERSION'/APP_VERSION = '$NEW_VERSION'/g" sw.js
+        
+        # Update utils.js
+        sed -i "s/currentVersion: '$CURRENT_VERSION'/currentVersion: '$NEW_VERSION'/g" js/utils.js
+        
+        # Commit changes
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add sw.js js/utils.js
+        git commit -m "🔄 Auto-update version to $NEW_VERSION" || echo "No changes to commit"
+        git push
