@@ -4,26 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Quản Lý Tài Chính Cá Nhân</title>
-	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-	<meta http-equiv="Pragma" content="no-cache">
-	<meta http-equiv="Expires" content="0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 
     <link rel="manifest" href="./manifest.json">
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Tài Chính">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#3b82f6">
     <meta name="msapplication-navbutton-color" content="#3b82f6">
-    
     <meta name="format-detection" content="telephone=no">
     <meta name="apple-touch-fullscreen" content="yes">
-    
     <link rel="apple-touch-icon" href="./logo-finance.png">
     <link rel="icon" type="image/png" sizes="32x32" href="./logo-finance.png">
     <link rel="shortcut icon" href="./logo-finance.png" type="image/png">
-
     <link rel="apple-touch-icon" href="./LogoFinance.png">
     <link rel="apple-touch-icon" sizes="57x57" href="./LogoFinance.png">
     <link rel="apple-touch-icon" sizes="60x60" href="./LogoFinance.png">
@@ -34,39 +30,33 @@
     <link rel="apple-touch-icon" sizes="144x144" href="./LogoFinance.png">
     <link rel="apple-touch-icon" sizes="152x152" href="./LogoFinance.png">
     <link rel="apple-touch-icon" sizes="180x180" href="./LogoFinance.png">
-	<link rel="icon" type="image/png" sizes="512x512" href="./LogoFinance.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="./LogoFinance.png">
     <link rel="icon" type="image/png" sizes="32x32" href="./LogoFinance.png">
     <link rel="icon" type="image/png" sizes="16x16" href="./LogoFinance.png">
     <link rel="shortcut icon" href="./LogoFinance.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
     <link rel="stylesheet" href="./styles.css">
-    
+
     <style>
-		@supports (-webkit-touch-callout: none) {
-			/* iOS specific styles */
-			body {
-				-webkit-text-size-adjust: 100%;
-				-webkit-touch-callout: none;
-				/* REMOVE these lines that prevent selection */
-				/* -webkit-user-select: none; */
-				/* user-select: none; */
-			}
-			
-			/* Ensure inputs are selectable */
-			input, textarea, select {
-				-webkit-user-select: text !important;
-				user-select: text !important;
-				-webkit-touch-callout: default !important;
-			}
-		}
+        @supports (-webkit-touch-callout: none) {
+            body {
+                -webkit-text-size-adjust: 100%;
+                -webkit-touch-callout: none;
+            }
+            input, textarea, select {
+                -webkit-user-select: text !important;
+                user-select: text !important;
+                -webkit-touch-callout: default !important;
+            }
+        }
     </style>
 </head>
 <body class="font-sans antialiased ...">
+
+    <!-- Theme Switch -->
     <div class="theme-switch-wrapper">
         <label class="theme-switch" for="darkModeToggleCheckbox">
             <input type="checkbox" id="darkModeToggleCheckbox">
@@ -77,6 +67,7 @@
         </label>
     </div>
 
+    <!-- Header -->
     <header class="app-header">
         <div class="header-content">
             <h1 class="header-title">
@@ -99,18 +90,14 @@
             </div>
         </div>
     </header>
-
     <div id="message-box" class="message-box" style="display: none;"></div>
 
     <main class="main-container">
         <div class="tab-content-container">
+            <!-- TRANSACTIONS TAB -->
             <section id="tab-transactions" class="tab-content active">
                 <div class="quick-add-section">
-                    <h2 class="section-title">
-                        <span class="section-icon">✏️</span>
-                        Thêm Giao Dịch Nhanh
-                    </h2>
-
+                    <h2 class="section-title"><span class="section-icon">✏️</span>Thêm Giao Dịch Nhanh</h2>
                     <form id="transaction-form" class="transaction-form">
                         <div class="form-row">
                             <label class="form-label">Loại giao dịch</label>
@@ -132,68 +119,62 @@
                                 </label>
                             </div>
                         </div>
-
                         <div class="form-row">
-							<label for="amount-input" class="form-label">Số tiền</label>
-							<div class="amount-input-group flex items-center bg-[var(--bg-tertiary)] rounded-2xl border border-[var(--border-color)] px-4 py-3 mt-1" style="min-height:58px;">
-								<input type="tel"
-									   id="amount-input"
-									   class="amount-input flex-1 bg-transparent outline-none border-0 text-xl text-[var(--text-primary)] px-1"
-									   placeholder="Nhập số tiền"
-									   inputmode="numeric"
-									   pattern="[0-9]*"
-									   autocomplete="off"
-									   required>
-								<select id="currency-selector" class="currency-selector bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-xl px-3 py-2 border border-[var(--border-color)]">
-									<option value="VND">VNĐ</option>
-									<option value="USD">USD</option>
-								</select>
-							</div>
-						</div>
-
-                        <div class="form-row" id="category-row">
+                            <label for="amount-input" class="form-label">Số tiền</label>
+                            <div class="amount-input-group flex items-center bg-[var(--bg-tertiary)] rounded-2xl border border-[var(--border-color)] px-4 py-3 mt-1" style="min-height:58px;">
+                                <input type="tel"
+                                    id="amount-input"
+                                    class="amount-input flex-1 bg-transparent outline-none border-0 text-xl text-[var(--text-primary)] px-1"
+                                    placeholder="Nhập số tiền"
+                                    inputmode="numeric"
+                                    pattern="[0-9]*"
+                                    autocomplete="off"
+                                    required
+                                    data-virtual-keyboard="true">
+                                <select id="currency-selector" class="currency-selector bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-xl px-3 py-2 border border-[var(--border-color)]">
+                                    <option value="VND">VNĐ</option>
+                                    <option value="USD">USD</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
                             <label for="category-select" class="form-label">Hạng mục</label>
                             <select id="category-select" class="form-select" required>
                                 <option value="">Chọn hạng mục...</option>
                             </select>
                         </div>
-
                         <div class="form-row">
                             <label for="account-from" class="form-label" id="account-from-label">Tài khoản</label>
                             <select id="account-from" class="form-select" required>
                                 <option value="">Chọn tài khoản...</option>
                             </select>
                         </div>
-
                         <div class="form-row" id="to-account-row" style="display: none;">
                             <label for="account-to" class="form-label">Đến tài khoản</label>
                             <select id="account-to" class="form-select">
                                 <option value="">Chọn tài khoản nhận...</option>
                             </select>
                         </div>
-
                         <div class="form-row">
                             <label for="description-input" class="form-label">Mô tả</label>
                             <input type="text"
-                                   id="description-input"
-                                   class="form-input"
-                                   placeholder="Mô tả giao dịch (tùy chọn)"
-                                   autocomplete="off"
-                                   autocorrect="on"
-                                   autocapitalize="sentences"
-                                   list="description-suggestions">
+                                id="description-input"
+                                class="form-input"
+                                placeholder="Mô tả giao dịch (tùy chọn)"
+                                autocomplete="off"
+                                autocorrect="on"
+                                autocapitalize="sentences"
+                                list="description-suggestions">
                             <datalist id="description-suggestions"></datalist>
                         </div>
-
                         <div class="form-row">
                             <label for="datetime-input" class="form-label">Ngày & Giờ</label>
                             <input type="datetime-local"
-                                   id="datetime-input"
-                                   class="form-input"
-                                   autocomplete="off"
-                                   required>
+                                id="datetime-input"
+                                class="form-input"
+                                autocomplete="off"
+                                required>
                         </div>
-
                         <div id="suggestion-area" class="suggestion-area" style="display: none;">
                             <div class="suggestion-content">
                                 <span class="suggestion-text">
@@ -205,7 +186,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <button type="submit" class="submit-btn" id="submit-btn">
                             <span class="btn-icon">➕</span>
                             <span class="btn-text">Thêm Giao Dịch</span>
@@ -226,13 +206,10 @@
                         </div>
                     </form>
                 </div>
-
                 <div class="transaction-list-section">
+                    <!-- Giao Dịch Gần Đây + transaction list + no data message -->
                     <div class="section-header">
-                        <h2 class="section-title">
-                            <span class="section-icon">📋</span>
-                            Giao Dịch Gần Đây
-                        </h2>
+                        <h2 class="section-title"><span class="section-icon">📋</span>Giao Dịch Gần Đây</h2>
                         <div class="filter-controls">
                             <select id="filter-period" class="filter-select">
                                 <option value="today">Hôm nay</option>
@@ -243,10 +220,7 @@
                             <input type="date" id="filter-date" class="filter-date">
                         </div>
                     </div>
-
-                    <div class="transaction-list" id="transaction-list">
-                        </div>
-
+                    <div class="transaction-list" id="transaction-list"></div>
                     <div id="no-transactions" class="no-data" style="display: none;">
                         <span class="no-data-icon">📝</span>
                         <span class="no-data-text">Chưa có giao dịch nào</span>
@@ -774,7 +748,31 @@
             <span class="loading-text">Đang tải...</span>
         </div>
     </div>
-
+	<div id="virtualNumericKeyboard" class="virtual-keyboard">
+	  <div class="virtual-keyboard-row">
+		<button data-key="1">1</button>
+		<button data-key="2">2</button>
+		<button data-key="3">3</button>
+	  </div>
+	  <div class="virtual-keyboard-row">
+		<button data-key="4">4</button>
+		<button data-key="5">5</button>
+		<button data-key="6">6</button>
+	  </div>
+	  <div class="virtual-keyboard-row">
+		<button data-key="7">7</button>
+		<button data-key="8">8</button>
+		<button data-key="9">9</button>
+	  </div>
+	  <div class="virtual-keyboard-row">
+		<button data-key="000">000</button>
+		<button data-key="0">0</button>
+		<button data-key="backspace">←</button>
+	  </div>
+	  <div class="virtual-keyboard-row">
+		<button data-key="done">Done</button>
+	  </div>
+	</div>
     <script src="./js/version.js"></script>
     <script src="./js/utils.js"></script>
 	<script src="./js/categories.js"></script>
@@ -783,6 +781,7 @@
 	<script src="./js/history.js"></script>
 	<script src="./js/statistics.js"></script>
 	<script src="./js/app.js"></script>
+	<script src="js/virtual-keyboard.js"></script>
 
 	<script>
 	if (typeof Utils !== 'undefined' && Utils.UIUtils) {

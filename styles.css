@@ -3057,3 +3057,81 @@ input, textarea, select {
 .amount-input-group > * {
     pointer-events: auto;
 }
+
+/* === Virtual Numeric Keyboard === */
+.virtual-keyboard {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg-primary, #f0f0f0);
+    padding: 10px;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.15);
+    z-index: 3000;
+    transition: background 0.2s;
+}
+.virtual-keyboard-row {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 5px;
+}
+.virtual-keyboard-row button {
+    flex: 1;
+    margin: 0 5px;
+    padding: 15px;
+    font-size: 18px;
+    border: none;
+    background: var(--bg-secondary, #fff);
+    color: var(--text-primary, #23272f);
+    border-radius: 8px;
+    box-shadow: 0 2px 2px rgba(0,0,0,0.08);
+    border: 1px solid var(--border-color, #e2e8f0);
+    font-weight: 600;
+    transition: background 0.15s, color 0.15s;
+}
+.virtual-keyboard-row button:active {
+    background: var(--primary-color, #3b82f6);
+    color: #fff;
+}
+
+.virtual-keyboard-row button[data-key="done"] {
+    background: var(--primary-color, #3b82f6);
+    color: #fff;
+}
+
+.virtual-keyboard-row button[data-key="000"] {
+    letter-spacing: 1px;
+}
+
+@media (max-width: 480px) {
+    .virtual-keyboard-row button {
+        font-size: 16px;
+        padding: 12px;
+    }
+}
+
+/* ==== DARK MODE FOR VIRTUAL KEYBOARD ==== */
+[data-theme="dark"] .virtual-keyboard,
+body.dark-mode .virtual-keyboard {
+    background: #23272f !important;
+}
+
+[data-theme="dark"] .virtual-keyboard-row button,
+body.dark-mode .virtual-keyboard-row button {
+    background: #323846 !important;
+    color: #f9fafb !important;
+    border-color: #424656 !important;
+}
+
+[data-theme="dark"] .virtual-keyboard-row button[data-key="done"],
+body.dark-mode .virtual-keyboard-row button[data-key="done"] {
+    background: #3b82f6 !important;
+    color: #fff !important;
+}
+
+[data-theme="dark"] .virtual-keyboard-row button:active,
+body.dark-mode .virtual-keyboard-row button:active {
+    background: #1e293b !important;
+    color: #fff !important;
+}
