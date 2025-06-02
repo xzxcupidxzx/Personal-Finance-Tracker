@@ -1,42 +1,66 @@
-name: Auto Update Version
+name: Sync App Version
 
 on:
   push:
     branches: [ main, master ]
     paths:
-      - 'js/**'
-      - 'styles.css'
-      - 'index.html'
-      - 'quick-add.html'
+      - 'js/version.js' # Chỉ chạy khi version.js thay đổi
 
 jobs:
-  update-version:
+  sync-version:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v3
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        
-    - name: Update version
+        # Cần token để có thể push lại thay đổi
+        token: ${{ secrets.GITHUB_TOKEN }} 
+
+    - name: Sync version to utils.js and manifest.json
       run: |
-        # Get current version
-        CURRENT_VERSION=$(grep -oP "APP_VERSION = '\K[^']+" sw.js)
-        
-        # Increment patch version
-        IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
-        PATCH=$((VERSION_PARTS[2] + 1))
-        NEW_VERSION="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$PATCH"
-        
-        # Update sw.js
-        sed -i "s/APP_VERSION = '$CURRENT_VERSION'/APP_VERSION = '$NEW_VERSION'/g" sw.js
-        
-        # Update utils.js
-        sed -i "s/currentVersion: '$CURRENT_VERSION'/currentVersion: '$NEW_VERSION'/g" js/utils.js
-        
-        # Commit changes
+        VERSION_FILE="js/version.js"
+        UTILS_FILE="js/utils.js"
+        MANIFEST_FILE="manifest.json"
+
+        # Đọc phiên bản mới từ js/version.js
+        # Dòng này tìm dòng có "const APP_VERSION = '...';" và trích xuất phần trong dấu nháy đơn
+        NEW_VERSION_LINE=$(grep -E "const APP_VERSION = '[0-9]+\.[0-9]+\.[0-9]+';" $VERSION_FILE)
+        if [ -z "$NEW_VERSION_LINE" ]; then
+          echo "Không tìm thấy dòng APP_VERSION hợp lệ trong $VERSION_FILE"
+          exit 1
+        fi
+        NEW_VERSION=$(echo "$NEW_VERSION_LINE" | grep -oP "'\K[^']+")
+        if [ -z "$NEW_VERSION" ]; then
+          echo "Không thể trích xuất NEW_VERSION từ $VERSION_FILE"
+          exit 1
+        fi
+        echo "Đồng bộ phiên bản sang: $NEW_VERSION"
+
+        # Cập nhật currentVersion trong js/utils.js
+        # Lệnh sed này tìm dòng "currentVersion: '...'" và thay thế giá trị phiên bản
+        sed -i -E "s/(currentVersion: ')[0-9]+\.[0-9]+\.[0-9]+'/\1$NEW_VERSION'/" $UTILS_FILE
+
+        # Cập nhật "version" trong manifest.json
+        # Sử dụng jq nếu có sẵn sẽ an toàn hơn cho JSON
+        if command -v jq &> /dev/null
+        then
+            jq ".version = \"$NEW_VERSION\"" $MANIFEST_FILE > tmp.$$.json && mv tmp.$$.json $MANIFEST_FILE
+            echo "Đã cập nhật manifest.json bằng jq"
+        else
+            # Cách dự phòng bằng sed nếu không có jq (ít an toàn hơn cho cấu trúc JSON phức tạp)
+            sed -i -E "s/(\"version\": \")[0-9]+\.[0-9]+\.[0-9]+(\")/\1$NEW_VERSION\2/" $MANIFEST_FILE
+            echo "Đã cập nhật manifest.json bằng sed (cảnh báo: nên dùng jq)"
+        fi
+
+        # Commit các thay đổi
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add sw.js js/utils.js
-        git commit -m "🔄 Auto-update version to $NEW_VERSION" || echo "No changes to commit"
-        git push
+        git add $UTILS_FILE $MANIFEST_FILE # Chỉ add các file đã thay đổi
+
+        # Kiểm tra xem có thực sự có thay đổi không trước khi commit
+        if ! git diff --staged --quiet; then
+            git commit -m "⚙️ Sync app version to $NEW_VERSION from $VERSION_FILE"
+            git push
+        else
+            echo "Không có thay đổi phiên bản nào cần commit."
+        fi
