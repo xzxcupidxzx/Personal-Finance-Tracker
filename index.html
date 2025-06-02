@@ -2,19 +2,27 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <!-- ✅ FIXED: iOS Keyboard Issues - Updated viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Quản Lý Tài Chính Cá Nhân</title>
 	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 	<meta http-equiv="Pragma" content="no-cache">
 	<meta http-equiv="Expires" content="0">
 
     <link rel="manifest" href="./manifest.json">
+    
+    <!-- ✅ ENHANCED: iOS PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Tài Chính">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#3b82f6">
     <meta name="msapplication-navbutton-color" content="#3b82f6">
+    
+    <!-- ✅ iOS Keyboard Enhancement -->
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-touch-fullscreen" content="yes">
+    
     <link rel="apple-touch-icon" href="./logo-finance.png">
     <link rel="icon" type="image/png" sizes="32x32" href="./logo-finance.png">
     <link rel="shortcut icon" href="./logo-finance.png" type="image/png">
@@ -40,6 +48,59 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="./styles.css">
+    
+    <!-- ✅ iOS Keyboard Fix CSS -->
+    <style>
+        /* iOS Keyboard Fixes */
+        @supports (-webkit-touch-callout: none) {
+            /* iOS specific styles */
+            input, textarea, select {
+                font-size: 16px !important; /* Prevent zoom on focus */
+                -webkit-appearance: none;
+                -webkit-border-radius: 0;
+                border-radius: 8px;
+            }
+            
+            /* Ensure inputs are properly styled */
+            input[type="text"],
+            input[type="number"],
+            input[type="tel"],
+            input[type="email"],
+            input[type="datetime-local"],
+            select {
+                -webkit-appearance: none !important;
+                appearance: none !important;
+                font-size: 16px !important;
+                padding: 12px !important;
+                border: 2px solid var(--border-color) !important;
+                border-radius: 8px !important;
+                background-color: var(--bg-primary) !important;
+                color: var(--text-primary) !important;
+            }
+            
+            /* Amount input specific */
+            .amount-input {
+                font-size: 18px !important; /* Larger for amount */
+                -webkit-appearance: none !important;
+                -webkit-user-select: text !important;
+                user-select: text !important;
+            }
+            
+            /* Fix for viewport */
+            body {
+                -webkit-text-size-adjust: 100%;
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                user-select: none;
+            }
+            
+            /* Allow text selection in inputs */
+            input, textarea {
+                -webkit-user-select: text !important;
+                user-select: text !important;
+            }
+        }
+    </style>
 </head>
 <body class="font-sans antialiased ...">
     <div class="theme-switch-wrapper">
@@ -111,13 +172,19 @@
                         <div class="form-row">
 							<label for="amount-input" class="form-label">Số tiền</label>
 							<div class="amount-input-group flex items-center bg-[var(--bg-tertiary)] rounded-2xl border border-[var(--border-color)] px-4 py-3 mt-1" style="min-height:58px;">
-								<input type="text"
+								<!-- ✅ FIXED: iOS Keyboard Enhancement -->
+								<input type="tel"
 									   id="amount-input"
 									   class="amount-input flex-1 bg-transparent outline-none border-0 text-xl text-[var(--text-primary)] h-[24px] min-h-[24px] px-1"
 									   placeholder="Nhập số tiền"
 									   inputmode="numeric"
+									   pattern="[0-9]*"
+									   autocomplete="off"
+									   autocorrect="off"
+									   autocapitalize="off"
+									   spellcheck="false"
 									   required>
-								<select id="currency-selector" class="currency-selector /* ĐÃ XÓA ml-2 */ bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-xl px-3 py-2 border border-[var(--border-color)]">
+								<select id="currency-selector" class="currency-selector bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-xl px-3 py-2 border border-[var(--border-color)]">
 									<option value="VND">VNĐ</option>
 									<option value="USD">USD</option>
 								</select>
@@ -147,19 +214,25 @@
 
                         <div class="form-row">
                             <label for="description-input" class="form-label">Mô tả</label>
+                            <!-- ✅ FIXED: iOS Keyboard Enhancement -->
                             <input type="text"
                                    id="description-input"
                                    class="form-input"
                                    placeholder="Mô tả giao dịch (tùy chọn)"
+                                   autocomplete="off"
+                                   autocorrect="on"
+                                   autocapitalize="sentences"
                                    list="description-suggestions">
                             <datalist id="description-suggestions"></datalist>
                         </div>
 
                         <div class="form-row">
                             <label for="datetime-input" class="form-label">Ngày & Giờ</label>
+                            <!-- ✅ FIXED: iOS Keyboard Enhancement -->
                             <input type="datetime-local"
                                    id="datetime-input"
                                    class="form-input"
+                                   autocomplete="off"
                                    required>
                         </div>
 
@@ -430,10 +503,14 @@
 
                     <div class="add-category-form">
                         <div class="form-group">
+                            <!-- ✅ FIXED: iOS Keyboard Enhancement -->
                             <input type="text"
                                    id="new-income-category"
                                    class="category-input"
-                                   placeholder="Tên danh mục thu nhập mới">
+                                   placeholder="Tên danh mục thu nhập mới"
+                                   autocomplete="off"
+                                   autocorrect="on"
+                                   autocapitalize="words">
                             <button id="add-income-category" class="add-category-btn">
                                 <span class="btn-icon">➕</span>
                                 Thêm
@@ -456,10 +533,14 @@
 
                     <div class="add-category-form">
                         <div class="form-group">
+                            <!-- ✅ FIXED: iOS Keyboard Enhancement -->
                             <input type="text"
                                    id="new-expense-category"
                                    class="category-input"
-                                   placeholder="Tên danh mục chi tiêu mới">
+                                   placeholder="Tên danh mục chi tiêu mới"
+                                   autocomplete="off"
+                                   autocorrect="on"
+                                   autocapitalize="words">
                             <button id="add-expense-category" class="add-category-btn">
                                 <span class="btn-icon">➕</span>
                                 Thêm
@@ -482,10 +563,14 @@
 
                     <div class="add-category-form">
                         <div class="form-group">
+                            <!-- ✅ FIXED: iOS Keyboard Enhancement -->
                             <input type="text"
                                    id="new-account"
                                    class="category-input"
-                                   placeholder="Tên tài khoản mới">
+                                   placeholder="Tên tài khoản mới"
+                                   autocomplete="off"
+                                   autocorrect="on"
+                                   autocapitalize="words">
                             <button id="add-account" class="add-category-btn">
                                 <span class="btn-icon">➕</span>
                                 Thêm
@@ -518,7 +603,7 @@
 					<div class="update-controls">
 						<div class="info-item">
 							<span class="info-label">Phiên bản hiện tại</span>
-							<span class="info-value" id="current-app-version">1.0.2</span>
+							<span class="info-value" id="current-app-version">1.0.3</span>
 						</div>
 
 						<div class="info-item">
@@ -635,12 +720,16 @@
                     <div class="currency-settings">
                         <div class="setting-item">
                             <label class="setting-label">Tỷ giá USD/VNĐ</label>
-                            <input type="number"
+                            <!-- ✅ FIXED: iOS Keyboard Enhancement -->
+                            <input type="tel"
                                    id="usd-rate"
                                    class="setting-input"
                                    value="25000"
                                    min="1000"
-                                   max="50000">
+                                   max="50000"
+                                   inputmode="numeric"
+                                   pattern="[0-9]*"
+                                   autocomplete="off">
                             <div id="usd-rate-error" class="input-error-message" style="display: none;"></div>
                         </div>
 
@@ -737,6 +826,8 @@
         </div>
     </div>
 
+    <!-- ✅ FIXED: Load version.js first for UpdateManager -->
+    <script src="./js/version.js"></script>
     <script src="./js/utils.js"></script>
 	<script src="./js/categories.js"></script>
 	<script src="./js/settings.js"></script>
@@ -834,6 +925,86 @@
 		}
 	}
 
+	// ✅ ENHANCED: iOS Keyboard Fixes
+	document.addEventListener('DOMContentLoaded', function() {
+	    // Detect iOS
+	    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+	                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+	    
+	    if (isIOS) {
+	        console.log('📱 iOS detected - applying keyboard fixes');
+	        
+	        // Fix viewport on iOS when keyboard appears
+	        function fixIOSViewport() {
+	            const viewportMeta = document.querySelector('meta[name="viewport"]');
+	            if (viewportMeta) {
+	                viewportMeta.setAttribute('content', 
+	                    'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes'
+	                );
+	            }
+	        }
+	        
+	        // Apply iOS-specific input fixes
+	        function enhanceInputsForIOS() {
+	            const inputs = document.querySelectorAll('input, textarea, select');
+	            inputs.forEach(input => {
+	                // Ensure 16px font size to prevent zoom
+	                if (input.type !== 'radio' && input.type !== 'checkbox') {
+	                    input.style.fontSize = '16px';
+	                }
+	                
+	                // Add iOS-specific attributes
+	                if (input.type === 'text' || input.type === 'tel') {
+	                    input.setAttribute('autocorrect', input.id.includes('amount') ? 'off' : 'on');
+	                    input.setAttribute('autocapitalize', input.id.includes('amount') ? 'off' : 'sentences');
+	                    input.setAttribute('spellcheck', input.id.includes('amount') ? 'false' : 'true');
+	                }
+	            });
+	        }
+	        
+	        // Handle keyboard show/hide
+	        let initialViewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+	        
+	        function handleViewportChange() {
+	            if (window.visualViewport) {
+	                const currentHeight = window.visualViewport.height;
+	                const heightDifference = initialViewportHeight - currentHeight;
+	                
+	                if (heightDifference > 150) {
+	                    // Keyboard is likely open
+	                    document.body.classList.add('ios-keyboard-open');
+	                } else {
+	                    // Keyboard is likely closed
+	                    document.body.classList.remove('ios-keyboard-open');
+	                }
+	            }
+	        }
+	        
+	        // Listen for viewport changes (keyboard show/hide)
+	        if (window.visualViewport) {
+	            window.visualViewport.addEventListener('resize', handleViewportChange);
+	        }
+	        
+	        // Apply fixes
+	        fixIOSViewport();
+	        enhanceInputsForIOS();
+	        
+	        // Re-apply fixes when new content is loaded
+	        const observer = new MutationObserver((mutations) => {
+	            mutations.forEach((mutation) => {
+	                if (mutation.addedNodes.length > 0) {
+	                    enhanceInputsForIOS();
+	                }
+	            });
+	        });
+	        
+	        observer.observe(document.body, {
+	            childList: true,
+	            subtree: true
+	        });
+	    }
+	});
+
 	// Đăng ký Service Worker cho PWA (Offline & Cache)
 	if ('serviceWorker' in navigator) {
 		window.addEventListener('load', function() {
@@ -847,5 +1018,35 @@
 		});
 	}
 	</script>
+	
+	<!-- ✅ iOS Keyboard Enhancement CSS -->
+	<style>
+	/* iOS specific fixes */
+	.ios-keyboard-open {
+	    padding-bottom: 0 !important;
+	}
+	
+	@media screen and (max-device-width: 896px) and (-webkit-min-device-pixel-ratio: 2) {
+	    /* iPhone specific styles */
+	    input[type="text"],
+	    input[type="tel"],
+	    input[type="number"],
+	    input[type="email"],
+	    input[type="datetime-local"],
+	    textarea,
+	    select {
+	        font-size: 16px !important;
+	        -webkit-appearance: none !important;
+	        border-radius: 8px !important;
+	    }
+	    
+	    /* Fix for amount input */
+	    .amount-input {
+	        font-size: 18px !important;
+	        -webkit-user-select: text !important;
+	        user-select: text !important;
+	    }
+	}
+	</style>
 </body>
 </html>
