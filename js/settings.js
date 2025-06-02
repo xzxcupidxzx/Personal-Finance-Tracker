@@ -74,24 +74,25 @@ class SettingsModule {
             totalTransactionsEl: document.getElementById('total-transactions'),
             dataSizeEl: document.getElementById('data-size'),
             lastBackupEl: document.getElementById('last-backup'),
+            appInfoVersionEl: document.getElementById('app-info-version'), // <<< THÊM DÒNG NÀY
 
             // Loading indicator
             loadingIndicator: document.getElementById('settings-loading'),
 
-            // 🆕 Update elements
+            // Update elements
             checkUpdatesBtn: document.getElementById('check-updates'),
             forceRefreshBtn: document.getElementById('force-refresh-app'),
             clearCacheBtn: document.getElementById('clear-app-cache'),
-            currentVersionEl: document.getElementById('current-app-version'),
+            currentVersionEl: document.getElementById('current-app-version'), // Hiển thị ở phần Cập nhật
             updateStatusEl: document.getElementById('update-status'),
             lastUpdateCheckEl: document.getElementById('last-update-check')
         };
 
         // Log missing critical elements
-        const criticalElements = ['themeRadios', 'usdRateInput']; // Add other critical elements if needed
+        const criticalElements = ['themeRadios', 'usdRateInput', 'appInfoVersionEl', 'currentVersionEl'];
         criticalElements.forEach(key => {
             const el = this.elements[key];
-            if (!el || (NodeList.prototype.isPrototypeOf(el) && el.length === 0)) { // Check for NodeList too
+            if (!el || (NodeList.prototype.isPrototypeOf(el) && el.length === 0)) {
                 console.warn(`Critical settings element missing: ${key}`);
             }
         });
@@ -124,7 +125,7 @@ class SettingsModule {
             // Currency settings events
             this.initializeCurrencyEvents();
 
-            // 🆕 Update event listeners
+            // Update event listeners
             this.initializeUpdateEvents();
 
         } catch (error) {
@@ -251,7 +252,7 @@ class SettingsModule {
             // Prevent invalid characters
             const keydownHandler = (e) => this.handleUSDRateKeydown(e);
             this.elements.usdRateInput.addEventListener('keydown', keydownHandler);
-            this.elements.usdRateInput.setAttribute('inputmode', 'numeric'); // Thêm dòng này
+            this.elements.usdRateInput.setAttribute('inputmode', 'numeric');
             this.eventListeners.push({
                 element: this.elements.usdRateInput,
                 event: 'keydown',
@@ -274,17 +275,13 @@ class SettingsModule {
      * Handle USD rate keydown for input validation
      */
     handleUSDRateKeydown(e) {
-        // Allow: backspace, delete, tab, escape, enter
         if ([8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
-            // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
             (e.keyCode === 65 && e.ctrlKey === true) ||
             (e.keyCode === 67 && e.ctrlKey === true) ||
             (e.keyCode === 86 && e.ctrlKey === true) ||
             (e.keyCode === 88 && e.ctrlKey === true)) {
             return;
         }
-
-        // Ensure that it is a number and stop the keypress
         if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
             e.preventDefault();
         }
@@ -295,41 +292,28 @@ class SettingsModule {
      */
     validateUSDRateInput() {
         if (!this.elements.usdRateInput) return;
-
         try {
             const value = this.elements.usdRateInput.value.trim();
             const rate = parseFloat(value);
-
-            // Remove any previous validation classes
             this.elements.usdRateInput.classList.remove('input-valid', 'input-invalid');
-
-            if (value === '') {
-                // Empty input - neutral state
-                return;
-            }
-
+            if (value === '') return;
             if (isNaN(rate) || rate <= 0) {
                 this.elements.usdRateInput.classList.add('input-invalid');
                 this.showUSDRateError('Tỷ giá phải là số dương');
                 return;
             }
-
             if (rate < this.validationRules.usdRate.min) {
                 this.elements.usdRateInput.classList.add('input-invalid');
                 this.showUSDRateError(`Tỷ giá tối thiểu: ${this.validationRules.usdRate.min.toLocaleString()} VNĐ`);
                 return;
             }
-
             if (rate > this.validationRules.usdRate.max) {
                 this.elements.usdRateInput.classList.add('input-invalid');
                 this.showUSDRateError(`Tỷ giá tối đa: ${this.validationRules.usdRate.max.toLocaleString()} VNĐ`);
                 return;
             }
-
-            // Valid input
             this.elements.usdRateInput.classList.add('input-valid');
             this.clearUSDRateError();
-
         } catch (error) {
             console.error('Error validating USD rate input:', error);
         }
@@ -340,17 +324,14 @@ class SettingsModule {
      */
     showUSDRateError(message) {
         let errorEl = document.getElementById('usd-rate-error');
-
         if (!errorEl) {
             errorEl = document.createElement('div');
             errorEl.id = 'usd-rate-error';
             errorEl.className = 'input-error-message';
-
             if (this.elements.usdRateInput && this.elements.usdRateInput.parentNode) {
                 this.elements.usdRateInput.parentNode.appendChild(errorEl);
             }
         }
-
         errorEl.textContent = message;
         errorEl.style.display = 'block';
     }
@@ -373,24 +354,18 @@ class SettingsModule {
             console.error('Invalid theme value:', theme);
             return;
         }
-
         try {
             Utils.ThemeUtils.applyTheme(theme);
-
             if (this.app && this.app.data && this.app.data.settings) {
                 this.app.data.settings.theme = theme;
                 this.app.saveData();
             }
-
             Utils.UIUtils.showMessage(`Đã chuyển sang chế độ ${this.getThemeDisplayName(theme)}`, 'success', 2000);
-
-            // Update charts after theme change
             setTimeout(() => {
                 if (window.StatisticsModule && typeof window.StatisticsModule.updateChartColors === 'function') {
                     window.StatisticsModule.updateChartColors();
                 }
             }, 100);
-
         } catch (error) {
             console.error('Error changing theme:', error);
             Utils.UIUtils.showMessage('Có lỗi khi thay đổi giao diện', 'error');
@@ -401,11 +376,7 @@ class SettingsModule {
      * Get theme display name
      */
     getThemeDisplayName(theme) {
-        const names = {
-            'light': 'sáng',
-            'dark': 'tối',
-            'auto': 'tự động'
-        };
+        const names = { 'light': 'sáng', 'dark': 'tối', 'auto': 'tự động' };
         return names[theme] || theme;
     }
 
@@ -414,31 +385,19 @@ class SettingsModule {
      */
     exportData() {
         try {
-            if (!this.app) {
-                throw new Error('App instance not available');
-            }
-
+            if (!this.app) throw new Error('App instance not available');
             this.showLoading(true);
-
             const exportData = this.app.exportData();
-
-            if (!exportData) {
-                throw new Error('No data to export');
-            }
-
-            // Validate export data
+            if (!exportData) throw new Error('No data to export');
             if (!exportData.transactions || !Array.isArray(exportData.transactions)) {
                 throw new Error('Invalid transaction data');
             }
-
             if (Utils.ExportUtils.exportJSON(exportData, 'financial_data')) {
-                // Update last backup time
                 this.updateLastBackupTime();
                 Utils.UIUtils.showMessage('Đã xuất dữ liệu thành công', 'success');
             } else {
                 throw new Error('Export function failed');
             }
-
         } catch (error) {
             console.error('Export error:', error);
             Utils.UIUtils.showMessage(`Có lỗi khi xuất dữ liệu: ${error.message}`, 'error');
@@ -455,22 +414,17 @@ class SettingsModule {
             if (!this.app || !this.app.data || !Array.isArray(this.app.data.transactions)) {
                 throw new Error('Invalid app data');
             }
-
             if (this.app.data.transactions.length === 0) {
                 Utils.UIUtils.showMessage('Không có giao dịch nào để xuất', 'warning');
                 return;
             }
-
             this.showLoading(true);
-
             const accounts = this.app.data.accounts || [];
-
             if (Utils.ExportUtils.exportCSV(this.app.data.transactions, accounts)) {
                 Utils.UIUtils.showMessage('Đã xuất file CSV thành công', 'success');
             } else {
                 throw new Error('CSV export function failed');
             }
-
         } catch (error) {
             console.error('CSV export error:', error);
             Utils.UIUtils.showMessage(`Có lỗi khi xuất file CSV: ${error.message}`, 'error');
@@ -484,52 +438,29 @@ class SettingsModule {
      */
     async handleImportFile(event) {
         const file = event.target.files[0];
-
-        // Reset file input immediately
-        event.target.value = '';
-
+        event.target.value = ''; // Reset file input
         if (!file) return;
-
-        // Prevent multiple simultaneous imports
         if (this.isProcessingFile) {
             Utils.UIUtils.showMessage('Đang xử lý file khác, vui lòng đợi', 'warning');
             return;
         }
-
         try {
             this.isProcessingFile = true;
             this.showLoading(true);
-
-            // Validate file type
             if (!this.validationRules.allowedFileTypes.includes(file.type) && !file.name.endsWith('.json')) {
                 throw new Error('File phải có định dạng JSON (.json)');
             }
-
-            // Validate file size
             if (file.size > this.validationRules.maxFileSize) {
                 const maxSizeMB = this.validationRules.maxFileSize / (1024 * 1024);
                 throw new Error(`File quá lớn. Kích thước tối đa: ${maxSizeMB}MB`);
             }
-
-            // Show confirmation dialog
-            const confirmed = confirm(
-                `Bạn có chắc chắn muốn nhập dữ liệu từ file "${file.name}"?\n\n` +
-                'Hành động này sẽ ghi đè toàn bộ dữ liệu hiện tại.'
-            );
-
-            if (!confirmed) {
-                return;
-            }
-
-            // Read and validate file content
+            const confirmed = confirm(`Bạn có chắc chắn muốn nhập dữ liệu từ file "${file.name}"?\n\nHành động này sẽ ghi đè toàn bộ dữ liệu hiện tại.`);
+            if (!confirmed) return;
             const importedData = await this.readAndValidateFile(file);
-
-            // Import data
             if (this.app.importData(importedData)) {
-                this.refresh();
+                this.refresh(); // Refresh settings UI after successful import
                 Utils.UIUtils.showMessage('Đã nhập dữ liệu thành công', 'success');
             }
-
         } catch (error) {
             console.error('Import error:', error);
             Utils.UIUtils.showMessage(`Lỗi nhập dữ liệu: ${error.message}`, 'error');
@@ -545,37 +476,23 @@ class SettingsModule {
     async readAndValidateFile(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-
             reader.onload = (e) => {
                 try {
                     const content = e.target.result;
-
-                    if (!content || typeof content !== 'string') {
-                        throw new Error('File content is empty or invalid');
-                    }
-
-                    // Try to parse JSON
+                    if (!content || typeof content !== 'string') throw new Error('File content is empty or invalid');
                     let data;
                     try {
                         data = JSON.parse(content);
                     } catch (parseError) {
                         throw new Error('File JSON không hợp lệ: ' + parseError.message);
                     }
-
-                    // Validate data structure
                     this.validateImportData(data);
-
                     resolve(data);
-
                 } catch (error) {
                     reject(error);
                 }
             };
-
-            reader.onerror = () => {
-                reject(new Error('Không thể đọc file'));
-            };
-
+            reader.onerror = () => reject(new Error('Không thể đọc file'));
             reader.readAsText(file);
         });
     }
@@ -584,41 +501,21 @@ class SettingsModule {
      * Validate import data structure
      */
     validateImportData(data) {
-        if (!data || typeof data !== 'object') {
-            throw new Error('Dữ liệu file không hợp lệ');
-        }
-
-        // Check required fields
-        const requiredFields = ['transactions'];
+        if (!data || typeof data !== 'object') throw new Error('Dữ liệu file không hợp lệ');
+        const requiredFields = ['transactions']; // Can add more like incomeCategories, accounts later
         for (const field of requiredFields) {
-            if (!data[field]) {
-                throw new Error(`File thiếu trường bắt buộc: ${field}`);
-            }
-
-            if (!Array.isArray(data[field])) {
-                throw new Error(`Trường ${field} phải là mảng`);
-            }
+            if (!data[field]) throw new Error(`File thiếu trường bắt buộc: ${field}`);
+            if (!Array.isArray(data[field])) throw new Error(`Trường ${field} phải là mảng`);
         }
-
-        // Validate transactions
         if (data.transactions.length > 0) {
             const sampleTransaction = data.transactions[0];
             const requiredTxFields = ['id', 'type', 'datetime', 'amount', 'account'];
-
             for (const field of requiredTxFields) {
-                if (!(field in sampleTransaction)) {
-                    throw new Error(`Giao dịch thiếu trường bắt buộc: ${field}`);
-                }
+                if (!(field in sampleTransaction)) throw new Error(`Giao dịch thiếu trường bắt buộc: ${field}`);
             }
         }
-
-        // Check data size
         const estimatedSize = JSON.stringify(data).length;
-        if (estimatedSize > 50 * 1024 * 1024) { // 50MB limit
-            throw new Error('Dữ liệu quá lớn (> 50MB)');
-        }
-
-        // Validate transactions count
+        if (estimatedSize > 50 * 1024 * 1024) throw new Error('Dữ liệu quá lớn (> 50MB)');
         if (data.transactions.length > 100000) {
             if (!confirm(`File chứa ${data.transactions.length} giao dịch (rất nhiều). Bạn có chắc chắn muốn tiếp tục?`)) {
                 throw new Error('Import cancelled by user');
@@ -632,33 +529,20 @@ class SettingsModule {
     clearAllData() {
         try {
             const transactionCount = this.app?.data?.transactions?.length || 0;
-
             const confirmMessage = transactionCount > 0
-                ? `Bạn có chắc chắn muốn xóa toàn bộ dữ liệu?\n\n` +
-                  `Bao gồm: ${transactionCount} giao dịch và tất cả cài đặt.\n\n` +
-                  'Hành động này không thể hoàn tác.'
+                ? `Bạn có chắc chắn muốn xóa toàn bộ dữ liệu?\n\nBao gồm: ${transactionCount} giao dịch và tất cả cài đặt.\n\nHành động này không thể hoàn tác.`
                 : 'Bạn có chắc chắn muốn xóa toàn bộ dữ liệu? Hành động này không thể hoàn tác.';
-
-            if (!confirm(confirmMessage)) {
-                return;
-            }
-
-            // Double confirmation for large datasets
+            if (!confirm(confirmMessage)) return;
             if (transactionCount > 100) {
-                if (!confirm('Xác nhận lần cuối: BẠN THỰC SỰ MUỐN XÓA TOÀN BỘ DỮ LIỆU?')) {
-                    return;
-                }
+                if (!confirm('Xác nhận lần cuối: BẠN THỰC SỰ MUỐN XÓA TOÀN BỘ DỮ LIỆU?')) return;
             }
-
             this.showLoading(true);
-
             if (this.app.clearAllData()) {
-                this.refresh();
+                this.refresh(); // Refresh settings UI
                 Utils.UIUtils.showMessage('Đã xóa toàn bộ dữ liệu', 'success');
             } else {
                 throw new Error('Clear data function failed');
             }
-
         } catch (error) {
             console.error('Error clearing data:', error);
             Utils.UIUtils.showMessage(`Có lỗi khi xóa dữ liệu: ${error.message}`, 'error');
@@ -675,62 +559,38 @@ class SettingsModule {
             console.error('USD rate input element not found');
             return;
         }
-
         try {
             const inputValue = this.elements.usdRateInput.value.trim();
-
             if (!inputValue) {
                 Utils.UIUtils.showMessage('Vui lòng nhập tỷ giá', 'error');
                 this.resetUSDRateInput();
                 return;
             }
-
             const rate = parseFloat(inputValue);
-
-            // Validate rate
             if (isNaN(rate) || rate <= 0) {
                 Utils.UIUtils.showMessage('Tỷ giá phải là số dương', 'error');
                 this.resetUSDRateInput();
                 return;
             }
-
             if (rate < this.validationRules.usdRate.min) {
-                Utils.UIUtils.showMessage(
-                    `Tỷ giá tối thiểu: ${this.validationRules.usdRate.min.toLocaleString()} VNĐ`,
-                    'error'
-                );
+                Utils.UIUtils.showMessage(`Tỷ giá tối thiểu: ${this.validationRules.usdRate.min.toLocaleString()} VNĐ`, 'error');
                 this.resetUSDRateInput();
                 return;
             }
-
             if (rate > this.validationRules.usdRate.max) {
-                Utils.UIUtils.showMessage(
-                    `Tỷ giá tối đa: ${this.validationRules.usdRate.max.toLocaleString()} VNĐ`,
-                    'error'
-                );
+                Utils.UIUtils.showMessage(`Tỷ giá tối đa: ${this.validationRules.usdRate.max.toLocaleString()} VNĐ`, 'error');
                 this.resetUSDRateInput();
                 return;
             }
-
-            // Update in config and settings
             Utils.CONFIG.USD_TO_VND_RATE = rate;
-
             if (this.app && this.app.data && this.app.data.settings) {
                 this.app.data.settings.usdRate = rate;
                 this.app.saveData();
             }
-
-            // Clear validation styling
             this.elements.usdRateInput.classList.remove('input-invalid');
             this.elements.usdRateInput.classList.add('input-valid');
             this.clearUSDRateError();
-
-            Utils.UIUtils.showMessage(
-                `Đã cập nhật tỷ giá USD/VNĐ: ${rate.toLocaleString()} VNĐ`,
-                'success',
-                2000
-            );
-
+            Utils.UIUtils.showMessage(`Đã cập nhật tỷ giá USD/VNĐ: ${rate.toLocaleString()} VNĐ`, 'success', 2000);
         } catch (error) {
             console.error('Error updating USD rate:', error);
             Utils.UIUtils.showMessage('Có lỗi khi cập nhật tỷ giá', 'error');
@@ -754,22 +614,17 @@ class SettingsModule {
      */
     updateDefaultCurrency() {
         if (!this.elements.defaultCurrencySelect) return;
-
         try {
             const currency = this.elements.defaultCurrencySelect.value;
-
             if (!currency || !['VND', 'USD'].includes(currency)) {
                 Utils.UIUtils.showMessage('Tiền tệ không hợp lệ', 'error');
                 return;
             }
-
             if (this.app && this.app.data && this.app.data.settings) {
                 this.app.data.settings.defaultCurrency = currency;
                 this.app.saveData();
             }
-
             Utils.UIUtils.showMessage(`Đã đặt tiền tệ mặc định: ${currency}`, 'success', 2000);
-
         } catch (error) {
             console.error('Error updating default currency:', error);
             Utils.UIUtils.showMessage('Có lỗi khi cập nhật tiền tệ mặc định', 'error');
@@ -782,12 +637,10 @@ class SettingsModule {
     updateLastBackupTime() {
         try {
             const now = new Date().toISOString();
-
             if (this.app && this.app.data && this.app.data.settings) {
                 this.app.data.settings.lastBackup = now;
                 this.app.saveData();
             }
-
             if (this.elements.lastBackupEl) {
                 this.elements.lastBackupEl.textContent = Utils.DateUtils.formatDisplayDateTime(now);
             }
@@ -804,30 +657,19 @@ class SettingsModule {
             if (this.elements.loadingIndicator) {
                 this.elements.loadingIndicator.style.display = show ? 'block' : 'none';
             }
-
-            // Disable/enable buttons during loading
-            const buttons = [
-                this.elements.exportJsonBtn,
-                this.elements.exportCsvBtn,
-                this.elements.importDataBtn,
-                this.elements.clearDataBtn
-            ];
-
+            const buttons = [this.elements.exportJsonBtn, this.elements.exportCsvBtn, this.elements.importDataBtn, this.elements.clearDataBtn];
             buttons.forEach(btn => {
                 if (btn) {
                     btn.disabled = show;
                     btn.style.opacity = show ? '0.6' : '1';
                 }
             });
-
         } catch (error) {
             console.error('Error showing loading state:', error);
         }
     }
 
-    /**
-     * Calculate and display app statistics with error handling
-     */
+    // VIẾT LẠI HÀM NÀY
     updateAppInfo() {
         try {
             // Total transactions
@@ -862,10 +704,18 @@ class SettingsModule {
                 }
             }
 
+            // App Version (trong phần "Thông tin ứng dụng")
+            if (this.elements.appInfoVersionEl) {
+                const version = window.FinancialApp?.updateManager?.currentVersion || 
+                                (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'N/A'); // Lấy từ global APP_VERSION nếu có
+                this.elements.appInfoVersionEl.textContent = version;
+            }
+
         } catch (error) {
             console.error('Error updating app info:', error);
         }
     }
+
 
     /**
      * Update theme radio buttons
@@ -873,7 +723,6 @@ class SettingsModule {
     updateThemeRadios() {
         try {
             const currentTheme = Utils.ThemeUtils.getCurrentTheme();
-
             this.elements.themeRadios.forEach(radio => {
                 if (radio && radio.value === currentTheme) {
                     radio.checked = true;
@@ -895,7 +744,6 @@ class SettingsModule {
                 this.elements.usdRateInput.classList.remove('input-invalid', 'input-valid');
                 this.clearUSDRateError();
             }
-
             if (this.elements.defaultCurrencySelect) {
                 const currency = this.app?.data?.settings?.defaultCurrency || 'VND';
                 this.elements.defaultCurrencySelect.value = currency;
@@ -914,16 +762,13 @@ class SettingsModule {
             this.setButtonLoading(this.elements.checkUpdatesBtn, true);
             if (window.FinancialApp && window.FinancialApp.updateManager) {
                 await window.FinancialApp.updateManager.checkForUpdates();
-
-                // Get version info
-                const versionInfo = await window.FinancialApp.updateManager.checkVersion();
-
+                const versionInfo = await window.FinancialApp.updateManager.checkVersion(); // Giả sử có hàm này
                 if (versionInfo) {
                     if (window.FinancialApp.updateManager.isUpdateAvailable) {
                         this.updateUpdateStatus('Có cập nhật mới!');
                         Utils.UIUtils.showMessage('🆕 Có phiên bản mới! Hãy cập nhật để sử dụng tính năng mới.', 'info', 5000);
                     } else {
-                        this.updateUpdateStatus('Đã cập nhật');
+                        this.updateUpdateStatus(`Đã cập nhật (v${versionInfo.version || 'mới nhất'})`);
                         Utils.UIUtils.showMessage('✅ Bạn đang sử dụng phiên bản mới nhất', 'success');
                     }
                 } else {
@@ -948,34 +793,20 @@ class SettingsModule {
      * Force refresh the entire app
      */
     async forceRefreshApp() {
-        const confirmed = confirm(
-            '🔄 Làm mới ứng dụng sẽ:\n\n' +
-            '• Tải lại toàn bộ từ server\n' +
-            '• Xóa cache cũ\n' +
-            '• Đảm bảo có phiên bản mới nhất\n\n' +
-            'Bạn có muốn tiếp tục không?'
-        );
+        const confirmed = confirm('🔄 Làm mới ứng dụng sẽ:\n\n• Tải lại toàn bộ từ server\n• Xóa cache cũ\n• Đảm bảo có phiên bản mới nhất\n\nBạn có muốn tiếp tục không?');
         if (!confirmed) return;
         try {
             this.setButtonLoading(this.elements.forceRefreshBtn, true);
-
             if (window.FinancialApp && window.FinancialApp.updateManager) {
                 await window.FinancialApp.updateManager.forceRefresh();
             } else {
-                // Fallback method
                 this.fallbackForceRefresh();
             }
         } catch (error) {
             console.error('Error force refreshing app:', error);
             Utils.UIUtils.showMessage('Có lỗi khi làm mới ứng dụng. Đang thử phương pháp khác...', 'warning');
-
-            // Fallback to hard reload
-            setTimeout(() => {
-                this.fallbackForceRefresh();
-            }, 1000);
+            setTimeout(() => this.fallbackForceRefresh(), 1000);
         }
-        // Note: setButtonLoading(false) will likely not be reached if forceRefresh succeeds
-        // as the page will reload.
     }
 
     /**
@@ -983,15 +814,10 @@ class SettingsModule {
      */
     fallbackForceRefresh() {
         try {
-            // Clear cache manually if possible
             if ('caches' in window) {
                 caches.keys().then(names => {
-                    names.forEach(name => {
-                        caches.delete(name);
-                    });
-                }).finally(() => {
-                    this.hardReload();
-                });
+                    names.forEach(name => caches.delete(name));
+                }).finally(() => this.hardReload());
             } else {
                 this.hardReload();
             }
@@ -1005,7 +831,6 @@ class SettingsModule {
      * Hard reload the page
      */
     hardReload() {
-        // Multiple methods to ensure reload works
         if (typeof window.location.reload === 'function') {
             window.location.reload(true);
         } else {
@@ -1017,48 +842,27 @@ class SettingsModule {
      * Clear app cache (dangerous operation)
      */
     async clearAppCache() {
-        const confirmed = confirm(
-            '⚠️ XÓA CACHE ỨNG DỤNG\n\n' +
-            'Điều này sẽ:\n' +
-            '• Xóa toàn bộ cache ứng dụng\n' +
-            '• Buộc tải lại từ server\n' +
-            '• Có thể gây mất kết nối tạm thời\n\n' +
-            'CHỈ LÀM ĐIỀU NÀY KHI CÓ LỖI!\n\n' +
-            'Bạn có chắc chắn muốn tiếp tục?'
-        );
+        const confirmed = confirm('⚠️ XÓA CACHE ỨNG DỤNG\n\nĐiều này sẽ:\n• Xóa toàn bộ cache ứng dụng\n• Buộc tải lại từ server\n• Có thể gây mất kết nối tạm thời\n\nCHỈ LÀM ĐIỀU NÀY KHI CÓ LỖI!\n\nBạn có chắc chắn muốn tiếp tục?');
         if (!confirmed) return;
         try {
             this.setButtonLoading(this.elements.clearCacheBtn, true);
-
-            // Clear all caches
             if ('caches' in window) {
                 const cacheNames = await caches.keys();
                 await Promise.all(cacheNames.map(name => caches.delete(name)));
                 console.log('🗑️ All caches cleared');
             }
-            // Unregister service worker
             if ('serviceWorker' in navigator) {
                 const registrations = await navigator.serviceWorker.getRegistrations();
                 await Promise.all(registrations.map(reg => reg.unregister()));
                 console.log('🗑️ Service workers unregistered');
             }
             Utils.UIUtils.showMessage('✅ Cache đã được xóa. Đang tải lại...', 'success');
-
-            // Reload after short delay
-            setTimeout(() => {
-                this.hardReload();
-            }, 1500);
+            setTimeout(() => this.hardReload(), 1500);
         } catch (error) {
             console.error('Error clearing cache:', error);
             Utils.UIUtils.showMessage('Có lỗi khi xóa cache. Đang tải lại...', 'error');
-
-            // Fallback to reload
-            setTimeout(() => {
-                this.hardReload();
-            }, 1000);
+            setTimeout(() => this.hardReload(), 1000);
         }
-         // Note: setButtonLoading(false) will likely not be reached if clearAppCache succeeds
-        // as the page will reload.
     }
 
     /**
@@ -1067,18 +871,11 @@ class SettingsModule {
     updateUpdateStatus(status) {
         if (this.elements.updateStatusEl) {
             this.elements.updateStatusEl.textContent = status;
-
-            // Add color coding
-            this.elements.updateStatusEl.className = 'info-value'; // Reset class
-            if (status.includes('Có cập nhật')) {
-                this.elements.updateStatusEl.style.color = 'var(--warning-color)';
-            } else if (status.includes('Đã cập nhật')) {
-                this.elements.updateStatusEl.style.color = 'var(--accent-color)';
-            } else if (status.includes('Lỗi')) {
-                this.elements.updateStatusEl.style.color = 'var(--danger-color)';
-            } else {
-                this.elements.updateStatusEl.style.color = 'var(--text-secondary)';
-            }
+            this.elements.updateStatusEl.className = 'info-value';
+            if (status.includes('Có cập nhật')) this.elements.updateStatusEl.style.color = 'var(--warning-color)';
+            else if (status.includes('Đã cập nhật')) this.elements.updateStatusEl.style.color = 'var(--accent-color)';
+            else if (status.includes('Lỗi')) this.elements.updateStatusEl.style.color = 'var(--danger-color)';
+            else this.elements.updateStatusEl.style.color = 'var(--text-secondary)';
         }
     }
 
@@ -1097,64 +894,50 @@ class SettingsModule {
      */
     setButtonLoading(button, isLoading) {
         if (!button) return;
-        
         if (isLoading) {
-            // Store original content if not already stored
             if (!button.dataset.originalContent) {
                 button.dataset.originalContent = button.innerHTML;
             }
             button.disabled = true;
             button.style.opacity = '0.6';
             button.style.cursor = 'not-allowed';
-            
-            // Add loading spinner icon if it doesn't exist
             let spinnerIcon = button.querySelector('.btn-icon.loader');
             if (!spinnerIcon) {
                 spinnerIcon = document.createElement('span');
-                spinnerIcon.className = 'btn-icon loader'; // Add 'loader' class for specific styling
-                spinnerIcon.innerHTML = '⏳'; // Simple loader, can be replaced with SVG/CSS spinner
+                spinnerIcon.className = 'btn-icon loader';
+                spinnerIcon.innerHTML = '⏳';
                 spinnerIcon.style.animation = 'spin 1s linear infinite';
                 spinnerIcon.style.marginLeft = '0.5em';
                 button.appendChild(spinnerIcon);
             }
             spinnerIcon.style.display = 'inline-block';
-
-
         } else {
             button.disabled = false;
             button.style.opacity = '1';
             button.style.cursor = 'pointer';
-            
-            // Restore original content and remove spinner
             const spinnerIcon = button.querySelector('.btn-icon.loader');
-            if (spinnerIcon) {
-                spinnerIcon.style.display = 'none'; // Hide spinner
-            }
-            // If original content was stored, restore it (optional, if spinner is added to innerHTML)
-            // if (button.dataset.originalContent) {
-            //     button.innerHTML = button.dataset.originalContent;
-            //     delete button.dataset.originalContent;
-            // }
+            if (spinnerIcon) spinnerIcon.style.display = 'none';
         }
     }
 
     /**
      * Update version and update status info
      */
-    updateVersionInfo() {
+    updateVersionInfo() { // Cập nhật phiên bản ở phần "Cập nhật"
         try {
-            // Update current version
             if (this.elements.currentVersionEl) {
-                const version = window.FinancialApp?.updateManager?.currentVersion || 'N/A'; // Default to N/A if not found
+                const version = window.FinancialApp?.updateManager?.currentVersion || 
+                                (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'N/A');
                 this.elements.currentVersionEl.textContent = version;
             }
-            // Update status
             if (window.FinancialApp?.updateManager) {
                 const updateManager = window.FinancialApp.updateManager;
                 if (updateManager.isUpdateAvailable) {
                     this.updateUpdateStatus('Có cập nhật mới!');
                 } else {
-                    this.updateUpdateStatus('Đã cập nhật');
+                     // Lấy version từ UpdateManager nếu có, nếu không thì từ global APP_VERSION
+                    const swVersion = updateManager.swVersion || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'mới nhất');
+                    this.updateUpdateStatus(`Đã cập nhật (v${swVersion})`);
                 }
             } else {
                 this.updateUpdateStatus('Chưa sẵn sàng');
@@ -1165,43 +948,34 @@ class SettingsModule {
         }
     }
 
-
     /**
      * Cleanup method to prevent memory leaks
      */
-    destroy() { // This is the correct destroy method for SettingsModule
-        // Cleanup event listeners
+    destroy() {
         this.eventListeners.forEach(({ element, event, handler }) => {
             if (element && typeof element.removeEventListener === 'function') {
                 element.removeEventListener(event, handler);
             }
         });
         this.eventListeners = [];
-
-        // Clear processing state
         this.isProcessingFile = false;
-
-        // Clear DOM references
         this.elements = {};
     }
 
-    /**
-     * Refresh the module with error handling
-     */
+    // VIẾT LẠI HÀM NÀY
     refresh() {
         try {
             this.updateThemeRadios();
             this.updateCurrencySettings();
-            this.updateAppInfo();
-            // 🆕 Update version info
-            this.updateVersionInfo();
+            this.updateAppInfo(); // Gọi hàm này để cập nhật cả phiên bản trong "Thông tin ứng dụng"
+            this.updateVersionInfo(); // Gọi hàm này để cập nhật phiên bản và trạng thái ở phần "Cập nhật"
         } catch (error) {
             console.error('Error refreshing settings module:', error);
             Utils.UIUtils.showMessage('Có lỗi khi cập nhật module cài đặt', 'error');
         }
     }
 
-    // Placeholder for advanced features (if implemented later)
+
     showAppInfo() {
         Utils.UIUtils.showMessage('Chức năng thông tin chi tiết ứng dụng sẽ được triển khai sau.', 'info');
     }
@@ -1226,59 +1000,30 @@ class SettingsModule {
     }
 }
 
-// Add context menu for advanced features
 document.addEventListener('contextmenu', (e) => {
     if (e.target.closest('#tab-settings')) {
         e.preventDefault();
-
         const contextMenu = document.createElement('div');
         contextMenu.className = 'fixed bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg py-2 z-50';
         contextMenu.style.left = e.pageX + 'px';
         contextMenu.style.top = e.pageY + 'px';
-
         contextMenu.innerHTML = `
-            <button class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm" id="show-app-info">
-                📊 Thông tin chi tiết
-            </button>
-            <button class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm" id="export-statistics">
-                📈 Xuất thống kê
-            </button>
-            <button class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm" id="reset-defaults">
-                🔄 Khôi phục mặc định
-            </button>
+            <button class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm" id="show-app-info">📊 Thông tin chi tiết</button>
+            <button class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm" id="export-statistics">📈 Xuất thống kê</button>
+            <button class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm" id="reset-defaults">🔄 Khôi phục mặc định</button>
         `;
-
         document.body.appendChild(contextMenu);
-
-        // Event listeners
-        contextMenu.querySelector('#show-app-info').addEventListener('click', () => {
-            window.SettingsModule.showAppInfo();
-            contextMenu.remove(); // Use .remove() for modern browsers
-        });
-
-        contextMenu.querySelector('#export-statistics').addEventListener('click', () => {
-            window.SettingsModule.exportStatistics();
-            contextMenu.remove();
-        });
-
-        contextMenu.querySelector('#reset-defaults').addEventListener('click', () => {
-            window.SettingsModule.resetToDefaults();
-            contextMenu.remove();
-        });
-
-        // Remove on click outside
+        contextMenu.querySelector('#show-app-info').addEventListener('click', () => { window.SettingsModule.showAppInfo(); contextMenu.remove(); });
+        contextMenu.querySelector('#export-statistics').addEventListener('click', () => { window.SettingsModule.exportStatistics(); contextMenu.remove(); });
+        contextMenu.querySelector('#reset-defaults').addEventListener('click', () => { window.SettingsModule.resetToDefaults(); contextMenu.remove(); });
         const removeMenu = (event) => {
             if (!contextMenu.contains(event.target)) {
                 contextMenu.remove();
                 document.removeEventListener('click', removeMenu);
             }
         };
-
-        setTimeout(() => {
-            document.addEventListener('click', removeMenu);
-        }, 0);
+        setTimeout(() => document.addEventListener('click', removeMenu), 0);
     }
 });
 
-// Create global instance
 window.SettingsModule = new SettingsModule();

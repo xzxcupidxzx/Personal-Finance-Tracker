@@ -359,7 +359,7 @@ window.addEventListener('appinstalled', () => {
  * Update Manager - Quản lý cập nhật ứng dụng PWA
  */
 Utils.UpdateManager = {
-    currentVersion: '1.0.2', // Sync với sw.js!
+    currentVersion: '1.0.3', // Sync với sw.js!
     swRegistration: null,
     isUpdateAvailable: false,
     isRefreshing: false,
