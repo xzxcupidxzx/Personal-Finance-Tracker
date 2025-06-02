@@ -895,50 +895,34 @@ class FinancialApp {
         }
     }
 
-    /**
-     * Update header summary with error handling
-     */
-	 updateHeaderSummary() {
+	updateHeaderSummary() {
 		try {
-			// 1. Tính thu nhập và chi tiêu tháng này (giữ nguyên)
-			const { start, end } = Utils.DateUtils.getPeriodDates('month');
-
-			if (!start || !end) {
-				console.warn('Invalid period dates for header summary');
-				return;
-			}
-
-			const currentMonthTransactions = this.data.transactions.filter(tx => {
-				try {
-					if (!tx || !tx.datetime) return false;
-					const txDate = new Date(tx.datetime);
-					return !isNaN(txDate.getTime()) && txDate >= start && txDate <= end;
-				} catch (error) {
-					console.warn('Invalid transaction date in filter (for header summary):', tx?.datetime, error);
-					return false;
-				}
-			});
-
+			// Tính TỔNG thu nhập và chi tiêu từ trước đến nay (không giới hạn thời gian)
 			let totalIncome = 0;
 			let totalExpense = 0;
 
-			currentMonthTransactions.forEach(tx => {
-				const amount = parseFloat(tx?.amount) || 0;
+			this.data.transactions.forEach(tx => {
+				try {
+					if (!tx || !tx.datetime) return;
+					const amount = parseFloat(tx?.amount) || 0;
 
-				if (tx?.type === 'Thu' && !tx?.isTransfer) {
-					totalIncome += amount;
-				} else if (tx?.type === 'Chi' && !tx?.isTransfer) {
-					totalExpense += amount;
+					if (tx?.type === 'Thu' && !tx?.isTransfer) {
+						totalIncome += amount;
+					} else if (tx?.type === 'Chi' && !tx?.isTransfer) {
+						totalExpense += amount;
+					}
+				} catch (error) {
+					console.warn('Invalid transaction in header summary:', tx, error);
 				}
 			});
 
-			// 2. Tính tổng số dư thực tế của tất cả tài khoản (THAY ĐỔI Ở ĐÂY)
+			// Tính tổng số dư thực tế của tất cả tài khoản
 			const realTotalBalance = this.getAllAccountBalances();
 			const totalRealBalance = Object.values(realTotalBalance).reduce((sum, balance) => {
 				return sum + (parseFloat(balance) || 0);
 			}, 0);
 
-			// 3. Cập nhật giao diện
+			// Cập nhật giao diện
 			const headerIncome = document.getElementById('header-income');
 			const headerExpense = document.getElementById('header-expense');
 			const headerBalance = document.getElementById('header-balance');
@@ -956,11 +940,14 @@ class FinancialApp {
 				headerBalance.className = `summary-value ${totalRealBalance >= 0 ? 'text-success' : 'text-danger'}`;
 			}
 
-			// 4. Cập nhật label để rõ ràng hơn
-			const balanceLabel = document.querySelector('#header-balance').parentNode.querySelector('.summary-label');
-			if (balanceLabel) {
-				balanceLabel.textContent = 'Tổng số dư';
-			}
+			// Cập nhật labels để rõ ràng
+			const incomeLabel = headerIncome?.parentNode?.querySelector('.summary-label');
+			const expenseLabel = headerExpense?.parentNode?.querySelector('.summary-label');
+			const balanceLabel = headerBalance?.parentNode?.querySelector('.summary-label');
+			
+			if (incomeLabel) incomeLabel.textContent = 'Tổng thu nhập';
+			if (expenseLabel) expenseLabel.textContent = 'Tổng chi tiêu';
+			if (balanceLabel) balanceLabel.textContent = 'Số dư hiện tại';
 
 		} catch (error) {
 			console.error('Error updating header summary:', error);
