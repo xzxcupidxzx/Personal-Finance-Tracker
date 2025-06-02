@@ -360,7 +360,8 @@ window.addEventListener('appinstalled', () => {
  */
 Utils.UpdateManager = {
     // 🚨 Lấy version từ global APP_VERSION (từ version.js)
-    currentVersion: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0.3',
+    // GitHub Action sẽ cập nhật giá trị chuỗi '1.0.3' này
+    currentVersion: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0.3', 
     swRegistration: null,
     isUpdateAvailable: false,
     isRefreshing: false,
@@ -372,12 +373,14 @@ Utils.UpdateManager = {
     init(clientVersion = null) {
         console.log('🔄 UpdateManager: Initializing...');
         
-        // Cập nhật currentVersion nếu được truyền vào
-        if (clientVersion) {
+        // Cập nhật currentVersion nếu được truyền vào (từ app.js, đã lấy từ settings)
+        // Hoặc nếu GHA đã cập nhật trực tiếp currentVersion ở trên
+        if (clientVersion && clientVersion !== '0.0.0') { // 0.0.0 là giá trị clientVersion mặc định trong FinancialApp
             this.currentVersion = clientVersion;
         }
+        // Nếu clientVersion không hợp lệ, this.currentVersion vẫn giữ giá trị được GHA cập nhật hoặc APP_VERSION.
         
-        console.log(`📱 UpdateManager: Client version: ${this.currentVersion}`);
+        console.log(`📱 UpdateManager: Effective client version for checks: ${this.currentVersion}`);
         
         if ('serviceWorker' in navigator) {
             this.registerServiceWorker();
@@ -386,10 +389,10 @@ Utils.UpdateManager = {
             
             // Auto-check mỗi 30 giây
             this.checkInterval = setInterval(() => {
-                if (!document.hidden) {
+                if (!document.hidden) { // Chỉ kiểm tra khi tab đang active
                     this.checkForUpdates();
                 }
-            }, 30000);
+            }, 30000); // 30 giây
         } else {
             console.warn('⚠️ UpdateManager: Service Worker not supported');
         }
@@ -401,30 +404,35 @@ Utils.UpdateManager = {
             console.log('📋 UpdateManager: Registering Service Worker...');
             
             this.swRegistration = await navigator.serviceWorker.register('/sw.js', {
-                updateViaCache: 'none' // Luôn kiểm tra phiên bản mới
+                updateViaCache: 'none' // Luôn kiểm tra phiên bản mới từ network cho sw.js
             });
             
             console.log('✅ UpdateManager: Service Worker registered:', this.swRegistration.scope);
             
             // Lắng nghe SW state changes
             this.swRegistration.addEventListener('updatefound', () => {
-                console.log('🆕 UpdateManager: Update found!');
+                console.log('🆕 UpdateManager: Update found on registration object!');
                 const newWorker = this.swRegistration.installing;
-                
-                newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        console.log('🎯 UpdateManager: New SW installed, showing notification');
-                        this.isUpdateAvailable = true;
-                        this.showUpdateNotification();
-                    }
-                });
+                if (newWorker) {
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            console.log('🎯 UpdateManager: New SW installed and ready (via updatefound). Controller exists.');
+                            this.isUpdateAvailable = true;
+                            this.showUpdateNotification();
+                        } else if (newWorker.state === 'installed' && !navigator.serviceWorker.controller) {
+                             console.log('🎯 UpdateManager: New SW installed for the first time or no controller. Will activate on next load or claim.');
+                        }
+                    });
+                }
             });
             
-            // Kiểm tra version từ SW
-            await this.getVersionFromSW();
+            // Kiểm tra version từ SW (nếu đã active)
+            if (this.swRegistration.active) {
+                 await this.getVersionFromSW();
+            }
             
             // Kiểm tra cập nhật ngay sau khi đăng ký
-            await this.checkForUpdates();
+            await this.checkForUpdates(); // Sẽ gọi getVersionFromSW() nếu cần
             
         } catch (error) {
             console.error('❌ UpdateManager: Service worker registration failed:', error);
@@ -435,21 +443,27 @@ Utils.UpdateManager = {
     async getVersionFromSW() {
         try {
             if (!this.swRegistration || !this.swRegistration.active) {
+                console.log('ℹ️ UpdateManager: No active SW to get version from.');
                 return null;
             }
 
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 const messageChannel = new MessageChannel();
                 
-                messageChannel.port1.addEventListener('message', (event) => {
-                    if (event.data && event.data.version) {
+                messageChannel.port1.onmessage = (event) => {
+                    if (event.data && event.data.error) {
+                        console.error('❌ UpdateManager: Error from SW on CHECK_VERSION:', event.data.error);
+                        this.swVersion = null;
+                        reject(new Error(event.data.error));
+                    } else if (event.data && event.data.version) {
                         this.swVersion = event.data.version;
-                        console.log(`🔧 UpdateManager: SW version: ${this.swVersion}`);
+                        console.log(`🔧 UpdateManager: Received SW version: ${this.swVersion}`);
+                        resolve(event.data);
+                    } else {
+                        this.swVersion = null; // Không nhận được version
+                        resolve(null);
                     }
-                    resolve(event.data);
-                });
-                
-                messageChannel.port1.start();
+                };
                 
                 this.swRegistration.active.postMessage(
                     { type: 'CHECK_VERSION' }, 
@@ -457,10 +471,15 @@ Utils.UpdateManager = {
                 );
                 
                 // Timeout sau 5 giây
-                setTimeout(() => resolve(null), 5000);
+                setTimeout(() => {
+                    console.warn('⏳ UpdateManager: Timeout getting SW version.');
+                    this.swVersion = this.swVersion || null; // Giữ version cũ nếu đã có, nếu không thì null
+                    resolve(null); 
+                }, 5000);
             });
         } catch (error) {
             console.error('❌ UpdateManager: Error getting SW version:', error);
+            this.swVersion = null;
             return null;
         }
     },
@@ -476,7 +495,8 @@ Utils.UpdateManager = {
             
             this.isRefreshing = true;
             this.showUpdateAppliedMessage();
-            setTimeout(() => window.location.reload(), 1000);
+            // ✅ SỬA Ở ĐÂY: Sử dụng hardReload
+            setTimeout(() => this.hardReload(), 1000);
         });
         
         // Lắng nghe messages từ SW
@@ -486,8 +506,8 @@ Utils.UpdateManager = {
         
         // Kiểm tra khi trang được focus lại
         document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                setTimeout(() => this.checkForUpdates(), 1000);
+            if (!document.hidden) { // Chỉ khi tab được focus
+                setTimeout(() => this.checkForUpdates(), 1000); // Delay nhỏ để tránh spam
             }
         });
     },
@@ -496,23 +516,29 @@ Utils.UpdateManager = {
     handleServiceWorkerMessage(data) {
         if (!data || !data.type) return;
         
-        console.log('📨 UpdateManager: Received SW message:', data.type);
+        console.log('📨 UpdateManager: Received SW message:', data.type, data);
         
         switch (data.type) {
-            case 'SW_UPDATED':
+            case 'SW_UPDATED': // Custom message, có thể không cần nếu updatefound hoạt động tốt
                 this.isUpdateAvailable = true;
                 this.showUpdateNotification();
                 break;
                 
-            case 'FORCE_UPDATE_COMPLETE':
+            case 'FORCE_UPDATE_COMPLETE': // Từ SW sau khi xóa cache
                 this.showUpdateAppliedMessage();
-                setTimeout(() => window.location.reload(), 1500);
+                // SW sẽ tự reload các client, nhưng có thể thêm reload ở đây nếu cần
+                setTimeout(() => window.location.reload(), 1500); 
                 break;
                 
-            case 'VERSION_INFO':
+            case 'VERSION_INFO': // Phản hồi từ CHECK_VERSION
                 if (data.version) {
                     this.swVersion = data.version;
-                    console.log(`🔧 UpdateManager: Updated SW version: ${this.swVersion}`);
+                    console.log(`🔧 UpdateManager: Updated SW version from message: ${this.swVersion}`);
+                    // Sau khi nhận version từ SW, có thể check lại logic cập nhật
+                    if (this.swVersion !== this.currentVersion) {
+                        this.isUpdateAvailable = true;
+                        this.showUpdateNotification();
+                    }
                 }
                 break;
         }
@@ -529,35 +555,53 @@ Utils.UpdateManager = {
             console.log('🔍 UpdateManager: Checking for updates...');
             this.lastCheck = new Date();
             
-            // Force update SW registration
+            // Force update SW registration (trình duyệt sẽ check sw.js trên server)
             await this.swRegistration.update();
             
-            // Kiểm tra nếu có waiting worker
+            // Kiểm tra nếu có waiting worker (SW mới đã tải và cài đặt, đang chờ active)
             if (this.swRegistration.waiting) {
-                console.log('🆕 UpdateManager: Update available (waiting worker found)');
+                console.log('🆕 UpdateManager: Update available (waiting worker found). Triggering notification.');
                 this.isUpdateAvailable = true;
+                // Lấy version từ waiting worker nếu có thể, hoặc giữ nguyên swVersion hiện tại
+                const waitingWorkerVersionInfo = await this.getVersionFromSpecificWorker(this.swRegistration.waiting);
+                if(waitingWorkerVersionInfo && waitingWorkerVersionInfo.version) {
+                    this.swVersion = waitingWorkerVersionInfo.version;
+                }
                 this.showUpdateNotification();
                 return true;
             }
             
-            // Kiểm tra version từ SW
-            await this.getVersionFromSW();
+            // Nếu không có waiting worker, kiểm tra version từ active worker
+            await this.getVersionFromSW(); // Cập nhật this.swVersion
             
             // So sánh version
+            console.log(`ℹ️ UpdateManager: Comparing versions - Client: ${this.currentVersion}, SW: ${this.swVersion}`);
             if (this.swVersion && this.swVersion !== this.currentVersion) {
-                console.log(`🆕 UpdateManager: Version mismatch! Client: ${this.currentVersion}, SW: ${this.swVersion}`);
+                console.log(`🆕 UpdateManager: Version mismatch! Client: ${this.currentVersion}, SW: ${this.swVersion}. Triggering notification.`);
                 this.isUpdateAvailable = true;
                 this.showUpdateNotification();
                 return true;
             }
             
-            console.log('✅ UpdateManager: No updates available');
+            console.log('✅ UpdateManager: No updates available after checks.');
+            this.isUpdateAvailable = false; // Đảm bảo reset nếu không có update
+            this.dismissUpdate(); // Ẩn thông báo nếu không còn update
             return false;
             
         } catch (error) {
             console.error('❌ UpdateManager: Update check failed:', error);
             return false;
         }
+    },
+
+    async getVersionFromSpecificWorker(worker) {
+        if (!worker) return null;
+        return new Promise((resolve) => {
+            const messageChannel = new MessageChannel();
+            messageChannel.port1.onmessage = (event) => resolve(event.data);
+            worker.postMessage({ type: 'CHECK_VERSION' }, [messageChannel.port2]);
+            setTimeout(() => resolve(null), 2000); // Timeout
+        });
     },
 
     // ✅ Hiển thị thông báo cập nhật với UI đẹp hơn
@@ -568,7 +612,7 @@ Utils.UpdateManager = {
             existingNotification.remove();
         }
         
-        this.isUpdateAvailable = true;
+        this.isUpdateAvailable = true; // Đảm bảo flag này đúng
         
         const updateBar = document.createElement('div');
         updateBar.id = 'update-notification';
@@ -592,7 +636,7 @@ Utils.UpdateManager = {
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
                     <span style="font-size: 1.5rem;">🆕</span>
                     <div>
-                        <div style="font-weight: 600; margin-bottom: 0.25rem;">Có phiên bản mới!</div>
+                        <div style="font-weight: 600; margin-bottom: 0.25rem;">Có phiên bản mới! (SW: ${this.swVersion || 'N/A'})</div>
                         <div style="font-size: 0.85rem; opacity: 0.9;">Nhấn "Cập nhật" để sử dụng tính năng mới nhất</div>
                     </div>
                 </div>
@@ -623,14 +667,6 @@ Utils.UpdateManager = {
         
         document.body.appendChild(updateBar);
         
-        // Tự động ẩn sau 30 giây
-        setTimeout(() => {
-            const notification = document.getElementById('update-notification');
-            if (notification) {
-                this.dismissUpdate();
-            }
-        }, 30000);
-        
         console.log('📢 UpdateManager: Update notification shown');
     },
 
@@ -644,17 +680,18 @@ Utils.UpdateManager = {
                 // Gửi message để skip waiting
                 this.swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
                 console.log('📤 UpdateManager: Sent SKIP_WAITING message');
+                // Sau khi SKIP_WAITING, controllerchange event sẽ được kích hoạt và reload
             } else {
-                // Force refresh nếu không có waiting worker
-                console.log('🔄 UpdateManager: No waiting worker, forcing refresh...');
-                await this.forceRefresh();
+                // Force refresh nếu không có waiting worker (có thể do lỗi nào đó)
+                console.log('🔄 UpdateManager: No waiting worker, or issue with it. Forcing refresh...');
+                await this.forceRefresh(); // Sẽ tự reload
             }
             
-            this.dismissUpdate();
+            this.dismissUpdate(); // Ẩn thông báo ngay lập tức
             
         } catch (error) {
             console.error('❌ UpdateManager: Error applying update:', error);
-            Utils.UIUtils.showMessage('Có lỗi khi cập nhật. Đang thử lại...', 'warning');
+            Utils.UIUtils.showMessage('Có lỗi khi cập nhật. Đang thử làm mới mạnh...', 'warning');
             
             // Fallback: force refresh
             setTimeout(() => {
@@ -667,12 +704,11 @@ Utils.UpdateManager = {
     dismissUpdate() {
         const updateBar = document.getElementById('update-notification');
         if (updateBar) {
-            updateBar.style.animation = 'slideUpAndFade 0.3s ease forwards';
-            setTimeout(() => {
-                updateBar.remove();
-            }, 300);
+            // Thêm animation nếu muốn, ví dụ: updateBar.style.animation = 'slideUpAndFade 0.3s ease forwards';
+            // setTimeout(() => { updateBar.remove(); }, 300);
+            updateBar.remove(); // Xóa ngay
         }
-        this.isUpdateAvailable = false;
+        this.isUpdateAvailable = false; // Quan trọng: reset lại flag này
         console.log('👋 UpdateManager: Update notification dismissed');
     },
 
@@ -734,29 +770,29 @@ Utils.UpdateManager = {
             loadingDiv.remove();
         }
         
-        Utils.UIUtils.showMessage('✅ Ứng dụng đã được cập nhật thành công!', 'success', 3000);
+        Utils.UIUtils.showMessage('✅ Ứng dụng đã được cập nhật thành công! Trang sẽ tự tải lại.', 'success', 3000);
     },
 
     // ✅ Force refresh toàn bộ ứng dụng
     async forceRefresh() {
         try {
             console.log('🔄 UpdateManager: Force refreshing application...');
-            this.showLoadingMessage('Đang làm mới ứng dụng...');
+            this.showLoadingMessage('Đang làm mới ứng dụng hoàn toàn...');
             
             if (navigator.serviceWorker.controller) {
-                // Gửi message đến SW để force update
+                // Gửi message đến SW để force update (SW sẽ xóa cache và reload clients)
                 navigator.serviceWorker.controller.postMessage({ type: 'FORCE_UPDATE' });
                 console.log('📤 UpdateManager: Sent FORCE_UPDATE message to SW');
                 
-                // Đợi phản hồi từ SW
-                setTimeout(() => {
-                    console.log('🔄 UpdateManager: Reloading after force update...');
-                    this.hardReload();
-                }, 2000);
+                // Không cần reload ở đây nữa vì SW sẽ gửi FORCE_UPDATE_COMPLETE để client reload
+                // setTimeout(() => {
+                //     console.log('🔄 UpdateManager: Reloading after force update message...');
+                //     this.hardReload();
+                // }, 3000); // Cho SW thời gian xử lý
             } else {
-                // Không có controller, làm mới trực tiếp
-                console.log('🔄 UpdateManager: No SW controller, hard reloading...');
-                await this.clearCachesAndReload();
+                // Không có controller, làm mới trực tiếp bằng cách xóa cache và hard reload
+                console.log('🔄 UpdateManager: No SW controller, clearing caches and hard reloading...');
+                await this.clearCachesAndReload(); // Hàm này đã bao gồm hardReload
             }
             
         } catch (error) {
@@ -792,18 +828,18 @@ Utils.UpdateManager = {
             console.log('🔄 UpdateManager: Performing hard reload...');
             
             if (typeof window.location.reload === 'function') {
-                // Thêm timestamp để bypass cache
+                // Thêm timestamp để bypass cache trình duyệt mạnh mẽ hơn
                 const url = new URL(window.location.href);
                 url.searchParams.set('_refresh', Date.now());
-                window.location.href = url.toString();
+                window.location.href = url.toString(); // Điều hướng lại sẽ đảm bảo tải mới
             } else {
-                // Fallback
+                // Fallback nếu window.location.reload không có
                 window.location.href = window.location.href.split('?')[0] + '?_refresh=' + Date.now();
             }
         } catch (error) {
             console.error('❌ UpdateManager: Hard reload failed:', error);
             // Last resort
-            window.location.reload(true);
+            window.location.reload(true); // Cố gắng reload mạnh nhất có thể
         }
     },
 
@@ -814,42 +850,43 @@ Utils.UpdateManager = {
         window.addEventListener('focus', () => {
             const now = Date.now();
             // Chỉ kiểm tra nếu đã mất focus hơn 30 giây
-            if (now - lastFocusTime > 30000) {
+            if (now - lastFocusTime > 30000) { // 30 giây
                 setTimeout(() => {
                     this.checkForUpdates();
-                }, 1000);
+                }, 1000); // Delay 1 giây để tránh spam
             }
             lastFocusTime = now;
         });
         
         window.addEventListener('blur', () => {
-            lastFocusTime = Date.now();
+            lastFocusTime = Date.now(); // Cập nhật thời gian khi mất focus
         });
     },
 
-    // ✅ Lấy thông tin version cho UI
+    // ✅ Lấy thông tin version cho UI (có thể dùng trong Settings)
     getVersionInfo() {
         return {
             currentVersion: this.currentVersion,
             swVersion: this.swVersion,
             isUpdateAvailable: this.isUpdateAvailable,
-            lastCheck: this.lastCheck
+            lastCheck: this.lastCheck ? this.lastCheck.toLocaleString('vi-VN') : 'Chưa kiểm tra'
         };
     },
 
-    // ✅ Cleanup khi destroy
+    // ✅ Cleanup khi destroy (nếu app có cơ chế destroy module)
     destroy() {
         if (this.checkInterval) {
             clearInterval(this.checkInterval);
             this.checkInterval = null;
         }
         
-        this.dismissUpdate();
+        this.dismissUpdate(); // Bỏ thông báo nếu có
         
         const loadingDiv = document.getElementById('update-loading');
         if (loadingDiv) {
             loadingDiv.remove();
         }
+        // Xóa các event listener khác nếu có
     }
 };
 
@@ -874,24 +911,6 @@ if (!document.getElementById('update-animation-css')) {
     styleElement.id = 'update-animation-css';
     styleElement.innerHTML = updateAnimationCSS;
     document.head.appendChild(styleElement);
-}
-
-// ✅ Lắng nghe messages từ Service Worker
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.addEventListener('message', function(event) {
-        if (event.data && event.data.version) {
-            // Cập nhật UI version nếu cần
-            const versionEl = document.getElementById('current-app-version');
-            if (versionEl) {
-                versionEl.textContent = event.data.version;
-            }
-        }
-        
-        if (event.data && event.data.type === 'FORCE_UPDATE_COMPLETE') {
-            console.log('🔄 Utils: Received FORCE_UPDATE_COMPLETE, reloading...');
-            window.location.reload();
-        }
-    });
 }
 
 console.log("✅ Utils.js with FIXED UpdateManager loaded.");
