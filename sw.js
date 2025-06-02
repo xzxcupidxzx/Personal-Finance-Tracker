@@ -1,6 +1,6 @@
 // sw.js - PHIÊN BẢN ĐẦY ĐỦ CHO AUTO-UPDATE
-const APP_VERSION = '1.0.2'; // Sync với version trong UpdateManager
-const CACHE_NAME = `finance-app-v${APP_VERSION}`;
+const CACHE_NAME = 'finance-app-v1.0.3'; // Tăng version này
+const APP_VERSION = '1.0.3';              // Tăng version này
 const urlsToCache = [
   '/',
   '/index.html',
