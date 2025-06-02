@@ -79,7 +79,13 @@ self.addEventListener('message', (event) => {
       break;
   }
 });
-
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then(registration => {
+      registration.update(); // luôn kiểm tra và update nếu có sw mới
+    });
+  });
+}
 // (Optional) Notification & Background Sync có thể bổ sung sau nếu thực sự cần thiết cho mobile/PWA
 
 console.log('✅ Service Worker loaded! Version:', APP_VERSION);

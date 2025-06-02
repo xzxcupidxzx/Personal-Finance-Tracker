@@ -521,5 +521,17 @@ if (!document.getElementById('update-animation-css')) {
     styleElement.innerHTML = updateAnimationCSS;
     document.head.appendChild(styleElement);
 }
-
+// Lắng nghe mọi message trả về từ Service Worker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', function(event) {
+        if (event.data && event.data.version) {
+            // Cập nhật UI version
+            const versionEl = document.getElementById('current-app-version');
+            if (versionEl) versionEl.innerText = event.data.version;
+        }
+        if (event.data && event.data.type === 'FORCE_UPDATE_COMPLETE') {
+            window.location.reload();
+        }
+    });
+}
 console.log("🛠️ Utils.js with UpdateManager loaded.");
