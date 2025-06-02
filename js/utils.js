@@ -777,8 +777,425 @@ const Utils = {
             });
         }
     }
-};
+// THÊM VÀO CUỐI FILE utils.js
 
+/**
+ * Update Manager - Quản lý cập nhật ứng dụng
+ */
+Utils.UpdateManager = {
+    currentVersion: '1.0.2', // Sync với version trong sw.js
+    swRegistration: null,
+    isUpdateAvailable: false,
+    isRefreshing: false,
+
+    /**
+     * Khởi tạo update manager
+     */
+    init() {
+        if ('serviceWorker' in navigator) {
+            this.registerServiceWorker();
+            this.setupUpdateDetection();
+            this.checkForUpdatesOnFocus();
+        }
+    },
+
+    /**
+     * Đăng ký Service Worker với update detection
+     */
+    async registerServiceWorker() {
+        try {
+            console.log('🔧 UpdateManager: Registering service worker...');
+            
+            // Register service worker
+            this.swRegistration = await navigator.serviceWorker.register('./sw.js');
+            
+            console.log('✅ UpdateManager: Service worker registered');
+            
+            // Check for updates immediately
+            await this.checkForUpdates();
+            
+            // Setup auto-check for updates every 30 seconds when tab is active
+            setInterval(() => {
+                if (!document.hidden) {
+                    this.checkForUpdates();
+                }
+            }, 30000);
+            
+        } catch (error) {
+            console.error('❌ UpdateManager: Service worker registration failed:', error);
+        }
+    },
+
+    /**
+     * Setup update detection events
+     */
+    setupUpdateDetection() {
+        if (!navigator.serviceWorker) return;
+
+        // Listen for new service worker
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            console.log('🔄 UpdateManager: Controller changed');
+            if (this.isRefreshing) return;
+            this.isRefreshing = true;
+            
+            this.showUpdateAppliedMessage();
+            
+            // Refresh after short delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        });
+
+        // Listen for messages from service worker
+        navigator.serviceWorker.addEventListener('message', event => {
+            this.handleServiceWorkerMessage(event.data);
+        });
+
+        // Check when page becomes visible again
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                setTimeout(() => this.checkForUpdates(), 1000);
+            }
+        });
+    },
+
+    /**
+     * Xử lý tin nhắn từ Service Worker
+     */
+    handleServiceWorkerMessage(data) {
+        console.log('💬 UpdateManager: Message from SW:', data);
+        
+        switch (data.type) {
+            case 'SW_UPDATED':
+                console.log('🆕 UpdateManager: Service worker updated to version', data.version);
+                this.showUpdateNotification();
+                break;
+                
+            case 'FORCE_UPDATE_COMPLETE':
+                this.showUpdateAppliedMessage();
+                setTimeout(() => window.location.reload(), 1500);
+                break;
+                
+            case 'SYNC_AVAILABLE':
+                this.handleSyncAvailable();
+                break;
+        }
+    },
+
+    /**
+     * Kiểm tra cập nhật
+     */
+    async checkForUpdates() {
+        if (!this.swRegistration) return;
+
+        try {
+            // Force check for updates
+            await this.swRegistration.update();
+            
+            // Check if there's a waiting service worker
+            if (this.swRegistration.waiting) {
+                console.log('🆕 UpdateManager: Update available');
+                this.isUpdateAvailable = true;
+                this.showUpdateNotification();
+            }
+            
+        } catch (error) {
+            console.error('❌ UpdateManager: Update check failed:', error);
+        }
+    },
+
+    /**
+     * Hiển thị thông báo cập nhật
+     */
+    showUpdateNotification() {
+        if (this.isUpdateAvailable) return; // Tránh hiển thị nhiều lần
+        
+        this.isUpdateAvailable = true;
+        
+        // Tạo notification bar
+        const updateBar = document.createElement('div');
+        updateBar.id = 'update-notification';
+        updateBar.innerHTML = `
+            <div style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+                color: white;
+                padding: 1rem;
+                text-align: center;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                z-index: 9999;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            ">
+                <div style="flex: 1;">
+                    <strong>🆕 Có phiên bản mới!</strong>
+                    <span style="margin-left: 0.5rem; font-size: 0.9rem;">
+                        Nhấn "Cập nhật" để sử dụng tính năng mới nhất
+                    </span>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button onclick="Utils.UpdateManager.applyUpdate()" style="
+                        background: white;
+                        color: #3b82f6;
+                        border: none;
+                        padding: 0.5rem 1rem;
+                        border-radius: 6px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        font-size: 0.9rem;
+                    ">
+                        🔄 Cập nhật ngay
+                    </button>
+                    <button onclick="Utils.UpdateManager.dismissUpdate()" style="
+                        background: rgba(255,255,255,0.2);
+                        color: white;
+                        border: none;
+                        padding: 0.5rem 1rem;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 0.9rem;
+                    ">
+                        ⏰ Để sau
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing notification
+        const existing = document.getElementById('update-notification');
+        if (existing) {
+            existing.remove();
+        }
+        
+        document.body.appendChild(updateBar);
+        
+        // Auto dismiss after 30 seconds
+        setTimeout(() => {
+            this.dismissUpdate();
+        }, 30000);
+    },
+
+    /**
+     * Áp dụng cập nhật
+     */
+    async applyUpdate() {
+        try {
+            console.log('🔄 UpdateManager: Applying update...');
+            
+            this.showLoadingMessage('Đang cập nhật ứng dụng...');
+            
+            if (this.swRegistration && this.swRegistration.waiting) {
+                // Tell the waiting service worker to skip waiting
+                this.swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            }
+            
+            // Remove notification
+            this.dismissUpdate();
+            
+        } catch (error) {
+            console.error('❌ UpdateManager: Failed to apply update:', error);
+            Utils.UIUtils.showMessage('Có lỗi khi cập nhật. Vui lòng thử lại.', 'error');
+        }
+    },
+
+    /**
+     * Ẩn thông báo cập nhật
+     */
+    dismissUpdate() {
+        const updateBar = document.getElementById('update-notification');
+        if (updateBar) {
+            updateBar.style.animation = 'slideUpAndFade 0.3s ease forwards';
+            setTimeout(() => updateBar.remove(), 300);
+        }
+        this.isUpdateAvailable = false;
+    },
+
+    /**
+     * Hiển thị tin nhắn loading
+     */
+    showLoadingMessage(message) {
+        const loadingDiv = document.createElement('div');
+        loadingDiv.id = 'update-loading';
+        loadingDiv.innerHTML = `
+            <div style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                color: white;
+                font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            ">
+                <div style="
+                    background: rgba(255,255,255,0.1);
+                    backdrop-filter: blur(10px);
+                    padding: 2rem;
+                    border-radius: 16px;
+                    text-align: center;
+                    border: 1px solid rgba(255,255,255,0.2);
+                ">
+                    <div style="
+                        width: 40px;
+                        height: 40px;
+                        border: 4px solid rgba(255,255,255,0.3);
+                        border-top: 4px solid white;
+                        border-radius: 50%;
+                        animation: spin 1s linear infinite;
+                        margin: 0 auto 1rem;
+                    "></div>
+                    <div style="font-size: 1.1rem; font-weight: 500;">
+                        ${message}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(loadingDiv);
+    },
+
+    /**
+     * Hiển thị thông báo cập nhật thành công
+     */
+    showUpdateAppliedMessage() {
+        Utils.UIUtils.showMessage('✅ Ứng dụng đã được cập nhật!', 'success', 2000);
+    },
+
+    /**
+     * Force refresh toàn bộ cache
+     */
+    async forceRefresh() {
+        try {
+            console.log('🔄 UpdateManager: Force refresh requested');
+            
+            this.showLoadingMessage('Đang làm mới ứng dụng...');
+            
+            // Send message to service worker
+            if (navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'FORCE_UPDATE'
+                });
+            } else {
+                // Fallback: clear cache manually and reload
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(
+                        cacheNames.map(name => caches.delete(name))
+                    );
+                }
+                window.location.reload(true);
+            }
+            
+        } catch (error) {
+            console.error('❌ UpdateManager: Force refresh failed:', error);
+            // Fallback to hard refresh
+            window.location.reload(true);
+        }
+    },
+
+    /**
+     * Kiểm tra version hiện tại
+     */
+    async checkVersion() {
+        try {
+            if (!navigator.serviceWorker.controller) return null;
+            
+            const messageChannel = new MessageChannel();
+            
+            return new Promise((resolve) => {
+                messageChannel.port1.onmessage = (event) => {
+                    resolve(event.data);
+                };
+                
+                navigator.serviceWorker.controller.postMessage(
+                    { type: 'CHECK_VERSION' },
+                    [messageChannel.port2]
+                );
+                
+                // Timeout after 5 seconds
+                setTimeout(() => resolve(null), 5000);
+            });
+            
+        } catch (error) {
+            console.error('❌ UpdateManager: Version check failed:', error);
+            return null;
+        }
+    },
+
+    /**
+     * Xử lý sync available
+     */
+    handleSyncAvailable() {
+        console.log('🔄 UpdateManager: Sync available');
+        // Implement sync logic if needed
+    },
+
+    /**
+     * Thiết lập kiểm tra cập nhật khi focus
+     */
+    checkForUpdatesOnFocus() {
+        let lastFocusTime = Date.now();
+        
+        window.addEventListener('focus', () => {
+            const now = Date.now();
+            // Chỉ check nếu đã mất focus > 30 giây
+            if (now - lastFocusTime > 30000) {
+                setTimeout(() => this.checkForUpdates(), 1000);
+            }
+            lastFocusTime = now;
+        });
+    },
+
+    /**
+     * Thêm nút force refresh vào settings (optional)
+     */
+    addForceRefreshButton() {
+        // This can be called from settings module to add a force refresh button
+        const button = document.createElement('button');
+        button.innerHTML = '🔄 Làm mới ứng dụng';
+        button.className = 'action-btn import';
+        button.style.marginTop = '1rem';
+        button.onclick = () => {
+            if (confirm('Bạn có chắc muốn làm mới toàn bộ ứng dụng? Điều này sẽ tải lại tất cả dữ liệu mới nhất.')) {
+                this.forceRefresh();
+            }
+        };
+        return button;
+    }
+};
+// CSS cho animations
+const updateAnimationCSS = `
+<style>
+@keyframes slideUpAndFade {
+    to {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+</style>
+`;
+
+// Inject CSS
+if (!document.getElementById('update-animation-css')) {
+    const styleElement = document.createElement('div');
+    styleElement.id = 'update-animation-css';
+    styleElement.innerHTML = updateAnimationCSS;
+    document.head.appendChild(styleElement);
+}
 // ==========================================
 // PWA CODE - GLOBAL SCOPE
 // ==========================================
