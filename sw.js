@@ -1,6 +1,4 @@
-// sw.js - PHIÊN BẢN ĐẦY ĐỦ CHO AUTO-UPDATE
-const CACHE_NAME = 'finance-app-v1.0.3'; // Tăng version này
-const APP_VERSION = '1.0.3';              // Tăng version này
+const CACHE_NAME = 'your-app-cache-v1'; // Tăng version mỗi khi bạn update code
 const urlsToCache = [
   '/',
   '/index.html',
@@ -18,110 +16,38 @@ const urlsToCache = [
 ];
 
 // Install SW - Cache tất cả resources
-self.addEventListener('install', event => {
-  console.log('🔧 Service Worker: Installing version', APP_VERSION);
-  
+self.addEventListener('install', (event) => {
+  self.skipWaiting(); // Force SW to activate immediately
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('📦 Service Worker: Caching app shell');
-        return cache.addAll(urlsToCache);
-      })
-      .then(() => {
-        console.log('✅ Service Worker: Install complete');
-        // Tự động skip waiting nếu có phiên bản mới
-        return self.skipWaiting();
-      })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
   );
 });
 
 // Activate SW - Cleanup old caches
-self.addEventListener('activate', event => {
-  console.log('🚀 Service Worker: Activating version', APP_VERSION);
-  
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME && cacheName.startsWith('finance-app-')) {
-            console.log('🗑️ Service Worker: Removing old cache', cacheName);
-            return caches.delete(cacheName);
-          }
+    caches.keys().then((cacheNames) =>
+      Promise.all(
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME) return caches.delete(cache);
         })
-      );
-    }).then(() => {
-      console.log('✅ Service Worker: Activation complete');
-      // Take control of all pages immediately
-      return self.clients.claim();
-    }).then(() => {
-      // Notify all clients about the update
-      self.clients.matchAll().then(clients => {
-        clients.forEach(client => {
-          client.postMessage({
-            type: 'SW_UPDATED',
-            version: APP_VERSION
-          });
-        });
-      });
-    })
+      )
+    )
   );
+  self.clients.claim();
 });
 
-// Fetch - Network first for HTML, Cache first for assets
-self.addEventListener('fetch', event => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // Skip non-GET requests
-  if (request.method !== 'GET') return;
-
-  // Skip cross-origin requests
-  if (url.origin !== location.origin) return;
-
-  // HTML files - Network first
-  if (request.mode === 'navigate' || request.headers.get('accept').includes('text/html')) {
-    event.respondWith(
-      fetch(request)
-        .then(response => {
-          // Clone the response
-          const responseToCache = response.clone();
-          
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(request, responseToCache);
-          });
-          
-          return response;
-        })
-        .catch(() => {
-          return caches.match(request);
-        })
-    );
-    return;
-  }
-
-  // Other assets - Cache first
+self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-
-        return fetch(request).then(response => {
-          // Don't cache non-successful responses
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-
-          const responseToCache = response.clone();
-
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(request, responseToCache);
-          });
-
-          return response;
+    fetch(event.request)
+      .then((response) => {
+        const respClone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, respClone);
         });
+        return response;
       })
+      .catch(() => caches.match(event.request))
   );
 });
 
