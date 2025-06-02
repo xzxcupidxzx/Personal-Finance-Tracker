@@ -51,55 +51,23 @@
     
     <!-- ✅ iOS Keyboard Fix CSS -->
     <style>
-        /* iOS Keyboard Fixes */
-        @supports (-webkit-touch-callout: none) {
-            /* iOS specific styles */
-            input, textarea, select {
-                font-size: 16px !important; /* Prevent zoom on focus */
-                -webkit-appearance: none;
-                -webkit-border-radius: 0;
-                border-radius: 8px;
-            }
-            
-            /* Ensure inputs are properly styled */
-            input[type="text"],
-            input[type="number"],
-            input[type="tel"],
-            input[type="email"],
-            input[type="datetime-local"],
-            select {
-                -webkit-appearance: none !important;
-                appearance: none !important;
-                font-size: 16px !important;
-                padding: 12px !important;
-                border: 2px solid var(--border-color) !important;
-                border-radius: 8px !important;
-                background-color: var(--bg-primary) !important;
-                color: var(--text-primary) !important;
-            }
-            
-            /* Amount input specific */
-            .amount-input {
-                font-size: 18px !important; /* Larger for amount */
-                -webkit-appearance: none !important;
-                -webkit-user-select: text !important;
-                user-select: text !important;
-            }
-            
-            /* Fix for viewport */
-            body {
-                -webkit-text-size-adjust: 100%;
-                -webkit-touch-callout: none;
-                -webkit-user-select: none;
-                user-select: none;
-            }
-            
-            /* Allow text selection in inputs */
-            input, textarea {
-                -webkit-user-select: text !important;
-                user-select: text !important;
-            }
-        }
+		@supports (-webkit-touch-callout: none) {
+			/* iOS specific styles */
+			body {
+				-webkit-text-size-adjust: 100%;
+				-webkit-touch-callout: none;
+				/* REMOVE these lines that prevent selection */
+				/* -webkit-user-select: none; */
+				/* user-select: none; */
+			}
+			
+			/* Ensure inputs are selectable */
+			input, textarea, select {
+				-webkit-user-select: text !important;
+				user-select: text !important;
+				-webkit-touch-callout: default !important;
+			}
+		}
     </style>
 </head>
 <body class="font-sans antialiased ...">
@@ -175,14 +143,11 @@
 								<!-- ✅ FIXED: iOS Keyboard Enhancement -->
 								<input type="tel"
 									   id="amount-input"
-									   class="amount-input flex-1 bg-transparent outline-none border-0 text-xl text-[var(--text-primary)] h-[24px] min-h-[24px] px-1"
+									   class="amount-input flex-1 bg-transparent outline-none border-0 text-xl text-[var(--text-primary)] px-1"
 									   placeholder="Nhập số tiền"
 									   inputmode="numeric"
 									   pattern="[0-9]*"
 									   autocomplete="off"
-									   autocorrect="off"
-									   autocapitalize="off"
-									   spellcheck="false"
 									   required>
 								<select id="currency-selector" class="currency-selector bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-xl px-3 py-2 border border-[var(--border-color)]">
 									<option value="VND">VNĐ</option>
@@ -927,83 +892,35 @@
 
 	// ✅ ENHANCED: iOS Keyboard Fixes
 	document.addEventListener('DOMContentLoaded', function() {
-	    // Detect iOS
-	    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-	                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-	    
-	    if (isIOS) {
-	        console.log('📱 iOS detected - applying keyboard fixes');
-	        
-	        // Fix viewport on iOS when keyboard appears
-	        function fixIOSViewport() {
-	            const viewportMeta = document.querySelector('meta[name="viewport"]');
-	            if (viewportMeta) {
-	                viewportMeta.setAttribute('content', 
-	                    'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes'
-	                );
-	            }
-	        }
-	        
-	        // Apply iOS-specific input fixes
-	        function enhanceInputsForIOS() {
-	            const inputs = document.querySelectorAll('input, textarea, select');
-	            inputs.forEach(input => {
-	                // Ensure 16px font size to prevent zoom
-	                if (input.type !== 'radio' && input.type !== 'checkbox') {
-	                    input.style.fontSize = '16px';
-	                }
-	                
-	                // Add iOS-specific attributes
-	                if (input.type === 'text' || input.type === 'tel') {
-	                    input.setAttribute('autocorrect', input.id.includes('amount') ? 'off' : 'on');
-	                    input.setAttribute('autocapitalize', input.id.includes('amount') ? 'off' : 'sentences');
-	                    input.setAttribute('spellcheck', input.id.includes('amount') ? 'false' : 'true');
-	                }
-	            });
-	        }
-	        
-	        // Handle keyboard show/hide
-	        let initialViewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-	        
-	        function handleViewportChange() {
-	            if (window.visualViewport) {
-	                const currentHeight = window.visualViewport.height;
-	                const heightDifference = initialViewportHeight - currentHeight;
-	                
-	                if (heightDifference > 150) {
-	                    // Keyboard is likely open
-	                    document.body.classList.add('ios-keyboard-open');
-	                } else {
-	                    // Keyboard is likely closed
-	                    document.body.classList.remove('ios-keyboard-open');
-	                }
-	            }
-	        }
-	        
-	        // Listen for viewport changes (keyboard show/hide)
-	        if (window.visualViewport) {
-	            window.visualViewport.addEventListener('resize', handleViewportChange);
-	        }
-	        
-	        // Apply fixes
-	        fixIOSViewport();
-	        enhanceInputsForIOS();
-	        
-	        // Re-apply fixes when new content is loaded
-	        const observer = new MutationObserver((mutations) => {
-	            mutations.forEach((mutation) => {
-	                if (mutation.addedNodes.length > 0) {
-	                    enhanceInputsForIOS();
-	                }
-	            });
-	        });
-	        
-	        observer.observe(document.body, {
-	            childList: true,
-	            subtree: true
-	        });
-	    }
-	});
+		// Get all input elements
+		const inputs = document.querySelectorAll('input[type="text"], input[type="tel"], input[type="number"], input[inputmode="numeric"], textarea');
+		
+		inputs.forEach(input => {
+			// Add touchstart event to ensure keyboard shows
+			input.addEventListener('touchstart', function(e) {
+				e.stopPropagation();
+			});
+			
+			// Focus event enhancement
+			input.addEventListener('focus', function(e) {
+				// Ensure the input is actually focused
+				setTimeout(() => {
+					if (document.activeElement !== this) {
+						this.focus();
+					}
+				}, 100);
+			});
+		});
+		
+		// Special handling for amount input
+		const amountInput = document.getElementById('amount-input');
+		if (amountInput) {
+			amountInput.addEventListener('click', function() {
+				this.focus();
+				this.select(); // Select all text for easy replacement
+			});
+		}
+});
 
 	// Đăng ký Service Worker cho PWA (Offline & Cache)
 	if ('serviceWorker' in navigator) {
