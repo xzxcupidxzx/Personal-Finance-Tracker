@@ -372,7 +372,7 @@ Utils.UpdateManager = {
     },
     async registerServiceWorker() {
         try {
-            this.swRegistration = await navigator.serviceWorker.register('./sw.js');
+            this.swRegistration = await navigator.serviceWorker.register('/sw.js');
             await this.checkForUpdates();
             setInterval(() => { if (!document.hidden) this.checkForUpdates(); }, 30000);
         } catch (error) {

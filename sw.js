@@ -1,74 +1,71 @@
-const CACHE_NAME = 'your-app-cache-v1'; // Tăng version mỗi khi bạn update code
+const APP_VERSION = '1.0.2'; // Đổi version này mỗi khi build code mới!
+const CACHE_NAME = 'finance-app-cache-' + APP_VERSION;
+
 const urlsToCache = [
   '/',
   '/index.html',
   '/quick-add.html',
   '/styles.css',
-  '/js/utils.js',
-  '/js/app.js',
-  '/js/categories.js',
-  '/js/settings.js',
-  '/js/transactions.js',
-  '/js/history.js',
-  '/js/statistics.js',
+  '/utils.js',
+  '/app.js',
+  '/categories.js',
+  '/settings.js',
+  '/transactions.js',
+  '/history.js',
+  '/statistics.js',
   '/LogoFinance.png',
   '/manifest.json'
 ];
 
-// Install SW - Cache tất cả resources
+// Install: Cache tất cả các file cần thiết
 self.addEventListener('install', (event) => {
-  self.skipWaiting(); // Force SW to activate immediately
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
   );
 });
 
-// Activate SW - Cleanup old caches
+// Activate: Xoá cache cũ
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) =>
+    caches.keys().then((names) =>
       Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) return caches.delete(cache);
-        })
+        names.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name))
       )
     )
   );
   self.clients.claim();
 });
 
+// Fetch: Network First, fallback cache
 self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
   event.respondWith(
     fetch(event.request)
-      .then((response) => {
-        const respClone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, respClone);
-        });
-        return response;
+      .then((resp) => {
+        // Clone và lưu lại vào cache (nếu là file tĩnh)
+        if (event.request.url.startsWith(self.location.origin)) {
+          const respClone = resp.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, respClone);
+          });
+        }
+        return resp;
       })
       .catch(() => caches.match(event.request))
   );
 });
 
-// Message handler - Communicate with UpdateManager
-self.addEventListener('message', event => {
-  console.log('📨 Service Worker: Received message', event.data);
-  
+// Nhận message từ UpdateManager
+self.addEventListener('message', (event) => {
   switch (event.data.type) {
     case 'SKIP_WAITING':
       self.skipWaiting();
       break;
-      
     case 'CHECK_VERSION':
-      event.ports[0].postMessage({
-        version: APP_VERSION,
-        cacheNames: CACHE_NAME
-      });
+      event.ports[0].postMessage({ version: APP_VERSION, cache: CACHE_NAME });
       break;
-      
     case 'FORCE_UPDATE':
-      // Clear all caches and skip waiting
       caches.keys().then(names => {
         Promise.all(names.map(name => caches.delete(name))).then(() => {
           self.skipWaiting();
@@ -83,73 +80,6 @@ self.addEventListener('message', event => {
   }
 });
 
-// Background Sync for offline transactions
-self.addEventListener('sync', event => {
-  if (event.tag === 'background-transaction') {
-    event.waitUntil(processBackgroundTransactions());
-  }
-});
+// (Optional) Notification & Background Sync có thể bổ sung sau nếu thực sự cần thiết cho mobile/PWA
 
-// Process pending transactions
-async function processBackgroundTransactions() {
-  try {
-    const pendingTransactions = await getPendingTransactions();
-    
-    for (const transaction of pendingTransactions) {
-      await saveTransaction(transaction);
-      
-      self.registration.showNotification('💰 Giao dịch đã được thêm', {
-        body: `${transaction.type}: ${formatCurrency(transaction.amount)}`,
-        icon: '/LogoFinance.png',
-        badge: '/LogoFinance.png',
-        tag: 'transaction-success',
-        requireInteraction: false
-      });
-    }
-    
-    await clearPendingTransactions();
-  } catch (error) {
-    console.error('Background sync failed:', error);
-  }
-}
-
-// Helper functions
-async function getPendingTransactions() {
-  // Get from clients
-  const allClients = await self.clients.matchAll();
-  if (allClients.length > 0) {
-    const client = allClients[0];
-    return new Promise(resolve => {
-      const channel = new MessageChannel();
-      channel.port1.onmessage = event => resolve(event.data || []);
-      client.postMessage({ type: 'GET_PENDING_TRANSACTIONS' }, [channel.port2]);
-      setTimeout(() => resolve([]), 5000); // Timeout fallback
-    });
-  }
-  return [];
-}
-
-async function saveTransaction(transaction) {
-  // Send to all clients to save
-  const allClients = await self.clients.matchAll();
-  allClients.forEach(client => {
-    client.postMessage({
-      type: 'SAVE_TRANSACTION',
-      transaction: transaction
-    });
-  });
-}
-
-async function clearPendingTransactions() {
-  const allClients = await self.clients.matchAll();
-  allClients.forEach(client => {
-    client.postMessage({ type: 'CLEAR_PENDING_TRANSACTIONS' });
-  });
-}
-
-function formatCurrency(amount) {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  }).format(amount);
-}
+console.log('✅ Service Worker loaded! Version:', APP_VERSION);
