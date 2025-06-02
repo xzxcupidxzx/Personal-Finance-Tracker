@@ -898,67 +898,74 @@ class FinancialApp {
     /**
      * Update header summary with error handling
      */
-    updateHeaderSummary() {
-        try {
-            const { start, end } = Utils.DateUtils.getPeriodDates('month');
+	 updateHeaderSummary() {
+		try {
+			// 1. Tính thu nhập và chi tiêu tháng này (giữ nguyên)
+			const { start, end } = Utils.DateUtils.getPeriodDates('month');
 
-            if (!start || !end) {
-                console.warn('Invalid period dates for header summary');
-                return;
-            }
+			if (!start || !end) {
+				console.warn('Invalid period dates for header summary');
+				return;
+			}
 
-            const currentMonthTransactions = this.data.transactions.filter(tx => {
-                try {
-                    // Ensure tx is valid and tx.datetime is present before creating Date object
-                    if (!tx || !tx.datetime) return false;
-                    const txDate = new Date(tx.datetime);
-                    return !isNaN(txDate.getTime()) && txDate >= start && txDate <= end;
-                } catch (error) {
-                    console.warn('Invalid transaction date in filter (for header summary):', tx?.datetime, error);
-                    return false;
-                }
-            });
+			const currentMonthTransactions = this.data.transactions.filter(tx => {
+				try {
+					if (!tx || !tx.datetime) return false;
+					const txDate = new Date(tx.datetime);
+					return !isNaN(txDate.getTime()) && txDate >= start && txDate <= end;
+				} catch (error) {
+					console.warn('Invalid transaction date in filter (for header summary):', tx?.datetime, error);
+					return false;
+				}
+			});
 
-            let totalIncome = 0;
-            let totalExpense = 0;
+			let totalIncome = 0;
+			let totalExpense = 0;
 
-            currentMonthTransactions.forEach(tx => {
-                // Ensure tx and tx.amount are valid before parsing
-                const amount = parseFloat(tx?.amount) || 0;
+			currentMonthTransactions.forEach(tx => {
+				const amount = parseFloat(tx?.amount) || 0;
 
-                // <<< SỬA LẠI 2 DÒNG NÀY >>>
-                if (tx?.type === 'Thu' && !tx?.isTransfer) { // Thêm !tx?.isTransfer
-                    totalIncome += amount;
-                } else if (tx?.type === 'Chi' && !tx?.isTransfer) { // Thêm !tx?.isTransfer
-                    totalExpense += amount;
-                }
-                // <<< KẾT THÚC SỬA >>>
-            });
+				if (tx?.type === 'Thu' && !tx?.isTransfer) {
+					totalIncome += amount;
+				} else if (tx?.type === 'Chi' && !tx?.isTransfer) {
+					totalExpense += amount;
+				}
+			});
 
-            const balance = totalIncome - totalExpense;
+			// 2. Tính tổng số dư thực tế của tất cả tài khoản (THAY ĐỔI Ở ĐÂY)
+			const realTotalBalance = this.getAllAccountBalances();
+			const totalRealBalance = Object.values(realTotalBalance).reduce((sum, balance) => {
+				return sum + (parseFloat(balance) || 0);
+			}, 0);
 
-            // Update header elements safely
-            const headerIncome = document.getElementById('header-income');
-            const headerExpense = document.getElementById('header-expense');
-            const headerBalance = document.getElementById('header-balance');
+			// 3. Cập nhật giao diện
+			const headerIncome = document.getElementById('header-income');
+			const headerExpense = document.getElementById('header-expense');
+			const headerBalance = document.getElementById('header-balance');
 
-            if (headerIncome) {
-                headerIncome.textContent = Utils.CurrencyUtils.formatCurrency(totalIncome);
-            }
+			if (headerIncome) {
+				headerIncome.textContent = Utils.CurrencyUtils.formatCurrency(totalIncome);
+			}
 
-            if (headerExpense) {
-                headerExpense.textContent = Utils.CurrencyUtils.formatCurrency(totalExpense);
-            }
+			if (headerExpense) {
+				headerExpense.textContent = Utils.CurrencyUtils.formatCurrency(totalExpense);
+			}
 
-            if (headerBalance) {
-                headerBalance.textContent = Utils.CurrencyUtils.formatCurrency(balance);
-                headerBalance.className = `summary-value ${balance >= 0 ? 'text-success' : 'text-danger'}`;
-            }
+			if (headerBalance) {
+				headerBalance.textContent = Utils.CurrencyUtils.formatCurrency(totalRealBalance);
+				headerBalance.className = `summary-value ${totalRealBalance >= 0 ? 'text-success' : 'text-danger'}`;
+			}
 
-        } catch (error) {
-            console.error('Error updating header summary:', error);
-        }
-    }
+			// 4. Cập nhật label để rõ ràng hơn
+			const balanceLabel = document.querySelector('#header-balance').parentNode.querySelector('.summary-label');
+			if (balanceLabel) {
+				balanceLabel.textContent = 'Tổng số dư';
+			}
+
+		} catch (error) {
+			console.error('Error updating header summary:', error);
+		}
+	}
 
     /**
      * Cleanup method to prevent memory leaks
