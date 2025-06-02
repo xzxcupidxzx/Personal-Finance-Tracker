@@ -1,4 +1,4 @@
-const APP_VERSION = '1.0.2'; // Đổi version này mỗi khi build code mới!
+const APP_VERSION = '1.0.3'; // Đổi version này mỗi khi build code mới!
 const CACHE_NAME = 'finance-app-cache-' + APP_VERSION;
 
 const urlsToCache = [
