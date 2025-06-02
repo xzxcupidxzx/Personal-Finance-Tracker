@@ -1,107 +1,97 @@
-const CACHE_NAME = 'finance-app-v1';
+// sw.js - Service Worker file
+const CACHE_NAME = 'finance-app-v1.0.1'; // Thay đổi version này khi update
+const APP_VERSION = '1.0.1';
+
+// Files cần cache
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/quick-add.html',
-  '/styles.css',
-  '/js/utils.js',
-  '/js/app.js',
-  '/js/transactions.js',
-  '/LogoFinance.png'
+    './',
+    './index.html',
+    './styles.css',
+    './style.css',
+    './script.js',
+    './manifest.json',
+    './logo-finance.png',
+    './LogoFinance.png'
 ];
 
-// Install SW
+// Install event - cache files
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-  );
-});
-
-// Fetch
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        return response || fetch(event.request);
-      }
-    )
-  );
-});
-
-// Background Sync for adding transactions
-self.addEventListener('sync', event => {
-  if (event.tag === 'background-transaction') {
+    console.log('SW: Installing...');
     event.waitUntil(
-      processBackgroundTransactions()
+        caches.open(CACHE_NAME)
+            .then(cache => {
+                console.log('SW: Caching files');
+                return cache.addAll(urlsToCache);
+            })
+            .then(() => {
+                // Force activate new service worker
+                return self.skipWaiting();
+            })
     );
-  }
 });
 
-// Notification clicks
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
-  
-  event.waitUntil(
-    clients.matchAll().then(clientList => {
-      for (const client of clientList) {
-        if (client.url === '/' && 'focus' in client) {
-          return client.focus();
-        }
-      }
-      if (clients.openWindow) {
-        return clients.openWindow('/quick-add.html');
-      }
-    })
-  );
+// Activate event - delete old caches
+self.addEventListener('activate', event => {
+    console.log('SW: Activating...');
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    if (cacheName !== CACHE_NAME) {
+                        console.log('SW: Deleting old cache:', cacheName);
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        }).then(() => {
+            // Take control of all clients
+            return self.clients.claim();
+        })
+    );
 });
 
-// Process background transactions
-async function processBackgroundTransactions() {
-  try {
-    // Get pending transactions from IndexedDB or localStorage
-    const pendingTransactions = await getPendingTransactions();
-    
-    for (const transaction of pendingTransactions) {
-      // Process each transaction
-      await saveTransaction(transaction);
-      
-      // Show success notification
-      self.registration.showNotification('💰 Giao dịch đã được thêm', {
-        body: `${transaction.type}: ${formatCurrency(transaction.amount)}`,
-        icon: '/LogoFinance.png',
-        badge: '/LogoFinance.png',
-        tag: 'transaction-success'
-      });
+// Fetch event - serve from cache with network fallback
+self.addEventListener('fetch', event => {
+    event.respondWith(
+        // Try network first for HTML files
+        fetch(event.request)
+            .then(response => {
+                // If successful, update cache and return response
+                if (response.status === 200) {
+                    const responseClone = response.clone();
+                    caches.open(CACHE_NAME)
+                        .then(cache => {
+                            cache.put(event.request, responseClone);
+                        });
+                }
+                return response;
+            })
+            .catch(() => {
+                // If network fails, serve from cache
+                return caches.match(event.request)
+                    .then(response => {
+                        if (response) {
+                            return response;
+                        }
+                        // Fallback for navigation requests
+                        if (event.request.destination === 'document') {
+                            return caches.match('./index.html');
+                        }
+                    });
+            })
+    );
+});
+
+// Listen for messages from main thread
+self.addEventListener('message', event => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
     }
     
-    // Clear pending transactions
-    await clearPendingTransactions();
-    
-  } catch (error) {
-    console.error('Background sync failed:', error);
-  }
-}
-
-async function getPendingTransactions() {
-  // Implementation depends on your storage choice
-  return [];
-}
-
-async function saveTransaction(transaction) {
-  // Save to localStorage or send to server
-  const transactions = JSON.parse(localStorage.getItem('financial_transactions_v2') || '[]');
-  transactions.push(transaction);
-  localStorage.setItem('financial_transactions_v2', JSON.stringify(transactions));
-}
-
-async function clearPendingTransactions() {
-  // Clear pending transactions
-}
-
-function formatCurrency(amount) {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  }).format(amount);
-}
+    if (event.data && event.data.type === 'CHECK_VERSION') {
+        event.ports[0].postMessage({
+            version: APP_VERSION,
+            cacheName: CACHE_NAME
+        });
+    }
+});
