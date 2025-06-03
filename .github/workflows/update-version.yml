@@ -9,58 +9,216 @@ on:
 jobs:
   sync-version:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write # ✅ Thêm quyền write cho contents
+      
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v4 # ✅ Cập nhật lên v4
       with:
-        # Cần token để có thể push lại thay đổi
-        token: ${{ secrets.GITHUB_TOKEN }} 
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0 # ✅ Fetch full history
 
-    - name: Sync version to utils.js and manifest.json
+    - name: Verify files exist
+      run: |
+        echo "🔍 Checking if required files exist..."
+        
+        if [ ! -f "js/version.js" ]; then
+          echo "❌ js/version.js not found!"
+          exit 1
+        fi
+        
+        if [ ! -f "js/utils.js" ]; then
+          echo "❌ js/utils.js not found!"
+          exit 1
+        fi
+        
+        if [ ! -f "manifest.json" ]; then
+          echo "❌ manifest.json not found!"
+          exit 1
+        fi
+        
+        echo "✅ All required files exist"
+
+    - name: Extract and sync version
       run: |
         VERSION_FILE="js/version.js"
         UTILS_FILE="js/utils.js"
         MANIFEST_FILE="manifest.json"
-
-        # Đọc phiên bản mới từ js/version.js
-        # Dòng này tìm dòng có "const APP_VERSION = '...';" và trích xuất phần trong dấu nháy đơn
-        NEW_VERSION_LINE=$(grep -E "const APP_VERSION = '[0-9]+\.[0-9]+\.[0-9]+';" $VERSION_FILE)
-        if [ -z "$NEW_VERSION_LINE" ]; then
-          echo "Không tìm thấy dòng APP_VERSION hợp lệ trong $VERSION_FILE"
-          exit 1
-        fi
-        NEW_VERSION=$(echo "$NEW_VERSION_LINE" | grep -oP "'\K[^']+")
+        
+        echo "📂 Working directory: $(pwd)"
+        echo "📋 Files in js/:"
+        ls -la js/ || echo "js/ directory not found"
+        
+        # Đọc nội dung file version.js
+        echo "📖 Content of $VERSION_FILE:"
+        cat "$VERSION_FILE"
+        
+        # Trích xuất phiên bản với nhiều pattern khác nhau
+        echo "🔍 Extracting version..."
+        
+        # Thử pattern 1: const APP_VERSION = '1.2.3';
+        NEW_VERSION=$(grep -E "const APP_VERSION = '[0-9]+\.[0-9]+\.[0-9]+'" "$VERSION_FILE" | sed -E "s/.*'([0-9]+\.[0-9]+\.[0-9]+)'.*/\1/" | head -1)
+        
+        # Nếu không tìm thấy, thử pattern 2: const APP_VERSION = "1.2.3";
         if [ -z "$NEW_VERSION" ]; then
-          echo "Không thể trích xuất NEW_VERSION từ $VERSION_FILE"
+          NEW_VERSION=$(grep -E 'const APP_VERSION = "[0-9]+\.[0-9]+\.[0-9]+"' "$VERSION_FILE" | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/' | head -1)
+        fi
+        
+        # Nếu vẫn không tìm thấy, thử pattern 3: APP_VERSION = '1.2.3'
+        if [ -z "$NEW_VERSION" ]; then
+          NEW_VERSION=$(grep -E "APP_VERSION = '[0-9]+\.[0-9]+\.[0-9]+'" "$VERSION_FILE" | sed -E "s/.*'([0-9]+\.[0-9]+\.[0-9]+)'.*/\1/" | head -1)
+        fi
+        
+        if [ -z "$NEW_VERSION" ]; then
+          echo "❌ Không thể trích xuất version từ $VERSION_FILE"
+          echo "📋 Nội dung file:"
+          cat "$VERSION_FILE"
           exit 1
         fi
-        echo "Đồng bộ phiên bản sang: $NEW_VERSION"
-
-        # Cập nhật currentVersion trong js/utils.js
-        # Lệnh sed này tìm dòng "currentVersion: '...'" và thay thế giá trị phiên bản
-        sed -i -E "s/(currentVersion: ')[0-9]+\.[0-9]+\.[0-9]+'/\1$NEW_VERSION'/" $UTILS_FILE
-
-        # Cập nhật "version" trong manifest.json
-        # Sử dụng jq nếu có sẵn sẽ an toàn hơn cho JSON
-        if command -v jq &> /dev/null
-        then
-            jq ".version = \"$NEW_VERSION\"" $MANIFEST_FILE > tmp.$$.json && mv tmp.$$.json $MANIFEST_FILE
-            echo "Đã cập nhật manifest.json bằng jq"
+        
+        echo "✅ Extracted version: $NEW_VERSION"
+        
+        # Backup các file trước khi thay đổi
+        cp "$UTILS_FILE" "${UTILS_FILE}.backup"
+        cp "$MANIFEST_FILE" "${MANIFEST_FILE}.backup"
+        
+        echo "💾 Backed up files"
+        
+        # Cập nhật utils.js - kiểm tra xem có currentVersion không
+        echo "🔧 Updating $UTILS_FILE..."
+        
+        if grep -q "currentVersion:" "$UTILS_FILE"; then
+          # Pattern hiện tại: currentVersion: '1.2.3'
+          sed -i -E "s/(currentVersion:[ ]*')[0-9]+\.[0-9]+\.[0-9]+'/\1$NEW_VERSION'/" "$UTILS_FILE"
+          echo "✅ Updated currentVersion in utils.js"
         else
-            # Cách dự phòng bằng sed nếu không có jq (ít an toàn hơn cho cấu trúc JSON phức tạp)
-            sed -i -E "s/(\"version\": \")[0-9]+\.[0-9]+\.[0-9]+(\")/\1$NEW_VERSION\2/" $MANIFEST_FILE
-            echo "Đã cập nhật manifest.json bằng sed (cảnh báo: nên dùng jq)"
+          echo "⚠️ currentVersion pattern not found in utils.js, skipping"
         fi
+        
+        # Cập nhật manifest.json
+        echo "🔧 Updating $MANIFEST_FILE..."
+        
+        # Sử dụng jq nếu có
+        if command -v jq &> /dev/null; then
+          jq ".version = \"$NEW_VERSION\"" "$MANIFEST_FILE" > "${MANIFEST_FILE}.tmp" && mv "${MANIFEST_FILE}.tmp" "$MANIFEST_FILE"
+          echo "✅ Updated manifest.json using jq"
+        else
+          # Fallback với sed
+          sed -i -E "s/(\"version\":[ ]*\")[0-9]+\.[0-9]+\.[0-9]+(\")/\1$NEW_VERSION\2/" "$MANIFEST_FILE"
+          echo "✅ Updated manifest.json using sed"
+        fi
+        
+        # Kiểm tra thay đổi
+        echo "🔍 Checking changes..."
+        
+        if ! diff "$UTILS_FILE" "${UTILS_FILE}.backup" > /dev/null 2>&1; then
+          echo "✅ utils.js has been changed"
+        else
+          echo "ℹ️ utils.js unchanged"
+        fi
+        
+        if ! diff "$MANIFEST_FILE" "${MANIFEST_FILE}.backup" > /dev/null 2>&1; then
+          echo "✅ manifest.json has been changed"
+        else
+          echo "ℹ️ manifest.json unchanged"
+        fi
+        
+        # Lưu version vào environment
+        echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
-        # Commit các thay đổi
+    - name: Configure Git
+      run: |
         git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add $UTILS_FILE $MANIFEST_FILE # Chỉ add các file đã thay đổi
+        git config --local user.name "GitHub Action Bot"
+        
+        # Kiểm tra git config
+        echo "📋 Git config:"
+        git config --get user.email
+        git config --get user.name
 
-        # Kiểm tra xem có thực sự có thay đổi không trước khi commit
-        if ! git diff --staged --quiet; then
-            git commit -m "⚙️ Sync app version to $NEW_VERSION from $VERSION_FILE"
-            git push
-        else
-            echo "Không có thay đổi phiên bản nào cần commit."
+    - name: Commit and push changes
+      run: |
+        echo "📋 Git status before adding files:"
+        git status
+        
+        # Add các file đã thay đổi
+        git add js/utils.js manifest.json
+        
+        echo "📋 Git status after adding files:"
+        git status
+        
+        # Kiểm tra xem có thay đổi không
+        if git diff --staged --quiet; then
+          echo "ℹ️ No changes to commit"
+          exit 0
         fi
+        
+        # Commit với message rõ ràng
+        COMMIT_MSG="🔄 Auto-sync version to ${{ env.NEW_VERSION }} from js/version.js
+        
+        - Updated js/utils.js
+        - Updated manifest.json
+        
+        [skip ci]"
+        
+        git commit -m "$COMMIT_MSG"
+        
+        echo "✅ Changes committed successfully"
+        
+        # Push với retry logic
+        MAX_RETRIES=3
+        RETRY_COUNT=0
+        
+        while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+          echo "🚀 Attempting to push... (attempt $((RETRY_COUNT + 1))/$MAX_RETRIES)"
+          
+          if git push origin HEAD; then
+            echo "✅ Push successful!"
+            break
+          else
+            echo "❌ Push failed, retrying in 5 seconds..."
+            sleep 5
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            
+            if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+              echo "❌ Push failed after $MAX_RETRIES attempts"
+              exit 1
+            fi
+            
+            # Pull latest changes trước khi retry
+            echo "🔄 Pulling latest changes..."
+            git pull --rebase origin HEAD || true
+          fi
+        done
+
+    - name: Cleanup on failure
+      if: failure()
+      run: |
+        echo "🧹 Cleaning up on failure..."
+        
+        # Restore backup files nếu có
+        if [ -f "js/utils.js.backup" ]; then
+          mv "js/utils.js.backup" "js/utils.js"
+          echo "↩️ Restored js/utils.js from backup"
+        fi
+        
+        if [ -f "manifest.json.backup" ]; then
+          mv "manifest.json.backup" "manifest.json"
+          echo "↩️ Restored manifest.json from backup"
+        fi
+        
+        # Reset git changes
+        git reset --hard HEAD
+        echo "🔄 Reset git changes"
+
+    - name: Summary
+      if: success()
+      run: |
+        echo "🎉 Version sync completed successfully!"
+        echo "📦 New version: ${{ env.NEW_VERSION }}"
+        echo "📝 Files updated:"
+        echo "  - js/utils.js"
+        echo "  - manifest.json"
+        echo ""
+        echo "🔗 Commit: $(git rev-parse HEAD)"
