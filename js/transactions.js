@@ -1021,7 +1021,7 @@ class TransactionsModule {
 
             // Show feedback and focus
             this.showSmartResetFeedback();
-            this.focusAmountInput();
+            this.focusAmountInput(); // <--- DÒNG NÀY GÂY RA VIỆC TỰ ĐỘNG FOCUS VÀ BẬT BÀN PHÍM
 
             console.log('✅ State restoration completed');
 
@@ -1462,28 +1462,30 @@ class TransactionsModule {
     /**
      * Perform full form reset
      */
-    performFullReset() {
-        console.log('🔄 Performing FULL reset');
-        
-        this.elements.form.reset();
-        this.editingTransactionId = null;
-        
-        this.updateSubmitButtonToDefault();
-        this.loadLastTransactionTypeQuiet();
-        this.updateFormVisibility();
-        this.populateCategories();
-        this.setDefaultDateTime();
-    }
+	performFullReset() {
+		console.log('🔄 Performing FULL reset');
+
+		this.elements.form.reset();
+		this.editingTransactionId = null;
+
+		this.updateSubmitButtonToDefault();
+		this.loadLastTransactionTypeQuiet();
+		this.updateFormVisibility();
+		this.populateCategories();
+		this.setDefaultDateTime();
+		// this.focusAmountInput(); // Có thể comment nếu muốn tắt hoàn toàn focus sau reset
+	}
 
     /**
      * Perform partial form reset
      */
-    performPartialReset() {
-        console.log('🔄 Performing PARTIAL reset (amount, description, datetime)');
-        
-        this.clearResettableFields();
-        console.log('✅ Kept transaction type, category, account for quick entry');
-    }
+	performPartialReset() {
+		console.log('🔄 Performing PARTIAL reset (amount, description, datetime)');
+
+		this.clearResettableFields();
+		// this.focusAmountInput(); // Có thể comment nếu muốn tắt hoàn toàn focus sau reset
+		console.log('✅ Kept transaction type, category, account for quick entry');
+	}
 
     /**
      * Update submit button to default state

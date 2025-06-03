@@ -32,7 +32,7 @@ class SettingsModule {
     init(app) {
         this.app = app;
 
-        // ✅ Fix: safely update from Utils.CONFIG after Utils is defined
+        // Safely update from Utils.CONFIG after Utils is defined
         this.validationRules.usdRate.min = Utils?.CONFIG?.USD_RATE_MIN || 1000;
         this.validationRules.usdRate.max = Utils?.CONFIG?.USD_RATE_MAX || 50000;
 
@@ -41,9 +41,7 @@ class SettingsModule {
         try {
             this.initializeElements();
             this.initializeEventListeners();
-
             this.refresh();
-
             console.log('✅ Settings Module initialized');
         } catch (error) {
             console.error('❌ Failed to initialize Settings Module:', error);
@@ -74,7 +72,7 @@ class SettingsModule {
             totalTransactionsEl: document.getElementById('total-transactions'),
             dataSizeEl: document.getElementById('data-size'),
             lastBackupEl: document.getElementById('last-backup'),
-            appInfoVersionEl: document.getElementById('app-info-version'), // <<< THÊM DÒNG NÀY
+            appInfoVersionEl: document.getElementById('app-info-version'),
 
             // Loading indicator
             loadingIndicator: document.getElementById('settings-loading'),
@@ -110,22 +108,12 @@ class SettingsModule {
                         this.changeTheme(radio.value);
                     }
                 };
-
                 radio.addEventListener('change', changeHandler);
-                this.eventListeners.push({
-                    element: radio,
-                    event: 'change',
-                    handler: changeHandler
-                });
+                this.eventListeners.push({ element: radio, event: 'change', handler: changeHandler });
             });
 
-            // Data management events
             this.initializeDataManagementEvents();
-
-            // Currency settings events
             this.initializeCurrencyEvents();
-
-            // Update event listeners
             this.initializeUpdateEvents();
 
         } catch (error) {
@@ -140,32 +128,19 @@ class SettingsModule {
         if (this.elements.checkUpdatesBtn) {
             const checkHandler = () => this.checkForUpdates();
             this.elements.checkUpdatesBtn.addEventListener('click', checkHandler);
-            this.eventListeners.push({
-                element: this.elements.checkUpdatesBtn,
-                event: 'click',
-                handler: checkHandler
-            });
+            this.eventListeners.push({ element: this.elements.checkUpdatesBtn, event: 'click', handler: checkHandler });
         }
         if (this.elements.forceRefreshBtn) {
             const refreshHandler = () => this.forceRefreshApp();
             this.elements.forceRefreshBtn.addEventListener('click', refreshHandler);
-            this.eventListeners.push({
-                element: this.elements.forceRefreshBtn,
-                event: 'click',
-                handler: refreshHandler
-            });
+            this.eventListeners.push({ element: this.elements.forceRefreshBtn, event: 'click', handler: refreshHandler });
         }
         if (this.elements.clearCacheBtn) {
             const clearHandler = () => this.clearAppCache();
             this.elements.clearCacheBtn.addEventListener('click', clearHandler);
-            this.eventListeners.push({
-                element: this.elements.clearCacheBtn,
-                event: 'click',
-                handler: clearHandler
-            });
+            this.eventListeners.push({ element: this.elements.clearCacheBtn, event: 'click', handler: clearHandler });
         }
     }
-
 
     /**
      * Initialize data management event listeners
@@ -174,23 +149,13 @@ class SettingsModule {
         if (this.elements.exportJsonBtn) {
             const exportJsonHandler = () => this.exportData();
             this.elements.exportJsonBtn.addEventListener('click', exportJsonHandler);
-            this.eventListeners.push({
-                element: this.elements.exportJsonBtn,
-                event: 'click',
-                handler: exportJsonHandler
-            });
+            this.eventListeners.push({ element: this.elements.exportJsonBtn, event: 'click', handler: exportJsonHandler });
         }
-
         if (this.elements.exportCsvBtn) {
             const exportCsvHandler = () => this.exportCSV();
             this.elements.exportCsvBtn.addEventListener('click', exportCsvHandler);
-            this.eventListeners.push({
-                element: this.elements.exportCsvBtn,
-                event: 'click',
-                handler: exportCsvHandler
-            });
+            this.eventListeners.push({ element: this.elements.exportCsvBtn, event: 'click', handler: exportCsvHandler });
         }
-
         if (this.elements.importDataBtn) {
             const importHandler = () => {
                 if (!this.isProcessingFile) {
@@ -198,31 +163,17 @@ class SettingsModule {
                 }
             };
             this.elements.importDataBtn.addEventListener('click', importHandler);
-            this.eventListeners.push({
-                element: this.elements.importDataBtn,
-                event: 'click',
-                handler: importHandler
-            });
+            this.eventListeners.push({ element: this.elements.importDataBtn, event: 'click', handler: importHandler });
         }
-
         if (this.elements.importFileInput) {
             const fileChangeHandler = (e) => this.handleImportFile(e);
             this.elements.importFileInput.addEventListener('change', fileChangeHandler);
-            this.eventListeners.push({
-                element: this.elements.importFileInput,
-                event: 'change',
-                handler: fileChangeHandler
-            });
+            this.eventListeners.push({ element: this.elements.importFileInput, event: 'change', handler: fileChangeHandler });
         }
-
         if (this.elements.clearDataBtn) {
             const clearHandler = () => this.clearAllData();
             this.elements.clearDataBtn.addEventListener('click', clearHandler);
-            this.eventListeners.push({
-                element: this.elements.clearDataBtn,
-                event: 'click',
-                handler: clearHandler
-            });
+            this.eventListeners.push({ element: this.elements.clearDataBtn, event: 'click', handler: clearHandler });
         }
     }
 
@@ -231,49 +182,26 @@ class SettingsModule {
      */
     initializeCurrencyEvents() {
         if (this.elements.usdRateInput) {
-            // Use input event for real-time validation
             const inputHandler = () => this.validateUSDRateInput();
             this.elements.usdRateInput.addEventListener('input', inputHandler);
-            this.eventListeners.push({
-                element: this.elements.usdRateInput,
-                event: 'input',
-                handler: inputHandler
-            });
+            this.eventListeners.push({ element: this.elements.usdRateInput, event: 'input', handler: inputHandler });
 
-            // Use change event for final validation and saving
             const changeHandler = () => this.updateUSDRate();
             this.elements.usdRateInput.addEventListener('change', changeHandler);
-            this.eventListeners.push({
-                element: this.elements.usdRateInput,
-                event: 'change',
-                handler: changeHandler
-            });
+            this.eventListeners.push({ element: this.elements.usdRateInput, event: 'change', handler: changeHandler });
 
-            // Prevent invalid characters
             const keydownHandler = (e) => this.handleUSDRateKeydown(e);
             this.elements.usdRateInput.addEventListener('keydown', keydownHandler);
             this.elements.usdRateInput.setAttribute('inputmode', 'numeric');
-            this.eventListeners.push({
-                element: this.elements.usdRateInput,
-                event: 'keydown',
-                handler: keydownHandler
-            });
+            this.eventListeners.push({ element: this.elements.usdRateInput, event: 'keydown', handler: keydownHandler });
         }
-
         if (this.elements.defaultCurrencySelect) {
             const currencyChangeHandler = () => this.updateDefaultCurrency();
             this.elements.defaultCurrencySelect.addEventListener('change', currencyChangeHandler);
-            this.eventListeners.push({
-                element: this.elements.defaultCurrencySelect,
-                event: 'change',
-                handler: currencyChangeHandler
-            });
+            this.eventListeners.push({ element: this.elements.defaultCurrencySelect, event: 'change', handler: currencyChangeHandler });
         }
     }
 
-    /**
-     * Handle USD rate keydown for input validation
-     */
     handleUSDRateKeydown(e) {
         if ([8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
             (e.keyCode === 65 && e.ctrlKey === true) ||
@@ -287,9 +215,6 @@ class SettingsModule {
         }
     }
 
-    /**
-     * Validate USD rate input in real-time
-     */
     validateUSDRateInput() {
         if (!this.elements.usdRateInput) return;
         try {
@@ -319,9 +244,6 @@ class SettingsModule {
         }
     }
 
-    /**
-     * Show USD rate error message
-     */
     showUSDRateError(message) {
         let errorEl = document.getElementById('usd-rate-error');
         if (!errorEl) {
@@ -336,9 +258,6 @@ class SettingsModule {
         errorEl.style.display = 'block';
     }
 
-    /**
-     * Clear USD rate error message
-     */
     clearUSDRateError() {
         const errorEl = document.getElementById('usd-rate-error');
         if (errorEl) {
@@ -346,9 +265,6 @@ class SettingsModule {
         }
     }
 
-    /**
-     * Change theme with validation
-     */
     changeTheme(theme) {
         if (!theme || !['light', 'dark', 'auto'].includes(theme)) {
             console.error('Invalid theme value:', theme);
@@ -356,13 +272,13 @@ class SettingsModule {
         }
         try {
             Utils.ThemeUtils.applyTheme(theme);
-            if (this.app && this.app.data && this.app.data.settings) {
+            if (this.app?.data?.settings) {
                 this.app.data.settings.theme = theme;
                 this.app.saveData();
             }
             Utils.UIUtils.showMessage(`Đã chuyển sang chế độ ${this.getThemeDisplayName(theme)}`, 'success', 2000);
             setTimeout(() => {
-                if (window.StatisticsModule && typeof window.StatisticsModule.updateChartColors === 'function') {
+                if (window.StatisticsModule?.updateChartColors) {
                     window.StatisticsModule.updateChartColors();
                 }
             }, 100);
@@ -372,17 +288,11 @@ class SettingsModule {
         }
     }
 
-    /**
-     * Get theme display name
-     */
     getThemeDisplayName(theme) {
         const names = { 'light': 'sáng', 'dark': 'tối', 'auto': 'tự động' };
         return names[theme] || theme;
     }
 
-    /**
-     * Export data as JSON with enhanced error handling
-     */
     exportData() {
         try {
             if (!this.app) throw new Error('App instance not available');
@@ -406,13 +316,10 @@ class SettingsModule {
         }
     }
 
-    /**
-     * Export transactions as CSV with validation
-     */
     exportCSV() {
         try {
-            if (!this.app || !this.app.data || !Array.isArray(this.app.data.transactions)) {
-                throw new Error('Invalid app data');
+            if (!this.app?.data?.transactions) {
+                throw new Error('Invalid app data or no transactions');
             }
             if (this.app.data.transactions.length === 0) {
                 Utils.UIUtils.showMessage('Không có giao dịch nào để xuất', 'warning');
@@ -433,12 +340,9 @@ class SettingsModule {
         }
     }
 
-    /**
-     * Handle import file with comprehensive validation
-     */
     async handleImportFile(event) {
         const file = event.target.files[0];
-        event.target.value = ''; // Reset file input
+        event.target.value = '';
         if (!file) return;
         if (this.isProcessingFile) {
             Utils.UIUtils.showMessage('Đang xử lý file khác, vui lòng đợi', 'warning');
@@ -455,10 +359,14 @@ class SettingsModule {
                 throw new Error(`File quá lớn. Kích thước tối đa: ${maxSizeMB}MB`);
             }
             const confirmed = confirm(`Bạn có chắc chắn muốn nhập dữ liệu từ file "${file.name}"?\n\nHành động này sẽ ghi đè toàn bộ dữ liệu hiện tại.`);
-            if (!confirmed) return;
+            if (!confirmed) {
+                 this.isProcessingFile = false; // Reset flag if cancelled
+                 this.showLoading(false);
+                 return;
+            }
             const importedData = await this.readAndValidateFile(file);
             if (this.app.importData(importedData)) {
-                this.refresh(); // Refresh settings UI after successful import
+                this.refresh();
                 Utils.UIUtils.showMessage('Đã nhập dữ liệu thành công', 'success');
             }
         } catch (error) {
@@ -470,9 +378,6 @@ class SettingsModule {
         }
     }
 
-    /**
-     * Read and validate file content
-     */
     async readAndValidateFile(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -497,48 +402,43 @@ class SettingsModule {
         });
     }
 
-    /**
-     * Validate import data structure
-     */
     validateImportData(data) {
         if (!data || typeof data !== 'object') throw new Error('Dữ liệu file không hợp lệ');
-        const requiredFields = ['transactions']; // Can add more like incomeCategories, accounts later
+        const requiredFields = ['transactions'];
         for (const field of requiredFields) {
-            if (!data[field]) throw new Error(`File thiếu trường bắt buộc: ${field}`);
+            if (!(field in data)) throw new Error(`File thiếu trường bắt buộc: ${field}`);
             if (!Array.isArray(data[field])) throw new Error(`Trường ${field} phải là mảng`);
         }
         if (data.transactions.length > 0) {
             const sampleTransaction = data.transactions[0];
+            if (!sampleTransaction || typeof sampleTransaction !== 'object') throw new Error('Dữ liệu giao dịch mẫu không hợp lệ');
             const requiredTxFields = ['id', 'type', 'datetime', 'amount', 'account'];
             for (const field of requiredTxFields) {
                 if (!(field in sampleTransaction)) throw new Error(`Giao dịch thiếu trường bắt buộc: ${field}`);
             }
         }
         const estimatedSize = JSON.stringify(data).length;
-        if (estimatedSize > 50 * 1024 * 1024) throw new Error('Dữ liệu quá lớn (> 50MB)');
-        if (data.transactions.length > 100000) {
-            if (!confirm(`File chứa ${data.transactions.length} giao dịch (rất nhiều). Bạn có chắc chắn muốn tiếp tục?`)) {
-                throw new Error('Import cancelled by user');
+        if (estimatedSize > 50 * 1024 * 1024) throw new Error('Dữ liệu quá lớn (> 50MB)'); // 50MB limit
+        if (data.transactions.length > 100000) { // Warn for very large transaction counts
+            if (!confirm(`File chứa ${data.transactions.length.toLocaleString()} giao dịch (rất nhiều). Bạn có chắc chắn muốn tiếp tục? Điều này có thể làm chậm ứng dụng.`)) {
+                throw new Error('Import cancelled by user due to large data size.');
             }
         }
     }
 
-    /**
-     * Clear all data with enhanced confirmation
-     */
     clearAllData() {
         try {
             const transactionCount = this.app?.data?.transactions?.length || 0;
             const confirmMessage = transactionCount > 0
-                ? `Bạn có chắc chắn muốn xóa toàn bộ dữ liệu?\n\nBao gồm: ${transactionCount} giao dịch và tất cả cài đặt.\n\nHành động này không thể hoàn tác.`
+                ? `Bạn có chắc chắn muốn xóa toàn bộ dữ liệu?\n\nBao gồm: ${transactionCount.toLocaleString()} giao dịch và tất cả cài đặt.\n\nHành động này không thể hoàn tác.`
                 : 'Bạn có chắc chắn muốn xóa toàn bộ dữ liệu? Hành động này không thể hoàn tác.';
             if (!confirm(confirmMessage)) return;
-            if (transactionCount > 100) {
+            if (transactionCount > 100) { // Extra confirmation for large datasets
                 if (!confirm('Xác nhận lần cuối: BẠN THỰC SỰ MUỐN XÓA TOÀN BỘ DỮ LIỆU?')) return;
             }
             this.showLoading(true);
             if (this.app.clearAllData()) {
-                this.refresh(); // Refresh settings UI
+                this.refresh();
                 Utils.UIUtils.showMessage('Đã xóa toàn bộ dữ liệu', 'success');
             } else {
                 throw new Error('Clear data function failed');
@@ -551,9 +451,6 @@ class SettingsModule {
         }
     }
 
-    /**
-     * Update USD exchange rate with comprehensive validation
-     */
     updateUSDRate() {
         if (!this.elements.usdRateInput) {
             console.error('USD rate input element not found');
@@ -583,7 +480,7 @@ class SettingsModule {
                 return;
             }
             Utils.CONFIG.USD_TO_VND_RATE = rate;
-            if (this.app && this.app.data && this.app.data.settings) {
+            if (this.app?.data?.settings) {
                 this.app.data.settings.usdRate = rate;
                 this.app.saveData();
             }
@@ -598,20 +495,14 @@ class SettingsModule {
         }
     }
 
-    /**
-     * Reset USD rate input to last valid value
-     */
     resetUSDRateInput() {
-        if (this.elements.usdRateInput && this.app && this.app.data && this.app.data.settings) {
-            this.elements.usdRateInput.value = this.app.data.settings.usdRate || 25000;
+        if (this.elements.usdRateInput && this.app?.data?.settings) {
+            this.elements.usdRateInput.value = this.app.data.settings.usdRate || Utils.CONFIG.USD_TO_VND_RATE || 25000;
             this.elements.usdRateInput.classList.remove('input-invalid', 'input-valid');
             this.clearUSDRateError();
         }
     }
 
-    /**
-     * Update default currency
-     */
     updateDefaultCurrency() {
         if (!this.elements.defaultCurrencySelect) return;
         try {
@@ -620,7 +511,7 @@ class SettingsModule {
                 Utils.UIUtils.showMessage('Tiền tệ không hợp lệ', 'error');
                 return;
             }
-            if (this.app && this.app.data && this.app.data.settings) {
+            if (this.app?.data?.settings) {
                 this.app.data.settings.defaultCurrency = currency;
                 this.app.saveData();
             }
@@ -631,13 +522,10 @@ class SettingsModule {
         }
     }
 
-    /**
-     * Update last backup time
-     */
     updateLastBackupTime() {
         try {
             const now = new Date().toISOString();
-            if (this.app && this.app.data && this.app.data.settings) {
+            if (this.app?.data?.settings) {
                 this.app.data.settings.lastBackup = now;
                 this.app.saveData();
             }
@@ -649,19 +537,21 @@ class SettingsModule {
         }
     }
 
-    /**
-     * Show/hide loading indicator
-     */
     showLoading(show) {
         try {
             if (this.elements.loadingIndicator) {
-                this.elements.loadingIndicator.style.display = show ? 'block' : 'none';
+                this.elements.loadingIndicator.style.display = show ? 'flex' : 'none'; // Changed to flex for centering
             }
-            const buttons = [this.elements.exportJsonBtn, this.elements.exportCsvBtn, this.elements.importDataBtn, this.elements.clearDataBtn];
+            const buttons = [
+                this.elements.exportJsonBtn, this.elements.exportCsvBtn,
+                this.elements.importDataBtn, this.elements.clearDataBtn,
+                this.elements.checkUpdatesBtn, this.elements.forceRefreshBtn, this.elements.clearCacheBtn
+            ];
             buttons.forEach(btn => {
                 if (btn) {
                     btn.disabled = show;
                     btn.style.opacity = show ? '0.6' : '1';
+                    btn.style.cursor = show ? 'wait' : 'pointer';
                 }
             });
         } catch (error) {
@@ -669,7 +559,6 @@ class SettingsModule {
         }
     }
 
-    // VIẾT LẠI HÀM NÀY
     updateAppInfo() {
         try {
             // Total transactions
@@ -706,8 +595,8 @@ class SettingsModule {
 
             // App Version (trong phần "Thông tin ứng dụng")
             if (this.elements.appInfoVersionEl) {
-                const version = window.FinancialApp?.updateManager?.currentVersion || 
-                                (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'N/A'); // Lấy từ global APP_VERSION nếu có
+                // Lấy trực tiếp từ APP_VERSION toàn cục là nguồn chân lý
+                const version = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'N/A');
                 this.elements.appInfoVersionEl.textContent = version;
             }
 
@@ -716,10 +605,6 @@ class SettingsModule {
         }
     }
 
-
-    /**
-     * Update theme radio buttons
-     */
     updateThemeRadios() {
         try {
             const currentTheme = Utils.ThemeUtils.getCurrentTheme();
@@ -733,13 +618,10 @@ class SettingsModule {
         }
     }
 
-    /**
-     * Update currency settings
-     */
     updateCurrencySettings() {
         try {
             if (this.elements.usdRateInput) {
-                const rate = this.app?.data?.settings?.usdRate || 25000;
+                const rate = this.app?.data?.settings?.usdRate || Utils.CONFIG.USD_TO_VND_RATE || 25000;
                 this.elements.usdRateInput.value = rate;
                 this.elements.usdRateInput.classList.remove('input-invalid', 'input-valid');
                 this.clearUSDRateError();
@@ -753,33 +635,64 @@ class SettingsModule {
         }
     }
 
-    /**
-     * Check for app updates
-     */
+    updateVersionInfo() {
+        try {
+            const appVersion = typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'N/A';
+            if (this.elements.currentVersionEl) {
+                this.elements.currentVersionEl.textContent = appVersion; // Phiên bản client (app) hiện tại
+            }
+
+            if (window.FinancialApp?.updateManager) {
+                const updateManager = window.FinancialApp.updateManager;
+                const swVersionDisplay = updateManager.swVersion || 'N/A';
+
+                if (updateManager.isUpdateAvailable) {
+                    this.updateUpdateStatus(`Có SW mới! (App: v${appVersion}, SW mới: v${swVersionDisplay})`);
+                } else {
+                    this.updateUpdateStatus(`Đã cập nhật (App v${appVersion}, SW v${swVersionDisplay})`);
+                }
+                 if (this.elements.lastUpdateCheckEl && updateManager.lastCheck) {
+                    this.elements.lastUpdateCheckEl.textContent = updateManager.lastCheck.toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' });
+                } else if (this.elements.lastUpdateCheckEl) {
+                    this.elements.lastUpdateCheckEl.textContent = 'Chưa kiểm tra';
+                }
+            } else {
+                this.updateUpdateStatus('Service Worker chưa sẵn sàng');
+                 if (this.elements.lastUpdateCheckEl) {
+                    this.elements.lastUpdateCheckEl.textContent = 'Chưa kiểm tra';
+                }
+            }
+        } catch (error) {
+            console.error('Error updating version info:', error);
+            this.updateUpdateStatus('Lỗi hiển thị version');
+        }
+    }
+
     async checkForUpdates() {
         try {
             this.updateUpdateStatus('Đang kiểm tra...');
             this.setButtonLoading(this.elements.checkUpdatesBtn, true);
+
             if (window.FinancialApp && window.FinancialApp.updateManager) {
-                await window.FinancialApp.updateManager.checkForUpdates();
-                const versionInfo = await window.FinancialApp.updateManager.checkVersion(); // Giả sử có hàm này
-                if (versionInfo) {
-                    if (window.FinancialApp.updateManager.isUpdateAvailable) {
-                        this.updateUpdateStatus('Có cập nhật mới!');
-                        Utils.UIUtils.showMessage('🆕 Có phiên bản mới! Hãy cập nhật để sử dụng tính năng mới.', 'info', 5000);
-                    } else {
-                        this.updateUpdateStatus(`Đã cập nhật (v${versionInfo.version || 'mới nhất'})`);
-                        Utils.UIUtils.showMessage('✅ Bạn đang sử dụng phiên bản mới nhất', 'success');
-                    }
+                const updateManager = window.FinancialApp.updateManager;
+                await updateManager.checkForUpdates(); // This updates updateManager.isUpdateAvailable and .swVersion
+
+                const appVersion = typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'N/A';
+                const swVersionDisplay = updateManager.swVersion || 'N/A';
+
+                if (updateManager.isUpdateAvailable) {
+                    // Thông báo này xuất hiện khi có phiên bản SW mới hơn (hoặc worker đang chờ)
+                    this.updateUpdateStatus(`Có SW mới! (App v${appVersion}, SW mới v${swVersionDisplay})`);
+                    // Thông báo của UpdateManager (showUpdateNotification) sẽ rõ ràng hơn về việc cập nhật SW
                 } else {
-                    this.updateUpdateStatus('Không thể kiểm tra');
-                    Utils.UIUtils.showMessage('⚠️ Không thể kiểm tra cập nhật. Vui lòng thử lại.', 'warning');
+                    this.updateUpdateStatus(`Đã cập nhật (App v${appVersion}, SW v${swVersionDisplay})`);
+                    Utils.UIUtils.showMessage('✅ Bạn đang sử dụng phiên bản mới nhất hoặc Service Worker đã được cập nhật.', 'success');
                 }
             } else {
                 this.updateUpdateStatus('Service Worker không có');
-                Utils.UIUtils.showMessage('Service Worker chưa sẵn sàng. Vui lòng tải lại trang.', 'warning');
+                Utils.UIUtils.showMessage('Service Worker chưa sẵn sàng để kiểm tra cập nhật. Vui lòng tải lại trang.', 'warning');
             }
-            this.updateLastCheckTime();
+            this.updateLastCheckTime(); // Cập nhật thời gian kiểm tra cuối
         } catch (error) {
             console.error('Error checking for updates:', error);
             this.updateUpdateStatus('Lỗi kiểm tra');
@@ -789,15 +702,13 @@ class SettingsModule {
         }
     }
 
-    /**
-     * Force refresh the entire app
-     */
+
     async forceRefreshApp() {
         const confirmed = confirm('🔄 Làm mới ứng dụng sẽ:\n\n• Tải lại toàn bộ từ server\n• Xóa cache cũ\n• Đảm bảo có phiên bản mới nhất\n\nBạn có muốn tiếp tục không?');
         if (!confirmed) return;
         try {
             this.setButtonLoading(this.elements.forceRefreshBtn, true);
-            if (window.FinancialApp && window.FinancialApp.updateManager) {
+            if (window.FinancialApp?.updateManager) {
                 await window.FinancialApp.updateManager.forceRefresh();
             } else {
                 this.fallbackForceRefresh();
@@ -806,12 +717,11 @@ class SettingsModule {
             console.error('Error force refreshing app:', error);
             Utils.UIUtils.showMessage('Có lỗi khi làm mới ứng dụng. Đang thử phương pháp khác...', 'warning');
             setTimeout(() => this.fallbackForceRefresh(), 1000);
+        } finally {
+            // Không reset loading ở đây vì forceRefresh sẽ tải lại trang
         }
     }
 
-    /**
-     * Fallback force refresh method
-     */
     fallbackForceRefresh() {
         try {
             if ('caches' in window) {
@@ -827,20 +737,14 @@ class SettingsModule {
         }
     }
 
-    /**
-     * Hard reload the page
-     */
     hardReload() {
-        if (typeof window.location.reload === 'function') {
-            window.location.reload(true);
-        } else {
-            window.location.href = window.location.href.split('?')[0] + '?refresh=' + Date.now();
-        }
+        // Thêm tham số query ngẫu nhiên để đảm bảo tải lại hoàn toàn
+        const url = new URL(window.location.href);
+        url.searchParams.set('_cacheBust', Date.now());
+        window.location.href = url.toString();
     }
 
-    /**
-     * Clear app cache (dangerous operation)
-     */
+
     async clearAppCache() {
         const confirmed = confirm('⚠️ XÓA CACHE ỨNG DỤNG\n\nĐiều này sẽ:\n• Xóa toàn bộ cache ứng dụng\n• Buộc tải lại từ server\n• Có thể gây mất kết nối tạm thời\n\nCHỈ LÀM ĐIỀU NÀY KHI CÓ LỖI!\n\nBạn có chắc chắn muốn tiếp tục?');
         if (!confirmed) return;
@@ -862,26 +766,27 @@ class SettingsModule {
             console.error('Error clearing cache:', error);
             Utils.UIUtils.showMessage('Có lỗi khi xóa cache. Đang tải lại...', 'error');
             setTimeout(() => this.hardReload(), 1000);
+        } finally {
+             // Không reset loading ở đây vì hardReload sẽ tải lại trang
         }
     }
 
-    /**
-     * Update status display
-     */
     updateUpdateStatus(status) {
         if (this.elements.updateStatusEl) {
             this.elements.updateStatusEl.textContent = status;
-            this.elements.updateStatusEl.className = 'info-value';
-            if (status.includes('Có cập nhật')) this.elements.updateStatusEl.style.color = 'var(--warning-color)';
-            else if (status.includes('Đã cập nhật')) this.elements.updateStatusEl.style.color = 'var(--accent-color)';
-            else if (status.includes('Lỗi')) this.elements.updateStatusEl.style.color = 'var(--danger-color)';
-            else this.elements.updateStatusEl.style.color = 'var(--text-secondary)';
+            this.elements.updateStatusEl.className = 'info-value'; // Reset class
+            if (status.includes('Có SW mới') || status.includes('Có cập nhật')) {
+                this.elements.updateStatusEl.style.color = 'var(--warning-color)';
+            } else if (status.includes('Đã cập nhật')) {
+                this.elements.updateStatusEl.style.color = 'var(--accent-color)';
+            } else if (status.includes('Lỗi')) {
+                this.elements.updateStatusEl.style.color = 'var(--danger-color)';
+            } else {
+                this.elements.updateStatusEl.style.color = 'var(--text-secondary)';
+            }
         }
     }
 
-    /**
-     * Update last check time
-     */
     updateLastCheckTime() {
         if (this.elements.lastUpdateCheckEl) {
             const now = new Date();
@@ -889,26 +794,25 @@ class SettingsModule {
         }
     }
 
-    /**
-     * Set button loading state
-     */
     setButtonLoading(button, isLoading) {
         if (!button) return;
+        const originalContent = button.dataset.originalContent || button.innerHTML;
         if (isLoading) {
-            if (!button.dataset.originalContent) {
-                button.dataset.originalContent = button.innerHTML;
-            }
+            button.dataset.originalContent = originalContent;
             button.disabled = true;
             button.style.opacity = '0.6';
-            button.style.cursor = 'not-allowed';
+            button.style.cursor = 'wait';
+            
             let spinnerIcon = button.querySelector('.btn-icon.loader');
             if (!spinnerIcon) {
+                const firstIcon = button.querySelector('.btn-icon');
+                if(firstIcon) firstIcon.style.display = 'none'; // Hide original icon
+
                 spinnerIcon = document.createElement('span');
                 spinnerIcon.className = 'btn-icon loader';
-                spinnerIcon.innerHTML = '⏳';
+                spinnerIcon.innerHTML = '⏳'; // Spinner icon
                 spinnerIcon.style.animation = 'spin 1s linear infinite';
-                spinnerIcon.style.marginLeft = '0.5em';
-                button.appendChild(spinnerIcon);
+                button.insertBefore(spinnerIcon, button.firstChild); // Add spinner at the beginning
             }
             spinnerIcon.style.display = 'inline-block';
         } else {
@@ -916,41 +820,15 @@ class SettingsModule {
             button.style.opacity = '1';
             button.style.cursor = 'pointer';
             const spinnerIcon = button.querySelector('.btn-icon.loader');
-            if (spinnerIcon) spinnerIcon.style.display = 'none';
+            if (spinnerIcon) spinnerIcon.remove(); // Remove spinner
+
+            const firstIcon = button.querySelector('.btn-icon');
+            if(firstIcon) firstIcon.style.display = 'inline-flex'; // Show original icon
+            
+            delete button.dataset.originalContent;
         }
     }
 
-    /**
-     * Update version and update status info
-     */
-    updateVersionInfo() { // Cập nhật phiên bản ở phần "Cập nhật"
-        try {
-            if (this.elements.currentVersionEl) {
-                const version = window.FinancialApp?.updateManager?.currentVersion || 
-                                (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'N/A');
-                this.elements.currentVersionEl.textContent = version;
-            }
-            if (window.FinancialApp?.updateManager) {
-                const updateManager = window.FinancialApp.updateManager;
-                if (updateManager.isUpdateAvailable) {
-                    this.updateUpdateStatus('Có cập nhật mới!');
-                } else {
-                     // Lấy version từ UpdateManager nếu có, nếu không thì từ global APP_VERSION
-                    const swVersion = updateManager.swVersion || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'mới nhất');
-                    this.updateUpdateStatus(`Đã cập nhật (v${swVersion})`);
-                }
-            } else {
-                this.updateUpdateStatus('Chưa sẵn sàng');
-            }
-        } catch (error) {
-            console.error('Error updating version info:', error);
-            this.updateUpdateStatus('Lỗi hiển thị version');
-        }
-    }
-
-    /**
-     * Cleanup method to prevent memory leaks
-     */
     destroy() {
         this.eventListeners.forEach(({ element, event, handler }) => {
             if (element && typeof element.removeEventListener === 'function') {
@@ -962,19 +840,17 @@ class SettingsModule {
         this.elements = {};
     }
 
-    // VIẾT LẠI HÀM NÀY
     refresh() {
         try {
             this.updateThemeRadios();
             this.updateCurrencySettings();
-            this.updateAppInfo(); // Gọi hàm này để cập nhật cả phiên bản trong "Thông tin ứng dụng"
-            this.updateVersionInfo(); // Gọi hàm này để cập nhật phiên bản và trạng thái ở phần "Cập nhật"
+            this.updateAppInfo();    // Cập nhật phiên bản trong "Thông tin ứng dụng"
+            this.updateVersionInfo(); // Cập nhật phiên bản và trạng thái ở phần "Cập nhật"
         } catch (error) {
             console.error('Error refreshing settings module:', error);
             Utils.UIUtils.showMessage('Có lỗi khi cập nhật module cài đặt', 'error');
         }
     }
-
 
     showAppInfo() {
         Utils.UIUtils.showMessage('Chức năng thông tin chi tiết ứng dụng sẽ được triển khai sau.', 'info');
@@ -987,11 +863,17 @@ class SettingsModule {
     resetToDefaults() {
         if (confirm('Bạn có chắc chắn muốn khôi phục cài đặt mặc định? Hành động này sẽ không xóa dữ liệu giao dịch.')) {
             try {
-                this.app.data.settings = { ...this.app.defaultData.settings };
-                Utils.CONFIG.USD_TO_VND_RATE = this.app.defaultData.settings.usdRate;
-                this.app.saveData();
-                this.refresh();
-                Utils.UIUtils.showMessage('Cài đặt đã được khôi phục mặc định.', 'success');
+                if(this.app && this.app.data && this.app.defaultData) {
+                    this.app.data.settings = { ...this.app.defaultData.settings };
+                    if (this.app.defaultData.settings.usdRate) {
+                         Utils.CONFIG.USD_TO_VND_RATE = this.app.defaultData.settings.usdRate;
+                    }
+                    this.app.saveData();
+                    this.refresh();
+                    Utils.UIUtils.showMessage('Cài đặt đã được khôi phục mặc định.', 'success');
+                } else {
+                    throw new Error("App data or default data not available.");
+                }
             } catch (error) {
                 console.error('Error resetting settings to defaults:', error);
                 Utils.UIUtils.showMessage('Có lỗi khi khôi phục cài đặt mặc định.', 'error');
@@ -1003,26 +885,45 @@ class SettingsModule {
 document.addEventListener('contextmenu', (e) => {
     if (e.target.closest('#tab-settings')) {
         e.preventDefault();
+        const existingMenu = document.querySelector('.custom-context-menu');
+        if (existingMenu) existingMenu.remove();
+
         const contextMenu = document.createElement('div');
-        contextMenu.className = 'fixed bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg py-2 z-50';
-        contextMenu.style.left = e.pageX + 'px';
-        contextMenu.style.top = e.pageY + 'px';
+        contextMenu.className = 'custom-context-menu fixed bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl py-2 z-[100] text-sm';
+        contextMenu.style.left = `${e.pageX}px`;
+        contextMenu.style.top = `${e.pageY}px`;
         contextMenu.innerHTML = `
-            <button class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm" id="show-app-info">📊 Thông tin chi tiết</button>
-            <button class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm" id="export-statistics">📈 Xuất thống kê</button>
-            <button class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm" id="reset-defaults">🔄 Khôi phục mặc định</button>
+            <button class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200" data-action="show-app-info">📊 Thông tin chi tiết</button>
+            <button class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200" data-action="export-statistics">📈 Xuất thống kê</button>
+            <div class="my-1 border-t border-gray-200 dark:border-gray-600"></div>
+            <button class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200" data-action="reset-defaults">🔄 Khôi phục cài đặt</button>
         `;
         document.body.appendChild(contextMenu);
-        contextMenu.querySelector('#show-app-info').addEventListener('click', () => { window.SettingsModule.showAppInfo(); contextMenu.remove(); });
-        contextMenu.querySelector('#export-statistics').addEventListener('click', () => { window.SettingsModule.exportStatistics(); contextMenu.remove(); });
-        contextMenu.querySelector('#reset-defaults').addEventListener('click', () => { window.SettingsModule.resetToDefaults(); contextMenu.remove(); });
-        const removeMenu = (event) => {
+
+        contextMenu.addEventListener('click', (event) => {
+            const action = event.target.closest('button')?.dataset.action;
+            if (action) {
+                switch (action) {
+                    case 'show-app-info': window.SettingsModule.showAppInfo(); break;
+                    case 'export-statistics': window.SettingsModule.exportStatistics(); break;
+                    case 'reset-defaults': window.SettingsModule.resetToDefaults(); break;
+                }
+                contextMenu.remove();
+            }
+        });
+
+        const removeMenuHandler = (event) => {
             if (!contextMenu.contains(event.target)) {
                 contextMenu.remove();
-                document.removeEventListener('click', removeMenu);
+                document.removeEventListener('click', removeMenuHandler, true);
+                document.removeEventListener('contextmenu', removeMenuHandler, true);
             }
         };
-        setTimeout(() => document.addEventListener('click', removeMenu), 0);
+        // Add event listeners in capture phase to ensure they run before other listeners
+        setTimeout(() => { // Timeout to allow current event cycle to complete
+            document.addEventListener('click', removeMenuHandler, true);
+            document.addEventListener('contextmenu', removeMenuHandler, true);
+        },0);
     }
 });
 
