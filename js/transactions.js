@@ -854,19 +854,32 @@ class TransactionsModule {
      * Validate form data
      */
     async validateFormData(formData) {
-        // Basic validation
-        const basicValidation = Utils.ValidationUtils.validateTransaction(formData);
-        console.log('🔍 Basic validation result:', basicValidation);
+        console.log('🔍 Validating form data:', formData);
         
-        if (!basicValidation.isValid) {
-            return basicValidation;
-        }
+        try {
+            // Basic validation first
+            if (Utils?.ValidationUtils?.validateTransaction) {
+                const basicValidation = Utils.ValidationUtils.validateTransaction(formData);
+                console.log('🔍 Basic validation result:', basicValidation);
+                
+                if (!basicValidation.isValid) {
+                    return basicValidation;
+                }
+            }
 
-        // Business rules validation
-        const businessValidation = this.validateBusinessRules(formData);
-        console.log('🔍 Business validation result:', businessValidation);
-        
-        return businessValidation;
+            // Business rules validation
+            const businessValidation = this.validateBusinessRules(formData);
+            console.log('🔍 Business validation result:', businessValidation);
+            
+            return businessValidation;
+            
+        } catch (error) {
+            console.error('❌ Validation error:', error);
+            return { 
+                isValid: false, 
+                error: 'Lỗi khi kiểm tra dữ liệu: ' + error.message 
+            };
+        }
     }
 
     /**
@@ -1021,7 +1034,7 @@ class TransactionsModule {
 
             // Show feedback and focus
             this.showSmartResetFeedback();
-            this.focusAmountInput(); // <--- DÒNG NÀY GÂY RA VIỆC TỰ ĐỘNG FOCUS VÀ BẬT BÀN PHÍM
+            this.focusAmountInput();
 
             console.log('✅ State restoration completed');
 
@@ -1078,14 +1091,20 @@ class TransactionsModule {
     /**
      * Focus amount input for next entry
      */
-    focusAmountInput() {
-        setTimeout(() => {
-            if (this.elements.amountInput) {
-                this.elements.amountInput.focus();
-                this.elements.amountInput.placeholder = 'Nhập số tiền...';
-            }
-        }, 100);
-    }
+	focusAmountInput() {
+		// Comment out để không auto focus sau khi thêm giao dịch
+		// setTimeout(() => {
+		//     if (this.elements.amountInput) {
+		//         this.elements.amountInput.focus();
+		//         this.elements.amountInput.placeholder = 'Nhập số tiền...';
+		//     }
+		// }, 100);
+		
+		// Chỉ set placeholder, không focus
+		if (this.elements.amountInput) {
+			this.elements.amountInput.placeholder = 'Nhập số tiền...';
+		}
+	}
 
     /**
      * Refresh after update
@@ -1343,11 +1362,21 @@ class TransactionsModule {
             throw new Error('Vui lòng chọn loại giao dịch');
         }
 
-        // Validate required fields
+        console.log('📝 Getting form data...');
+
+        // Validate required fields first
         this.validateRequiredFields();
 
         const selectedType = selectedTypeRadio.value;
-        const amount = this.parseAndValidateAmount();
+        
+        // Parse amount with better error handling
+        let amount;
+        try {
+            amount = this.parseAndValidateAmount();
+        } catch (error) {
+            console.error('❌ Amount parsing failed:', error);
+            throw new Error('Lỗi số tiền: ' + error.message);
+        }
 
         // Build base data object
         const data = {
@@ -1356,9 +1385,11 @@ class TransactionsModule {
             amount: amount,
             account: this.elements.accountFrom.value,
             description: this.sanitizeDescription(this.elements.descriptionInput?.value || ''),
-            originalAmount: parseFloat(this.elements.amountInput.value.replace(/[^\d.]/g, '')) || amount,
+            originalAmount: amount, // Use parsed amount as original
             originalCurrency: this.elements.currencySelector?.value || 'VND'
         };
+
+        console.log('📋 Form data built:', data);
 
         // Add type-specific fields
         if (selectedType === 'Transfer') {
@@ -1391,19 +1422,77 @@ class TransactionsModule {
      * Parse and validate amount
      */
     parseAndValidateAmount() {
-        if (!Utils?.CurrencyUtils) {
-            throw new Error('Currency utilities not available');
+        if (!this.elements.amountInput) {
+            throw new Error('Ô nhập số tiền không tồn tại');
         }
 
-        const amount = Utils.CurrencyUtils.parseAmountInput(
-            this.elements.amountInput.value,
-            this.elements.currencySelector?.value || 'VND'
-        );
+        const rawValue = this.elements.amountInput.value;
+        console.log('🔍 Raw amount value:', rawValue);
 
-        if (isNaN(amount) || amount <= 0) {
-            throw new Error('Số tiền không hợp lệ');
+        if (!rawValue || rawValue.trim() === '') {
+            throw new Error('Vui lòng nhập số tiền');
         }
 
+        try {
+            let amount;
+            
+            // Method 1: Use Utils if available
+            if (Utils?.CurrencyUtils?.parseAmountInput) {
+                amount = Utils.CurrencyUtils.parseAmountInput(
+                    rawValue,
+                    this.elements.currencySelector?.value || 'VND'
+                );
+                console.log('💰 Parsed amount using Utils:', amount);
+            } else {
+                // Method 2: Fallback manual parsing
+                amount = this.parseAmountManually(rawValue);
+                console.log('💰 Parsed amount manually:', amount);
+            }
+
+            // Validate the parsed amount
+            if (isNaN(amount) || !isFinite(amount)) {
+                throw new Error('Số tiền không hợp lệ');
+            }
+
+            if (amount <= 0) {
+                throw new Error('Số tiền phải lớn hơn 0');
+            }
+
+            if (amount > 999999999999) {
+                throw new Error('Số tiền quá lớn (tối đa 999 tỷ)');
+            }
+
+            return amount;
+
+        } catch (error) {
+            console.error('❌ Amount parsing error:', error);
+            throw new Error('Số tiền không hợp lệ: ' + error.message);
+        }
+    }
+    parseAmountManually(rawValue) {
+        // Remove all formatting except numbers and decimal point
+        const cleanValue = rawValue
+            .toString()
+            .replace(/[^\d.]/g, ''); // Keep only digits and decimal point
+        
+        console.log('🧹 Cleaned value:', cleanValue);
+        
+        // Handle multiple decimal points (keep only the last one)
+        const parts = cleanValue.split('.');
+        let finalValue;
+        
+        if (parts.length > 2) {
+            // Multiple decimals: join all but last as integer, last as decimal
+            const integerPart = parts.slice(0, -1).join('');
+            const decimalPart = parts[parts.length - 1];
+            finalValue = integerPart + '.' + decimalPart;
+        } else {
+            finalValue = cleanValue;
+        }
+        
+        console.log('🔢 Final cleaned value:', finalValue);
+        
+        const amount = parseFloat(finalValue);
         return amount;
     }
 
@@ -1462,30 +1551,28 @@ class TransactionsModule {
     /**
      * Perform full form reset
      */
-	performFullReset() {
-		console.log('🔄 Performing FULL reset');
-
-		this.elements.form.reset();
-		this.editingTransactionId = null;
-
-		this.updateSubmitButtonToDefault();
-		this.loadLastTransactionTypeQuiet();
-		this.updateFormVisibility();
-		this.populateCategories();
-		this.setDefaultDateTime();
-		// this.focusAmountInput(); // Có thể comment nếu muốn tắt hoàn toàn focus sau reset
-	}
+    performFullReset() {
+        console.log('🔄 Performing FULL reset');
+        
+        this.elements.form.reset();
+        this.editingTransactionId = null;
+        
+        this.updateSubmitButtonToDefault();
+        this.loadLastTransactionTypeQuiet();
+        this.updateFormVisibility();
+        this.populateCategories();
+        this.setDefaultDateTime();
+    }
 
     /**
      * Perform partial form reset
      */
-	performPartialReset() {
-		console.log('🔄 Performing PARTIAL reset (amount, description, datetime)');
-
-		this.clearResettableFields();
-		// this.focusAmountInput(); // Có thể comment nếu muốn tắt hoàn toàn focus sau reset
-		console.log('✅ Kept transaction type, category, account for quick entry');
-	}
+    performPartialReset() {
+        console.log('🔄 Performing PARTIAL reset (amount, description, datetime)');
+        
+        this.clearResettableFields();
+        console.log('✅ Kept transaction type, category, account for quick entry');
+    }
 
     /**
      * Update submit button to default state

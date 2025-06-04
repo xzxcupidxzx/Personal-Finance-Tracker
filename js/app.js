@@ -1,6 +1,6 @@
 /**
  * FINANCIAL APP - MAIN APPLICATION CONTROLLER - FIXED VERSION
- * Simplified version management using single source of truth
+ * Handles app initialization, navigation, and global state management
  */
 
 class FinancialApp {
@@ -49,12 +49,13 @@ class FinancialApp {
                 { value: "BIDV", text: "BIDV" },
                 { value: "Khác", text: "Khác" }
             ],
-            // ✅ SIMPLIFIED: Remove clientVersion from settings
             settings: {
                 theme: 'auto',
                 defaultCurrency: 'VND',
-                usdRate: 25000,
-                language: 'vi'
+                usdRate: 25000, // Tỷ giá mặc định
+                language: 'vi',
+                // Thêm một trường để lưu phiên bản client, sẽ được cập nhật từ UpdateManager
+                clientVersion: '0.0.0' 
             }
         };
         
@@ -66,6 +67,16 @@ class FinancialApp {
             console.log('🚀 Initializing Financial App...');
             this.loadData();
             
+            // Lấy phiên bản từ Utils.UpdateManager (nếu có) và cập nhật vào settings
+            // Điều này giả định Utils.UpdateManager.currentVersion đã được đồng bộ (ví dụ bởi GitHub Action)
+            if (Utils && Utils.UpdateManager && Utils.UpdateManager.currentVersion) {
+                this.data.settings.clientVersion = Utils.UpdateManager.currentVersion;
+            } else if (typeof APP_VERSION !== 'undefined') { // Fallback to global APP_VERSION from version.js if available
+                this.data.settings.clientVersion = APP_VERSION;
+            }
+            console.log(`[App] Client version set to: ${this.data.settings.clientVersion}`);
+
+
             Utils.ThemeUtils.initializeTheme();
             this.initializeNavigation();
 
@@ -78,8 +89,7 @@ class FinancialApp {
             this.isInitialized = true;
             console.log('✅ Financial App initialized successfully');
 
-            // ✅ SIMPLIFIED: Initialize UpdateManager without clientVersion
-            this.initializeUpdateManager();
+            this.initializeUpdateManager(); // Khởi tạo UpdateManager
 
             const initialTab = window.location.hash.slice(1);
             if (initialTab && ['transactions', 'history', 'statistics', 'categories', 'settings'].includes(initialTab)) {
@@ -116,15 +126,16 @@ class FinancialApp {
         }
     }
 
-    // ✅ SIMPLIFIED: No more clientVersion logic
     initializeUpdateManager() {
         try {
             if (typeof Utils.UpdateManager !== 'undefined') {
                 console.log('🔄 Initializing Update Manager...');
-                Utils.UpdateManager.init(); // No parameters needed
+                // Truyền phiên bản client hiện tại (từ settings) cho UpdateManager
+                Utils.UpdateManager.init(this.data.settings.clientVersion); 
                 this.updateManager = Utils.UpdateManager;
                 this.addUpdateControls();
 
+                // Lắng nghe sự kiện FORCE_UPDATE_COMPLETE từ Service Worker
                 if (navigator.serviceWorker) {
                     navigator.serviceWorker.addEventListener('message', event => {
                         if (event.data && event.data.type === 'FORCE_UPDATE_COMPLETE') {
@@ -134,6 +145,7 @@ class FinancialApp {
                         }
                     });
                 }
+
             } else {
                 console.warn('⚠️ Update Manager not available');
             }
@@ -144,6 +156,8 @@ class FinancialApp {
 
     addUpdateControls() {
         console.log('📱 Update controls available');
+        // Logic thêm nút vào UI (ví dụ trong SettingsModule) có thể được gọi từ đây
+        // hoặc SettingsModule tự kiểm tra this.updateManager.
     }
 
     handlePWAShortcuts() {
@@ -241,11 +255,11 @@ class FinancialApp {
                 : accounts;
 
             const settings = Utils.StorageUtils.load(Utils.CONFIG.STORAGE_KEYS.SETTINGS, {});
-            // ✅ SIMPLIFIED: No clientVersion in settings
             this.data.settings = {
                 ...this.defaultData.settings,
                 ...(typeof settings === 'object' && settings !== null ? settings : {})
             };
+             // Client version sẽ được set ở init() sau khi UpdateManager có thể đã được khởi tạo
 
             const reconciliationHistory = Utils.StorageUtils.load(Utils.CONFIG.STORAGE_KEYS.RECONCILIATION_HISTORY, []);
             this.data.reconciliationHistory = Array.isArray(reconciliationHistory) ? reconciliationHistory : [];
@@ -261,7 +275,7 @@ class FinancialApp {
                  this.data.settings.usdRate = this.defaultData.settings.usdRate;
             }
             
-            this.saveData();
+            this.saveData(); // Lưu lại để đảm bảo settings (bao gồm clientVersion ban đầu) được persist
 
             console.log(`📊 Loaded ${this.data.transactions.length} transactions`);
         } catch (error) {
@@ -271,7 +285,7 @@ class FinancialApp {
                 incomeCategories: [...this.defaultData.incomeCategories],
                 expenseCategories: [...this.defaultData.expenseCategories],
                 accounts: [...this.defaultData.accounts],
-                settings: { ...this.defaultData.settings }, // No clientVersion
+                settings: { ...this.defaultData.settings, clientVersion: '0.0.0-errorload' }, // Ghi nhận lỗi load
                 reconciliationHistory: []
             };
             this.ensureTransferCategories();
@@ -687,10 +701,9 @@ class FinancialApp {
         if (moduleToRefresh?.refresh) moduleToRefresh.refresh();
     }
 
-    // ✅ SIMPLIFIED: Use APP_VERSION directly
     exportData() {
         return {
-            version: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0.3',
+            version: this.data.settings.clientVersion || '1.0.0', // Sử dụng clientVersion
             exportDate: new Date().toISOString(),
             transactions: this.data.transactions,
             incomeCategories: this.data.incomeCategories,
@@ -707,7 +720,7 @@ class FinancialApp {
             this.data.incomeCategories = [...this.defaultData.incomeCategories];
             this.data.expenseCategories = [...this.defaultData.expenseCategories];
             this.data.accounts = [...this.defaultData.accounts];
-            this.data.settings = { ...this.defaultData.settings }; // No clientVersion
+            this.data.settings = { ...this.defaultData.settings, clientVersion: this.data.settings.clientVersion }; // Giữ lại clientVersion
             this.data.reconciliationHistory = [];
             this.ensureTransferCategories(); this.ensureAdjustmentCategories();
             Utils.StorageUtils.clearAll(); this.saveData();

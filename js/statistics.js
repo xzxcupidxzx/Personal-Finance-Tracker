@@ -1,6 +1,6 @@
 /**
- * STATISTICS MODULE - IMPROVED VERSION WITH LEADER LINES
- * Handles statistics calculations, charts, and data visualization
+ * STATISTICS MODULE - COMPLETE REWRITE
+ * Fixed version with improved error handling, chart rendering, and mobile support
  */
 
 class StatisticsModule {
@@ -8,311 +8,374 @@ class StatisticsModule {
         this.app = null;
         this.currentPeriod = 'month';
         this.customDateRange = { start: null, end: null };
-
+        
         // Chart instances
         this.charts = {
             expense: null,
             trend: null,
             comparison: null
         };
-
-        // DOM elements
+        
+        // DOM elements cache
         this.elements = {};
-
+        
         // Event listeners for cleanup
         this.eventListeners = [];
-
-        // Chart.js global defaults for text colors
-        this.chartDefaults = {
-            fontColor: '#374151',
-            gridColor: '#e5e7eb',
-            tooltipBg: 'rgba(0,0,0,0.8)',
-            tooltipColor: '#ffffff'
+        
+        // State management
+        this.isInitialized = false;
+        this.isRendering = false;
+        
+        // Configuration
+        this.config = {
+            maxCategories: 10,
+            trendDays: 7,
+            animationDuration: 800,
+            chartColors: [
+                '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
+                '#06b6d4', '#84cc16', '#f97316', '#ec4899', '#6366f1',
+                '#14b8a6', '#f43f5e', '#a855f7', '#22c55e', '#eab308',
+                '#0ea5e9', '#8b5cf6', '#f97316', '#ec4899', '#6366f1'
+            ]
         };
     }
 
     /**
-     * Initialize the module
+     * Initialize the statistics module
      */
-    init(app) {
+    async init(app) {
+        if (this.isInitialized) {
+            console.warn('StatisticsModule already initialized');
+            return;
+        }
+
+        if (!app) {
+            throw new Error('App instance is required');
+        }
+
         this.app = app;
         console.log('📊 Initializing Statistics Module...');
 
         try {
+            // Initialize components
             this.initializeElements();
-            this.initializePeriodFilter();
-            this.initializeChartTypeSelector();
-
-            // Register Chart.js plugins with DataLabels
-            if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
-                Chart.register(ChartDataLabels);
-            }
-
-            // Apply initial theme colors to charts
-            this.updateChartColors();
-
-            this.refresh();
-
-            console.log('✅ Statistics Module initialized');
+            this.validateCriticalElements();
+            this.initializeChartJS();
+            this.setupEventListeners();
+            
+            // Initial render
+            await this.refreshAll();
+            
+            this.isInitialized = true;
+            console.log('✅ Statistics Module initialized successfully');
+            
         } catch (error) {
             console.error('❌ Failed to initialize Statistics Module:', error);
-            Utils.UIUtils.showMessage('Có lỗi khi khởi tạo module thống kê', 'error');
+            this.handleInitError(error);
         }
     }
 
     /**
-     * Initialize DOM elements with null checks
+     * Initialize DOM elements
      */
     initializeElements() {
-        this.elements = {
-            // Period filter
-            statsPeriod: document.getElementById('stats-period'),
-            statsCustomDatePicker: null,
-
+        const elementMap = {
+            // Controls
+            statsPeriod: 'stats-period',
+            chartType: 'chart-type',
+            
             // Summary cards
-            totalIncome: document.getElementById('stats-total-income'),
-            totalExpense: document.getElementById('stats-total-expense'),
-            netBalance: document.getElementById('stats-net-balance'),
-            incomeChange: document.getElementById('stats-income-change'),
-            expenseChange: document.getElementById('stats-expense-change'),
-            balanceChange: document.getElementById('stats-balance-change'),
-
-            // Chart elements
-            chartType: document.getElementById('chart-type'),
-            expenseChartCanvas: document.getElementById('expense-chart'),
-            expenseChartContainer: document.getElementById('expense-chart-container'),
-            expenseLegend: document.getElementById('expense-legend'),
-            trendChartCanvas: document.getElementById('trend-chart'),
-            comparisonChartCanvas: document.getElementById('comparison-chart'),
-
-            // Detailed stats
-            detailedStatsBody: document.getElementById('detailed-stats-tbody')
+            totalIncome: 'stats-total-income',
+            totalExpense: 'stats-total-expense',
+            netBalance: 'stats-net-balance',
+            incomeChange: 'stats-income-change',
+            expenseChange: 'stats-expense-change',
+            balanceChange: 'stats-balance-change',
+            
+            // Charts
+            expenseChartCanvas: 'expense-chart',
+            expenseChartContainer: 'expense-chart-container',
+            expenseLegend: 'expense-legend',
+            trendChartCanvas: 'trend-chart',
+            comparisonChartCanvas: 'comparison-chart',
+            
+            // Tables
+            detailedStatsBody: 'detailed-stats-tbody'
         };
 
-        const criticalElements = ['statsPeriod', 'expenseChartCanvas', 'trendChartCanvas', 'comparisonChartCanvas'];
-        criticalElements.forEach(key => {
+        this.elements = {};
+        Object.entries(elementMap).forEach(([key, id]) => {
+            this.elements[key] = document.getElementById(id);
             if (!this.elements[key]) {
-                console.warn(`Statistics Module: Critical element '${key}' not found.`);
+                console.warn(`Element not found: ${key} (${id})`);
             }
         });
     }
 
     /**
-     * Initialize period filter with cleanup tracking
+     * Validate critical elements exist
      */
-    initializePeriodFilter() {
-        if (this.elements.statsPeriod) {
-            const handler = () => {
-                this.currentPeriod = this.elements.statsPeriod.value;
-                if (this.currentPeriod === 'custom') {
-                    this.showCustomDatePicker();
-                } else {
-                    this.customDateRange = { start: null, end: null };
-                    this.refresh();
-                }
-            };
+    validateCriticalElements() {
+        const critical = ['statsPeriod', 'expenseChartCanvas', 'expenseChartContainer'];
+        const missing = critical.filter(key => !this.elements[key]);
+        
+        if (missing.length > 0) {
+            throw new Error(`Critical elements missing: ${missing.join(', ')}`);
+        }
+    }
 
-            this.elements.statsPeriod.addEventListener('change', handler);
-            this.eventListeners.push({
-                element: this.elements.statsPeriod,
-                event: 'change',
-                handler: handler
+    /**
+     * Initialize Chart.js and plugins
+     */
+    initializeChartJS() {
+        if (typeof Chart === 'undefined') {
+            throw new Error('Chart.js is not loaded');
+        }
+
+        // Register plugins if available
+        if (typeof ChartDataLabels !== 'undefined') {
+            Chart.register(ChartDataLabels);
+            console.log('✅ ChartDataLabels plugin registered');
+        } else {
+            console.warn('⚠️ ChartDataLabels plugin not available');
+        }
+
+        // Set global defaults
+        this.updateChartDefaults();
+    }
+
+    /**
+     * Setup all event listeners
+     */
+    setupEventListeners() {
+        // Period filter
+        if (this.elements.statsPeriod) {
+            this.addEventListener(this.elements.statsPeriod, 'change', () => {
+                this.handlePeriodChange();
             });
         }
+
+        // Chart type selector
+        if (this.elements.chartType) {
+            this.addEventListener(this.elements.chartType, 'change', () => {
+                this.renderExpenseChart();
+            });
+        }
+
+        // Theme change observer
+        this.setupThemeObserver();
+
+        // Window resize handler
+        this.addEventListener(window, 'resize', this.debounce(() => {
+            this.handleResize();
+        }, 250));
     }
 
     /**
-     * Show custom date picker inputs for the 'custom' period
+     * Add event listener with cleanup tracking
      */
-    showCustomDatePicker() {
-        if (!this.elements.statsPeriod.parentNode) return;
-
-        // Remove existing date pickers if present
-        if (this.elements.statsCustomDatePicker) {
-            this.elements.statsCustomDatePicker.remove();
-            this.elements.statsCustomDatePicker = null;
+    addEventListener(element, event, handler, options = false) {
+        if (!element || typeof element.addEventListener !== 'function') {
+            console.warn('Invalid element for event listener:', element);
+            return;
         }
 
-        const datePickerContainer = document.createElement('div');
-        datePickerContainer.className = 'flex flex-col gap-2 mt-4';
-
-        datePickerContainer.innerHTML = `
-            <label for="custom-start-date" class="form-label">Từ ngày:</label>
-            <input type="date" id="custom-start-date" class="filter-date form-input">
-            <label for="custom-end-date" class="form-label">Đến ngày:</label>
-            <input type="date" id="custom-end-date" class="filter-date form-input">
-            <button id="apply-custom-date" class="submit-btn mt-2">Áp dụng</button>
-        `;
-
-        this.elements.statsPeriod.parentNode.appendChild(datePickerContainer);
-        this.elements.statsCustomDatePicker = datePickerContainer;
-
-        const startDateInput = document.getElementById('custom-start-date');
-        const endDateInput = document.getElementById('custom-end-date');
-        const applyButton = document.getElementById('apply-custom-date');
-
-        // Set initial values if they exist
-        if (this.customDateRange.start) startDateInput.value = this.customDateRange.start.toISOString().split('T')[0];
-        if (this.customDateRange.end) endDateInput.value = this.customDateRange.end.toISOString().split('T')[0];
-
-        const applyHandler = () => {
-            const start = startDateInput.value ? new Date(startDateInput.value) : null;
-            const end = endDateInput.value ? new Date(endDateInput.value) : null;
-
-            if (start && end && start > end) {
-                Utils.UIUtils.showMessage('Ngày bắt đầu không thể sau ngày kết thúc', 'error');
-                return;
-            }
-
-            this.customDateRange = { start, end: end ? new Date(end.setHours(23, 59, 59, 999)) : null };
-            this.refresh();
-            Utils.UIUtils.showMessage('Đã áp dụng khoảng thời gian tùy chỉnh', 'success', 2000);
-        };
-        applyButton.addEventListener('click', applyHandler);
-        this.eventListeners.push({ element: applyButton, event: 'click', handler: applyHandler });
+        element.addEventListener(event, handler, options);
+        this.eventListeners.push({ element, event, handler, options });
     }
 
     /**
-     * Get filtered transactions based on the current period or custom date range
+     * Handle period change
      */
-    getFilteredTransactions() {
-        // Kiểm tra app và data tồn tại
-        if (!this.app || !this.app.data || !Array.isArray(this.app.data.transactions)) {
-            console.warn('App data not available for statistics');
-            return [];
-        }
-
-        let filters = { excludeTransfers: true };
+    async handlePeriodChange() {
+        this.currentPeriod = this.elements.statsPeriod.value;
         
         if (this.currentPeriod === 'custom') {
-            if (this.customDateRange.start && this.customDateRange.end) {
-                return this.app.data.transactions.filter(tx => {
-                    if (!tx || !tx.datetime) return false;
-                    const txDate = new Date(tx.datetime);
-                    return txDate >= this.customDateRange.start && 
-                           txDate <= this.customDateRange.end && 
-                           !tx.isTransfer;
-                });
-            }
-            return [];
+            this.showCustomDatePicker();
         } else {
-            filters.period = this.currentPeriod;
-            
-            // Kiểm tra hàm getFilteredTransactions tồn tại
-            if (typeof this.app.getFilteredTransactions === 'function') {
-                return this.app.getFilteredTransactions(filters);
-            } else {
-                console.error('app.getFilteredTransactions is not a function');
-                return [];
-            }
+            this.hideCustomDatePicker();
+            await this.refreshAll();
         }
     }
 
     /**
-     * Get filtered transactions for a previous period to calculate change
+     * Show custom date picker
      */
-    getPreviousPeriodTransactions() {
-        let prevStart, prevEnd;
-        const now = new Date();
+    showCustomDatePicker() {
+        // Remove existing picker
+        this.hideCustomDatePicker();
 
-        switch (this.currentPeriod) {
-            case 'week': // <<< THÊM KHỐI NÀY
-                const today = new Date();
-                today.setHours(0, 0, 0, 0); // Bắt đầu ngày hôm nay
-                const dayOfWeek = today.getDay(); // 0 = CN, 1 = T2, ..., 6 = T7
-                const monday = new Date(today);
-                // Lấy ngày T2 của tuần này
-                monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); 
+        const container = document.createElement('div');
+        container.className = 'custom-date-picker';
+        container.innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Từ ngày:</label>
+                    <input type="date" id="custom-start-date" class="form-input" style="width: 100%;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Đến ngày:</label>
+                    <input type="date" id="custom-end-date" class="form-input" style="width: 100%;">
+                </div>
+            </div>
+            <button id="apply-custom-date" class="submit-btn" style="width: 100%; margin-top: 1rem;">
+                Áp dụng
+            </button>
+        `;
 
-                prevEnd = new Date(monday.getTime() - 1); // CN tuần trước 23:59:59
-                prevStart = new Date(prevEnd.getTime() - (7 * 24 * 60 * 60 * 1000) + 1); // T2 tuần trước 00:00:00
-                prevStart.setHours(0, 0, 0, 0); // Đảm bảo là 00:00:00
-                break; // <<< KẾT THÚC KHỐI THÊM
-			case 'month':
-                prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-                prevEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
-                break;
-            case 'quarter':
-                const currentQuarter = Math.floor(now.getMonth() / 3);
-                prevStart = new Date(now.getFullYear(), (currentQuarter - 1) * 3, 1);
-                prevEnd = new Date(now.getFullYear(), currentQuarter * 3, 0, 23, 59, 59);
-                break;
-            case 'year':
-                prevStart = new Date(now.getFullYear() - 1, 0, 1);
-                prevEnd = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59);
-                break;
-            case 'custom':
-                if (this.customDateRange.start && this.customDateRange.end) {
-                    const diffMs = this.customDateRange.end.getTime() - this.customDateRange.start.getTime();
-                    prevEnd = new Date(this.customDateRange.start.getTime() - 1);
-                    prevStart = new Date(prevEnd.getTime() - diffMs);
-                } else {
-                    return [];
-                }
-                break;
-            default:
-                return this.getFilteredTransactions();
+        this.elements.statsPeriod.parentNode.appendChild(container);
+        this.elements.customDatePicker = container;
+
+        // Setup handlers
+        const applyBtn = document.getElementById('apply-custom-date');
+        this.addEventListener(applyBtn, 'click', () => {
+            this.applyCustomDateRange();
+        });
+    }
+
+    /**
+     * Hide custom date picker
+     */
+    hideCustomDatePicker() {
+        if (this.elements.customDatePicker) {
+            this.elements.customDatePicker.remove();
+            this.elements.customDatePicker = null;
+        }
+    }
+
+    /**
+     * Apply custom date range
+     */
+    async applyCustomDateRange() {
+        const startInput = document.getElementById('custom-start-date');
+        const endInput = document.getElementById('custom-end-date');
+
+        if (!startInput.value || !endInput.value) {
+            this.showMessage('Vui lòng chọn cả ngày bắt đầu và kết thúc', 'error');
+            return;
         }
 
-        if (!prevStart || !prevEnd || isNaN(prevStart.getTime()) || isNaN(prevEnd.getTime())) {
-            console.warn('Invalid previous period dates for calculation.');
+        const start = new Date(startInput.value);
+        const end = new Date(endInput.value);
+
+        if (start > end) {
+            this.showMessage('Ngày bắt đầu không thể sau ngày kết thúc', 'error');
+            return;
+        }
+
+        this.customDateRange = {
+            start: start,
+            end: new Date(end.setHours(23, 59, 59, 999))
+        };
+
+        await this.refreshAll();
+        this.showMessage('Đã áp dụng khoảng thời gian tùy chỉnh', 'success', 2000);
+    }
+
+    /**
+     * Get filtered transactions based on current period
+     */
+    getFilteredTransactions() {
+        if (!this.app?.data?.transactions) {
+            console.warn('No transaction data available');
             return [];
         }
 
+        let transactions = [...this.app.data.transactions];
+
+        // Filter by period
+        if (this.currentPeriod === 'custom') {
+            if (this.customDateRange.start && this.customDateRange.end) {
+                transactions = transactions.filter(tx => {
+                    if (!tx?.datetime) return false;
+                    const txDate = new Date(tx.datetime);
+                    return txDate >= this.customDateRange.start && txDate <= this.customDateRange.end;
+                });
+            } else {
+                return [];
+            }
+        } else {
+            const dateRange = this.getPeriodDateRange(this.currentPeriod);
+            if (dateRange) {
+                transactions = transactions.filter(tx => {
+                    if (!tx?.datetime) return false;
+                    const txDate = new Date(tx.datetime);
+                    return txDate >= dateRange.start && txDate <= dateRange.end;
+                });
+            }
+        }
+
+        // Exclude transfers for expense charts
+        return transactions.filter(tx => tx && !tx.isTransfer);
+    }
+
+    /**
+     * Get date range for a period
+     */
+    getPeriodDateRange(period) {
+        const now = new Date();
+        let start, end;
+
+        switch (period) {
+            case 'week':
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const dayOfWeek = today.getDay();
+                const monday = new Date(today);
+                monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+                start = monday;
+                end = new Date(today);
+                end.setHours(23, 59, 59, 999);
+                break;
+
+            case 'month':
+                start = new Date(now.getFullYear(), now.getMonth(), 1);
+                end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+                break;
+
+            case 'quarter':
+                const quarter = Math.floor(now.getMonth() / 3);
+                start = new Date(now.getFullYear(), quarter * 3, 1);
+                end = new Date(now.getFullYear(), (quarter + 1) * 3, 0, 23, 59, 59);
+                break;
+
+            case 'year':
+                start = new Date(now.getFullYear(), 0, 1);
+                end = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+                break;
+
+            default:
+                return null;
+        }
+
+        return { start, end };
+    }
+
+    /**
+     * Get previous period transactions for comparison
+     */
+    getPreviousPeriodTransactions() {
+        if (!this.app?.data?.transactions) return [];
+
+        const currentRange = this.currentPeriod === 'custom' ? 
+            this.customDateRange : 
+            this.getPeriodDateRange(this.currentPeriod);
+
+        if (!currentRange?.start || !currentRange?.end) return [];
+
+        const diffMs = currentRange.end.getTime() - currentRange.start.getTime();
+        const prevEnd = new Date(currentRange.start.getTime() - 1);
+        const prevStart = new Date(prevEnd.getTime() - diffMs);
+
         return this.app.data.transactions.filter(tx => {
-            if (!tx || !tx.datetime || tx.isTransfer) return false;
+            if (!tx?.datetime || tx.isTransfer) return false;
             const txDate = new Date(tx.datetime);
             return txDate >= prevStart && txDate <= prevEnd;
         });
     }
 
     /**
-     * Update summary cards
-     */
-    updateSummaryCards() {
-        const currentTransactions = this.getFilteredTransactions();
-        const prevTransactions = this.getPreviousPeriodTransactions();
-
-        const currentStats = this.calculateStatistics(currentTransactions);
-        const prevStats = this.calculateStatistics(prevTransactions);
-
-        if (this.elements.totalIncome) this.elements.totalIncome.textContent = Utils.CurrencyUtils.formatCurrency(currentStats.totalIncome);
-        if (this.elements.totalExpense) this.elements.totalExpense.textContent = Utils.CurrencyUtils.formatCurrency(currentStats.totalExpense);
-        if (this.elements.netBalance) {
-            this.elements.netBalance.textContent = Utils.CurrencyUtils.formatCurrency(currentStats.netBalance);
-            this.elements.netBalance.classList.remove('text-success', 'text-danger');
-            if (currentStats.netBalance >= 0) {
-                this.elements.netBalance.classList.add('text-success');
-            } else {
-                this.elements.netBalance.classList.add('text-danger');
-            }
-        }
-
-        this.updateChangePercentage(this.elements.incomeChange, prevStats.totalIncome, currentStats.totalIncome);
-        this.updateChangePercentage(this.elements.expenseChange, prevStats.totalExpense, currentStats.totalExpense);
-        this.updateChangePercentage(this.elements.balanceChange, prevStats.netBalance, currentStats.netBalance);
-    }
-
-    /**
-     * Initialize chart type selector with cleanup tracking
-     */
-    initializeChartTypeSelector() {
-        if (this.elements.chartType) {
-            const handler = () => {
-                this.renderExpenseChart();
-            };
-
-            this.elements.chartType.addEventListener('change', handler);
-            this.eventListeners.push({
-                element: this.elements.chartType,
-                event: 'change',
-                handler: handler
-            });
-        }
-    }
-
-    /**
-     * Calculate statistics with proper null/undefined handling
+     * Calculate statistics from transactions
      */
     calculateStatistics(transactions) {
         const stats = {
@@ -329,30 +392,27 @@ class StatisticsModule {
         };
 
         if (!Array.isArray(transactions)) {
-            console.warn('calculateStatistics: transactions is not an array');
+            console.warn('calculateStatistics: invalid transactions data');
             return stats;
         }
 
         transactions.forEach(tx => {
-            if (!tx || typeof tx !== 'object') {
-                console.warn('Invalid transaction object:', tx);
-                return;
-            }
+            if (!tx || !tx.type) return;
 
             const amount = parseFloat(tx.amount) || 0;
-            const type = tx.type;
-            const isTransfer = Boolean(tx.isTransfer);
 
-            if (type === 'Thu' && !isTransfer) {
+            if (tx.type === 'Thu') {
                 stats.totalIncome += amount;
                 stats.incomeTransactions++;
-            } else if (type === 'Chi' && !isTransfer) {
+            } else if (tx.type === 'Chi') {
                 stats.totalExpense += amount;
                 stats.expenseTransactions++;
 
+                // Category breakdown
                 const category = tx.category || 'Không phân loại';
                 stats.expenseByCategory[category] = (stats.expenseByCategory[category] || 0) + amount;
 
+                // Daily breakdown
                 if (tx.datetime) {
                     const dateKey = tx.datetime.split('T')[0];
                     stats.dailyExpenses[dateKey] = (stats.dailyExpenses[dateKey] || 0) + amount;
@@ -362,13 +422,15 @@ class StatisticsModule {
 
         stats.netBalance = stats.totalIncome - stats.totalExpense;
 
+        // Find top category
         const categoryEntries = Object.entries(stats.expenseByCategory);
         if (categoryEntries.length > 0) {
-            const topCategory = categoryEntries.sort(([,a], [,b]) => b - a)[0];
-            stats.topExpenseCategory = topCategory[0];
-            stats.topExpenseAmount = topCategory[1];
+            const [topCategory, topAmount] = categoryEntries.sort(([,a], [,b]) => b - a)[0];
+            stats.topExpenseCategory = topCategory;
+            stats.topExpenseAmount = topAmount;
         }
 
+        // Calculate average daily expense
         const days = Object.keys(stats.dailyExpenses).length;
         if (days > 0) {
             stats.averageDaily = stats.totalExpense / days;
@@ -378,201 +440,158 @@ class StatisticsModule {
     }
 
     /**
-     * Update change percentage display with better error handling
+     * Update summary cards
+     */
+    updateSummaryCards() {
+        try {
+            const currentTransactions = this.getFilteredTransactions();
+            const prevTransactions = this.getPreviousPeriodTransactions();
+
+            const currentStats = this.calculateStatistics(currentTransactions);
+            const prevStats = this.calculateStatistics(prevTransactions);
+
+            // Update values
+            this.updateElement(this.elements.totalIncome, this.formatCurrency(currentStats.totalIncome));
+            this.updateElement(this.elements.totalExpense, this.formatCurrency(currentStats.totalExpense));
+
+            // Update net balance with color
+            if (this.elements.netBalance) {
+                this.elements.netBalance.textContent = this.formatCurrency(currentStats.netBalance);
+                this.elements.netBalance.classList.remove('text-success', 'text-danger');
+                this.elements.netBalance.classList.add(currentStats.netBalance >= 0 ? 'text-success' : 'text-danger');
+            }
+
+            // Update change percentages
+            this.updateChangePercentage(this.elements.incomeChange, prevStats.totalIncome, currentStats.totalIncome);
+            this.updateChangePercentage(this.elements.expenseChange, prevStats.totalExpense, currentStats.totalExpense);
+            this.updateChangePercentage(this.elements.balanceChange, prevStats.netBalance, currentStats.netBalance);
+
+        } catch (error) {
+            console.error('Error updating summary cards:', error);
+        }
+    }
+
+    /**
+     * Update change percentage display
      */
     updateChangePercentage(element, oldValue, newValue) {
-        if (!element) {
-            console.warn('updateChangePercentage: element is null');
-            return;
-        }
+        if (!element) return;
 
         const oldVal = parseFloat(oldValue) || 0;
         const newVal = parseFloat(newValue) || 0;
 
-        const change = Utils.MathUtils.calculatePercentageChange(oldVal, newVal);
-
-        if (isNaN(change)) {
-            element.textContent = '0%';
-            element.className = 'stats-change neutral';
-            return;
+        let change = 0;
+        if (oldVal !== 0) {
+            change = ((newVal - oldVal) / Math.abs(oldVal)) * 100;
+        } else if (newVal !== 0) {
+            change = newVal > 0 ? 100 : -100;
         }
 
+        const changeStr = isNaN(change) ? '0' : Math.round(change);
         const isPositive = change >= 0;
 
-        element.textContent = `${isPositive ? '+' : ''}${change}%`;
-        element.className = `stats-change ${isPositive ? 'positive' : 'negative'}`;
-        if (change === 0) {
-             element.classList.add('neutral');
-        } else {
-             element.classList.remove('neutral');
-        }
+        element.textContent = `${isPositive ? '+' : ''}${changeStr}%`;
+        element.className = `stats-change ${change === 0 ? 'neutral' : (isPositive ? 'positive' : 'negative')}`;
     }
 
     /**
-     * Render expense chart with leader lines and external labels
+     * Render expense chart (main chart)
      */
-    renderExpenseChart() {
-        if (!this.elements.expenseChartCanvas || !this.elements.expenseChartContainer) {
-            console.warn('Expense chart canvas or container element not found');
-            return;
-        }
+    async renderExpenseChart() {
+        if (this.isRendering) return;
+        this.isRendering = true;
 
         try {
+            console.log('📊 Rendering expense chart...');
+
+            if (!this.elements.expenseChartCanvas || !this.elements.expenseChartContainer) {
+                throw new Error('Chart canvas or container not found');
+            }
+
+            // Get data
             const transactions = this.getFilteredTransactions();
-            if (!transactions || !Array.isArray(transactions)) {
-                console.warn('Invalid transactions data for chart');
-                this.elements.expenseChartContainer.innerHTML = '<p class="no-data-text text-center">Không có dữ liệu chi tiêu để hiển thị biểu đồ.</p>';
-                if (this.charts.expense) this.charts.expense.destroy();
-                this.charts.expense = null;
+            const stats = this.calculateStatistics(transactions);
+            const chartType = this.elements.chartType?.value || 'doughnut';
+
+            console.log(`📈 Chart data: ${transactions.length} transactions, ${Object.keys(stats.expenseByCategory).length} categories`);
+
+            // Destroy existing chart
+            this.destroyChart('expense');
+
+            // Check if we have data
+            if (Object.keys(stats.expenseByCategory).length === 0 || stats.totalExpense === 0) {
+                this.showNoDataMessage();
                 return;
             }
 
-            const stats = this.calculateStatistics(transactions);
-
-            if (this.charts.expense && typeof this.charts.expense.destroy === 'function') {
-                this.charts.expense.destroy();
-                this.charts.expense = null;
-            }
-
-            const chartType = this.elements.chartType ? this.elements.chartType.value : 'doughnut';
+            // Prepare chart data
             const categories = Object.entries(stats.expenseByCategory)
                 .sort(([,a], [,b]) => b - a)
-                .slice(0, 10);
+                .slice(0, this.config.maxCategories);
 
-            if (categories.length === 0 || stats.totalExpense === 0) {
-                this.elements.expenseChartCanvas.style.display = 'none';
-                this.elements.expenseChartContainer.innerHTML = '<p class="no-data-text text-center">Không có dữ liệu chi tiêu để hiển thị biểu đồ.</p>';
-                if (this.elements.expenseLegend) this.elements.expenseLegend.innerHTML = '';
-                return;
-            }
+            const chartData = this.buildChartData(categories, chartType);
+            const chartOptions = this.buildChartOptions(chartType, stats.totalExpense);
 
+            // Show canvas and create chart
             this.elements.expenseChartCanvas.style.display = 'block';
             this.elements.expenseChartContainer.innerHTML = '';
             this.elements.expenseChartContainer.appendChild(this.elements.expenseChartCanvas);
 
-            const labels = categories.map(([category]) => category);
-            const data = categories.map(([, amount]) => amount);
-            const colors = categories.map((_, index) =>
-                Utils.UIUtils.getCategoryColor(labels[index], index)
-            );
-
-            const chartConfig = {
-                type: chartType,
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: colors,
-                        borderColor: colors.map(color => {
-                            const rgba = Utils.UIUtils.hexToRgba(color, 0.8);
-                            return rgba || color;
-                        }),
-                        borderWidth: 2,
-                        hoverOffset: 4,
-                        barThickness: chartType === 'bar' ? 20 : undefined
-                    }]
-                },
-                options: this.getChartOptions(chartType, stats.totalExpense)
-            };
-
-            // Thêm custom plugins cho doughnut chart
-            if (chartType === 'doughnut') {
-                const isDark = document.body.getAttribute('data-theme') === 'dark';
-                chartConfig.plugins = [{
-                    id: 'customLeaderLines',
-                    afterDatasetsDraw: (chart) => {
-                        const ctx = chart.ctx;
-                        const meta = chart.getDatasetMeta(0);
-                        
-                        ctx.save();
-                        ctx.strokeStyle = isDark ? '#64748b' : '#94a3b8';
-                        ctx.lineWidth = 1.5;
-                        ctx.setLineDash([]);
-
-                        meta.data.forEach((element, index) => {
-                            const percentage = (chart.data.datasets[0].data[index] / stats.totalExpense) * 100;
-                            if (percentage < 2) return;
-
-                            const centerX = element.x;
-                            const centerY = element.y;
-                            
-                            const startAngle = element.startAngle;
-                            const endAngle = element.endAngle;
-                            const midAngle = startAngle + (endAngle - startAngle) / 2;
-                            
-                            const outerRadius = element.outerRadius;
-                            const startX = centerX + Math.cos(midAngle) * outerRadius;
-                            const startY = centerY + Math.sin(midAngle) * outerRadius;
-                            
-                            const extendRadius = outerRadius + 20;
-                            const midX = centerX + Math.cos(midAngle) * extendRadius;
-                            const midY = centerY + Math.sin(midAngle) * extendRadius;
-                            
-                            const isRightSide = Math.cos(midAngle) >= 0;
-                            const endX = isRightSide ? midX + 25 : midX - 25;
-                            const endY = midY;
-                            
-                            ctx.beginPath();
-                            ctx.moveTo(startX, startY);
-                            ctx.lineTo(midX, midY);
-                            ctx.lineTo(endX, endY);
-                            ctx.stroke();
-                            
-                            ctx.beginPath();
-                            ctx.fillStyle = chart.data.datasets[0].backgroundColor[index];
-                            ctx.arc(startX, startY, 3, 0, 2 * Math.PI);
-                            ctx.fill();
-                        });
-                        
-                        ctx.restore();
-                    }
-                }];
-            }
-
             const ctx = this.elements.expenseChartCanvas.getContext('2d');
-            this.charts.expense = new Chart(ctx, chartConfig);
+            this.charts.expense = new Chart(ctx, {
+                type: chartType,
+                data: chartData,
+                options: chartOptions,
+                plugins: chartType === 'doughnut' ? this.getDoughnutPlugins(stats.totalExpense) : []
+            });
 
+            // Update legend
             this.updateExpenseLegend(categories, stats.totalExpense);
 
+            console.log('✅ Expense chart rendered successfully');
+
         } catch (error) {
-            console.error('Error rendering expense chart:', error);
-            if (this.elements.expenseChartCanvas) {
-                this.elements.expenseChartCanvas.style.display = 'none';
-            }
-            if (this.elements.expenseChartContainer) {
-                 this.elements.expenseChartContainer.innerHTML = '<p class="no-data-text text-center">Có lỗi khi hiển thị biểu đồ chi tiêu.</p>';
-            }
+            console.error('❌ Error rendering expense chart:', error);
+            this.showChartError('Không thể hiển thị biểu đồ: ' + error.message);
+        } finally {
+            this.isRendering = false;
         }
     }
 
     /**
-     * Get chart options with improved datalabels for leader lines
+     * Build chart data
      */
-    getChartOptions(chartType, totalAmount) {
-        if (!chartType || typeof totalAmount !== 'number') {
-            console.warn('Invalid chart options parameters');
-            return {};
-        }
+    buildChartData(categories, chartType) {
+        const labels = categories.map(([category]) => category);
+        const data = categories.map(([, amount]) => amount);
+        const colors = categories.map((_, index) => this.getCategoryColor(labels[index], index));
 
+        return {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: colors,
+                borderColor: colors,
+                borderWidth: 2,
+                hoverOffset: chartType === 'doughnut' ? 4 : 0,
+                barThickness: chartType === 'bar' ? 20 : undefined
+            }]
+        };
+    }
+
+    /**
+     * Build chart options
+     */
+    buildChartOptions(chartType, totalAmount) {
         const isDark = document.body.getAttribute('data-theme') === 'dark';
         const textColor = isDark ? '#e2e8f0' : '#374151';
         const gridColor = isDark ? '#475569' : '#e5e7eb';
-        const tooltipBg = isDark ? 'rgba(30, 41, 59, 0.9)' : 'rgba(0,0,0,0.8)';
-        const tooltipColor = '#ffffff';
 
         const baseOptions = {
             responsive: true,
             maintainAspectRatio: false,
-			layout: {  // ← THÊM PHẦN NÀY
-				padding: {
-					top: 50,
-					bottom: 50,
-					left: 50,
-					right: 50
-				}
-			},
             animation: {
-                duration: 800,
+                duration: this.config.animationDuration,
                 easing: 'easeOutQuart'
             },
             plugins: {
@@ -580,14 +599,14 @@ class StatisticsModule {
                     display: false
                 },
                 tooltip: {
-                    backgroundColor: tooltipBg,
-                    titleColor: tooltipColor,
-                    bodyColor: tooltipColor,
+                    backgroundColor: isDark ? 'rgba(30, 41, 59, 0.9)' : 'rgba(0,0,0,0.8)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#ffffff',
                     callbacks: {
                         label: (context) => {
                             const value = context.raw || 0;
-                            const percentage = Utils.MathUtils.calculatePercentage(value, totalAmount);
-                            return `${context.label}: ${Utils.CurrencyUtils.formatCurrency(value)} (${percentage}%)`;
+                            const percentage = ((value / totalAmount) * 100).toFixed(1);
+                            return `${context.label}: ${this.formatCurrency(value)} (${percentage}%)`;
                         }
                     },
                     boxPadding: 6
@@ -599,33 +618,18 @@ class StatisticsModule {
             return {
                 ...baseOptions,
                 cutout: '65%',
-                radius: '85%',
+                radius: '80%',
+                layout: {
+                    padding: {
+                        top: 40,
+                        bottom: 40,
+                        left: 40,
+                        right: 40
+                    }
+                },
                 plugins: {
                     ...baseOptions.plugins,
-					datalabels: {
-						display: true, // BẮT BUỘC hiển thị luôn
-						formatter: (value, context) => {
-							const categoryName = context.chart.data.labels[context.dataIndex];
-							const percentage = ((value / totalAmount) * 100).toFixed(1);
-							const icon = Utils.UIUtils.getCategoryIcon ? Utils.UIUtils.getCategoryIcon(categoryName) : '📦';
-							return `${icon} ${percentage}%`;
-						},
-						anchor: 'end',
-						align: 'end',
-						offset: 20,
-						color: textColor,
-						backgroundColor: isDark ? 'rgba(30, 41, 59, 0.9)' : 'rgba(255, 255, 255, 0.9)',
-						borderColor: isDark ? '#475569' : '#e5e7eb',
-						borderWidth: 1,
-						borderRadius: 4,
-						padding: 4,
-						font: {
-							size: 10,
-							weight: 'bold'
-						},
-						textAlign: 'center',
-						clip: false
-					}
+                    datalabels: this.getDatalabelsConfig(totalAmount, textColor, isDark)
                 }
             };
         } else {
@@ -637,7 +641,7 @@ class StatisticsModule {
                         beginAtZero: true,
                         ticks: {
                             color: textColor,
-                            callback: (value) => Utils.CurrencyUtils.formatCurrency(value, 'VND', false)
+                            callback: (value) => this.formatCurrency(value, false)
                         },
                         grid: {
                             color: gridColor,
@@ -659,7 +663,7 @@ class StatisticsModule {
                         anchor: 'end',
                         align: 'end',
                         offset: 4,
-                        formatter: (value) => Utils.CurrencyUtils.formatCurrency(value, 'VND', false),
+                        formatter: (value) => this.formatCurrency(value, false),
                         color: textColor,
                         font: {
                             weight: 'bold',
@@ -672,7 +676,115 @@ class StatisticsModule {
     }
 
     /**
-     * Update the custom legend for the expense chart
+     * Get datalabels config for doughnut chart
+     */
+    getDatalabelsConfig(totalAmount, textColor, isDark) {
+        if (typeof ChartDataLabels === 'undefined') {
+            return false;
+        }
+
+        return {
+            display: function(context) {
+                const value = context.dataset.data[context.dataIndex];
+                const percentage = (value / totalAmount) * 100;
+                return percentage >= 3; // Only show labels for slices >= 3%
+            },
+            formatter: (value, context) => {
+                const categoryName = context.chart.data.labels[context.dataIndex];
+                const percentage = ((value / totalAmount) * 100).toFixed(1);
+                const icon = this.getCategoryIcon(categoryName);
+                return `${icon} ${percentage}%`;
+            },
+            anchor: 'end',
+            align: 'end',
+            offset: 15,
+            color: textColor,
+            backgroundColor: isDark ? 'rgba(30, 41, 59, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+            borderColor: isDark ? '#475569' : '#e5e7eb',
+            borderWidth: 1,
+            borderRadius: 4,
+            padding: {
+                top: 4,
+                bottom: 4,
+                left: 6,
+                right: 6
+            },
+            font: {
+                size: 10,
+                weight: 'bold'
+            },
+            textAlign: 'center',
+            clip: false
+        };
+    }
+
+    /**
+     * Get doughnut chart plugins
+     */
+    getDoughnutPlugins(totalAmount) {
+        const isDark = document.body.getAttribute('data-theme') === 'dark';
+        
+        return [{
+            id: 'customLeaderLines',
+            afterDatasetsDraw: (chart) => {
+                const ctx = chart.ctx;
+                const meta = chart.getDatasetMeta(0);
+                
+                if (!meta || !meta.data) return;
+
+                ctx.save();
+                ctx.strokeStyle = isDark ? '#64748b' : '#94a3b8';
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([]);
+
+                meta.data.forEach((element, index) => {
+                    try {
+                        const percentage = (chart.data.datasets[0].data[index] / totalAmount) * 100;
+                        if (percentage < 2) return; // Skip small slices
+
+                        const centerX = element.x;
+                        const centerY = element.y;
+                        
+                        const startAngle = element.startAngle;
+                        const endAngle = element.endAngle;
+                        const midAngle = startAngle + (endAngle - startAngle) / 2;
+                        
+                        const outerRadius = element.outerRadius;
+                        const startX = centerX + Math.cos(midAngle) * outerRadius;
+                        const startY = centerY + Math.sin(midAngle) * outerRadius;
+                        
+                        const extendRadius = outerRadius + 20;
+                        const midX = centerX + Math.cos(midAngle) * extendRadius;
+                        const midY = centerY + Math.sin(midAngle) * extendRadius;
+                        
+                        const isRightSide = Math.cos(midAngle) >= 0;
+                        const endX = isRightSide ? midX + 25 : midX - 25;
+                        const endY = midY;
+                        
+                        // Draw leader line
+                        ctx.beginPath();
+                        ctx.moveTo(startX, startY);
+                        ctx.lineTo(midX, midY);
+                        ctx.lineTo(endX, endY);
+                        ctx.stroke();
+                        
+                        // Draw connection dot
+                        ctx.beginPath();
+                        ctx.fillStyle = chart.data.datasets[0].backgroundColor[index];
+                        ctx.arc(startX, startY, 3, 0, 2 * Math.PI);
+                        ctx.fill();
+                    } catch (error) {
+                        console.warn('Error drawing leader line for index', index, error);
+                    }
+                });
+                
+                ctx.restore();
+            }
+        }];
+    }
+
+    /**
+     * Update expense legend
      */
     updateExpenseLegend(categories, totalExpense) {
         if (!this.elements.expenseLegend) return;
@@ -685,18 +797,18 @@ class StatisticsModule {
             const legendItem = document.createElement('div');
             legendItem.className = 'legend-item';
 
-            const color = Utils.UIUtils.getCategoryColor(categoryName, index);
-            const percentage = Utils.MathUtils.calculatePercentage(amount, totalExpense);
-            const icon = Utils.UIUtils.getCategoryIcon(categoryName);
+            const color = this.getCategoryColor(categoryName, index);
+            const percentage = ((amount / totalExpense) * 100).toFixed(1);
+            const icon = this.getCategoryIcon(categoryName);
 
             legendItem.innerHTML = `
                 <div class="legend-content">
                     <div class="legend-header">
                         <span class="legend-icon">${icon}</span>
                         <div class="legend-label-wrapper">
-                            <div class="legend-label">${this.escapeHtml(categoryName)}</div>
+                            <div class="legend-label" title="${this.escapeHtml(categoryName)}">${this.escapeHtml(categoryName)}</div>
                             <div class="legend-amount-percentage">
-                                <span class="legend-amount">${Utils.CurrencyUtils.formatCurrency(amount)}</span>
+                                <span class="legend-amount">${this.formatCurrency(amount)}</span>
                                 <span class="legend-percentage">(${percentage}%)</span>
                             </div>
                         </div>
@@ -704,31 +816,30 @@ class StatisticsModule {
                     <div class="legend-color" style="background-color: ${color};"></div>
                 </div>
             `;
+
             this.elements.expenseLegend.appendChild(legendItem);
         });
     }
 
     /**
-     * Render Trend Chart
+     * Render trend chart (7 days)
      */
     renderTrendChart() {
-        if (!this.elements.trendChartCanvas) {
-            console.warn('Trend chart canvas element not found');
-            return;
-        }
-
         try {
-            const allTransactions = this.app.data.transactions.filter(tx => tx && !tx.isTransfer);
+            if (!this.elements.trendChartCanvas) return;
 
+            const allTransactions = this.app.data.transactions.filter(tx => tx && !tx.isTransfer);
             const endDate = new Date();
             const startDate = new Date();
-            startDate.setDate(endDate.getDate() - 6);
+            startDate.setDate(endDate.getDate() - (this.config.trendDays - 1));
 
+            // Prepare daily data
             const dailyData = {};
             for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
                 dailyData[d.toISOString().split('T')[0]] = { income: 0, expense: 0 };
             }
 
+            // Aggregate transactions
             allTransactions.forEach(tx => {
                 try {
                     const txDate = new Date(tx.datetime);
@@ -743,30 +854,30 @@ class StatisticsModule {
                         }
                     }
                 } catch (e) {
-                    console.warn('Invalid transaction date for trend chart:', tx.datetime, e);
+                    console.warn('Invalid date in transaction:', tx.datetime);
                 }
             });
 
+            // Prepare chart data
             const dates = Object.keys(dailyData).sort();
-            const incomeData = dates.map(date => dailyData[date].income);
-            const expenseData = dates.map(date => dailyData[date].expense);
             const labels = dates.map(date => {
                 const d = new Date(date);
                 return `${d.getDate()}/${d.getMonth() + 1}`;
             });
+            const incomeData = dates.map(date => dailyData[date].income);
+            const expenseData = dates.map(date => dailyData[date].expense);
 
-            if (this.charts.trend && typeof this.charts.trend.destroy === 'function') {
-                this.charts.trend.destroy();
-                this.charts.trend = null;
-            }
+            // Destroy existing chart
+            this.destroyChart('trend');
 
-            if (incomeData.length === 0 && expenseData.length === 0) {
+            if (incomeData.every(val => val === 0) && expenseData.every(val => val === 0)) {
                 this.elements.trendChartCanvas.style.display = 'none';
                 return;
-            } else {
-                this.elements.trendChartCanvas.style.display = 'block';
             }
 
+            this.elements.trendChartCanvas.style.display = 'block';
+
+            // Create chart
             const isDark = document.body.getAttribute('data-theme') === 'dark';
             const textColor = isDark ? '#e2e8f0' : '#374151';
             const gridColor = isDark ? '#475569' : '#e5e7eb';
@@ -783,8 +894,8 @@ class StatisticsModule {
                         backgroundColor: 'rgba(16, 185, 129, 0.2)',
                         fill: true,
                         tension: 0.3,
-                        pointRadius: 3,
-                        pointHoverRadius: 5
+                        pointRadius: 4,
+                        pointHoverRadius: 6
                     }, {
                         label: 'Chi tiêu',
                         data: expenseData,
@@ -792,23 +903,19 @@ class StatisticsModule {
                         backgroundColor: 'rgba(239, 68, 68, 0.2)',
                         fill: true,
                         tension: 0.3,
-                        pointRadius: 3,
-                        pointHoverRadius: 5
+                        pointRadius: 4,
+                        pointHoverRadius: 6
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    animation: {
-                        duration: 500
-                    },
+                    animation: { duration: 500 },
                     plugins: {
                         legend: {
                             labels: {
                                 color: textColor,
-                                font: {
-                                    size: 12
-                                }
+                                font: { size: 12 }
                             }
                         },
                         tooltip: {
@@ -817,34 +924,28 @@ class StatisticsModule {
                             bodyColor: '#ffffff',
                             callbacks: {
                                 label: (context) => {
-                                    return `${context.dataset.label}: ${Utils.CurrencyUtils.formatCurrency(context.raw)}`;
+                                    return `${context.dataset.label}: ${this.formatCurrency(context.raw)}`;
                                 }
                             }
                         }
                     },
                     scales: {
                         x: {
-                            ticks: {
-                                color: textColor
-                            },
-                            grid: {
-                                color: gridColor,
-                                drawBorder: false
-                            }
+                            ticks: { color: textColor },
+                            grid: { color: gridColor, drawBorder: false }
                         },
                         y: {
                             beginAtZero: true,
                             ticks: {
                                 color: textColor,
-                                callback: (value) => Utils.CurrencyUtils.formatCurrency(value, 'VND', false)
+                                callback: (value) => this.formatCurrency(value, false)
                             },
-                            grid: {
-                                color: gridColor
-                            }
+                            grid: { color: gridColor }
                         }
                     }
                 }
             });
+
         } catch (error) {
             console.error('Error rendering trend chart:', error);
             if (this.elements.trendChartCanvas) {
@@ -854,56 +955,49 @@ class StatisticsModule {
     }
 
     /**
-     * Render Monthly Comparison Chart
+     * Render comparison chart (current vs previous month)
      */
     renderComparisonChart() {
-        if (!this.elements.comparisonChartCanvas) {
-            console.warn('Comparison chart canvas element not found');
-            return;
-        }
-
         try {
+            if (!this.elements.comparisonChartCanvas) return;
+
             const now = new Date();
             const currentMonth = now.getMonth();
             const currentYear = now.getFullYear();
-            
+
+            // Current month transactions
             const currentMonthTransactions = this.app.data.transactions.filter(tx => {
-                if (!tx || !tx.datetime || tx.isTransfer) return false;
+                if (!tx?.datetime || tx.isTransfer) return false;
                 const txDate = new Date(tx.datetime);
                 return txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear;
             });
 
+            // Previous month transactions
             const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
             const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-            
             const prevMonthTransactions = this.app.data.transactions.filter(tx => {
-                if (!tx || !tx.datetime || tx.isTransfer) return false;
+                if (!tx?.datetime || tx.isTransfer) return false;
                 const txDate = new Date(tx.datetime);
                 return txDate.getMonth() === prevMonth && txDate.getFullYear() === prevYear;
             });
 
-            const currentMonthStats = this.calculateStatistics(currentMonthTransactions);
-            const prevMonthStats = this.calculateStatistics(prevMonthTransactions);
+            const currentStats = this.calculateStatistics(currentMonthTransactions);
+            const prevStats = this.calculateStatistics(prevMonthTransactions);
 
-            if (this.charts.comparison && typeof this.charts.comparison.destroy === 'function') {
-                this.charts.comparison.destroy();
-                this.charts.comparison = null;
-            }
+            // Destroy existing chart
+            this.destroyChart('comparison');
 
-            if (currentMonthStats.totalIncome === 0 && currentMonthStats.totalExpense === 0 &&
-                prevMonthStats.totalIncome === 0 && prevMonthStats.totalExpense === 0) {
+            if (currentStats.totalIncome === 0 && currentStats.totalExpense === 0 &&
+                prevStats.totalIncome === 0 && prevStats.totalExpense === 0) {
                 this.elements.comparisonChartCanvas.style.display = 'none';
                 return;
-            } else {
-                this.elements.comparisonChartCanvas.style.display = 'block';
             }
 
+            this.elements.comparisonChartCanvas.style.display = 'block';
+
+            // Create chart
             const currentMonthName = new Date(currentYear, currentMonth).toLocaleString('vi-VN', { month: 'long', year: 'numeric' });
             const prevMonthName = new Date(prevYear, prevMonth).toLocaleString('vi-VN', { month: 'long', year: 'numeric' });
-
-            const labels = ['Thu nhập', 'Chi tiêu'];
-            const currentData = [currentMonthStats.totalIncome, currentMonthStats.totalExpense];
-            const prevData = [prevMonthStats.totalIncome, prevMonthStats.totalExpense];
 
             const isDark = document.body.getAttribute('data-theme') === 'dark';
             const textColor = isDark ? '#e2e8f0' : '#374151';
@@ -913,16 +1007,16 @@ class StatisticsModule {
             this.charts.comparison = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: labels,
+                    labels: ['Thu nhập', 'Chi tiêu'],
                     datasets: [{
                         label: currentMonthName,
-                        data: currentData,
+                        data: [currentStats.totalIncome, currentStats.totalExpense],
                         backgroundColor: '#3b82f6',
                         borderColor: '#3b82f6',
                         borderWidth: 1
                     }, {
                         label: prevMonthName,
-                        data: prevData,
+                        data: [prevStats.totalIncome, prevStats.totalExpense],
                         backgroundColor: '#94a3b8',
                         borderColor: '#94a3b8',
                         borderWidth: 1
@@ -931,16 +1025,12 @@ class StatisticsModule {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    animation: {
-                        duration: 500
-                    },
+                    animation: { duration: 500 },
                     plugins: {
                         legend: {
                             labels: {
                                 color: textColor,
-                                font: {
-                                    size: 12
-                                }
+                                font: { size: 12 }
                             }
                         },
                         tooltip: {
@@ -949,34 +1039,28 @@ class StatisticsModule {
                             bodyColor: '#ffffff',
                             callbacks: {
                                 label: (context) => {
-                                    return `${context.dataset.label}: ${Utils.CurrencyUtils.formatCurrency(context.raw)}`;
+                                    return `${context.dataset.label}: ${this.formatCurrency(context.raw)}`;
                                 }
                             }
                         }
                     },
                     scales: {
                         x: {
-                            ticks: {
-                                color: textColor
-                            },
-                            grid: {
-                                color: gridColor,
-                                drawBorder: false
-                            }
+                            ticks: { color: textColor },
+                            grid: { color: gridColor, drawBorder: false }
                         },
                         y: {
                             beginAtZero: true,
                             ticks: {
                                 color: textColor,
-                                callback: (value) => Utils.CurrencyUtils.formatCurrency(value, 'VND', false)
+                                callback: (value) => this.formatCurrency(value, false)
                             },
-                            grid: {
-                                color: gridColor
-                            }
+                            grid: { color: gridColor }
                         }
                     }
                 }
             });
+
         } catch (error) {
             console.error('Error rendering comparison chart:', error);
             if (this.elements.comparisonChartCanvas) {
@@ -986,13 +1070,10 @@ class StatisticsModule {
     }
 
     /**
-     * Update Detailed Statistics Table
+     * Update detailed statistics table
      */
     updateDetailedStats() {
-        if (!this.elements.detailedStatsBody) {
-            console.warn('Detailed stats body element not found');
-            return;
-        }
+        if (!this.elements.detailedStatsBody) return;
 
         try {
             const transactions = this.getFilteredTransactions();
@@ -1000,32 +1081,44 @@ class StatisticsModule {
 
             this.elements.detailedStatsBody.innerHTML = '';
 
-            const categoriesSorted = Object.entries(stats.expenseByCategory).sort(([,a], [,b]) => b - a);
+            const categoriesSorted = Object.entries(stats.expenseByCategory)
+                .sort(([,a], [,b]) => b - a);
 
             if (categoriesSorted.length === 0) {
                 this.elements.detailedStatsBody.innerHTML = `
-                    <tr><td colspan="4" class="no-data-text text-center py-4">Không có dữ liệu chi tiết thống kê.</td></tr>
+                    <tr>
+                        <td colspan="4" class="text-center py-8 text-gray-500">
+                            Không có dữ liệu chi tiết để hiển thị
+                        </td>
+                    </tr>
                 `;
                 return;
             }
 
             categoriesSorted.forEach(([category, amount]) => {
-                const percentage = Utils.MathUtils.calculatePercentage(amount, stats.totalExpense);
-                const icon = Utils.UIUtils.getCategoryIcon(category);
+                const percentage = ((amount / stats.totalExpense) * 100).toFixed(1);
+                const icon = this.getCategoryIcon(category);
+                const color = this.getCategoryColor(category);
+
                 const row = document.createElement('tr');
+                row.className = 'border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors';
                 row.innerHTML = `
-                    <td class="text-left py-3 px-4">
+                    <td class="py-3 px-4">
                         <div class="flex items-center gap-3">
                             <span class="text-lg">${icon}</span>
-                            <span>${this.escapeHtml(category)}</span>
+                            <span class="font-medium">${this.escapeHtml(category)}</span>
                         </div>
                     </td>
-                    <td class="text-right py-3 px-4 font-mono">${Utils.CurrencyUtils.formatCurrency(amount)}</td>
-                    <td class="text-right py-3 px-4 font-mono font-bold text-primary">${percentage}%</td>
-                    <td class="text-center py-3 px-4">
+                    <td class="py-3 px-4 text-right font-mono font-semibold">
+                        ${this.formatCurrency(amount)}
+                    </td>
+                    <td class="py-3 px-4 text-right font-mono font-bold text-blue-600">
+                        ${percentage}%
+                    </td>
+                    <td class="py-3 px-4">
                         <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                            <div class="h-2 rounded-full transition-all duration-300" 
-                                 style="width: ${percentage}%; background-color: ${Utils.UIUtils.getCategoryColor(category)};">
+                            <div class="h-2 rounded-full transition-all duration-500" 
+                                 style="width: ${percentage}%; background-color: ${color};">
                             </div>
                         </div>
                     </td>
@@ -1033,134 +1126,364 @@ class StatisticsModule {
                 this.elements.detailedStatsBody.appendChild(row);
             });
 
+            // Add total row
             const totalRow = document.createElement('tr');
-            totalRow.className = 'font-bold bg-gray-100 dark:bg-gray-700 border-t-2';
+            totalRow.className = 'bg-gray-100 dark:bg-gray-700 font-bold border-t-2';
             totalRow.innerHTML = `
-                <td class="text-left py-3 px-4">
+                <td class="py-3 px-4">
                     <div class="flex items-center gap-3">
                         <span class="text-lg">💰</span>
                         <span>Tổng cộng</span>
                     </div>
                 </td>
-                <td class="text-right py-3 px-4 font-mono">${Utils.CurrencyUtils.formatCurrency(stats.totalExpense)}</td>
-                <td class="text-right py-3 px-4 font-mono">100%</td>
-                <td class="text-center py-3 px-4">
-                    <div class="w-full bg-primary h-2 rounded-full"></div>
+                <td class="py-3 px-4 text-right font-mono font-bold">
+                    ${this.formatCurrency(stats.totalExpense)}
+                </td>
+                <td class="py-3 px-4 text-right font-mono font-bold">100%</td>
+                <td class="py-3 px-4">
+                    <div class="w-full bg-blue-500 h-2 rounded-full"></div>
                 </td>
             `;
             this.elements.detailedStatsBody.appendChild(totalRow);
 
         } catch (error) {
-            console.error('Error updating detailed statistics:', error);
+            console.error('Error updating detailed stats:', error);
             this.elements.detailedStatsBody.innerHTML = `
-                <tr><td colspan="4" class="error-message text-center py-4">Có lỗi khi hiển thị thống kê chi tiết.</td></tr>
+                <tr>
+                    <td colspan="4" class="text-center py-8 text-red-500">
+                        Có lỗi khi hiển thị thống kê chi tiết
+                    </td>
+                </tr>
             `;
         }
     }
 
     /**
-     * Escape HTML to prevent XSS
+     * Show no data message
      */
+    showNoDataMessage() {
+        this.elements.expenseChartCanvas.style.display = 'none';
+        this.elements.expenseChartContainer.innerHTML = `
+            <div class="no-data-message" style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 300px;
+                color: var(--text-muted);
+                text-align: center;
+                padding: 2rem;
+            ">
+                <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;">📊</div>
+                <h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                    Chưa có dữ liệu chi tiêu
+                </h3>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+                    Hãy thêm một số giao dịch chi tiêu để xem biểu đồ phân tích
+                </p>
+                <button onclick="window.location.hash = '#transactions'" style="
+                    background: var(--primary-color);
+                    color: white;
+                    border: none;
+                    padding: 0.75rem 1.5rem;
+                    border-radius: 8px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                ">
+                    Thêm giao dịch
+                </button>
+            </div>
+        `;
+
+        if (this.elements.expenseLegend) {
+            this.elements.expenseLegend.innerHTML = '';
+        }
+    }
+
+    /**
+     * Show chart error
+     */
+    showChartError(message) {
+        if (this.elements.expenseChartCanvas) {
+            this.elements.expenseChartCanvas.style.display = 'none';
+        }
+
+        this.elements.expenseChartContainer.innerHTML = `
+            <div class="chart-error" style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 300px;
+                color: var(--text-muted);
+                text-align: center;
+                padding: 2rem;
+                background: var(--bg-secondary);
+                border-radius: 8px;
+                border: 1px solid var(--border-color);
+            ">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                <h3 style="color: var(--text-primary); margin-bottom: 0.5rem;">Không thể hiển thị biểu đồ</h3>
+                <p style="margin-bottom: 1rem;">${message}</p>
+                <button onclick="window.StatisticsModule.renderExpenseChart()" style="
+                    background: var(--primary-color);
+                    color: white;
+                    border: none;
+                    padding: 0.5rem 1rem;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-weight: 500;
+                ">
+                    Thử lại
+                </button>
+            </div>
+        `;
+    }
+
+    /**
+     * Utility methods
+     */
+    destroyChart(chartName) {
+        if (this.charts[chartName]) {
+            try {
+                this.charts[chartName].destroy();
+            } catch (error) {
+                console.warn(`Error destroying ${chartName} chart:`, error);
+            }
+            this.charts[chartName] = null;
+        }
+    }
+
+    getCategoryColor(categoryName, index = 0) {
+        try {
+            if (Utils?.UIUtils?.getCategoryColor) {
+                return Utils.UIUtils.getCategoryColor(categoryName, index);
+            }
+            return this.config.chartColors[index % this.config.chartColors.length];
+        } catch (error) {
+            return this.config.chartColors[0];
+        }
+    }
+
+    getCategoryIcon(categoryName) {
+        try {
+            if (Utils?.UIUtils?.getCategoryIcon) {
+                return Utils.UIUtils.getCategoryIcon(categoryName);
+            }
+            return '📦';
+        } catch (error) {
+            return '📦';
+        }
+    }
+
+    formatCurrency(amount, showSymbol = true) {
+        try {
+            if (Utils?.CurrencyUtils?.formatCurrency) {
+                return Utils.CurrencyUtils.formatCurrency(amount, 'VND', showSymbol);
+            }
+            
+            const formatted = new Intl.NumberFormat('vi-VN').format(amount || 0);
+            return showSymbol ? `${formatted} ₫` : formatted;
+        } catch (error) {
+            const num = (amount || 0).toLocaleString();
+            return showSymbol ? `${num} ₫` : num;
+        }
+    }
+
     escapeHtml(text) {
         if (!text || typeof text !== 'string') return '';
-
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
     }
 
-    /**
-     * Update chart colors based on current theme
-     */
-    updateChartColors() {
-        const isDark = document.body.getAttribute('data-theme') === 'dark';
-        this.chartDefaults.fontColor = isDark ? '#e2e8f0' : '#374151';
-        this.chartDefaults.gridColor = isDark ? '#475569' : '#e5e7eb';
-        this.chartDefaults.tooltipBg = isDark ? 'rgba(30, 41, 59, 0.9)' : 'rgba(0,0,0,0.8)';
-        this.chartDefaults.tooltipColor = '#ffffff';
-
-        if (typeof Chart !== 'undefined') {
-            Chart.defaults.color = this.chartDefaults.fontColor;
-            Chart.defaults.borderColor = this.chartDefaults.gridColor;
-            Chart.defaults.plugins.tooltip.backgroundColor = this.chartDefaults.tooltipBg;
-            Chart.defaults.plugins.tooltip.titleColor = this.chartDefaults.tooltipColor;
-            Chart.defaults.plugins.tooltip.bodyColor = this.chartDefaults.tooltipColor;
+    updateElement(element, content) {
+        if (element && content !== undefined) {
+            element.textContent = content;
         }
-
-        this.renderExpenseChart();
-        this.renderTrendChart();
-        this.renderComparisonChart();
     }
 
-    /**
-     * Cleanup method to prevent memory leaks
-     */
-    destroy() {
-        this.eventListeners.forEach(({ element, event, handler }) => {
-            if (element && typeof element.removeEventListener === 'function') {
-                element.removeEventListener(event, handler);
-            }
-        });
-        this.eventListeners = [];
-
-        Object.values(this.charts).forEach(chart => {
-            if (chart && typeof chart.destroy === 'function') {
-                chart.destroy();
-            }
-        });
-        this.charts = {
-            expense: null,
-            trend: null,
-            comparison: null
-        };
-
-        if (this.elements.statsCustomDatePicker) {
-            this.elements.statsCustomDatePicker.remove();
-            this.elements.statsCustomDatePicker = null;
-        }
-
-        this.elements = {};
-    }
-
-    /**
-     * Refresh the module with error handling
-     */
-    refresh() {
+    showMessage(message, type = 'info', duration = 3000) {
         try {
-            if (this.currentPeriod !== 'custom' && this.elements.statsCustomDatePicker) {
-                this.elements.statsCustomDatePicker.remove();
-                this.elements.statsCustomDatePicker = null;
+            if (Utils?.UIUtils?.showMessage) {
+                Utils.UIUtils.showMessage(message, type, duration);
+            } else {
+                console.log(`${type.toUpperCase()}: ${message}`);
             }
+        } catch (error) {
+            console.log(`${type.toUpperCase()}: ${message}`);
+        }
+    }
 
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    /**
+     * Setup theme change observer
+     */
+    setupThemeObserver() {
+        try {
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+                        setTimeout(() => {
+                            this.updateChartDefaults();
+                            this.refreshCharts();
+                        }, 100);
+                    }
+                });
+            });
+
+            observer.observe(document.body, {
+                attributes: true,
+                attributeFilter: ['data-theme']
+            });
+
+            this.observers.push(observer);
+        } catch (error) {
+            console.warn('Could not setup theme observer:', error);
+        }
+    }
+
+    /**
+     * Update Chart.js global defaults
+     */
+    updateChartDefaults() {
+        if (typeof Chart === 'undefined') return;
+
+        const isDark = document.body.getAttribute('data-theme') === 'dark';
+        const textColor = isDark ? '#e2e8f0' : '#374151';
+        const gridColor = isDark ? '#475569' : '#e5e7eb';
+
+        Chart.defaults.color = textColor;
+        Chart.defaults.borderColor = gridColor;
+        Chart.defaults.backgroundColor = 'rgba(0,0,0,0.1)';
+    }
+
+    /**
+     * Handle window resize
+     */
+    handleResize() {
+        if (!this.isInitialized) return;
+
+        try {
+            // Refresh all charts to handle responsive changes
+            this.refreshCharts();
+        } catch (error) {
+            console.error('Error handling resize:', error);
+        }
+    }
+
+    /**
+     * Handle initialization error
+     */
+    handleInitError(error) {
+        console.error('Statistics module initialization failed:', error);
+        
+        try {
+            this.showMessage('Có lỗi khi khởi tạo module thống kê. Một số tính năng có thể không hoạt động.', 'error');
+        } catch (e) {
+            // Fallback if message system fails
+            console.error('Failed to show error message:', e);
+        }
+    }
+
+    /**
+     * Refresh all components
+     */
+    async refreshAll() {
+        if (!this.isInitialized) return;
+
+        try {
+            console.log('🔄 Refreshing statistics...');
+            
             this.updateSummaryCards();
-            this.renderExpenseChart();
+            await this.renderExpenseChart();
             this.renderTrendChart();
             this.renderComparisonChart();
             this.updateDetailedStats();
+            
+            console.log('✅ Statistics refreshed');
         } catch (error) {
-            console.error('Error refreshing statistics module:', error);
-            Utils.UIUtils.showMessage('Có lỗi khi cập nhật thống kê', 'error');
+            console.error('Error refreshing statistics:', error);
+            this.showMessage('Có lỗi khi cập nhật thống kê', 'error');
+        }
+    }
+
+    /**
+     * Refresh only charts
+     */
+    refreshCharts() {
+        try {
+            this.renderExpenseChart();
+            this.renderTrendChart();
+            this.renderComparisonChart();
+        } catch (error) {
+            console.error('Error refreshing charts:', error);
+        }
+    }
+
+    /**
+     * Public refresh method
+     */
+    refresh() {
+        return this.refreshAll();
+    }
+
+    /**
+     * Cleanup and destroy
+     */
+    destroy() {
+        console.log('💀 Destroying Statistics Module...');
+
+        try {
+            // Destroy all charts
+            Object.keys(this.charts).forEach(chartName => {
+                this.destroyChart(chartName);
+            });
+
+            // Remove event listeners
+            this.eventListeners.forEach(({ element, event, handler, options }) => {
+                if (element && typeof element.removeEventListener === 'function') {
+                    element.removeEventListener(event, handler, options);
+                }
+            });
+
+            // Disconnect observers
+            this.observers.forEach(observer => {
+                if (observer && typeof observer.disconnect === 'function') {
+                    observer.disconnect();
+                }
+            });
+
+            // Clean up custom date picker
+            this.hideCustomDatePicker();
+
+            // Reset state
+            this.eventListeners = [];
+            this.observers = [];
+            this.elements = {};
+            this.charts = { expense: null, trend: null, comparison: null };
+            this.isInitialized = false;
+            this.isRendering = false;
+
+            console.log('✅ Statistics Module destroyed');
+
+        } catch (error) {
+            console.error('Error destroying Statistics Module:', error);
         }
     }
 }
-
-// Listen for theme changes
-const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
-            if (window.StatisticsModule) {
-                setTimeout(() => {
-                    window.StatisticsModule.updateChartColors();
-                }, 100);
-            }
-        }
-    });
-});
-
-observer.observe(document.body, {
-    attributes: true,
-    attributeFilter: ['data-theme']
-});
 
 // Create global instance
 window.StatisticsModule = new StatisticsModule();

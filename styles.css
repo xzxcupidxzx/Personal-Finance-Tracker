@@ -3,36 +3,31 @@
    ============================================================================= */
 
 /* === ROOT VARIABLES === */
+/* Kích thước font và spacing cơ bản, sẽ được điều chỉnh cho các thiết bị khác */
 :root {
     /* Colors */
     --primary-color: #3b82f6;
     --primary-dark: #1d4ed8;
-    --primary-light: rgba(59, 130, 246, 0.1); /* Light blue for backgrounds/highlights */
-    --primary-very-light: rgba(59, 130, 246, 0.05); /* Even lighter blue */
-
-    --secondary-color: #64748b; /* Often used for less prominent elements or text */
-
-    /* Accent Colors (Distinct Green for general UI accents) */
-    --accent-color: #10b981; /* Main accent green */
-    --accent-light: rgba(16, 185, 129, 0.12); /* Lighter accent green background */
-    --accent-border: rgba(16, 185, 129, 0.35); /* Accent green border */
-
-    /* Warning Colors (Orange) */
+    --secondary-color: #64748b;
+    /* --accent-color: #10b981; /* This is redefined later with the same value */
     --warning-color: #f59e0b;
-    --warning-light: rgba(245, 158, 11, 0.1); /* Light orange background */
-    --warning-border: rgba(245, 158, 11, 0.35); /* Orange border */
+    /* --danger-color: #ef4444; /* This is redefined later with the same value */
 
     /* Text Colors */
     --text-primary: #1e293b;
     --text-secondary: #64748b;
     --text-muted: #94a3b8;
-    --text-on-primary: #ffffff; /* Text color for on --primary-color backgrounds */
-    --text-on-dark: #f1f5f9; /* General light text for dark backgrounds */
 
     /* Background Colors */
     --bg-primary: #ffffff;
     --bg-secondary: #f8fafc;
     --bg-tertiary: #f1f5f9;
+    --accent-light: rgba(16, 185, 129, 0.12); /* Nền xanh mờ */
+    --accent-color: #10b981; /* Chữ xanh đậm - same as initial --accent-color */
+    --accent-border: rgba(16, 185, 129, 0.35); /* Viền xanh */
+    --danger-light: rgba(239, 68, 68, 0.12); /* Nền đỏ mờ */
+    --danger-color: #ef4444; /* Chữ đỏ đậm - same as initial --danger-color */
+    --danger-border: rgba(239, 68, 68, 0.35); /* Viền đỏ */
 
     /* Border & Shadow */
     --border-color: #e2e8f0;
@@ -59,81 +54,65 @@
     --z-modal: 2000;
     --z-keyboard: 3000;
 
-    /* Semantic Colors for Income/Expense & Success/Danger/Info */
-    /* Income (Green) */
-    --income-color: #22c55e;          /* Main income green text */
-    --income-color-emphasis: #16a34a; /* Darker income green for specific emphasis */
-    --income-bg-light: rgba(34, 197, 94, 0.1);
-    --income-border: rgba(34, 197, 94, 0.35);
+    /* Custom Colors for Income/Expense (chỉ dùng cho màu chữ chính) */
+    /* Updated to darker shades previously used with !important */
+    --income-color: #16a34a;
+    --expense-color: #dc2626;
 
-    /* Expense (Red) */
-    --expense-color: #ef4444;         /* Main expense red text */
-    --expense-color-emphasis: #dc2626;/* Darker expense red for specific emphasis */
-    --expense-bg-light: rgba(239, 68, 68, 0.12); /* Was danger-light */
-    --expense-border: rgba(239, 68, 68, 0.35); /* Was danger-border */
-    --expense-bg-very-light: rgba(239, 68, 68, 0.05); /* For very subtle red backgrounds */
-    --expense-bg-light-hover: rgba(239, 68, 68, 0.2); /* For delete button hover */
-
-
-    /* Success (Synched with Income) */
-    --success-color: var(--income-color);
-    --success-color-emphasis: var(--income-color-emphasis);
+    /* Màu nền nhẹ cho các phần tử income/expense (được giữ nguyên hoặc điều chỉnh theo ý muốn) */
+    /* Note: These use the NEW --income-color and --expense-color which are darker.
+       If the original lighter green/red backgrounds are preferred, adjust RGBA values or use original color codes.
+       Example: --income-bg-light: rgba(34, 197, 94, 0.1); /* Original lighter green base */
+    --income-bg-light: rgba(22, 163, 74, 0.1); /* Adjusted for darker --income-color */
+    --expense-bg-light: rgba(220, 38, 38, 0.1); /* Adjusted for darker --expense-color */
+    
+    /* Đồng bộ hóa với success/danger để nhất quán toàn ứng dụng */
     --success-light: var(--income-bg-light);
-    --success-border: var(--income-border);
+    --success-color: var(--income-color); /* Đồng bộ với --income-color */
+    /* --danger-light: var(--expense-bg-light); /* This is already defined */
+    /* --danger-color: var(--expense-color); /* This is already defined */
 
-    /* Danger (Synched with Expense) */
-    --danger-color: var(--expense-color);
-    --danger-color-emphasis: var(--expense-color-emphasis);
-    --danger-light: var(--expense-bg-light);
-    --danger-border: var(--expense-border);
-    --danger-very-light: var(--expense-bg-very-light);
-
-    /* Info (Blue) */
-    --info-color: var(--primary-dark);
-    --info-light: var(--primary-light); /* Was rgba(59, 130, 246, 0.1) */
-    --info-border: var(--primary-color); /* Or a lighter shade like rgba(59, 130, 246, 0.35) */
+    /* Virtual Keyboard Theme Variables */
+    --keyboard-bg: var(--bg-primary, #f0f0f0);
+    --keyboard-btn-bg: var(--bg-secondary, #fff);
+    --keyboard-btn-text: var(--text-primary, #23272f);
+    --keyboard-btn-border: var(--border-color, #e2e8f0);
+    --keyboard-done-btn-bg: var(--primary-color, #3b82f6);
+    --keyboard-done-btn-text: #ffffff;
+    --keyboard-btn-active-bg: var(--primary-color, #3b82f6);
+    --keyboard-btn-active-text: #ffffff;
 }
 
+/* Dark Mode Variables - CONSOLIDATED */
 [data-theme="dark"] {
     /* Text Colors */
     --text-primary: #f1f5f9;
     --text-secondary: #cbd5e1;
     --text-muted: #94a3b8;
-    --text-on-primary: #ffffff; /* Remains white, primary color changes too */
-    --text-on-dark: #f1f5f9;
 
     /* Background Colors */
     --bg-primary: #1e293b;
     --bg-secondary: #0f172a;
     --bg-tertiary: #334155;
 
-    /* Border Color */
+    /* Border & Shadow */
     --border-color: #475569;
 
-    /* Accent Colors - Dark Mode */
-    --accent-light: rgba(16, 185, 129, 0.18); /* Dark mode accent green background */
-    --accent-border: rgba(16, 185, 129, 0.45); /* Dark mode accent green border */
+    /* Accent and Danger adjustments */
+    --accent-light: rgba(16, 185, 129, 0.18);
+    --accent-border: rgba(16, 185, 129, 0.45);
+    --danger-light: rgba(239, 68, 68, 0.18);
+    --danger-border: rgba(239, 68, 68, 0.45);
 
-    /* Warning Colors - Dark Mode */
-    --warning-light: rgba(245, 158, 11, 0.18);
-    --warning-border: rgba(245, 158, 11, 0.45);
-
-    /* Income - Dark Mode */
-    --income-bg-light: rgba(34, 197, 94, 0.18);
-    --income-border: rgba(34, 197, 94, 0.45);
-
-    /* Expense - Dark Mode */
-    --expense-bg-light: rgba(239, 68, 68, 0.18);
-    --expense-border: rgba(239, 68, 68, 0.45);
-    --expense-bg-very-light: rgba(239, 68, 68, 0.1);
-    --expense-bg-light-hover: rgba(239, 68, 68, 0.25);
-
-
-    /* Info - Dark Mode (primary derived) */
-    --primary-light: rgba(59, 130, 246, 0.15);
-    --primary-very-light: rgba(59, 130, 246, 0.1);
-    /* --info-light will inherit from --primary-light's dark mode adjustment */
-    /* --info-border will inherit from --primary-color (which doesn't change, its context does) */
+    /* Virtual Keyboard Dark Mode Variables */
+    --keyboard-bg: #23272f;
+    --keyboard-btn-bg: #323846;
+    --keyboard-btn-text: #f9fafb;
+    --keyboard-btn-border: #424656;
+    /* --keyboard-done-btn-bg: var(--primary-color); /* Keeps primary color or can be specific dark mode accent */
+    /* --keyboard-done-btn-text: #ffffff; */
+    --keyboard-btn-active-bg: #1e293b; /* Darker active state for dark mode */
+    /* --keyboard-btn-active-text: #ffffff; */
 }
 
 /* === BASE STYLES === */
@@ -188,15 +167,12 @@ body {
 .cursor-pointer { cursor: pointer; }
 .select-none { user-select: none; }
 .transition { transition: all 0.2s ease; }
-.text-primary { color: var(--text-primary); } /* This is confusing, text-primary is a color, --text-primary is a variable. Renaming class might be good long-term */
-.text-primary-color { color: var(--primary-color); } /* Added for clarity if you want text in primary theme color */
+.text-primary { color: var(--text-primary); }
 .text-secondary { color: var(--text-secondary); }
 .text-muted { color: var(--text-muted); }
-.text-accent { color: var(--accent-color); } /* Changed from text-success to text-accent */
+.text-success { color: var(--accent-color); } /* Note: accent-color is green, if success should be different, define --success-text-color */
 .text-warning { color: var(--warning-color); }
-.text-danger { color: var(--danger-color); }
-.text-income { color: var(--income-color); }
-.text-expense { color: var(--expense-color); }
+.text-danger { color: var(--danger-color); } /* This refers to the general danger color, not the specific financial expense red */
 .bg-primary { background-color: var(--bg-primary); }
 .bg-secondary { background-color: var(--bg-secondary); }
 .bg-tertiary { background-color: var(--bg-tertiary); }
@@ -214,7 +190,8 @@ body {
 .text-left { text-align: left; }
 
 .moon-icon {
-  margin-left: 9px;
+  margin-left: 9px; /* Hoặc 8px nếu muốn cách xa hơn */
+  /* Có thể tùy chỉnh số px tùy cảm giác cân đối của bạn */
 }
 .sun-icon {
   margin-left: 2px;
@@ -260,7 +237,7 @@ body {
     content: "";
     height: 24px;
     width: 24px;
-    background-color: var(--bg-primary); /* Changed from white to var */
+    background-color: white;
     transition: 0.4s;
     border-radius: 50%;
     box-shadow: var(--shadow-sm);
@@ -282,7 +259,7 @@ input:checked + .slider:before {
 /* === HEADER === */
 .app-header {
     background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    color: var(--text-on-primary);
+    color: white;
     padding: var(--spacing-lg);
     margin-bottom: var(--spacing-xl);
     border-radius: 0 0 var(--border-radius) var(--border-radius);
@@ -313,7 +290,7 @@ input:checked + .slider:before {
 }
 
 .summary-card {
-    background: rgba(255, 255, 255, 0.1); /* This creates a subtle overlay on the gradient, specific and likely intentional */
+    background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border-radius: var(--border-radius);
     padding: var(--spacing-md);
@@ -333,58 +310,57 @@ input:checked + .slider:before {
     font-weight: 700;
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
 }
-/* Summary cards in header - using EMगंगाS (emphasized) colors */
-.summary-value.income,
-.summary-card.income .summary-value {
-    color: var(--income-color-emphasis) !important;
-}
-
-.summary-value.expense,
-.summary-card.expense .summary-value {
-    color: var(--expense-color-emphasis) !important;
-}
-
 
 /* === MESSAGE BOX === */
 .message-box {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: auto;
-    max-width: 90%;
-    z-index: var(--z-modal, 2000);
-    padding: var(--spacing-md);
-    border-radius: var(--border-radius);
-    font-weight: 500;
-    text-align: center;
-    box-shadow: var(--shadow-lg);
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    position: fixed; /* Quan trọng: Giữ cố định trên màn hình */
+    top: 20px;       /* Khoảng cách từ đỉnh viewport. Bạn có thể dùng var(--spacing-md) hoặc giá trị khác. */
+                     /* Ví dụ: var(--spacing-lg) nếu muốn nó thấp hơn một chút. */
+    left: 50%;       /* Căn giữa theo chiều ngang (bước 1) */
+    transform: translateX(-50%); /* Căn giữa theo chiều ngang (bước 2) */
+    
+    width: auto;     /* Chiều rộng tự động theo nội dung và padding */
+    max-width: 90%;  /* Chiều rộng tối đa là 90% viewport, tránh quá rộng trên màn hình lớn. */
+                     /* Bạn cũng có thể đặt một giá trị cố định như: max-width: 500px; */
+    
+    z-index: var(--z-modal, 2000); /* Đảm bảo nó nổi lên trên các phần tử khác. 
+                                       Sử dụng biến z-index đã có của bạn. */ /* */
+
+    padding: var(--spacing-md); /* Giữ lại padding cho nội dung bên trong */ /* */
+    border-radius: var(--border-radius); /* Giữ lại bo góc */ /* */
+    font-weight: 500; /* */
+    text-align: center; /* */
+    box-shadow: var(--shadow-lg); /* Thêm bóng đổ để dễ nhận biết hơn khi nó nổi lên */ /* */
+
+    /* margin: var(--spacing-md); */ /* XÓA hoặc bình luận dòng này, vì vị trí đã được kiểm soát bởi top/left/transform */
+
+    /* Tùy chọn: Thêm hiệu ứng chuyển động mượt mà khi ẩn/hiện (nếu JS có xử lý) */
+    transition: opacity 0.3s ease, transform 0.3s ease; 
 }
 
 .message-box.success {
     background-color: var(--success-light);
-    color: var(--success-color);
-    border-left: 4px solid var(--success-color);
+    color: var(--income-color); /* Chữ màu xanh (using the updated --income-color which is #16a34a) */
+    border-left: 4px solid var(--income-color);
 }
 
 .message-box.error {
-    background-color: var(--danger-light);
-    color: var(--danger-color);
-    border-left: 4px solid var(--danger-color);
+    background-color: var(--danger-light); /* This uses --expense-bg-light, which now uses darker --expense-color base */
+    color: var(--expense-color); /* Chữ màu đỏ (using the updated --expense-color which is #dc2626) */
+    border-left: 4px solid var(--expense-color);
 }
 
 .message-box.info {
-    background-color: var(--info-light); /* Changed from #dbeafe */
-    color: var(--info-color);       /* Changed from #1e40af */
-    border-left: 4px solid var(--info-border); /* Was --primary-color */
+    background-color: #dbeafe; /* Consider making this a CSS variable */
+    color: #1e40af; /* Consider making this a CSS variable */
+    border-left: 4px solid var(--primary-color);
 }
 
 /* === MAIN CONTAINER === */
 .main-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 var(--spacing-md);
+    padding: 0 var(--spacing-md); /* Default padding for mobile */
 }
 
 /* === TAB CONTENT === */
@@ -490,7 +466,7 @@ input:checked + .slider:before {
 .form-select:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px var(--primary-light); /* Adjusted to use variable */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .form-input::placeholder {
@@ -514,8 +490,8 @@ input:checked + .slider:before {
     border: 2px solid var(--border-color);
     background: var(--bg-primary);
     transition: all 0.2s ease;
-    flex: 1;
-    min-width: 120px;
+    flex: 1; /* Cho phép flex item tự co giãn */
+    min-width: 120px; /* Đảm bảo kích thước tối thiểu */
     justify-content: center;
 }
 
@@ -534,7 +510,7 @@ input:checked + .slider:before {
     border-radius: 50%;
     position: relative;
     transition: all 0.2s ease;
-    flex-shrink: 0;
+    flex-shrink: 0; /* Ngăn không cho icon bị co lại */
 }
 
 .radio-option input[type="radio"]:checked + .radio-custom {
@@ -550,7 +526,7 @@ input:checked + .slider:before {
     transform: translate(-50%, -50%);
     width: 6px;
     height: 6px;
-    background: var(--text-on-primary); /* Changed from white */
+    background: white;
     border-radius: 50%;
 }
 
@@ -566,7 +542,7 @@ input:checked + .slider:before {
 }
 
 .income-option input[type="radio"]:checked ~ .radio-text {
-    color: var(--income-color);
+    color: var(--income-color); /* Chữ màu xanh */
 }
 
 .expense-option input[type="radio"]:checked + .radio-custom {
@@ -575,25 +551,25 @@ input:checked + .slider:before {
 }
 
 .expense-option input[type="radio"]:checked ~ .radio-text {
-    color: var(--expense-color);
+    color: var(--expense-color); /* Chữ màu đỏ */
 }
 
 /* Amount Input Group */
 .amount-input-group {
     display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
+    align-items: center; /* Đã có từ Tailwind class 'items-center' trên HTML */
+    gap: var(--spacing-sm); /* Ví dụ: 0.5rem hoặc 8px, tạo khoảng cách giữa các items */
 }
 
 .amount-input {
-    flex: 1;
-    min-width: 0;
+    flex: 1; /* Cho phép ô input co giãn và chiếm không gian còn lại */
+    min-width: 0; /* Rất quan trọng: Cho phép input co lại tối đa */
 }
 
 .currency-selector {
     flex-shrink: 1;
 	min-width: fit-content;
-	max-width: 75px;
+	max-width: 75px;  
 }
 
 .add-zeros-btn {
@@ -608,7 +584,7 @@ input:checked + .slider:before {
 }
 
 .add-zeros-btn:hover {
-    background: var(--border-color); /* Consider a slightly different shade or var(--bg-tertiary-hover) if defined */
+    background: var(--border-color);
 }
 
 /* Suggestion Area */
@@ -648,11 +624,11 @@ input:checked + .slider:before {
 
 .btn-suggestion.apply {
     background: var(--primary-color);
-    color: var(--text-on-primary); /* Changed from white */
+    color: white;
 }
 
 .btn-suggestion.dismiss {
-    background: var(--border-color); /* Consider var(--bg-tertiary) or a specific dismiss color */
+    background: var(--border-color);
     color: var(--text-secondary);
 }
 
@@ -664,7 +640,7 @@ input:checked + .slider:before {
     gap: var(--spacing-sm);
     padding: var(--spacing-md) var(--spacing-lg);
     background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    color: var(--text-on-primary); /* Changed from white */
+    color: white;
     border: none;
     border-radius: var(--border-radius);
     font-weight: 600;
@@ -768,7 +744,7 @@ input:checked + .slider:before {
 }
 
 .transaction-type-icon.transfer {
-    background: var(--primary-light); /* Was rgba(59, 130, 246, 0.1) */
+    background: rgba(59, 130, 246, 0.1); /* Consider making this a variable like --primary-bg-light */
     color: var(--primary-color);
 }
 
@@ -787,7 +763,7 @@ input:checked + .slider:before {
 }
 
 .transaction-meta {
-    display: grid;
+    display: grid; /* Changed from flex later in file, keeping the later definition */
     grid-template-columns: auto 1fr auto; /* time | category | account */
     gap: 0.5rem;
     font-size: 0.75rem;
@@ -799,17 +775,19 @@ input:checked + .slider:before {
     background: var(--bg-tertiary);
     padding: 2px 6px;
     border-radius: 4px;
-    font-size: 0.7rem;
-    color: var(--text-secondary); /* Adjusted for better contrast maybe */
-    max-width: 80px;
-    min-width: 60px;
-    width: 80px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    text-align: center;
-    border: 1px solid var(--border-color);
-    font-weight: 500;
+    font-size: 0.7rem; /* Later definition has 0.7rem */
+    color: var(--text-secondary); /* Later definition */
+    
+    max-width: 80px; /* Later definition */
+    min-width: 60px; /* Later definition */
+    width: 80px; /* Later definition */
+    overflow: hidden; /* Later definition */
+    text-overflow: ellipsis; /* Later definition */
+    white-space: nowrap; /* Later definition */
+    text-align: center; /* Later definition */
+    
+    border: 1px solid var(--border-color); /* Later definition */
+    font-weight: 500; /* Later definition */
 }
 
 .transaction-amount-section {
@@ -824,11 +802,11 @@ input:checked + .slider:before {
 }
 
 .transaction-amount.income {
-    color: var(--income-color-emphasis) !important;
+    color: var(--income-color); /* Using updated CSS variable, no !important */
 }
 
 .transaction-amount.expense {
-    color: var(--expense-color-emphasis) !important;
+    color: var(--expense-color); /* Using updated CSS variable, no !important */
 }
 
 .transaction-amount.transfer {
@@ -850,7 +828,7 @@ input:checked + .slider:before {
 }
 
 .action-btn-small.edit {
-    background: var(--warning-light); /* Was rgba(245, 158, 11, 0.1) */
+    background: rgba(245, 158, 11, 0.1); /* Consider making this --warning-bg-light */
     color: var(--warning-color);
 }
 
@@ -860,7 +838,7 @@ input:checked + .slider:before {
 }
 
 /* No Data State */
-.no-data { /* This class seems to be duplicated/overridden by .no-data-text later. Consolidate if possible */
+.no-data {
     text-align: center;
     padding: var(--spacing-xl);
     color: var(--text-muted);
@@ -872,10 +850,21 @@ input:checked + .slider:before {
     display: block;
 }
 
-/* This selector for .no-data-text seems more detailed and used later. Keeping it. */
-/* .no-data-text {
-    font-size: 1.1rem;
-} */
+.no-data-text { /* This is enhanced later, keeping later definition */
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text-muted);
+    font-size: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+.no-data-text::before { /* From later enhancement */
+    content: '📊';
+    font-size: 3rem;
+    opacity: 0.5;
+}
 
 
 /* ===== IMPROVED STATISTICS STYLES ===== */
@@ -905,7 +894,7 @@ input:checked + .slider:before {
     left: 0;
     right: 0;
     height: 3px;
-    background: var(--primary-color); /* Default top border color */
+    background: var(--primary-color);
     opacity: 0;
     transition: opacity 0.3s ease;
 }
@@ -922,7 +911,7 @@ input:checked + .slider:before {
 .expense-card::before {
     background: var(--expense-color);
 }
-.balance-card::before { /* Default is primary, so this explicit rule is fine for clarity */
+.balance-card::before {
     background: var(--primary-color);
 }
 .stats-icon {
@@ -936,50 +925,43 @@ input:checked + .slider:before {
     flex-shrink: 0;
     position: relative;
 }
-.stats-icon::after { /* Subtle background tint for the icon itself */
+.stats-icon::after {
     content: '';
     position: absolute;
     inset: 0;
     border-radius: 16px;
-    background: currentColor; /* Inherits the icon's color for the tint */
+    background: inherit; /* This will inherit the background from .stats-icon, check if intended */
     opacity: 0.1;
 }
 .income-card .stats-icon {
-    /* background: var(--income-bg-light); Removed, ::after handles tint */
+    background: var(--income-bg-light);
     color: var(--income-color);
 }
 
 .expense-card .stats-icon {
-    /* background: var(--expense-bg-light); Removed */
-    color: var(--expense-color); /* Corrected typo from 'var(--expense-color).' */
+    background: var(--expense-bg-light);
+    color: var(--expense-color); /* Original had trailing '.', removed */
 }
 .balance-card .stats-icon {
-    /* background: var(--primary-light); Removed, was rgba(59, 130, 246, 0.1) */
+    background: rgba(59, 130, 246, 0.1);
     color: var(--primary-color);
 }
 
 .stats-value {
     font-size: 1.4rem;
     font-weight: 800;
-    /* color: inherit; */ /* Text color will be inherited from parent or use specific below */
+    color: inherit; /* To inherit color from parent like #stats-total-income */
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
     margin-bottom: var(--spacing-xs);
     line-height: 1.2;
 }
-#stats-total-income .stats-value, /* More specific selector for the value itself */
-#stats-total-income { /* Fallback if .stats-value is not on the element with ID */
-    color: var(--income-color-emphasis) !important;
+#stats-total-income {
+    color: var(--income-color); /* Using updated CSS variable, no !important */
 }
 
-#stats-total-expense .stats-value,
 #stats-total-expense {
-    color: var(--expense-color-emphasis) !important;
+    color: var(--expense-color); /* Using updated CSS variable, no !important */
 }
-/* For balance, ensure it uses a neutral or primary text color if not specified */
-.balance-card .stats-value {
-    color: var(--text-primary); /* Or var(--primary-color) if preferred */
-}
-
 .stats-change {
     font-size: 0.85rem;
     font-weight: 600;
@@ -1012,6 +994,8 @@ input:checked + .slider:before {
 }
 
 /* === CHART STYLES === */
+/* This .chart-section is less specific than the one in ENHANCED CHARTS STYLES.
+   The later, more specific one will likely take precedence for most properties. */
 .chart-section {
     background: var(--bg-primary);
     border-radius: var(--border-radius);
@@ -1032,15 +1016,15 @@ input:checked + .slider:before {
     background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
     opacity: 0.7;
 }
-.chart-header {
+.chart-header { /* This is also redefined in ENHANCED CHARTS STYLES */
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--spacing-xl);
     padding-bottom: var(--spacing-md);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color); /* ENHANCED uses 2px */
 }
-.chart-title {
+.chart-title { /* This is also redefined in ENHANCED CHARTS STYLES */
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--text-primary);
@@ -1048,11 +1032,11 @@ input:checked + .slider:before {
     align-items: center;
     gap: var(--spacing-sm);
 }
-.chart-title::before {
+.chart-title::before { /* This is also redefined in ENHANCED CHARTS STYLES */
     content: '📊';
     font-size: 1.3rem;
 }
-.chart-type-selector {
+.chart-type-selector { /* Base styles, ENHANCED adds more */
     padding: var(--spacing-sm) var(--spacing-md);
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -1065,29 +1049,29 @@ input:checked + .slider:before {
 }
 .chart-type-selector:hover {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px var(--primary-light); /* Adjusted */
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 .chart-type-selector:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px var(--primary-light); /* Adjusted, alpha was 0.2 */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
-.chart-container-wrapper {
+.chart-container-wrapper { /* Also in ENHANCED CHARTS */
     display: grid;
     grid-template-columns: 1fr auto;
     gap: var(--spacing-xl);
     align-items: start;
     min-height: 400px;
 }
-.chart-container {
+.chart-container { /* Also in ENHANCED CHARTS */
     position: relative;
     height: 350px;
     width: 100%;
     padding: var(--spacing-md);
 }
 
-/* Enhanced Legend Styles */
+/* Enhanced Legend Styles */ /* Also in ENHANCED CHARTS */
 .chart-legend {
     min-width: 250px;
     max-width: 300px;
@@ -1097,7 +1081,7 @@ input:checked + .slider:before {
     border: 1px solid var(--border-color);
     height: fit-content;
 }
-.legend-item {
+.legend-item { /* Also in ENHANCED CHARTS */
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1109,30 +1093,30 @@ input:checked + .slider:before {
     border: 1px solid transparent;
     background: var(--bg-primary);
 }
-.legend-item:hover {
+.legend-item:hover { /* Also in ENHANCED CHARTS */
     background: var(--bg-tertiary);
-    border-color: var(--border-color); /* Use a slightly more prominent color or primary for hover? */
+    border-color: var(--border-color);
     transform: translateX(2px);
     box-shadow: var(--shadow-sm);
 }
 .legend-item:last-child {
     margin-bottom: 0;
 }
-.legend-content {
+.legend-content { /* Also in ENHANCED CHARTS */
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
     gap: var(--spacing-sm);
 }
-.legend-header {
+.legend-header { /* Also in ENHANCED CHARTS */
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
     flex: 1;
     min-width: 0;
 }
-.legend-icon {
+.legend-icon { /* Also in ENHANCED CHARTS */
     font-size: 1.4rem;
     width: 36px;
     height: 36px;
@@ -1140,21 +1124,20 @@ input:checked + .slider:before {
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: var(--bg-tertiary); /* Icon background */
-    color: var(--text-secondary); /* Icon color */
+    background: var(--bg-tertiary);
     flex-shrink: 0;
     transition: transform 0.2s ease;
 }
-.legend-item:hover .legend-icon {
+.legend-item:hover .legend-icon { /* Also in ENHANCED CHARTS */
     transform: scale(1.1);
 }
-.legend-label-wrapper {
+.legend-label-wrapper { /* Also in ENHANCED CHARTS */
     display: flex;
     flex-direction: column;
     flex: 1;
     min-width: 0;
 }
-.legend-label {
+.legend-label { /* Also in ENHANCED CHARTS */
     font-size: 0.95rem;
     font-weight: 600;
     color: var(--text-primary);
@@ -1163,33 +1146,32 @@ input:checked + .slider:before {
     white-space: nowrap;
     margin-bottom: 2px;
 }
-.legend-amount-percentage {
-    display: flex; /* Changed from display:flex */
+.legend-amount-percentage { /* Also in ENHANCED CHARTS */
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    display: flex;
     gap: 0.5rem;
     align-items: center;
-    font-size: 0.8rem; /* Existing */
-    color: var(--text-secondary); /* Existing */
 }
-.legend-amount {
+.legend-amount { /* Also in ENHANCED CHARTS */
     font-weight: 600;
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-    color: var(--text-primary); /* Or could be context-specific, e.g., income/expense color */
+    color: var(--text-primary);
 }
-.legend-percentage {
+.legend-percentage { /* Also in ENHANCED CHARTS */
     color: var(--text-muted);
     font-weight: 500;
 }
-.legend-color { /* This is the color swatch next to legend item */
+.legend-color { /* Also in ENHANCED CHARTS */
     width: 24px;
     height: 24px;
     border-radius: 6px;
     flex-shrink: 0;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border: 2px solid var(--bg-primary); /* Border against its own background */
+    border: 2px solid var(--bg-primary);
     transition: transform 0.2s ease;
-    background-color: currentColor; /* The legend item itself should set its color for this to pick up, or JS sets it */
 }
-.legend-item:hover .legend-color {
+.legend-item:hover .legend-color { /* Also in ENHANCED CHARTS */
     transform: scale(1.1);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
@@ -1198,14 +1180,14 @@ input:checked + .slider:before {
 .stats-table-container {
     background: var(--bg-primary);
     border-radius: var(--border-radius);
-    overflow: hidden; /* Hides shadow clipping for overflow-x */
+    overflow: hidden;
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
-    overflow-x: auto;
+    overflow-x: auto; /* Cho phép cuộn ngang trên thiết bị nhỏ */
 }
 .stats-table {
     width: 100%;
-    min-width: 600px;
+    min-width: 600px; /* Đảm bảo bảng không quá hẹp trên mobile */
     border-collapse: collapse;
     font-size: 0.9rem;
 }
@@ -1226,7 +1208,7 @@ input:checked + .slider:before {
     text-align: center;
 }
 .stats-table th:nth-child(2),
-.stats-table th:nth-child(3) { /* Assuming these are amount columns */
+.stats-table th:nth-child(3) {
     text-align: right;
 }
 .stats-table tbody tr {
@@ -1242,17 +1224,12 @@ input:checked + .slider:before {
 .stats-table td {
     padding: var(--spacing-md);
     vertical-align: middle;
-    color: var(--text-secondary); /* Default cell text color */
 }
-.stats-table td.text-primary { /* If a cell needs primary text color */
-    color: var(--text-primary);
-}
-
 
 /* Progress Bar Styles */
 .progress-container {
     width: 100%;
-    max-width: 120px; /* Or adjust as needed */
+    max-width: 120px;
 }
 .progress-bar {
     width: 100%;
@@ -1268,13 +1245,8 @@ input:checked + .slider:before {
     transition: width 0.6s ease-out;
     position: relative;
     overflow: hidden;
-    background-color: var(--primary-color); /* Default fill color, can be overridden by JS or specific classes */
 }
-.progress-fill.income { background-color: var(--income-color); }
-.progress-fill.expense { background-color: var(--expense-color); }
-.progress-fill.accent { background-color: var(--accent-color); }
-
-.progress-fill::after { /* Shimmer effect */
+.progress-fill::after {
     content: '';
     position: absolute;
     top: 0;
@@ -1282,7 +1254,7 @@ input:checked + .slider:before {
     width: 100%;
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    animation: shimmer 1.5s ease-out infinite; /* Loop shimmer */
+    animation: shimmer 1.5s ease-out; /* Consider 'infinite' if it should always shimmer */
 }
 @keyframes shimmer {
     0% { left: -100%; }
@@ -1317,29 +1289,25 @@ input:checked + .slider:before {
     display: flex;
     align-items: center;
     justify-content: center;
-    /* color is inherited or set by specific class below */
 }
 
 .category-icon.income {
     background: var(--income-bg-light);
-    color: var(--income-color);
 }
 
 .category-icon.expense {
     background: var(--expense-bg-light);
-    color: var(--expense-color);
 }
 
-.category-icon.account { /* Typically primary/info color for accounts */
-    background: var(--primary-light); /* Was rgba(59, 130, 246, 0.1) */
-    color: var(--primary-color);
+.category-icon.account {
+    background: rgba(59, 130, 246, 0.1);
 }
 
 .add-category-form {
     margin-bottom: var(--spacing-lg);
 }
 
-.form-group { /* Generic form group, might need more context if used elsewhere */
+.form-group {
     display: flex;
     gap: var(--spacing-sm);
 }
@@ -1347,26 +1315,20 @@ input:checked + .slider:before {
 .category-input {
     flex: 1;
     padding: var(--spacing-md);
-    border: 1px solid var(--border-color); /* Consider using 2px like other inputs for consistency */
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     background: var(--bg-primary);
     color: var(--text-primary);
-    font-size: 0.875rem; /* Slightly smaller than main inputs */
+    font-size: 0.875rem;
 }
-.category-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px var(--primary-light);
-}
-
 
 .add-category-btn {
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
-    padding: var(--spacing-md); /* Same padding as category-input for height consistency */
+    padding: var(--spacing-md);
     background: var(--primary-color);
-    color: var(--text-on-primary);
+    color: white;
     border: none;
     border-radius: 8px;
     font-weight: 500;
@@ -1386,7 +1348,6 @@ input:checked + .slider:before {
 
 .category-items {
     list-style: none;
-    /* padding: 0; margin: 0; implied by reset */
 }
 
 .category-item {
@@ -1416,7 +1377,7 @@ input:checked + .slider:before {
     gap: var(--spacing-xs);
 }
 
-.delete-btn { /* This is a general delete button, can be used outside categories too */
+.delete-btn {
     padding: var(--spacing-xs) var(--spacing-sm);
     background: var(--expense-bg-light);
     color: var(--expense-color);
@@ -1428,7 +1389,7 @@ input:checked + .slider:before {
 }
 
 .delete-btn:hover {
-    background: var(--expense-bg-light-hover); /* Was rgba(239, 68, 68, 0.2) */
+    background: rgba(239, 68, 68, 0.2); /* Consider var(--danger-light) with higher alpha */
 }
 
 /* === SETTINGS === */
@@ -1453,7 +1414,6 @@ input:checked + .slider:before {
 
 .settings-icon {
     font-size: 1.3rem;
-    color: var(--text-secondary); /* Or primary color if it's a main icon */
 }
 
 /* Theme Options */
@@ -1480,29 +1440,25 @@ input:checked + .slider:before {
     border: 2px solid var(--border-color);
     border-radius: var(--border-radius);
     transition: all 0.2s ease;
-    color: var(--text-primary); /* Default text color for previews */
 }
 
 .theme-option input[type="radio"]:checked + .theme-preview {
     border-color: var(--primary-color);
-    background: var(--primary-very-light); /* Was rgba(59, 130, 246, 0.05) */
+    background: rgba(59, 130, 246, 0.05); /* Consider var(--primary-bg-light) */
 }
 
-.light-preview { /* These are specific previews, hardcoded gradients are fine */
+.light-preview {
     background: linear-gradient(45deg, #ffffff, #f8fafc);
 }
 
 .dark-preview {
     background: linear-gradient(45deg, #1e293b, #0f172a);
-    color: var(--text-on-dark); /* Changed from white */
+    color: white;
 }
 
 .auto-preview {
     background: linear-gradient(45deg, #ffffff 50%, #1e293b 50%);
-    /* Text color needs to be handled carefully here, maybe with pseudo-elements for each half */
 }
-.auto-preview .theme-name { color: var(--text-primary); } /* Example, might need more complex styling */
-
 
 .theme-name {
     font-weight: 500;
@@ -1520,7 +1476,7 @@ input:checked + .slider:before {
     gap: var(--spacing-md);
 }
 
-.action-btn { /* General action button style used in settings */
+.action-btn {
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
@@ -1537,10 +1493,9 @@ input:checked + .slider:before {
 .action-btn:hover {
     box-shadow: var(--shadow-sm);
     transform: translateY(-1px);
-    border-color: var(--primary-color); /* Add a hover state for border */
 }
 
-.action-btn .btn-icon { /* Icon within the action button */
+.action-btn .btn-icon {
     font-size: 1.5rem;
     width: 40px;
     height: 40px;
@@ -1549,22 +1504,18 @@ input:checked + .slider:before {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    /* Background and color set by specific classes below */
 }
 
 .action-btn.export .btn-icon {
-    background: var(--income-bg-light); /* Export often seen as positive/success */
-    color: var(--income-color);
+    background: var(--income-bg-light);
 }
 
 .action-btn.import .btn-icon {
-    background: var(--primary-light); /* Was rgba(59, 130, 246, 0.1) */
-    color: var(--primary-color);
+    background: rgba(59, 130, 246, 0.1); /* Consider --primary-bg-light */
 }
 
-.action-btn.danger .btn-icon { /* For potentially destructive actions */
-    background: var(--expense-bg-light); /* expense maps to danger */
-    color: var(--expense-color);
+.action-btn.danger .btn-icon {
+    background: var(--expense-bg-light);
 }
 
 .btn-content {
@@ -1577,10 +1528,6 @@ input:checked + .slider:before {
     display: block;
     margin-bottom: var(--spacing-xs);
 }
-.action-btn.danger .btn-title { /* Specific title color for danger buttons */
-    color: var(--danger-color);
-}
-
 
 .btn-subtitle {
     font-size: 0.875rem;
@@ -1612,7 +1559,7 @@ input:checked + .slider:before {
     color: var(--text-primary);
 }
 
-.setting-input, /* These are smaller inputs/selects within settings items */
+.setting-input,
 .setting-select {
     padding: var(--spacing-sm) var(--spacing-md);
     border: 1px solid var(--border-color);
@@ -1620,15 +1567,8 @@ input:checked + .slider:before {
     background: var(--bg-primary);
     color: var(--text-primary);
     font-size: 0.875rem;
-    width: 150px; /* Fixed width, consider responsiveness */
+    width: 150px;
 }
-.setting-input:focus,
-.setting-select:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px var(--primary-light); /* Reduced shadow for smaller inputs */
-}
-
 
 .info-value {
     font-weight: 500;
@@ -1636,17 +1576,19 @@ input:checked + .slider:before {
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
 }
 
-/* Danger Section in Settings */
-.danger-section { /* A specific section styled to indicate danger */
-    border-color: var(--danger-border); /* Was rgba(239, 68, 68, 0.3) */
+/* Danger Section */
+.danger-section {
+    border-color: rgba(239, 68, 68, 0.3); /* Consider var(--danger-border) */
 }
 
-.danger-actions .action-btn { /* Action buttons within the danger section */
-    background: var(--danger-very-light); /* Was rgba(239, 68, 68, 0.05) */
-    border-color: var(--danger-border); /* Was rgba(239, 68, 68, 0.3) */
+.danger-actions .action-btn {
+    background: rgba(239, 68, 68, 0.05); /* Consider var(--danger-light) with adjusted alpha */
+    border-color: rgba(239, 68, 68, 0.3); /* Consider var(--danger-border) */
 }
-/* .danger-actions .btn-title is already handled by .action-btn.danger .btn-title */
 
+.danger-actions .btn-title {
+    color: var(--expense-color);
+}
 
 /* === RECONCILIATION === */
 .account-balances-section,
@@ -1697,7 +1639,7 @@ input:checked + .slider:before {
 /* Reconciliation Table */
 .reconciliation-container {
     position: relative;
-    overflow-x: auto;
+    overflow-x: auto; /* Cho phép cuộn ngang */
     -webkit-overflow-scrolling: touch;
 }
 
@@ -1706,9 +1648,9 @@ input:checked + .slider:before {
     min-width: 900px;
     table-layout: fixed;
     border-collapse: collapse;
-    background: var(--bg-primary); /* Table itself has a background */
-    border-radius: var(--border-radius); /* If overflow hidden on container */
-    overflow: hidden; /* To make border-radius work with cells */
+    background: var(--bg-primary);
+    border-radius: var(--border-radius);
+    overflow: hidden;
 }
 
 .reconciliation-table th,
@@ -1725,25 +1667,26 @@ input:checked + .slider:before {
     color: var(--text-primary);
     position: sticky;
     top: 0;
-    z-index: 10; /* Ensure header stays above content */
+    z-index: 10;
 }
 
-.reconciliation-table .sticky-col { /* First column sticky */
+.reconciliation-table .sticky-col {
     position: sticky;
     left: 0;
-    background: var(--bg-tertiary); /* Match TH background or bg-primary if on rows */
-    z-index: 11; /* Above other cells, same as TH or higher if TH also sticky */
+    background: var(--bg-tertiary); /* Should match th background */
+    z-index: 11; /* Higher than th if it overlays */
     text-align: left;
-    font-weight: 600; /* Typically for row headers */
+    font-weight: 600;
     min-width: 150px;
 }
-/* If sticky-col is a TD, it might need a different background for dark mode if bg-tertiary is too dark */
-[data-theme="dark"] .reconciliation-table .sticky-col {
-    background: var(--bg-secondary); /* Slightly lighter than table header for distinction */
+/* Ensure sticky-col background matches header on scroll for dark mode */
+[data-theme="dark"] .reconciliation-table .sticky-col,
+[data-theme="dark"] .reconciliation-table th {
+    background: var(--bg-tertiary);
 }
 
 
-.reconciliation-input { /* Input fields within the table */
+.reconciliation-input {
     width: 100%;
     padding: var(--spacing-sm);
     border: 1px solid var(--border-color);
@@ -1753,15 +1696,9 @@ input:checked + .slider:before {
     text-align: right;
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
 }
-.reconciliation-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px var(--primary-light);
-}
 
-
-.reconcile-btn, /* Primary action in reconciliation */
-.record-btn {    /* Secondary/accent action */
+.reconcile-btn,
+.record-btn {
     padding: var(--spacing-sm) var(--spacing-md);
     border: none;
     border-radius: 6px;
@@ -1770,23 +1707,17 @@ input:checked + .slider:before {
     cursor: pointer;
     transition: all 0.2s ease;
     width: 100%;
-    color: var(--text-on-primary); /* Default text for these buttons */
 }
 
 .reconcile-btn {
     background: var(--primary-color);
-}
-.reconcile-btn:hover {
-    background: var(--primary-dark);
+    color: white;
 }
 
 .record-btn {
-    background: var(--accent-color); /* Uses the general UI accent green */
+    background: var(--accent-color);
+    color: white;
 }
-.record-btn:hover {
-    filter: brightness(90%); /* Simple hover for accent */
-}
-
 
 .scroll-hint {
     text-align: center;
@@ -1808,7 +1739,7 @@ input:checked + .slider:before {
     justify-content: space-around;
     padding: var(--spacing-sm) 0;
     z-index: var(--z-nav);
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05); /* Softer shadow */
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .nav-item {
@@ -1823,16 +1754,12 @@ input:checked + .slider:before {
     transition: all 0.2s ease;
     color: var(--text-muted);
     flex: 1;
-    max-width: 80px; /* Max width for each item */
+    max-width: 80px;
 }
 
 .nav-item.active {
     color: var(--primary-color);
 }
-.nav-item.active .nav-label { /* Ensure label also gets active color if not inheriting */
-    color: var(--primary-color);
-}
-
 
 .nav-icon {
     font-size: 1.3rem;
@@ -1841,12 +1768,10 @@ input:checked + .slider:before {
 .nav-label {
     font-size: 0.7rem;
     font-weight: 500;
-    /* color will be inherited from .nav-item */
 }
 
 .nav-item:hover {
-    color: var(--primary-color); /* Change text color on hover too */
-    background: var(--primary-very-light); /* Was rgba(59, 130, 246, 0.05) */
+    background: rgba(59, 130, 246, 0.05);
     border-radius: 8px;
 }
 
@@ -1857,29 +1782,25 @@ input:checked + .slider:before {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5); /* Standard overlay, dark mode might need adjustment if too stark */
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: var(--z-modal); /* Ensure it's above modals if modals can trigger loading */
-}
-[data-theme="dark"] .loading-overlay {
-    background: rgba(15, 23, 42, 0.7); /* Darker overlay for dark mode (bg-secondary alpha) */
+    z-index: var(--z-modal); /* Should be higher than z-keyboard if keyboard can be open under it */
 }
 
-.loading-spinner { /* The box containing the spinner */
+.loading-spinner {
     background: var(--bg-primary);
     border-radius: var(--border-radius);
     padding: var(--spacing-xl);
     text-align: center;
-    box-shadow: var(--shadow-lg);
 }
 
-.spinner { /* The actual spinning element */
+.spinner {
     width: 40px;
     height: 40px;
-    border: 4px solid var(--border-color); /* Lighter part of spinner */
-    border-top: 4px solid var(--primary-color); /* Colored part of spinner */
+    border: 4px solid var(--border-color);
+    border-top: 4px solid var(--primary-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 0 auto var(--spacing-md) auto;
@@ -1901,20 +1822,16 @@ input:checked + .slider:before {
 }
 
 .calendar-container {
-    background: var(--bg-secondary); /* Overall background for the calendar component */
+    background: var(--bg-secondary);
     border-radius: 16px;
     overflow: hidden;
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
 }
 
-.calendar-header { /* Header part of the calendar (Month Nav, Summary) */
-    /* Using a distinct gradient, could be themed with variables if desired */
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    /* For a themed version:
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-    */
-    color: var(--text-on-primary); /* Assuming white/light text on this gradient */
+.calendar-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Consider themeable colors */
+    color: white;
     padding: 1.5rem;
     text-align: center;
 }
@@ -1926,10 +1843,10 @@ input:checked + .slider:before {
     margin-bottom: 1rem;
 }
 
-.nav-btn { /* Prev/Next month buttons */
-    background: rgba(255,255,255,0.2); /* Translucent white on the gradient */
+.nav-btn {
+    background: rgba(255,255,255,0.2);
     border: none;
-    color: var(--text-on-primary); /* Text color for buttons */
+    color: white;
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -1960,43 +1877,32 @@ input:checked + .slider:before {
     margin-top: 1rem;
 }
 
-/* Calendar summary card, inherits .summary-card styles but is specifically within calendar-header */
-.calendar-header .summary-card {
-    background: rgba(255,255,255,0.1); /* Translucent white, different from main header summary */
+/* .summary-card is already defined, this is a more specific version within calendar */
+.calendar-header .summary-card { /* Scope to calendar header */
+    background: rgba(255,255,255,0.1);
     padding: 1rem;
     border-radius: 12px;
     text-align: center;
-    backdrop-filter: blur(10px); /* Keep if this effect is desired on the gradient */
+    backdrop-filter: blur(10px); /* Already on generic .summary-card */
 }
 
-.calendar-header .summary-label { /* Label within calendar summary cards */
+/* .summary-label is already defined */
+.calendar-header .summary-label {
     font-size: 0.875rem;
     opacity: 0.9;
     margin-bottom: 0.5rem;
     font-weight: 500;
-    color: var(--text-on-primary); /* Ensure text is visible on gradient */
 }
 
-.calendar-header .summary-value { /* Value within calendar summary cards */
+/* .summary-value is already defined */
+.calendar-header .summary-value {
     font-size: 1rem;
     font-weight: 700;
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-    color: var(--text-on-primary); /* Ensure text is visible */
-}
-.calendar-header .summary-card.income .summary-value {
-    /* color: var(--income-color-emphasis) !important; /* Or a light green if on dark gradient */
-    /* For dark gradient, a light, distinct color might be better than dark green */
-    color: #a7f3d0 !important; /* Example: Tailwind green-200 */
-}
-.calendar-header .summary-card.expense .summary-value {
-    /* color: var(--expense-color-emphasis) !important; */
-    color: #fca5a5 !important; /* Example: Tailwind red-300 */
 }
 
-
-.calendar-grid { /* Container for weekdays and days */
+.calendar-grid {
     padding: 1.5rem;
-    background-color: var(--bg-secondary); /* Ensure grid area has its own background */
 }
 
 .calendar-weekdays {
@@ -2025,11 +1931,11 @@ input:checked + .slider:before {
 
 .calendar-day-cell {
     border: 1px solid var(--border-color);
-    border-radius: 12px; /* Quite rounded for a small cell */
+    border-radius: 12px;
     position: relative;
     cursor: pointer;
     transition: all 0.2s ease;
-    background: var(--bg-primary); /* Each cell background */
+    background: var(--bg-primary);
     display: flex;
     flex-direction: column;
     padding: 0.6rem;
@@ -2046,25 +1952,17 @@ input:checked + .slider:before {
 
 .calendar-day-cell.other-month {
     background: var(--bg-tertiary);
-    color: var(--text-muted); /* Text color for numbers in other months */
+    color: var(--text-muted);
     opacity: 0.6;
 }
-.calendar-day-cell.other-month .day-number {
-    color: var(--text-muted); /* Ensure number itself is muted */
-}
-
 
 .calendar-day-cell.today {
     border-color: var(--primary-color);
-    background: var(--primary-very-light); /* Was --primary-light, using even lighter */
+    background: rgba(59, 130, 246, 0.08); /* Consider --primary-bg-light or similar var */
     border-width: 2px;
 }
-.calendar-day-cell.today .day-number {
-    color: var(--primary-dark); /* Make today's number stand out */
-    font-weight: 700;
-}
 
-.calendar-day-cell.has-transactions:hover { /* More emphasis on hover if it has transactions */
+.calendar-day-cell.has-transactions:hover {
     transform: translateY(-3px);
     box-shadow: var(--shadow-lg);
 }
@@ -2072,12 +1970,12 @@ input:checked + .slider:before {
 .day-number {
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--text-primary); /* Default day number color */
+    color: var(--text-primary);
     margin-bottom: 0.25rem;
     text-align: center;
 }
 
-.transaction-indicators { /* Container for income/expense dots/bars in a day cell */
+.transaction-indicators {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -2086,7 +1984,7 @@ input:checked + .slider:before {
     line-height: 1.2;
 }
 
-.transaction-indicator { /* Individual income/expense indicator */
+.transaction-indicator {
     padding: 0.125rem 0.25rem;
     border-radius: 4px;
     text-align: center;
@@ -2099,26 +1997,25 @@ input:checked + .slider:before {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    border: 1px solid transparent; /* Base border */
 }
 
-.transaction-indicator.income { /* Syncing with income variables, not accent */
-    background: var(--income-bg-light);
-    color: var(--income-color);
-    border-color: var(--income-border);
+.transaction-indicator.income {
+    background: var(--accent-light);
+    color: var(--accent-color);
+    border: 1px solid var(--accent-border); /* Added border for consistency with expense */
 }
 
 .transaction-indicator.expense {
-    background: var(--danger-light); /* danger is synced with expense */
+    background: var(--danger-light);
     color: var(--danger-color);
-    border-color: var(--danger-border);
+    border: 1px solid var(--danger-border); /* Added border */
 }
 
-.transaction-indicator.both { /* Special indicator for both types */
+.transaction-indicator.both {
     background: linear-gradient(90deg, var(--income-bg-light) 50%, var(--expense-bg-light) 50%);
     color: var(--text-primary);
-    border: 1px solid var(--border-color); /* A neutral border */
-    font-size: 0.625rem; /* Smaller font if it shows text like "Both" */
+    border: 1px solid var(--border-color);
+    font-size: 0.625rem;
 }
 
 /* Modal Styles */
@@ -2132,26 +2029,22 @@ input:checked + .slider:before {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: var(--z-modal); /* Higher than nav, same as loading potentially */
+    z-index: var(--z-modal); /* Ensure this is higher than .bottom-nav and other elements */
     backdrop-filter: blur(4px);
     padding: var(--spacing-md);
 }
-[data-theme="dark"] .modal {
-    background: rgba(15, 23, 42, 0.7); /* Consistent with loading overlay */
-}
-
 
 .modal-content {
     background: var(--bg-primary);
-    border-radius: 16px; /* More rounded modal */
+    border-radius: 16px;
     width: 90%;
     max-width: 500px;
     max-height: 80vh;
-    overflow: hidden; /* Important for border-radius on children like header/body */
+    overflow: hidden; /* Important for child .modal-body to scroll */
     box-shadow: var(--shadow-xl);
     border: 1px solid var(--border-color);
-    display: flex; /* Added for flex-direction column behavior */
-    flex-direction: column; /* Added */
+    display: flex; /* Added for flex structure header/body */
+    flex-direction: column; /* Added for flex structure header/body */
 }
 
 .modal-header {
@@ -2160,8 +2053,8 @@ input:checked + .slider:before {
     align-items: center;
     padding: 1.5rem;
     border-bottom: 1px solid var(--border-color);
-    background: var(--bg-secondary); /* Slightly different background for header */
-    flex-shrink: 0; /* Added */
+    background: var(--bg-secondary);
+    flex-shrink: 0; /* Prevent header from shrinking */
 }
 
 .modal-header h3 {
@@ -2174,7 +2067,7 @@ input:checked + .slider:before {
 .modal-close {
     background: none;
     border: none;
-    font-size: 24px; /* Icon size */
+    font-size: 24px;
     cursor: pointer;
     color: var(--text-secondary);
     width: 32px;
@@ -2187,18 +2080,18 @@ input:checked + .slider:before {
 }
 
 .modal-close:hover {
-    background: var(--bg-tertiary); /* Subtle hover background */
-    color: var(--text-primary); /* Darker icon color on hover */
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
 }
 
 .modal-body {
     padding: 1.5rem;
-    /* max-height: 400px; Removed, handled by modal-content max-height and flex */
+    /* max-height: 400px; /* This might conflict with modal-content max-height if not managed by flex */
     overflow-y: auto;
-    flex-grow: 1; /* Added */
+    flex-grow: 1; /* Allow body to take available space and scroll */
 }
 
-.day-transaction-item { /* Item within the calendar day modal */
+.day-transaction-item {
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -2211,14 +2104,13 @@ input:checked + .slider:before {
 }
 
 .day-transaction-item:hover {
-    border-color: var(--primary-color); /* Highlight on hover */
+    border-color: var(--primary-color);
     transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
 }
 
-.transaction-type-indicator { /* Small colored bar on the left of item */
-    width: 8px; /* Wider for better visibility */
-    height: 40px; /* Or align with item height */
+.transaction-type-indicator {
+    width: 8px;
+    height: 40px;
     border-radius: 4px;
     flex-shrink: 0;
 }
@@ -2233,15 +2125,12 @@ input:checked + .slider:before {
 
 .day-transaction-details {
     flex: 1;
-    min-width: 0; /* For text truncation if needed */
 }
 
 .day-transaction-description {
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 0.25rem;
-    /* Add truncation if desired */
-    /* overflow: hidden; text-overflow: ellipsis; white-space: nowrap; */
 }
 
 .day-transaction-meta {
@@ -2256,44 +2145,55 @@ input:checked + .slider:before {
 }
 
 .day-transaction-amount.income {
-    color: var(--income-color-emphasis) !important;
+    color: var(--income-color); /* Using updated CSS variable, no !important */
 }
 
 .day-transaction-amount.expense {
-    color: var(--expense-color-emphasis) !important;
+    color: var(--expense-color); /* Using updated CSS variable, no !important */
 }
-.no-transactions-day { /* Message if no transactions for selected day in modal */
+.no-transactions-day {
     text-align: center;
     color: var(--text-muted);
     padding: 2rem;
     font-style: italic;
 }
+/* Summary cards trên header */
+/* These rules ensure that even if .summary-value doesn't have .income/.expense,
+   if its parent .summary-card has it, the color applies. */
+.summary-card.income .summary-value,
+.summary-value.income { /* Added .summary-value.income for direct application */
+    color: var(--income-color); /* Using updated CSS variable, no !important */
+}
 
+.summary-card.expense .summary-value,
+.summary-value.expense { /* Added .summary-value.expense for direct application */
+    color: var(--expense-color); /* Using updated CSS variable, no !important */
+}
 /* Input Error Message & Validation */
 .input-error-message {
-    color: var(--danger-color);
+    color: var(--danger-color); /* General danger color */
     font-size: 0.75rem;
     margin-top: 0.25rem;
-    display: none; /* Hidden by default, shown by JS */
+    display: none; /* Hidden by default */
 }
 
 .form-input.input-invalid,
 .category-input.input-invalid,
-.setting-input.input-invalid { /* Invalid state for various inputs */
-    border-color: var(--danger-color) !important; /* Ensure override */
-    box-shadow: 0 0 0 3px var(--danger-light) !important; /* Use light version for shadow */
+.setting-input.input-invalid {
+    border-color: var(--danger-color); /* General danger color */
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1); /* Corresponds to var(--danger-light) */
 }
 
 .form-input.input-valid,
 .category-input.input-valid,
-.setting-input.input-valid { /* Valid state */
-    border-color: var(--success-color) !important; /* Or accent-color if preferred for general valid */
-    box-shadow: 0 0 0 3px var(--success-light) !important; /* Use light version for shadow */
+.setting-input.input-valid {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); /* Corresponds to var(--accent-light) */
 }
 
 /* Animation Classes */
 .fade-in {
-    animation: fadeIn 0.5s ease-out; /* fadeIn already defined */
+    animation: fadeIn 0.5s ease-out; /* fadeIn keyframes already defined */
 }
 .slide-up {
     animation: slideUp 0.4s ease-out;
@@ -2309,101 +2209,63 @@ input:checked + .slider:before {
     }
 }
 
-/* Custom Scrollbar for Legend and other scrollable areas if desired */
-.chart-legend::-webkit-scrollbar,
-.modal-body::-webkit-scrollbar,
-.category-list::-webkit-scrollbar {
+/* Custom Scrollbar for Legend */
+.chart-legend::-webkit-scrollbar {
     width: 6px;
 }
-.chart-legend::-webkit-scrollbar-track,
-.modal-body::-webkit-scrollbar-track,
-.category-list::-webkit-scrollbar-track {
+.chart-legend::-webkit-scrollbar-track {
     background: var(--bg-tertiary);
     border-radius: 3px;
 }
-.chart-legend::-webkit-scrollbar-thumb,
-.modal-body::-webkit-scrollbar-thumb,
-.category-list::-webkit-scrollbar-thumb {
-    background: var(--border-color); /* Or text-muted for more contrast */
+.chart-legend::-webkit-scrollbar-thumb {
+    background: var(--border-color);
     border-radius: 3px;
 }
-.chart-legend::-webkit-scrollbar-thumb:hover,
-.modal-body::-webkit-scrollbar-thumb:hover,
-.category-list::-webkit-scrollbar-thumb:hover {
-    background: var(--text-muted); /* Darker on hover */
+.chart-legend::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
 }
 
-/* Enhanced No Data State (used in transaction lists, charts etc.) */
-.no-data-text { /* This seems to be the primary "no data" style */
-    text-align: center;
-    padding: var(--spacing-xl);
-    color: var(--text-muted);
-    font-size: 1rem; /* Was 1.1rem in an earlier definition */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--spacing-md);
-}
-.no-data-text::before { /* Emoji or icon for no data */
-    content: '🤷'; /* Or '📊' or an SVG icon class */
-    font-size: 3rem;
-    opacity: 0.5;
-}
+/* Enhanced No Data State already merged with earlier .no-data-text */
 
-/* Loading States (e.g., for charts) */
-.chart-loading { /* Specific loading state for chart area */
+/* Loading States */
+.chart-loading {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 300px; /* Ensure it takes up space */
+    height: 300px; /* Or as needed */
     color: var(--text-muted);
 }
-.chart-loading::after { /* Spinner for chart loading */
+.chart-loading::after {
     content: '';
     width: 40px;
     height: 40px;
     border: 4px solid var(--border-color);
     border-top: 4px solid var(--primary-color);
     border-radius: 50%;
-    animation: spin 1s linear infinite; /* spin already defined */
+    animation: spin 1s linear infinite; /* spin keyframes already defined */
     margin-left: var(--spacing-md);
 }
 
 /* Accessibility Improvements */
-.legend-item:focus,
-.nav-item:focus,
-.action-btn:focus,
-.delete-btn:focus,
-.reconcile-btn:focus,
-.record-btn:focus,
-.submit-btn:focus,
-.modal-close:focus { /* Generic focus style for interactive elements */
+.legend-item:focus {
     outline: 2px solid var(--primary-color);
     outline-offset: 2px;
-    box-shadow: 0 0 0 3px var(--primary-light); /* Add focus shadow */
 }
-.chart-type-selector:focus-visible { /* Use focus-visible for less intrusive focus on some elements */
+.chart-type-selector:focus-visible { /* Use focus-visible for better accessibility */
     outline: 2px solid var(--primary-color);
     outline-offset: 2px;
 }
 
-/* High contrast mode support (basic) */
+/* High contrast mode support */
 @media (prefers-contrast: high) {
-    .stats-card,
-    .legend-item,
-    .action-btn,
-    .modal-content,
-    .form-input,
-    .form-select {
+    .stats-card {
         border-width: 2px;
-        border-color: currentColor; /* Use text color for borders */
+    }
+    .legend-item {
+        border-width: 2px;
     }
     .legend-color {
         border-width: 3px;
-    }
-    .text-muted, .text-secondary {
-        color: var(--text-primary); /* Increase contrast for muted text */
-        opacity: 0.85;
     }
 }
 
@@ -2430,18 +2292,17 @@ input:checked + .slider:before {
         gap: var(--spacing-lg);
     }
 
-    .summary-card { /* Header summary cards */
+    /* .summary-card { This is general, specific calendar one handled already
         padding: var(--spacing-lg);
-    }
+    } */
 
-    .transaction-form {
+    .transaction-form { /* This is overridden by later specific form layout */
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: var(--spacing-lg);
-         /* max-width constraint moved to later specific form layout section */
     }
 
-    .form-row.full-width {
+    .form-row.full-width { /* Used by later specific form layout */
         grid-column: 1 / -1;
     }
 
@@ -2467,40 +2328,42 @@ input:checked + .slider:before {
         font-size: 0.8rem;
     }
 
-    .chart-container-wrapper {
+    /* Chart adjustments for tablets */
+    .chart-container-wrapper { /* Also in ENHANCED CHARTS */
         grid-template-columns: 1fr 280px;
         gap: var(--spacing-xl);
     }
-    .chart-container {
+    .chart-container { /* Also in ENHANCED CHARTS */
         height: 400px;
     }
-    .chart-legend {
-        min-width: 250px; /* Was 250px */
-        max-width: 350px; /* Was 350px */
+    .chart-legend { /* Also in ENHANCED CHARTS */
+        min-width: 250px;
+        max-width: 350px;
     }
 
+    /* Calendar adjustments */
     .calendar-header {
         padding: 2rem;
     }
-    .calendar-header .month-summary-cards { /* Scoped to calendar header */
+    .month-summary-cards {
         gap: 1.5rem;
     }
-    .calendar-header .summary-value { /* Scoped to calendar header */
+    .calendar-header .summary-value { /* Scoped */
         font-size: 1.2rem;
     }
     .calendar-grid {
         padding: 2rem;
     }
     .calendar-day-cell {
-        min-height: 80px; /* Reduced from 100px, original was 80px */
+        min-height: 80px; /* Reduced from 90px earlier, this takes precedence */
         padding: 0.75rem;
     }
     .day-number {
         font-size: 1rem;
     }
     .transaction-indicator {
-        font-size: 0.75rem; /* Was 0.8rem */
-        min-height: 18px; /* Was 20px */
+        font-size: 0.75rem;
+        min-height: 18px;
     }
     .weekday {
         font-size: 0.9rem;
@@ -2518,7 +2381,7 @@ input:checked + .slider:before {
         --spacing-lg: 2rem;     /* 32px */
         --spacing-xl: 3rem;     /* 48px */
         --spacing-2xl: 4rem;    /* 64px */
-        --font-size-base: 17px; /* Slightly reduced from 18px for balance */
+        --font-size-base: 18px;
     }
 
     body {
@@ -2530,7 +2393,7 @@ input:checked + .slider:before {
         margin-bottom: var(--spacing-xl);
     }
 
-    .bottom-nav { /* Desktop: becomes a static bar */
+    .bottom-nav {
         position: static;
         background: var(--bg-primary);
         border: 1px solid var(--border-color);
@@ -2550,19 +2413,24 @@ input:checked + .slider:before {
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: var(--spacing-xl);
     }
-    .summary-label { /* Header summary labels */
+    .summary-label {
         font-size: 0.95rem;
     }
-    .summary-value { /* Header summary values */
+    .header-content .summary-value { /* More specific for header summary values */
         font-size: 1.3rem;
     }
 
-    /* .transaction-form definition moved to specific form layout section */
+    .transaction-form { /* Overridden by later specific form layout */
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-xl);
+    }
+    /* .form-row.full-width already handled */
 
     .radio-option {
         min-width: 180px;
     }
 
+    /* Chart adjustments for desktops */ /* Also in ENHANCED CHARTS */
     .chart-container-wrapper {
         grid-template-columns: 1fr 300px;
         gap: var(--spacing-2xl);
@@ -2590,13 +2458,14 @@ input:checked + .slider:before {
         font-size: 0.85rem;
     }
 
+    /* Calendar adjustments */
     .calendar-container {
         border-radius: 20px;
     }
     .calendar-header {
         padding: 2.5rem;
     }
-    .calendar-header .month-summary-cards { /* Scoped */
+    .month-summary-cards {
         gap: 2rem;
     }
     .calendar-header .summary-value { /* Scoped */
@@ -2606,7 +2475,7 @@ input:checked + .slider:before {
         padding: 2.5rem;
     }
     .calendar-day-cell {
-        min-height: 90px; /* Was 120px */
+        min-height: 90px; /* Restored to 90px */
         padding: 1rem;
     }
     .day-number {
@@ -2641,7 +2510,7 @@ input:checked + .slider:before {
     }
 
     .header-summary {
-        grid-template-columns: 1fr; /* Each card full width */
+        grid-template-columns: 1fr;
     }
 
     .quick-add-section,
@@ -2651,7 +2520,7 @@ input:checked + .slider:before {
     .account-balances-section,
     .reconciliation-section,
     .reconciliation-history-section,
-    .chart-section {
+    .chart-section { /* General .chart-section padding */
         padding: var(--spacing-md);
         margin-bottom: var(--spacing-lg);
     }
@@ -2660,7 +2529,7 @@ input:checked + .slider:before {
         font-size: 0.8rem;
     }
     .form-input, .form-select {
-        padding: 0.6rem; /* Reduced padding for smaller inputs */
+        padding: 0.6rem;
     }
 
     .radio-group {
@@ -2670,45 +2539,45 @@ input:checked + .slider:before {
 
     .radio-option {
         width: 100%;
-        justify-content: flex-start; /* Align content to start */
-        padding: var(--spacing-md); /* Consistent padding */
+        justify-content: flex-start;
+        padding: var(--spacing-md) var(--spacing-md);
     }
 
-    .chart-container-wrapper {
-        grid-template-columns: 1fr; /* Stack chart and legend */
+    .chart-container-wrapper { /* Also in ENHANCED CHARTS */
+        grid-template-columns: 1fr;
         gap: var(--spacing-lg);
     }
-    .chart-container {
+    .chart-container { /* Also in ENHANCED CHARTS */
         height: 250px;
     }
-    .chart-legend {
+    .chart-legend { /* Also in ENHANCED CHARTS */
         min-width: auto;
         max-width: none;
         width: 100%;
         margin-top: var(--spacing-md);
     }
-    .legend-item {
+    .legend-item { /* Also in ENHANCED CHARTS */
         padding: var(--spacing-sm);
     }
-    .legend-icon {
+    .legend-icon { /* Also in ENHANCED CHARTS */
         font-size: 1.2rem;
         width: 32px;
         height: 32px;
     }
-    .legend-label {
+    .legend-label { /* Also in ENHANCED CHARTS */
         font-size: 0.85rem;
     }
-    .legend-amount-percentage {
+    .legend-amount-percentage { /* Also in ENHANCED CHARTS */
         font-size: 0.7rem;
     }
 
     .filter-controls {
         flex-direction: column;
-        align-items: stretch; /* Make controls full width */
+        align-items: stretch;
     }
 
     .stats-summary {
-        grid-template-columns: 1fr; /* Each stat card full width */
+        grid-template-columns: 1fr;
     }
     .stats-card {
         flex-direction: column;
@@ -2720,26 +2589,27 @@ input:checked + .slider:before {
         width: 60px;
         height: 60px;
     }
-    .stats-value { /* Stat card values */
+    .stats-value {
         font-size: 1.2rem;
     }
     .stats-table th,
     .stats-table td {
         padding: var(--spacing-sm);
-        font-size: 0.85rem; /* Slightly smaller table font */
+        font-size: 0.9rem; /* Reduced from 0.9rem for better fit */
     }
 
     .nav-label {
         font-size: 0.65rem;
     }
 
+    /* Calendar adjustments for small mobile */
     .calendar-container {
         border-radius: 12px;
     }
     .calendar-header {
         padding: 1rem;
     }
-    .calendar-header .month-summary-cards { /* Scoped */
+    .month-summary-cards {
         gap: 0.75rem;
     }
     .calendar-header .summary-card { /* Scoped */
@@ -2759,9 +2629,8 @@ input:checked + .slider:before {
         gap: 0.0625rem;
     }
     .transaction-indicator {
-        font-size: 0.55rem; /* Very small, consider icons only */
+        font-size: 0.55rem;
         min-height: 12px;
-        padding: 0.1rem 0.2rem; /* Adjust padding */
     }
     .weekday {
         font-size: 0.7rem;
@@ -2775,175 +2644,182 @@ input:checked + .slider:before {
     .modal-body {
         padding: var(--spacing-md);
     }
-
-    /* Extra compact modal adjustments for very small screens */
     .modal-content.extra-compact {
         max-width: 280px;
-        max-height: 45vh; /* Increased slightly */
+        max-height: 40vh; /* Adjusted from 40vh to ensure it doesn't cause issues if too small */
     }
     .modal-content.extra-compact .modal-header {
-        padding: var(--spacing-sm); /* was 0.4rem */
+        padding: 0.4rem; /* Reduced from 0.75rem */
     }
     .modal-content.extra-compact .modal-header h3 {
-        font-size: 1rem; /* was 0.8rem */
+        font-size: 0.8rem; /* Reduced from 1rem */
     }
     .modal-content.extra-compact .modal-body {
-        padding: var(--spacing-sm); /* was 0.4rem */
-        max-height: 200px; /* was 150px */
+        padding: 0.4rem; /* Reduced from 0.75rem */
+        max-height: 150px; /* Adjusted from 200px */
     }
     .modal-content.extra-compact .day-transaction-item {
-        padding: var(--spacing-xs); /* was 0.2rem */
-        gap: var(--spacing-sm); /* was 0.4rem */
-        margin-bottom: var(--spacing-xs); /* was 0.2rem */
+        padding: 0.2rem; /* Reduced from 0.5rem */
+        gap: 0.4rem; /* Reduced from 0.5rem */
+        margin-bottom: 0.2rem; /* Reduced from 0.25rem */
     }
     .modal-content.extra-compact .day-transaction-description {
-        font-size: 0.75rem;
+        font-size: 0.75rem; /* Reduced from 0.875rem */
     }
     .modal-content.extra-compact .day-transaction-meta {
-        font-size: 0.65rem; /* was 0.6rem */
+        font-size: 0.6rem; /* Reduced from 0.75rem */
     }
     .modal-content.extra-compact .day-transaction-amount {
-        font-size: 0.75rem;
+        font-size: 0.75rem; /* Reduced from 0.875rem */
     }
 }
 
-/* Inputmode for numeric inputs */
+/* Inputmode attribute for numeric keyboards */
 input[inputmode="numeric"],
 input[inputmode="decimal"],
 .amount-input,
 .reconciliation-input,
 .setting-input[type="number"] {
-    /* inputmode: numeric; This is HTML attribute, not CSS. Keep in HTML */
-    /* Forcing appearance for consistency if needed, but usually handled by browser */
-    -moz-appearance: textfield; /* Firefox */
+    /* inputmode: numeric; /* This is not a standard CSS property. It's an HTML attribute. */
+    /* Ensure this is set on the HTML elements themselves. CSS cannot set inputmode. */
 }
 
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+/* iOS specific input appearance */
+@supports (-webkit-touch-callout: none) {
+    input[inputmode="numeric"]::-webkit-outer-spin-button,
+    input[inputmode="numeric"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button, /* Added for type=number */
+    input[type="number"]::-webkit-inner-spin-button { /* Added for type=number */
+        -webkit-appearance: none;
+        margin: 0;
+    }
 }
-
 
 /* =============================================================================
-   IMPROVED FORM LAYOUT - Responsive Design Fix (Consolidated)
+   IMPROVED FORM LAYOUT - Responsive Design Fix
    ============================================================================= */
 
-.quick-add-section { /* This section already styled earlier, ensure consistency */
-    max-width: 1000px; /* Max width for the whole quick add block */
+.quick-add-section { /* This adds max-width and auto margins */
+    max-width: 1000px;
     margin-left: auto;
     margin-right: auto;
 }
 
-.transaction-form { /* Base for mobile */
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-}
+/* === TRANSACTION FORM RESPONSIVE LAYOUT === */
+/* Base mobile style for transaction form is already flex-column */
 
-@media (min-width: 768px) { /* Tablet */
-    .transaction-form {
+/* --- TABLET (768px+) --- */
+@media (min-width: 768px) {
+    .transaction-form { /* This will override the earlier 768px definition */
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: var(--spacing-lg);
         max-width: 900px;
-        margin: 0 auto; /* Center the form */
+        margin: 0 auto;
     }
 
-    .form-row:has(.radio-group), /* Radio group row spans full width */
-    .form-row.full-width {       /* Any explicitly full-width row */
+    .form-row:has(.radio-group), /* :has() might not be supported in all browsers you target */
+    .form-row.full-width {
         grid-column: 1 / -1;
     }
 
-    /* Special handling for Transfer type form */
+    /* Special handling for transfer form */
     .transaction-form:has(input[name="type"][value="Transfer"]:checked) {
-        /* grid-template-columns: repeat(2, 1fr); Remains 2 columns */
-        max-width: 800px; /* Slightly narrower for transfer */
+        /* grid-template-columns: repeat(2, 1fr); /* Already set for 768px+ */
+        max-width: 800px;
     }
+
     .transaction-form:has(input[name="type"][value="Transfer"]:checked) .form-row:has(#description-input),
     .transaction-form:has(input[name="type"][value="Transfer"]:checked) .form-row:has(#datetime-input),
     .transaction-form:has(input[name="type"][value="Transfer"]:checked) .form-row:has(.submit-btn) {
-        grid-column: 1 / -1; /* These specific rows span full width in transfer form */
+        grid-column: 1 / -1;
     }
 }
 
-@media (min-width: 1024px) { /* Desktop */
-    .transaction-form {
-        /* Default to 2 columns for better readability unless it's not a transfer form */
-        grid-template-columns: repeat(2, 1fr);
+/* --- DESKTOP (1024px+) --- */
+@media (min-width: 1024px) {
+    .transaction-form { /* Overrides the earlier 1024px and 768px definition */
+        grid-template-columns: repeat(2, 1fr); /* Default to 2 columns */
         gap: var(--spacing-xl);
-        max-width: 900px; /* Consistent max-width */
+        max-width: 900px;
     }
 
-    /* Allow 3 columns for non-transfer forms if space permits */
+    /* Non-transfer forms can use 3 columns on desktop */
     .transaction-form:not(:has(input[name="type"][value="Transfer"]:checked)) {
         grid-template-columns: repeat(3, minmax(250px, 1fr));
-        max-width: 1000px; /* Wider for 3 columns */
+        max-width: 1000px;
     }
+
+    /* .form-row.full-width already defined to span all columns */
 
     /* Transfer form remains 2 columns on desktop */
     .transaction-form:has(input[name="type"][value="Transfer"]:checked) {
-        grid-template-columns: repeat(2, 1fr); /* Explicitly 2 columns */
+        /* grid-template-columns: repeat(2, 1fr); /* Already set */
         max-width: 800px;
     }
-    /* .form-row.full-width rules from tablet apply here too */
 }
 
-.radio-group { /* Base for radio group */
-    justify-content: center; /* Center radio buttons within their row */
+/* === RADIO GROUP IMPROVEMENTS === */
+.radio-group { /* Base styles already defined */
+    justify-content: center; /* Căn giữa trên màn hình lớn */
 }
+
+
 @media (min-width: 768px) {
     .radio-option {
-        flex: 0 1 auto; /* Prevent excessive stretching */
+        flex: 0 1 auto;
         min-width: 140px;
-        max-width: 180px; /* Control max width of radio options */
+        max-width: 180px;
     }
 }
+/* === TRANSACTION META IMPROVEMENTS (already defined earlier, this section is more specific) === */
+/* .transaction-meta already defined with grid, this is fine as it's a refinement. */
 
-/* Transaction Meta (Time, Category, Account under description) */
-/* .transaction-meta is already defined earlier, these are additions/refinements */
 .transaction-time {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     line-height: 1.2;
-    min-width: 60px; /* Ensure enough space for time/date */
+    min-width: 60px;
     flex-shrink: 0;
 }
 
 .transaction-time .time-part {
     font-weight: 600;
-    color: var(--text-secondary); /* Use secondary text for time */
+    color: var(--text-secondary);
     font-size: 0.8rem;
 }
 
 .transaction-time .date-part {
     font-size: 0.7rem;
-    color: var(--text-muted); /* Muted for date part */
+    color: var(--text-muted);
     margin-top: 1px;
 }
 
-.transaction-account { /* Styling for account name in transaction meta */
+/* .transaction-category definition here is more detailed, takes precedence */
+
+.transaction-account {
     font-size: 0.7rem;
     color: var(--text-muted);
     text-align: right;
+    
     max-width: 70px;
     min-width: 50px;
-    width: 70px; /* Fixed width for account */
+    width: 70px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-/* Tooltip for truncated text (requires JS to set title attribute) */
-.transaction-category[title]:hover::after, /* Only show if title is present */
-.transaction-account[title]:hover::after {
+.transaction-category:hover::after, /* Tooltip for truncated text */
+.transaction-account:hover::after {
     content: attr(title);
     position: absolute;
-    bottom: calc(100% + 4px); /* Position above the element */
+    /* Tooltip positioning might need adjustment based on context, consider bottom or top */
+    bottom: calc(100% + 5px); /* Example: 5px above the element */
     left: 50%;
     transform: translateX(-50%);
-    background: var(--bg-tertiary); /* Use a slightly darker background for tooltip */
+    background: var(--bg-primary);
     color: var(--text-primary);
     padding: 4px 8px;
     border-radius: 4px;
@@ -2951,34 +2827,31 @@ input[type="number"]::-webkit-inner-spin-button {
     white-space: nowrap;
     box-shadow: var(--shadow-md);
     border: 1px solid var(--border-color);
-    z-index: var(--z-tooltip, 1500); /* Ensure tooltip is above other elements */
-    pointer-events: none; /* Tooltip should not be interactive */
-}
-[data-theme="dark"] .transaction-category[title]:hover::after,
-[data-theme="dark"] .transaction-account[title]:hover::after {
-    background: var(--bg-primary); /* Darker background for tooltip in dark mode */
-    border-color: var(--text-muted);
+    z-index: 100; /* Ensure tooltip is above other items */
+    pointer-events: none; /* Important for hover */
 }
 
-
-@media (max-width: 768px) { /* Tablet and below */
+@media (max-width: 768px) {
     .transaction-meta {
-        grid-template-columns: auto 1fr; /* Time | Category, account hidden */
+        grid-template-columns: auto 1fr;
     }
+    
     .transaction-account {
         display: none;
     }
+    
     .transaction-category {
         max-width: 90px;
         width: 90px;
-        text-align: left; /* Align left if it's the last visible item */
+        text-align: left;
     }
 }
 
-@media (max-width: 480px) { /* Small mobile */
+@media (max-width: 480px) {
     .transaction-time {
         min-width: 50px;
     }
+    
     .transaction-category {
         max-width: 70px;
         width: 70px;
@@ -2986,43 +2859,43 @@ input[type="number"]::-webkit-inner-spin-button {
     }
 }
 
-/* Smart Reset Toggle Styles */
+/* 🎯 Smart Reset Toggle Styles */
 .smart-reset-option {
     margin-top: 1rem;
     padding: 0.875rem;
     background: var(--bg-tertiary);
-    border-radius: 12px; /* More rounded */
+    border-radius: 12px;
     border: 1px solid var(--border-color);
     transition: all 0.2s ease;
-    position: relative; /* For pseudo-elements or absolute children if any */
+    position: relative;
 }
 
 .smart-reset-option:hover {
-    background: var(--bg-secondary); /* Slightly different from tertiary */
+    background: var(--bg-secondary);
     border-color: var(--primary-color);
-    box-shadow: 0 2px 8px var(--primary-light); /* Was rgba(59, 130, 246, 0.1) */
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
 }
 
 .smart-reset-label {
     display: flex;
-    align-items: flex-start; /* Align checkbox with start of text block */
+    align-items: flex-start; /* Changed from center to start for better alignment with multi-line text */
     gap: 0.75rem;
     cursor: pointer;
-    user-select: none; /* Prevent text selection on label click */
+    user-select: none;
 }
 
 .smart-reset-label input[type="checkbox"] {
-    accent-color: var(--primary-color); /* Color of the checkmark/box */
+    accent-color: var(--primary-color);
     width: 18px;
     height: 18px;
-    margin-top: 2px; /* Align better with text */
+    margin-top: 2px; /* Align checkbox better with text if text wraps */
     cursor: pointer;
     flex-shrink: 0;
 }
 
 .smart-reset-content {
     flex: 1;
-    min-width: 0; /* Allow content to shrink */
+    min-width: 0;
 }
 
 .smart-reset-header {
@@ -3039,16 +2912,16 @@ input[type="number"]::-webkit-inner-spin-button {
     line-height: 1.4;
 }
 
-.smart-reset-info { /* Info icon (e.g., FontAwesome question mark) */
-    font-size: 0.75rem; /* Icon size */
+.smart-reset-info {
+    font-size: 0.75rem;
     color: var(--text-muted);
     cursor: help;
     opacity: 0.7;
     transition: opacity 0.2s ease;
 }
+
 .smart-reset-info:hover {
     opacity: 1;
-    color: var(--primary-color); /* Highlight on hover */
 }
 
 .smart-reset-description {
@@ -3059,238 +2932,243 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 .smart-reset-option:has(input:checked) {
-    background: var(--primary-very-light); /* Was rgba(59, 130, 246, 0.05) */
-    border-color: var(--primary-light); /* Was rgba(59, 130, 246, 0.3) */
+    background: rgba(59, 130, 246, 0.05);
+    border-color: rgba(59, 130, 246, 0.3);
 }
 
 .smart-reset-option:has(input:checked) .smart-reset-title {
-    color: var(--primary-dark); /* Darker primary for title when checked */
+    color: var(--primary-color);
 }
 
-.smart-reset-label input[type="checkbox"]:focus { /* Accessibility focus */
+.smart-reset-label input[type="checkbox"]:focus {
     outline: 2px solid var(--primary-color);
     outline-offset: 2px;
-    /* box-shadow: 0 0 0 3px var(--primary-light); /* Optional: Add shadow as well */
 }
 
-.smart-reset-option.toggle-feedback { /* Animation on toggle */
+.smart-reset-option.toggle-feedback {
     animation: togglePulse 0.3s ease;
 }
 
 @keyframes togglePulse {
     0% { transform: scale(1); }
-    50% { transform: scale(1.02); box-shadow: 0 0 10px var(--primary-light); }
+    50% { transform: scale(1.02); }
     100% { transform: scale(1); }
 }
 
-/* Dark theme adjustments for smart reset */
+/* Dark theme adjustments for smart reset already covered by variable changes if applicable */
 [data-theme="dark"] .smart-reset-option {
-    background: rgba(55, 65, 81, 0.5); /* Example: Tailwind gray-700 with alpha */
-    border-color: rgba(75, 85, 99, 0.5);/* Example: Tailwind gray-600 with alpha */
+    /* This will use the dark theme's --bg-tertiary, --border-color etc.
+       If specific overrides are needed beyond variable changes, add them here. */
 }
-[data-theme="dark"] .smart-reset-option:hover {
-    background: rgba(55, 65, 81, 0.8);
-    border-color: var(--primary-color); /* Use primary for hover border */
-}
-[data-theme="dark"] .smart-reset-option:has(input:checked) {
-    background: var(--primary-light); /* Use dark mode version of primary-light */
-    border-color: var(--primary-color); /* Dark mode version of primary-light with more alpha */
-}
-[data-theme="dark"] .smart-reset-option:has(input:checked) .smart-reset-title {
-    color: var(--primary-color); /* Brighter primary for dark mode */
-}
-
 
 @media (max-width: 480px) {
     .smart-reset-option {
         margin-top: 0.75rem;
         padding: 0.75rem;
     }
+    
     .smart-reset-title {
         font-size: 0.8rem;
     }
+    
     .smart-reset-description {
         font-size: 0.7rem;
     }
+    
     .smart-reset-label input[type="checkbox"] {
         width: 16px;
         height: 16px;
     }
 }
-
-/* Slide-in/out animations (example) */
 @keyframes slideInRight {
-    from { opacity: 0; transform: translateX(100%); }
-    to { opacity: 1; transform: translateX(0); }
-}
-@keyframes fadeOut { /* Changed to slideOutRight for consistency with slideInRight */
-    from { opacity: 1; transform: translateX(0); }
-    to { opacity: 0; transform: translateX(100%); }
-}
-
-/* Touch interaction improvements */
-input, textarea, select, button { /* Apply to buttons as well */
-    -webkit-tap-highlight-color: rgba(0,0,0,0); /* Remove tap highlight on iOS */
-    -webkit-touch-callout: default; /* Allow callout menu (copy/paste) */
-    /* user-select and touch-action moved to specific elements for finer control */
-}
-input, textarea, select { /* Allow text selection for inputs */
-    -webkit-user-select: text;
-    user-select: text;
-}
-button, .cursor-pointer, .virtual-key { /* Prevent text selection on button-like elements */
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
-/* Ensure tappable areas are sufficient */
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+input, textarea, select {
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    -webkit-touch-callout: default; /* Allow callouts for text selection etc. */
+    -webkit-user-select: text; /* Ensure text can be selected */
+    user-select: text; /* Ensure text can be selected */
+    touch-action: manipulation;
+}
+
 .amount-input {
     min-height: 44px;
-    padding: 12px 8px; /* Ensure padding contributes to tappable area */
-    /* -webkit-appearance: none; appearance: none; /* If default styling is an issue */
+    padding: 12px 8px; /* Ensure this is sufficient with font size */
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 .form-input, .form-select, .category-input, .setting-input {
-    position: relative; /* Ensure stacking context if needed */
-    z-index: 1; /* Prevent being overlapped by sticky headers etc. */
-    /* user-select: text !important; /* Already set for inputs */
+    position: relative; /* For z-index stacking context if needed */
+    z-index: 1; /* Ensure they are not overlapped by pseudo-elements or siblings */
+    /* -webkit-user-select and user-select already set on input, textarea, select */
 }
 
-/* Ensure pointer events are not blocked on parent elements if children need them */
-.amount-input-group, .amount-input-group > * {
-    pointer-events: auto;
+.amount-input-group {
+    pointer-events: auto; /* Ensure the group itself is interactive */
 }
 
+.amount-input-group > * {
+    pointer-events: auto; /* Ensure children are interactive */
+}
 
-/* ===== Virtual Numeric Keyboard ===== */
-/* Base container for the keyboard, could be part of a modal or fixed element */
-#virtualNumericKeyboard {
-    background-color: var(--bg-tertiary); /* Keyboard background */
-    padding: var(--spacing-sm);
-    border-radius: var(--border-radius) var(--border-radius) 0 0; /* Rounded top if at bottom */
-    box-shadow: var(--shadow-lg);
-    /* Position fixed at bottom if it's a global keyboard */
-    /* position: fixed;
+/* === Virtual Numeric Keyboard - REFACTORED to use CSS Variables === */
+.virtual-keyboard {
+    display: none; /* Hidden by default */
+    position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: var(--z-keyboard); */
+    background: var(--keyboard-bg); /* Using CSS Variable */
+    padding: 10px;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.15);
+    z-index: var(--z-keyboard); /* Using CSS Variable */
+    transition: background 0.2s;
 }
-
-.virtual-key {
-    padding-top: var(--spacing-md); /* Generous padding for easy tapping */
-    padding-bottom: var(--spacing-md);
-    font-size: 1.5rem; /* Larger font for keys */
-    font-weight: 500;
-    text-align: center;
-    border: 1px solid var(--border-color);
-    background-color: var(--bg-primary); /* Key background, lighter than keyboard bg */
-    color: var(--text-primary);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
-    box-shadow: var(--shadow-sm);
-    touch-action: manipulation; /* Prevent double-tap zoom */
-    /* user-select: none; already handled by global button style */
-}
-
-.virtual-key:hover {
-    background-color: var(--bg-secondary); /* Subtle hover */
-    border-color: var(--text-muted);
-}
-
-.virtual-key:active {
-    background-color: var(--border-color); /* Pressed state */
-    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
-}
-
-/* Dark theme for virtual keys already handled by variable changes for bg-primary, border-color etc. */
-
-.virtual-key.key-action { /* For keys like Backspace */
-    background-color: var(--bg-secondary); /* Slightly different background */
-    color: var(--text-secondary);
-    font-weight: normal; /* Less emphasis */
-    font-size: 1.2rem; /* Can be smaller for icons/non-numeric keys */
-}
-.virtual-key.key-action:hover {
-    background-color: var(--border-color);
-}
-[data-theme="dark"] .virtual-key.key-action {
-    background-color: var(--bg-tertiary); /* Dark theme action key */
-    color: var(--text-muted);
-}
-[data-theme="dark"] .virtual-key.key-action:hover {
-    background-color: var(--border-color);
-}
-
-
-.virtual-key.key-done { /* For the "Done" or "Enter" key */
-    background-color: var(--primary-color);
-    color: var(--text-on-primary);
-    font-weight: 600;
-}
-.virtual-key.key-done:hover {
-    background-color: var(--primary-dark);
-}
-[data-theme="dark"] .virtual-key.key-done {
-    background-color: var(--primary-dark); /* Ensure it's distinct in dark mode */
-}
-[data-theme="dark"] .virtual-key.key-done:hover {
-    filter: brightness(120%); /* Brighter on hover for dark mode */
-}
-
-
-#virtualNumericKeyboard .grid > button.virtual-key { /* Ensure keys in grid take full space */
-    height: 100%;
+.virtual-keyboard-row {
     display: flex;
+    justify-content: space-around;
+    margin-bottom: 5px;
+}
+.virtual-keyboard-row button {
+    flex: 1;
+    margin: 0 5px;
+    padding: 15px;
+    font-size: 18px;
+    border: none; /* Original had none, new var used for border */
+    background: var(--keyboard-btn-bg); /* Using CSS Variable */
+    color: var(--keyboard-btn-text); /* Using CSS Variable */
+    border-radius: 8px;
+    box-shadow: 0 2px 2px rgba(0,0,0,0.08);
+    border: 1px solid var(--keyboard-btn-border); /* Using CSS Variable */
+    font-weight: 600;
+    transition: background 0.15s, color 0.15s;
+}
+.virtual-keyboard-row button:active {
+    background: var(--keyboard-btn-active-bg); /* Using CSS Variable */
+    color: var(--keyboard-btn-active-text); /* Using CSS Variable */
+}
+
+.virtual-keyboard-row button[data-key="done"] {
+    background: var(--keyboard-done-btn-bg); /* Using CSS Variable */
+    color: var(--keyboard-done-btn-text); /* Using CSS Variable */
+}
+/* If done button active state needs to be different */
+[data-theme="dark"] .virtual-keyboard-row button[data-key="done"]:active,
+.virtual-keyboard-row button[data-key="done"]:active {
+    background: var(--primary-dark); /* Example: darken primary on active */
+}
+
+
+.virtual-keyboard-row button[data-key="000"] {
+    letter-spacing: 1px;
+}
+
+@media (max-width: 480px) {
+    .virtual-keyboard-row button {
+        font-size: 16px;
+        padding: 12px;
+    }
+}
+/* ==== DARK MODE FOR VIRTUAL KEYBOARD ==== */
+/* This section is now handled by CSS variables defined in [data-theme="dark"] */
+/* Remove the old specific dark mode overrides for virtual keyboard if variables are fully implemented */
+/*
+[data-theme="dark"] .virtual-keyboard,
+body.dark-mode .virtual-keyboard { ... }
+[data-theme="dark"] .virtual-keyboard-row button,
+body.dark-mode .virtual-keyboard-row button { ... }
+...etc.
+*/
+
+
+/* =============================================================================
+   ENHANCED CHARTS STYLES - Multi-Device Optimized
+   (This section is largely specific and well-defined, minor adjustments if any)
+   ============================================================================= */
+
+/* === ENHANCED CHART CONTAINERS === */
+/* Styles for .chart-section, .chart-header, .chart-title, .chart-controls,
+   .chart-type-selector, .period-selector, .chart-container-wrapper, .chart-container,
+   .chart-legend, .legend-item, etc. are mostly distinct and enhancements.
+   The overlap with earlier chart styles means these more specific/later rules will apply. */
+
+/* === WEEKLY STATISTICS SECTION === */
+/* Styles for .weekly-stats-container, .week-navigation, .week-nav-btn,
+   .current-week-display, .weekly-charts-grid, .weekly-chart-item,
+   .weekly-chart-title, .weekly-chart-canvas, .weekly-insights, .insight-card etc.
+   are specific to this feature. */
+
+/* === NO DATA & ERROR STATES for charts === */
+.no-data-state, /* General no-data, different from chart-specific */
+.error-state {   /* General error, different from chart-specific */
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 100%;
+    padding: var(--spacing-2xl);
+    text-align: center;
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    border: 2px dashed var(--border-color);
+    min-height: 200px;
 }
 
-/* Thêm vào styles.css */
-#virtualNumericKeyboard {
-    max-height: 280px; /* Giới hạn chiều cao */
-    background-color: rgba(var(--bg-tertiary-rgb, 241, 245, 249), 0.98);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+.no-data-icon, /* General icon */
+.error-icon {   /* General icon */
+    font-size: 3rem;
+    margin-bottom: var(--spacing-md);
+    opacity: 0.5;
+    animation: pulse 2s infinite; /* pulse keyframes already defined */
 }
 
-#virtualNumericKeyboard.visible {
-    animation: slideUp 0.3s ease-out;
+.no-data-message, /* General message */
+.error-message {   /* General message */
+    font-size: 1rem;
+    color: var(--text-muted);
+    font-weight: 500;
 }
 
-@keyframes slideUp {
-    from {
-        transform: translateY(100%);
-    }
-    to {
-        transform: translateY(0);
-    }
-}
 
-/* Điều chỉnh cho mobile */
-@media (max-height: 700px) {
-    #virtualNumericKeyboard {
-        max-height: 220px;
-    }
-    
-    #virtualNumericKeyboard .virtual-key {
-        padding: 0.5rem;
-        font-size: 1.2rem;
-    }
-}
+/* === PERFORMANCE OPTIMIZATIONS === */
+/* .chart-loading and .chart-loading::after are already defined. */
+/* @keyframes spin is already defined. */
 
-/* Fix cho iOS Safari */
-@supports (-webkit-touch-callout: none) {
-    .virtual-keyboard-open-padding {
-        padding-bottom: env(safe-area-inset-bottom) !important;
-    }
-    
-    #virtualNumericKeyboard {
-        padding-bottom: env(safe-area-inset-bottom);
-    }
-}
-/* ===== End Virtual Numeric Keyboard ===== */
+/* === ACCESSIBILITY ENHANCEMENTS for charts === */
+/* .legend-item:focus, .week-nav-btn:focus, .chart-type-selector:focus already defined. */
+
+/* High contrast mode support for charts */
+/* @media (prefers-contrast: high) for chart elements already defined. */
+
+/* Reduce motion for charts */
+/* @media (prefers-reduced-motion: reduce) for chart elements already defined. */
+
+
+/* === RESPONSIVE DESIGN for charts === */
+/* Media queries for (min-width: 768px), (min-width: 1024px), (min-width: 1440px),
+   (max-width: 480px) specific to chart enhancements are well-defined. */
+
+/* === PRINT STYLES for charts === */
+/* @media print for chart elements already defined. */
+
+/* REMOVE EXTRA CLOSING BRACE AT THE VERY END OF THE ORIGINAL FILE */

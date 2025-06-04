@@ -98,7 +98,7 @@
             <section id="tab-transactions" class="tab-content active">
                 <div class="quick-add-section">
                     <h2 class="section-title"><span class="section-icon">✏️</span>Thêm Giao Dịch Nhanh</h2>
-                    <form id="transaction-form" class="transaction-form">
+                    <form id="transaction-form" class="transaction-form" novalidate>
                         <div class="form-row">
                             <label class="form-label">Loại giao dịch</label>
                             <div class="radio-group">
@@ -122,22 +122,25 @@
                         <div class="form-row">
                             <label for="amount-input" class="form-label">Số tiền</label>
                             <div class="amount-input-group flex items-center bg-[var(--bg-tertiary)] rounded-2xl border border-[var(--border-color)] px-4 py-3 mt-1" style="min-height:58px;">
-                                <input type="tel"
+                                <input type="text"
                                     id="amount-input"
                                     class="amount-input flex-1 bg-transparent outline-none border-0 text-xl text-[var(--text-primary)] px-1"
                                     placeholder="Nhập số tiền"
-                                    inputmode="numeric"
-                                    pattern="[0-9]*"
+                                    inputmode="decimal"
                                     autocomplete="off"
+                                    autocorrect="off"
+                                    autocapitalize="off"
+                                    spellcheck="false"
                                     required
-                                    data-virtual-keyboard="true">
+                                    data-virtual-keyboard="true"
+                                    data-format-currency="true">
                                 <select id="currency-selector" class="currency-selector bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-xl px-3 py-2 border border-[var(--border-color)]">
                                     <option value="VND">VNĐ</option>
                                     <option value="USD">USD</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="form-row">
+                        <div class="form-row" id="category-row">
                             <label for="category-select" class="form-label">Hạng mục</label>
                             <select id="category-select" class="form-select" required>
                                 <option value="">Chọn hạng mục...</option>
@@ -748,28 +751,30 @@
             <span class="loading-text">Đang tải...</span>
         </div>
     </div>
-	<div id="virtualNumericKeyboard" class="fixed bottom-0 left-0 right-0 bg-gray-200 dark:bg-gray-800 p-2 shadow-lg z-50" style="display: none;">
-		<div class="grid grid-cols-4 gap-1 text-center">
-			<button data-key="1" class="virtual-key py-3 text-lg sm:text-xl">1</button>
-			<button data-key="2" class="virtual-key py-3 text-lg sm:text-xl">2</button>
-			<button data-key="3" class="virtual-key py-3 text-lg sm:text-xl">3</button>
-			<button data-key="backspace" class="virtual-key key-action row-span-2 flex items-center justify-center py-3">
-				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-					<path d="M5.83 5.146a.5.5 0 0 0 0 .708L7.975 8l-2.147 2.146a.5.5 0 0 0 .707.708L8.683 8.707l2.147 2.147a.5.5 0 0 0 .707-.708L9.39 8l2.147-2.146a.5.5 0 0 0-.707-.708L8.683 7.293 6.536 5.146a.5.5 0 0 0-.707 0z"></path>
-					<path d="M13.683 1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-7.08a2 2 0 0 1-1.519-.698L.241 8.65a1 1 0 0 1 0-1.302L5.084 1.7A2 2 0 0 1 6.603 1h7.08zm-7.08 1a1 1 0 0 0-.76.35L1 7.35a.5.5 0 0 0 0 .65l4.284 4.284a1 1 0 0 0 .759.35h7.08a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1h-7.08z"></path>
-				</svg>
-			</button>
-			<button data-key="4" class="virtual-key py-3 text-lg sm:text-xl">4</button>
-			<button data-key="5" class="virtual-key py-3 text-lg sm:text-xl">5</button>
-			<button data-key="6" class="virtual-key py-3 text-lg sm:text-xl">6</button>
-			<button data-key="7" class="virtual-key py-3 text-lg sm:text-xl">7</button>
-			<button data-key="8" class="virtual-key py-3 text-lg sm:text-xl">8</button>
-			<button data-key="9" class="virtual-key py-3 text-lg sm:text-xl">9</button>
-			<button data-key="done" class="virtual-key key-done row-span-2 flex items-center justify-center py-3 text-lg sm:text-xl">Tiếp</button>
-			<button data-key="000" class="virtual-key key-action py-3 text-lg sm:text-xl">000</button>
-			<button data-key="0" class="virtual-key py-3 text-lg sm:text-xl">0</button>
-			<button data-key="." class="virtual-key key-action py-3 text-lg sm:text-xl">.</button>
-		</div>
+	<div id="virtualNumericKeyboard" class="virtual-keyboard">
+	  <div class="virtual-keyboard-row">
+		<button data-key="1">1</button>
+		<button data-key="2">2</button>
+		<button data-key="3">3</button>
+	  </div>
+	  <div class="virtual-keyboard-row">
+		<button data-key="4">4</button>
+		<button data-key="5">5</button>
+		<button data-key="6">6</button>
+	  </div>
+	  <div class="virtual-keyboard-row">
+		<button data-key="7">7</button>
+		<button data-key="8">8</button>
+		<button data-key="9">9</button>
+	  </div>
+	  <div class="virtual-keyboard-row">
+		<button data-key="000">000</button>
+		<button data-key="0">0</button>
+		<button data-key="backspace">←</button>
+	  </div>
+	  <div class="virtual-keyboard-row">
+		<button data-key="done">Done</button>
+	  </div>
 	</div>
     <script src="./js/version.js"></script>
     <script src="./js/utils.js"></script>
@@ -873,7 +878,7 @@
 	// ✅ ENHANCED: iOS Keyboard Fixes
 	document.addEventListener('DOMContentLoaded', function() {
 		// Get all input elements
-		const inputs = document.querySelectorAll('input[type="text"], input[type="tel"], input[type="number"], input[inputmode="numeric"], textarea');
+		const inputs = document.querySelectorAll('input[type="text"], input[type="tel"], input[type="number"], input[inputmode="numeric"], input[inputmode="decimal"], textarea');
 		
 		inputs.forEach(input => {
 			// Add touchstart event to ensure keyboard shows
@@ -897,7 +902,13 @@
 		if (amountInput) {
 			amountInput.addEventListener('click', function() {
 				this.focus();
-				this.select(); // Select all text for easy replacement
+				// Only select all if not using virtual keyboard
+				const virtualKeyboard = window.getVirtualKeyboard && window.getVirtualKeyboard();
+				const isMobileDevice = virtualKeyboard && virtualKeyboard.isMobile && virtualKeyboard.isMobile();
+				
+				if (!isMobileDevice) {
+					this.select(); // Select all text for easy replacement on desktop
+				}
 			});
 		}
 });
