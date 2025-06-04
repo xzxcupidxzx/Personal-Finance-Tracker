@@ -1,49 +1,7 @@
-name: Sync App Version
-
-on:
-  push:
-    branches: [ main, master ]
-    paths:
-      - 'js/version.js' # Chỉ chạy khi version.js thay đổi
-
-jobs:
-  sync-version:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write # ✅ Thêm quyền write cho contents
-      
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4 # ✅ Cập nhật lên v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        fetch-depth: 0 # ✅ Fetch full history
-
-    - name: Verify files exist
-      run: |
-        echo "🔍 Checking if required files exist..."
-        
-        if [ ! -f "js/version.js" ]; then
-          echo "❌ js/version.js not found!"
-          exit 1
-        fi
-        
-        if [ ! -f "js/utils.js" ]; then
-          echo "❌ js/utils.js not found!"
-          exit 1
-        fi
-        
-        if [ ! -f "manifest.json" ]; then
-          echo "❌ manifest.json not found!"
-          exit 1
-        fi
-        
-        echo "✅ All required files exist"
-
-    - name: Extract and sync version
+- name: Extract and sync version
       run: |
         VERSION_FILE="js/version.js"
-        UTILS_FILE="js/utils.js"
+        UTILS_FILE="js/utils.js" # Vẫn giữ để backup, nhưng không sửa
         MANIFEST_FILE="manifest.json"
         
         echo "📂 Working directory: $(pwd)"
@@ -80,21 +38,13 @@ jobs:
         echo "✅ Extracted version: $NEW_VERSION"
         
         # Backup các file trước khi thay đổi
-        cp "$UTILS_FILE" "${UTILS_FILE}.backup"
+        # cp "$UTILS_FILE" "${UTILS_FILE}.backup" # Không cần sửa UTILS_FILE nữa, nhưng có thể vẫn backup cho an toàn nếu muốn
         cp "$MANIFEST_FILE" "${MANIFEST_FILE}.backup"
         
-        echo "💾 Backed up files"
+        echo "💾 Backed up manifest.json"
         
-        # Cập nhật utils.js - kiểm tra xem có currentVersion không
-        echo "🔧 Updating $UTILS_FILE..."
-        
-        if grep -q "currentVersion:" "$UTILS_FILE"; then
-          # Pattern hiện tại: currentVersion: '1.2.3'
-          sed -i -E "s/(currentVersion:[ ]*')[0-9]+\.[0-9]+\.[0-9]+'/\1$NEW_VERSION'/" "$UTILS_FILE"
-          echo "✅ Updated currentVersion in utils.js"
-        else
-          echo "⚠️ currentVersion pattern not found in utils.js, skipping"
-        fi
+        # Cập nhật utils.js - Bỏ qua phần này
+        echo "ℹ️ Skipping update for $UTILS_FILE as version is handled internally by the app."
         
         # Cập nhật manifest.json
         echo "🔧 Updating $MANIFEST_FILE..."
@@ -109,14 +59,8 @@ jobs:
           echo "✅ Updated manifest.json using sed"
         fi
         
-        # Kiểm tra thay đổi
+        # Kiểm tra thay đổi (chỉ kiểm tra manifest.json)
         echo "🔍 Checking changes..."
-        
-        if ! diff "$UTILS_FILE" "${UTILS_FILE}.backup" > /dev/null 2>&1; then
-          echo "✅ utils.js has been changed"
-        else
-          echo "ℹ️ utils.js unchanged"
-        fi
         
         if ! diff "$MANIFEST_FILE" "${MANIFEST_FILE}.backup" > /dev/null 2>&1; then
           echo "✅ manifest.json has been changed"
@@ -126,99 +70,3 @@ jobs:
         
         # Lưu version vào environment
         echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-
-    - name: Configure Git
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action Bot"
-        
-        # Kiểm tra git config
-        echo "📋 Git config:"
-        git config --get user.email
-        git config --get user.name
-
-    - name: Commit and push changes
-      run: |
-        echo "📋 Git status before adding files:"
-        git status
-        
-        # Add các file đã thay đổi
-        git add js/utils.js manifest.json
-        
-        echo "📋 Git status after adding files:"
-        git status
-        
-        # Kiểm tra xem có thay đổi không
-        if git diff --staged --quiet; then
-          echo "ℹ️ No changes to commit"
-          exit 0
-        fi
-        
-        # Commit với message rõ ràng
-        COMMIT_MSG="🔄 Auto-sync version to ${{ env.NEW_VERSION }} from js/version.js
-        
-        - Updated js/utils.js
-        - Updated manifest.json
-        
-        [skip ci]"
-        
-        git commit -m "$COMMIT_MSG"
-        
-        echo "✅ Changes committed successfully"
-        
-        # Push với retry logic
-        MAX_RETRIES=3
-        RETRY_COUNT=0
-        
-        while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-          echo "🚀 Attempting to push... (attempt $((RETRY_COUNT + 1))/$MAX_RETRIES)"
-          
-          if git push origin HEAD; then
-            echo "✅ Push successful!"
-            break
-          else
-            echo "❌ Push failed, retrying in 5 seconds..."
-            sleep 5
-            RETRY_COUNT=$((RETRY_COUNT + 1))
-            
-            if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
-              echo "❌ Push failed after $MAX_RETRIES attempts"
-              exit 1
-            fi
-            
-            # Pull latest changes trước khi retry
-            echo "🔄 Pulling latest changes..."
-            git pull --rebase origin HEAD || true
-          fi
-        done
-
-    - name: Cleanup on failure
-      if: failure()
-      run: |
-        echo "🧹 Cleaning up on failure..."
-        
-        # Restore backup files nếu có
-        if [ -f "js/utils.js.backup" ]; then
-          mv "js/utils.js.backup" "js/utils.js"
-          echo "↩️ Restored js/utils.js from backup"
-        fi
-        
-        if [ -f "manifest.json.backup" ]; then
-          mv "manifest.json.backup" "manifest.json"
-          echo "↩️ Restored manifest.json from backup"
-        fi
-        
-        # Reset git changes
-        git reset --hard HEAD
-        echo "🔄 Reset git changes"
-
-    - name: Summary
-      if: success()
-      run: |
-        echo "🎉 Version sync completed successfully!"
-        echo "📦 New version: ${{ env.NEW_VERSION }}"
-        echo "📝 Files updated:"
-        echo "  - js/utils.js"
-        echo "  - manifest.json"
-        echo ""
-        echo "🔗 Commit: $(git rev-parse HEAD)"
