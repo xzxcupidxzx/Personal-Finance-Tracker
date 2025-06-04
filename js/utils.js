@@ -404,13 +404,13 @@ Utils.UpdateManager = {
             console.log('📋 UpdateManager: Registering Service Worker...');
             
             this.swRegistration = await navigator.serviceWorker.register('/sw.js', {
-                updateViaCache: 'none' // Luôn kiểm tra phiên bản mới từ network cho sw.js
+                updateViaCache: 'none' 
             });
             
             console.log('✅ UpdateManager: Service Worker registered:', this.swRegistration.scope);
             
             // Lắng nghe SW state changes
-            this.swRegistration.addEventListener('updatefound', () => {
+            this.swRegistration.addEventListener('updatefound', () => { // Dòng 418 trong ảnh
                 console.log('🆕 UpdateManager: Update found on registration object!');
                 const newWorker = this.swRegistration.installing;
                 if (newWorker) {
@@ -427,14 +427,14 @@ Utils.UpdateManager = {
             });
             
             // Kiểm tra version từ SW (nếu đã active)
-            if (this.swRegistration.active) {
+            if (this.swRegistration.active) { // Dòng 430 trong ảnh
                  await this.getVersionFromSW();
             }
             
             // Kiểm tra cập nhật ngay sau khi đăng ký
             await this.checkForUpdates(); // Sẽ gọi getVersionFromSW() nếu cần
             
-        } catch (error) {
+        } catch (error) { // Dòng 437 trong ảnh
             console.error('❌ UpdateManager: Service worker registration failed:', error);
         }
     },

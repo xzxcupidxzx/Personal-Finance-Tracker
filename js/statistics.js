@@ -8,7 +8,7 @@ class StatisticsModule {
         this.app = null;
         this.currentPeriod = 'month';
         this.customDateRange = { start: null, end: null };
-        
+        this.observers = [];
         // Chart instances
         this.charts = {
             expense: null,
@@ -1336,22 +1336,34 @@ class StatisticsModule {
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
-                        setTimeout(() => {
-                            this.updateChartDefaults();
-                            this.refreshCharts();
-                        }, 100);
+                        // Thêm kiểm tra this.isInitialized trước khi gọi
+                        if (this.isInitialized) {
+                            setTimeout(() => {
+                                if (typeof this.updateChartDefaults === 'function') {
+                                    this.updateChartDefaults();
+                                }
+                                if (typeof this.refreshCharts === 'function') {
+                                    this.refreshCharts();
+                                }
+                            }, 100);
+                        }
                     }
                 });
             });
+
+            if (!document.body) {
+                console.warn('ThemeObserver: document.body not available yet. Observer not started.');
+                return; // Không observe nếu body chưa có
+            }
 
             observer.observe(document.body, {
                 attributes: true,
                 attributeFilter: ['data-theme']
             });
 
-            this.observers.push(observer);
+            this.observers.push(observer); // Đảm bảo this.observers là một array
         } catch (error) {
-            console.warn('Could not setup theme observer:', error);
+            console.warn('Could not setup theme_observer:', error);
         }
     }
 
