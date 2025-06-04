@@ -1289,8 +1289,8 @@ class SettingsModule {
                 this.elements.currentVersionEl.textContent = appVersion;
             }
 
-            if (window.FinancialApp?.updateManager) {
-                const updateManager = window.FinancialApp.updateManager;
+            if (this.app && this.app.updateManager) {
+                const updateManager = this.app.updateManager;
                 const swVersionDisplay = updateManager.swVersion || 'N/A';
 
                 if (updateManager.isUpdateAvailable) {
@@ -1333,8 +1333,8 @@ class SettingsModule {
             this.updateUpdateStatus('Đang kiểm tra...');
             this.setButtonLoading(this.elements.checkUpdatesBtn, true);
 
-            if (window.FinancialApp?.updateManager) {
-                const updateManager = window.FinancialApp.updateManager;
+            if (this.app && this.app.updateManager) {
+                const updateManager = this.app.updateManager;
                 await updateManager.checkForUpdates();
 
                 const appVersion = typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'N/A';
@@ -1382,8 +1382,8 @@ class SettingsModule {
         try {
             this.setButtonLoading(this.elements.forceRefreshBtn, true);
             
-            if (window.FinancialApp?.updateManager) {
-                await window.FinancialApp.updateManager.forceRefresh();
+            if (this.app && this.app.updateManager) {
+                await this.app.updateManager.forceRefresh();
             } else {
                 this.fallbackForceRefresh();
             }
