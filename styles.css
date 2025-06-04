@@ -1138,13 +1138,13 @@ input:checked + .slider:before {
     min-width: 0;
 }
 .legend-label { /* Also in ENHANCED CHARTS */
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: var(--text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    margin-bottom: 2px;
+    margin-bottom: 5px;
 }
 .legend-amount-percentage { /* Also in ENHANCED CHARTS */
     font-size: 0.8rem;
@@ -1163,13 +1163,14 @@ input:checked + .slider:before {
     font-weight: 500;
 }
 .legend-color { /* Also in ENHANCED CHARTS */
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     border-radius: 6px;
     flex-shrink: 0;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     border: 2px solid var(--bg-primary);
     transition: transform 0.2s ease;
+	margin-bottom: 10px;
 }
 .legend-item:hover .legend-color { /* Also in ENHANCED CHARTS */
     transform: scale(1.1);
@@ -2211,7 +2212,7 @@ input:checked + .slider:before {
 
 /* Custom Scrollbar for Legend */
 .chart-legend::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
 }
 .chart-legend::-webkit-scrollbar-track {
     background: var(--bg-tertiary);

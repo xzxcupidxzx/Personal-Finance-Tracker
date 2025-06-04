@@ -1,16 +1,18 @@
 // sw.js
 
-// Cố gắng import phiên bản từ tệp version.js
+// KHAI BÁO BIẾN ĐỂ GIỮ PHIÊN BẢN
+let appVersionForSW; // Sử dụng let để tránh hoisting conflict tiềm ẩn
+
 try {
-  // Đường dẫn './js/version.js' là tương đối với vị trí của sw.js (ở thư mục gốc)
-  importScripts('./js/version.js'); 
+  importScripts('./js/version.js'); // APP_VERSION sẽ được định nghĩa từ file này
+  appVersionForSW = APP_VERSION; // Gán giá trị từ version.js
 } catch (e) {
   console.error('Lỗi: Không thể import version.js trong Service Worker:', e);
-  // Phiên bản dự phòng nếu import lỗi
-  var APP_VERSION = '0.0.0-sw-import-error'; // Sử dụng var để đảm bảo tính global nếu const trong version.js có vấn đề
+  appVersionForSW = '0.0.0-sw-import-error'; // Phiên bản dự phòng
 }
 
-const CACHE_NAME = 'finance-app-cache-' + (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'fallback-cache');
+// Sử dụng appVersionForSW thay vì APP_VERSION trong phần còn lại của sw.js
+const CACHE_NAME = 'finance-app-cache-' + appVersionForSW;
 
 const urlsToCache = [
   '/',
