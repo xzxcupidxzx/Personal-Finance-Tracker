@@ -691,20 +691,20 @@ class SettingsModule {
             const importedData = await this.readAndValidateFile(file);
             
             // Perform import
-            const success = await this.app.importData(importedData);
+            const success = await this.app.importData(importedData); // Dòng này gọi vào app.js
             
             if (success) {
-                await this.refresh();
+                await this.refresh(); // Dòng này refresh SettingsModule
                 Utils.UIUtils.showMessage('Đã nhập dữ liệu thành công', 'success');
                 this.emitEvent('data:imported', { 
                     filename: file.name, 
                     size: file.size,
                     transactionCount: importedData.transactions?.length || 0
                 });
+                // <<--- THÊM LỆNH REFRESH CÁC MODULE KHÁC Ở ĐÂY ---<<
             } else {
                 throw new Error('Import operation failed');
             }
-            
         } catch (error) {
             console.error('Import error:', error);
             Utils.UIUtils.showMessage(`Lỗi nhập dữ liệu: ${error.message}`, 'error');

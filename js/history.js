@@ -1195,21 +1195,21 @@ class HistoryModule {
     /**
      * Refresh the module with error handling
      */
-    refresh() {
-        try {
-            // Clear cache to ensure fresh data
-            this.cache.accountBalances = null; //
+	refresh() {
+		try {
+			// Clear cache to ensure fresh data
+			this.cache.accountBalances = null; // Quan trọng để tính toán lại
 
-            this.initializeReconciliation(); // Re-initialize reconciliation data structure //
-            this.renderAccountBalances(); //
-            this.renderTransactionCalendar(); //
-            this.renderReconciliationTable(); // Re-render table with new balances and listeners //
-            this.renderReconciliationHistory(); //
-        } catch (error) {
-            console.error('Error refreshing history module:', error);
-            Utils.UIUtils.showMessage('Có lỗi khi cập nhật module lịch sử', 'error'); //
-        }
-    }
+			this.initializeReconciliation(); 
+			this.renderAccountBalances(); // <<--- HÀM NÀY VẼ LẠI SỐ DƯ TÀI KHOẢN
+			this.renderTransactionCalendar(); 
+			this.renderReconciliationTable(); 
+			this.renderReconciliationHistory(); 
+		} catch (error) {
+			console.error('Error refreshing history module:', error);
+			Utils.UIUtils.showMessage('Có lỗi khi cập nhật module lịch sử', 'error'); 
+		}
+	}
 }
 
 // Add CSS for reconciliation history cards

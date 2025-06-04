@@ -671,22 +671,37 @@ class FinancialApp {
         }
     }
 
-    refreshAllModules() {
-        console.log('🔄 Refreshing all modules...');
-        this.updateHeaderSummary(); // Luôn cập nhật header
-        this.refreshActiveModule(this.currentTab); // Chỉ refresh module của tab hiện tại
-        
-        // Các module khác có thể cần refresh dữ liệu nền mà không cần render lại UI đầy đủ
-        // Ví dụ, SettingsModule cần cập nhật thông tin app (số lượng giao dịch, v.v.)
-        if (this.modules.CategoriesModule?.isInitialized && this.currentTab !== 'categories') {
-            this.modules.CategoriesModule.refresh(); // Categories ít thay đổi, có thể refresh
-        }
-        if (this.modules.SettingsModule?.isInitialized && this.currentTab !== 'settings') {
-            this.modules.SettingsModule.refresh(); // Settings cần cập nhật app info
-        }
-        
-        document.dispatchEvent(new CustomEvent('appDataChanged', { detail: { app: this } }));
-    }
+	refreshAllModules() {
+		console.log('🔄 Refreshing all modules...');
+		this.updateHeaderSummary();
+		this.refreshActiveModule(this.currentTab); 
+
+		if (this.modules.CategoriesModule?.isInitialized && this.currentTab !== 'categories') {
+			this.modules.CategoriesModule.refresh();
+		}
+		if (this.modules.SettingsModule?.isInitialized && this.currentTab !== 'settings') {
+			this.modules.SettingsModule.refresh();
+		}
+
+		// THÊM DÒNG NÀY:
+		if (this.modules.HistoryModule?.isInitialized && this.currentTab !== 'history') {
+			console.log('Force refreshing HistoryModule due to data change...');
+			this.modules.HistoryModule.refresh(); 
+		}
+		// HOẶC, một cách đơn giản hơn là gọi refresh cho tất cả các module đã khởi tạo:
+		/*
+		Object.values(this.modules).forEach(module => {
+			if (module && typeof module.refresh === 'function' && module.isInitialized) {
+				// Không cần refresh lại active module nếu refreshActiveModule đã gọi
+				if (this.currentTab !== module.tabIdAttribute) { // Cần một cách để biết module nào tương ứng với tab nào
+					 module.refresh();
+				}
+			}
+		});
+		*/
+
+		document.dispatchEvent(new CustomEvent('appDataChanged', { detail: { app: this } }));
+	}
 
     refreshActiveModule(tabId = this.currentTab) {
         console.log(`💡 Refreshing active module: ${tabId}`);
@@ -747,7 +762,7 @@ class FinancialApp {
                     throw new Error("Không thể lưu dữ liệu đã nhập.");
                 }
 
-                this.refreshAllModules();
+                this.refreshAllModules(); // <<--- DÒNG NÀY QUAN TRỌNG ---<<
                 Utils.UIUtils.showMessage(`Đã nhập thành công ${this.data.transactions.length} giao dịch.`, 'success');
                 return true;
 
