@@ -1,7 +1,50 @@
-- name: Extract and sync version
+name: Sync App Version
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'js/version.js' # Chỉ chạy khi version.js thay đổi
+
+jobs:
+  sync-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # ✅ Thêm quyền write cho contents
+      
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4 # ✅ Cập nhật lên v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0 # ✅ Fetch full history
+
+    - name: Verify files exist
+      run: |
+        echo "🔍 Checking if required files exist..."
+        
+        if [ ! -f "js/version.js" ]; then
+          echo "❌ js/version.js not found!"
+          exit 1
+        fi
+        
+        # Bỏ qua kiểm tra js/utils.js vì chúng ta không sửa nó nữa
+        # if [ ! -f "js/utils.js" ]; then
+        #   echo "❌ js/utils.js not found!"
+        #   exit 1
+        # fi
+        
+        if [ ! -f "manifest.json" ]; then
+          echo "❌ manifest.json not found!"
+          exit 1
+        fi
+        
+        echo "✅ All required files exist for version syncing (version.js, manifest.json)"
+
+    - name: Extract and sync version
       run: |
         VERSION_FILE="js/version.js"
-        UTILS_FILE="js/utils.js" # Vẫn giữ để backup, nhưng không sửa
+        # UTILS_FILE="js/utils.js" # Không cần biến này nữa
         MANIFEST_FILE="manifest.json"
         
         echo "📂 Working directory: $(pwd)"
@@ -37,14 +80,12 @@
         
         echo "✅ Extracted version: $NEW_VERSION"
         
-        # Backup các file trước khi thay đổi
-        # cp "$UTILS_FILE" "${UTILS_FILE}.backup" # Không cần sửa UTILS_FILE nữa, nhưng có thể vẫn backup cho an toàn nếu muốn
+        # Backup manifest.json trước khi thay đổi
         cp "$MANIFEST_FILE" "${MANIFEST_FILE}.backup"
-        
         echo "💾 Backed up manifest.json"
         
-        # Cập nhật utils.js - Bỏ qua phần này
-        echo "ℹ️ Skipping update for $UTILS_FILE as version is handled internally by the app."
+        # Bỏ qua việc cập nhật utils.js
+        echo "ℹ️ Skipping update for js/utils.js as version is handled internally by the app logic."
         
         # Cập nhật manifest.json
         echo "🔧 Updating $MANIFEST_FILE..."
@@ -59,9 +100,8 @@
           echo "✅ Updated manifest.json using sed"
         fi
         
-        # Kiểm tra thay đổi (chỉ kiểm tra manifest.json)
-        echo "🔍 Checking changes..."
-        
+        # Kiểm tra thay đổi manifest.json
+        echo "🔍 Checking changes for manifest.json..."
         if ! diff "$MANIFEST_FILE" "${MANIFEST_FILE}.backup" > /dev/null 2>&1; then
           echo "✅ manifest.json has been changed"
         else
@@ -70,3 +110,94 @@
         
         # Lưu version vào environment
         echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+    - name: Configure Git
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action Bot"
+        
+        # Kiểm tra git config
+        echo "📋 Git config:"
+        git config --get user.email
+        git config --get user.name
+
+    - name: Commit and push changes
+      run: |
+        echo "📋 Git status before adding files:"
+        git status
+        
+        # Add chỉ manifest.json nếu nó thay đổi
+        git add manifest.json
+        
+        echo "📋 Git status after adding files:"
+        git status
+        
+        # Kiểm tra xem có thay đổi không
+        if git diff --staged --quiet; then
+          echo "ℹ️ No changes to commit for manifest.json"
+          # Nếu không có thay đổi nào cả (kể cả utils.js trước đó nếu có), thì có thể thoát ở đây
+          # Tuy nhiên, vì chúng ta chỉ add manifest.json, nên điều kiện này là đủ
+          exit 0
+        fi
+        
+        # Commit với message rõ ràng
+        COMMIT_MSG="🔄 Auto-sync manifest.json version to ${{ env.NEW_VERSION }} from js/version.js
+        
+        - Updated manifest.json
+        
+        [skip ci]"
+        
+        git commit -m "$COMMIT_MSG"
+        
+        echo "✅ Changes committed successfully"
+        
+        # Push với retry logic
+        MAX_RETRIES=3
+        RETRY_COUNT=0
+        
+        while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+          echo "🚀 Attempting to push... (attempt $((RETRY_COUNT + 1))/$MAX_RETRIES)"
+          
+          if git push origin HEAD; then
+            echo "✅ Push successful!"
+            break
+          else
+            echo "❌ Push failed, retrying in 5 seconds..."
+            sleep 5
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            
+            if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+              echo "❌ Push failed after $MAX_RETRIES attempts"
+              exit 1
+            fi
+            
+            # Pull latest changes trước khi retry
+            echo "🔄 Pulling latest changes..."
+            git pull --rebase origin HEAD || true
+          fi
+        done
+
+    - name: Cleanup on failure
+      if: failure()
+      run: |
+        echo "🧹 Cleaning up on failure..."
+        
+        # Restore backup manifest.json nếu có
+        if [ -f "manifest.json.backup" ]; then
+          mv "manifest.json.backup" "manifest.json"
+          echo "↩️ Restored manifest.json from backup"
+        fi
+        
+        # Reset git changes
+        git reset --hard HEAD
+        echo "🔄 Reset git changes"
+
+    - name: Summary
+      if: success()
+      run: |
+        echo "🎉 Version sync completed successfully for manifest.json!"
+        echo "📦 New version: ${{ env.NEW_VERSION }}"
+        echo "📝 Files updated:"
+        echo "  - manifest.json"
+        echo ""
+        echo "🔗 Commit: $(git rev-parse HEAD)"
