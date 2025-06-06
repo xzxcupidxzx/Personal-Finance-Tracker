@@ -1419,13 +1419,11 @@ class StatisticsModule {
             }
 
             // Enhanced fallback color system
-            const enhancedColors = [
-                '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
-                '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
-                '#F8C471', '#82E0AA', '#F1948A', '#AED6F1', '#D7BDE2',
-                '#A3E4D7', '#F9E79F', '#FADBD8', '#D5F4E6', '#FCF3CF',
-                '#E8DAEF', '#D6EAF8', '#D1F2EB', '#FDEBD0', '#EBDEF0'
-            ];
+			const enhancedColors = [
+				'#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de',
+				'#3ba272', '#fc8452', '#9a60b4', '#ea7ccc', '#ffc53d',
+				'#36cbcb', '#4dc79e', '#fbd490', '#f68b8b', '#9ad4e6'
+			];
 
             // Create hash from category name for consistency - with extra safety
             let hash = 0;
