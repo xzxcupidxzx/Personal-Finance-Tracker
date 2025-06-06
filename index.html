@@ -58,7 +58,6 @@
 </head>
 <body class="font-sans antialiased ...">
 
-    <!-- Theme Switch -->
     <div class="theme-switch-wrapper">
         <label class="theme-switch" for="darkModeToggleCheckbox">
             <input type="checkbox" id="darkModeToggleCheckbox">
@@ -69,7 +68,6 @@
         </label>
     </div>
 
-    <!-- Header -->
     <header class="app-header">
         <div class="header-content">
             <h1 class="header-title">
@@ -96,7 +94,6 @@
 
     <main class="main-container">
         <div class="tab-content-container">
-            <!-- TRANSACTIONS TAB -->
             <section id="tab-transactions" class="tab-content active">
                 <div class="quick-add-section">
                     <h2 class="section-title"><span class="section-icon">✏️</span>Thêm Giao Dịch Nhanh</h2>
@@ -212,7 +209,6 @@
                     </form>
                 </div>
                 <div class="transaction-list-section">
-                    <!-- Giao Dịch Gần Đây + transaction list + no data message -->
                     <div class="section-header">
                         <h2 class="section-title"><span class="section-icon">📋</span>Giao Dịch Gần Đây</h2>
                         <div class="filter-controls">
@@ -323,48 +319,23 @@
             </section>
 
             <section id="tab-statistics" class="tab-content">
-                <div class="tab-header">
-                    <h2 class="tab-title">
-                        <span class="tab-icon">📊</span>
-                        Thống Kê & Biểu Đồ
-                    </h2>
-                    <select id="stats-period" class="bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-xl px-4 py-2">
-                        <option value="week">Tuần này</option>
-						<option value="month">Tháng này</option>
-                        <option value="quarter">Quý này</option>
-                        <option value="year">Năm này</option>
-                        <option value="custom">Tùy chỉnh</option>
-                    </select>
-                </div>
-
+				<div class="tab-header">
+					<h2 class="tab-title">
+						<span class="tab-icon">📊</span>
+						Thống Kê & Biểu Đồ
+					</h2>
+					<div class="filter-controls">
+						<select id="stats-period" class="filter-select">
+							<option value="week">Tuần này</option>
+							<option value="month" selected>Tháng này</option>
+							<option value="quarter">Quý này</option>
+							<option value="year">Năm này</option>
+							<option value="custom">Tùy chỉnh</option>
+						</select>
+					</div>
+				</div>
                 <div class="stats-summary">
-                    <div class="stats-card income-card">
-                        <div class="stats-icon">💰</div>
-                        <div class="stats-content">
-                            <div class="stats-label">Tổng Thu Nhập</div>
-                            <div class="stats-value" id="stats-total-income">0 ₫</div>
-                            <div class="stats-change" id="stats-income-change">0%</div>
-                        </div>
                     </div>
-
-                    <div class="stats-card expense-card">
-                        <div class="stats-icon">💸</div>
-                        <div class="stats-content">
-                            <div class="stats-label">Tổng Chi Tiêu</div>
-                            <div class="stats-value" id="stats-total-expense">0 ₫</div>
-                            <div class="stats-change" id="stats-expense-change">0%</div>
-                        </div>
-                    </div>
-
-                    <div class="stats-card balance-card">
-                        <div class="stats-icon">⚖️</div>
-                        <div class="stats-content">
-                            <div class="stats-label">Số Dư Ròng</div>
-                            <div class="stats-value" id="stats-net-balance">0 ₫</div>
-                            <div class="stats-change" id="stats-balance-change">0%</div>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="chart-section">
                     <div class="chart-header">
@@ -374,50 +345,48 @@
                                 <option value="doughnut">Biểu đồ tròn</option>
                                 <option value="bar">Biểu đồ cột</option>
                             </select>
+                            <button id="export-expense-chart" class="action-btn-small export-btn" title="Xuất biểu đồ">🖼️</button>
                         </div>
                     </div>
-
                     <div class="chart-container-wrapper">
-                        <div class="chart-container" id="expense-chart-container">
-                            <canvas id="expense-chart"></canvas>
+                        <div class="chart-container" id="expense-chart-container" style="min-height: 300px;"> <canvas id="expense-chart"></canvas>
                         </div>
-
                         <div class="chart-legend" id="expense-legend">
                             </div>
                     </div>
                 </div>
 
-                <div class="trend-section">
-                    <h3 class="subsection-title">Xu Hướng 7 Ngày Qua</h3>
-                    <div class="trend-chart-container">
-                        <canvas id="trend-chart"></canvas>
+                <div class="chart-section">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Luồng Tiền (Thu Nhập vs Chi Tiêu Hàng Tháng)</h3>
+                        </div>
+                    <div id="monthly-cashflow-container" class="chart-container" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
+                        </div>
+                </div>
+                <div class="trend-section chart-section"> <div class="chart-header"> <h3 class="subsection-title chart-title">Xu Hướng 7 Ngày Qua</h3>
+                         <button id="export-trend-chart" class="action-btn-small export-btn" title="Xuất biểu đồ">🖼️</button>
+                    </div>
+                    <div class="trend-chart-container chart-container" id="trend-chart-container" style="min-height: 250px;"> <canvas id="trend-chart"></canvas>
                     </div>
                 </div>
 
-                <div class="comparison-section">
-                    <h3 class="subsection-title">So Sánh Tháng</h3>
-                    <div class="comparison-chart-container">
-                        <canvas id="comparison-chart"></canvas>
+                <div class="comparison-section chart-section"> <div class="chart-header"> <h3 class="subsection-title chart-title">So Sánh Tháng (Thu Nhập & Chi Tiêu)</h3>
+                        <button id="export-comparison-chart" class="action-btn-small export-btn" title="Xuất biểu đồ">🖼️</button>
+                    </div>
+                    <div class="comparison-chart-container chart-container" id="comparison-chart-container" style="min-height: 250px;"> <canvas id="comparison-chart"></canvas>
                     </div>
                 </div>
 
-				<div class="detailed-stats-section">
-					<h3 class="subsection-title">Thống Kê Chi Tiết</h3>
-					<div class="stats-table-container">
-						<table class="stats-table">
-							<thead>
-								<tr>
-									<th class="text-left">Danh Mục</th>
-									<th class="text-right">Số Tiền</th>
-									<th class="text-right">%</th>
-									<th class="text-center">Tỷ Lệ</th>
-								</tr>
-							</thead>
-							<tbody id="detailed-stats-tbody">
-								</tbody>
-						</table>
-					</div>
-				</div>
+                <div class="settings-section">
+                    <h3 class="settings-section-title subsection-title">
+                        <span class="settings-icon">🎯</span>
+                        Theo Dõi Ngân Sách
+                    </h3>
+                    <div id="budget-tracking-container" class="budget-progress-grid" style="min-height: 100px; display: flex; align-items: center; justify-content: center;">
+                        </div>
+                </div>
+                <div class="detailed-stats-section">
+                    </div>
             </section>
 
             <section id="tab-categories" class="tab-content">
@@ -798,13 +767,23 @@
 
 		// Hàm lấy icon cho danh mục
 		Utils.UIUtils.getCategoryIcon = function(categoryName) {
-			if (!categoryName || typeof categoryName !== 'string') {
-				return '📦'; // Icon mặc định
+			// ✅ BỔ SUNG: Kiểm tra và lọc bỏ undefined/null/empty values
+			if (!categoryName || 
+				typeof categoryName !== 'string' || 
+				categoryName === 'undefined' || 
+				categoryName === 'null' ||
+				categoryName.toString().trim() === '') {
+				return '📦'; // Icon mặc định cho các giá trị không hợp lệ
 			}
+			
+			// Làm sạch categoryName
+			categoryName = String(categoryName).trim();
+			
 			// Tìm kiếm chính xác trước
 			if (this.categoryIcons[categoryName]) {
 				return this.categoryIcons[categoryName];
 			}
+			
 			// Tìm kiếm không phân biệt hoa thường
 			const lowerCaseName = categoryName.toLowerCase();
 			for (const [key, icon] of Object.entries(this.categoryIcons)) {
@@ -812,12 +791,14 @@
 					return icon;
 				}
 			}
+			
 			// Tìm kiếm từ khóa chứa trong tên danh mục
 			for (const [key, icon] of Object.entries(this.categoryIcons)) {
 				if (lowerCaseName.includes(key.toLowerCase()) || key.toLowerCase().includes(lowerCaseName)) {
 					return icon;
 				}
 			}
+			
 			// Icon mặc định dựa trên từ khóa
 			if (lowerCaseName.includes('ăn') || lowerCaseName.includes('an') || lowerCaseName.includes('food')) {
 				return '🍴';
@@ -836,28 +817,102 @@
 			} else if (lowerCaseName.includes('ngân hàng') || lowerCaseName.includes('ngan hang') || lowerCaseName.includes('bank')) {
 				return '🏦';
 			}
+			
 			return '📦'; // Icon mặc định cuối cùng
 		};
+		Utils.UIUtils.normalizeCategoryName = function(categoryName) {
+			if (!categoryName || 
+				typeof categoryName !== 'string' || 
+				categoryName === 'undefined' || 
+				categoryName === 'null' ||
+				categoryName.toString().trim() === '') {
+				return 'Không phân loại';
+			}
+			
+			return String(categoryName).trim();
+		};
 
+		// ✅ THAY THẾ đoạn Utils.UIUtils.getCategoryColor để xử lý undefined
+		Utils.UIUtils.getCategoryColor = function(categoryName, index = 0) {
+			// ✅ BỔ SUNG: Normalize categoryName trước
+			categoryName = this.normalizeCategoryName(categoryName);
+			
+			// Hash function để tạo màu consistent cho mỗi tên danh mục
+			let hash = 0;
+			if (categoryName && typeof categoryName === 'string') {
+				for (let i = 0; i < categoryName.length; i++) {
+					const char = categoryName.charCodeAt(i);
+					hash = ((hash << 5) - hash) + char;
+					hash = hash & hash; // Convert to 32bit integer
+				}
+			}
+			const colorIndex = Math.abs(hash + index) % this.categoryColors.length;
+			return this.categoryColors[colorIndex];
+		};
+
+		// ✅ BỔ SUNG: Thêm hàm để clean transaction data globally
+		if (!Utils.DataUtils) {
+			Utils.DataUtils = {};
+		}
+
+		Utils.DataUtils.cleanTransactionData = function(transactions) {
+			if (!Array.isArray(transactions)) return [];
+			
+			return transactions.map(tx => {
+				if (!tx) return tx;
+				
+				// Làm sạch category
+				if (tx.category !== undefined) {
+					tx.category = Utils.UIUtils.normalizeCategoryName(tx.category);
+				}
+				
+				return tx;
+			}).filter(tx => tx); // Lọc bỏ các transaction null/undefined
+		};
 		// Hàm lấy màu cho danh mục (nếu chưa có)
 		if (!Utils.UIUtils.getCategoryColor) {
+			// ✅ IMPROVED: Bộ màu đa dạng và dễ phân biệt hơn
 			Utils.UIUtils.categoryColors = [
-				'#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
-				'#06b6d4', '#84cc16', '#f97316', '#ec4899', '#6366f1',
-				'#14b8a6', '#f43f5e', '#a855f7', '#22c55e', '#eab308',
-				'#0ea5e9', '#8b5cf6', '#f97316', '#ec4899', '#6366f1'
+				'#FF6B6B', // Đỏ coral
+				'#4ECDC4', // Xanh mint  
+				'#45B7D1', // Xanh dương
+				'#96CEB4', // Xanh lá nhạt
+				'#FFEAA7', // Vàng nhạt
+				'#DDA0DD', // Tím nhạt
+				'#98D8C8', // Xanh ngọc
+				'#F7DC6F', // Vàng gold
+				'#BB8FCE', // Tím lavender
+				'#85C1E9', // Xanh sky
+				'#F8C471', // Cam nhạt
+				'#82E0AA', // Xanh lá mint
+				'#F1948A', // Hồng salmon
+				'#85C1E9', // Xanh aqua
+				'#D7BDE2', // Tím orchid
+				'#A3E4D7', // Xanh seafoam
+				'#F9E79F', // Vàng banana
+				'#AED6F1', // Xanh baby blue
+				'#FADBD8', // Hồng misty
+				'#D5F4E6'  // Xanh honeydew
 			];
+
 			Utils.UIUtils.getCategoryColor = function(categoryName, index = 0) {
-				// Hash function để tạo màu consistent cho mỗi tên danh mục
-				let hash = 0;
-				if (categoryName && typeof categoryName === 'string') {
-					for (let i = 0; i < categoryName.length; i++) {
-						const char = categoryName.charCodeAt(i);
-						hash = ((hash << 5) - hash) + char;
-						hash = hash & hash; // Convert to 32bit integer
-					}
+				// ✅ FIX: Đảm bảo mỗi category có màu riêng biệt
+				if (!categoryName || typeof categoryName !== 'string') {
+					return this.categoryColors[index % this.categoryColors.length];
 				}
-				const colorIndex = Math.abs(hash + index) % this.categoryColors.length;
+
+				// ✅ IMPROVED: Tạo hash từ tên category để đảm bảo consistent color
+				let hash = 0;
+				const cleanName = categoryName.toString().trim();
+				
+				for (let i = 0; i < cleanName.length; i++) {
+					const char = cleanName.charCodeAt(i);
+					hash = ((hash << 5) - hash) + char;
+					hash = hash & hash; // Convert to 32bit integer
+				}
+				
+				// ✅ FIX: Kết hợp hash và index để tránh trùng màu
+				const colorIndex = Math.abs(hash + index * 7) % this.categoryColors.length;
 				return this.categoryColors[colorIndex];
 			};
 		}

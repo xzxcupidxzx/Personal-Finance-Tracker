@@ -988,7 +988,457 @@ class FinancialApp {
         console.log("🧼 App cleanup complete.");
     }
 }
+class MobileChartEnhancements {
+    constructor() {
+        this.isInitialized = false;
+        this.touchStartY = 0;
+        this.touchStartX = 0;
+        this.isScrolling = false;
+        this.orientation = this.getOrientation();
+        this.setupEventListeners();
+    }
 
+    init() {
+        if (this.isInitialized) return;
+        
+        console.log('📱 Initializing Mobile Chart Enhancements...');
+        
+        this.addMobileSpecificClasses();
+        this.setupTouchOptimizations();
+        this.setupOrientationChange();
+        this.setupViewportOptimization();
+        this.setupPerformanceOptimizations();
+        
+        this.isInitialized = true;
+        console.log('✅ Mobile Chart Enhancements initialized');
+    }
+
+    getOrientation() {
+        return window.innerHeight > window.innerWidth ? 'portrait' : 'landscape';
+    }
+
+    setupEventListeners() {
+        // Orientation change
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => this.handleOrientationChange(), 100);
+        });
+
+        // Resize with debounce
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => this.handleResize(), 150);
+        });
+
+        // Visibility change (app goes background)
+        document.addEventListener('visibilitychange', () => {
+            this.handleVisibilityChange();
+        });
+    }
+
+    addMobileSpecificClasses() {
+        const isMobile = this.isMobileDevice();
+        const isSmallMobile = window.innerWidth <= 480;
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+        if (isMobile) {
+            document.body.classList.add('mobile-device');
+        }
+        if (isSmallMobile) {
+            document.body.classList.add('small-mobile');
+        }
+        if (isIOS) {
+            document.body.classList.add('ios-device');
+        }
+
+        // Add orientation class
+        document.body.classList.add(`orientation-${this.orientation}`);
+    }
+
+    setupTouchOptimizations() {
+        // Prevent double-tap zoom on chart elements
+        const chartElements = document.querySelectorAll('.chart-container, .chart-legend');
+        
+        chartElements.forEach(element => {
+            element.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: true });
+            element.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
+            element.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: true });
+        });
+
+        // Optimize legend scrolling
+        const legends = document.querySelectorAll('.chart-legend');
+        legends.forEach(legend => {
+            legend.style.webkitOverflowScrolling = 'touch';
+            legend.style.scrollBehavior = 'smooth';
+        });
+    }
+
+    handleTouchStart(e) {
+        this.touchStartY = e.touches[0].clientY;
+        this.touchStartX = e.touches[0].clientX;
+        this.isScrolling = false;
+    }
+
+    handleTouchMove(e) {
+        if (!this.touchStartY || !this.touchStartX) return;
+
+        const currentY = e.touches[0].clientY;
+        const currentX = e.touches[0].clientX;
+        const deltaY = Math.abs(currentY - this.touchStartY);
+        const deltaX = Math.abs(currentX - this.touchStartX);
+
+        // Detect if user is scrolling
+        if (deltaY > deltaX && deltaY > 10) {
+            this.isScrolling = true;
+        }
+
+        // Prevent zoom on chart interaction if not scrolling
+        if (!this.isScrolling && e.target.closest('.chart-container')) {
+            e.preventDefault();
+        }
+    }
+
+    handleTouchEnd(e) {
+        this.touchStartY = 0;
+        this.touchStartX = 0;
+        this.isScrolling = false;
+    }
+
+    setupOrientationChange() {
+        // Handle orientation change with delay for iOS
+        const handleOrientationChange = () => {
+            setTimeout(() => {
+                this.orientation = this.getOrientation();
+                document.body.classList.remove('orientation-portrait', 'orientation-landscape');
+                document.body.classList.add(`orientation-${this.orientation}`);
+                
+                this.adjustChartsForOrientation();
+                this.triggerChartRefresh();
+            }, 300); // iOS needs delay for accurate viewport
+        };
+
+        window.addEventListener('orientationchange', handleOrientationChange);
+        window.addEventListener('resize', handleOrientationChange);
+    }
+
+    adjustChartsForOrientation() {
+        const chartContainers = document.querySelectorAll('.chart-container');
+        const isLandscape = this.orientation === 'landscape';
+        const isMobile = this.isMobileDevice();
+
+        if (!isMobile) return;
+
+        chartContainers.forEach(container => {
+            if (isLandscape) {
+                container.style.height = '180px';
+            } else {
+                const isSmallMobile = window.innerWidth <= 480;
+                container.style.height = isSmallMobile ? '220px' : '250px';
+            }
+        });
+
+        // Adjust trend and comparison charts
+        const trendContainer = document.querySelector('.trend-chart-container');
+        const comparisonContainer = document.querySelector('.comparison-chart-container');
+
+        if (trendContainer) {
+            trendContainer.style.height = isLandscape ? '160px' : '200px';
+        }
+        if (comparisonContainer) {
+            comparisonContainer.style.height = isLandscape ? '150px' : '180px';
+        }
+    }
+
+    setupViewportOptimization() {
+        // Prevent viewport zoom on input focus
+        const metaViewport = document.querySelector('meta[name="viewport"]');
+        if (metaViewport) {
+            metaViewport.setAttribute('content', 
+                'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'
+            );
+        }
+
+        // Handle iOS keyboard appearance
+        if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+            window.addEventListener('focusin', () => {
+                document.body.classList.add('keyboard-open');
+            });
+            
+            window.addEventListener('focusout', () => {
+                document.body.classList.remove('keyboard-open');
+                setTimeout(() => {
+                    window.scrollTo(0, 0);
+                }, 100);
+            });
+        }
+    }
+
+    setupPerformanceOptimizations() {
+        // Reduce motion for better performance
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.body.classList.add('reduce-motion');
+        }
+
+        // Monitor performance
+        this.setupPerformanceMonitoring();
+    }
+
+    setupPerformanceMonitoring() {
+        let frameCount = 0;
+        let lastTime = performance.now();
+
+        const checkFPS = () => {
+            frameCount++;
+            const currentTime = performance.now();
+            
+            if (currentTime >= lastTime + 1000) {
+                const fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
+                
+                if (fps < 30) {
+                    console.warn(`Low FPS detected: ${fps}`);
+                    this.enablePerformanceMode();
+                }
+                
+                frameCount = 0;
+                lastTime = currentTime;
+            }
+            
+            requestAnimationFrame(checkFPS);
+        };
+
+        // Only monitor on mobile
+        if (this.isMobileDevice()) {
+            requestAnimationFrame(checkFPS);
+        }
+    }
+
+    enablePerformanceMode() {
+        document.body.classList.add('performance-mode');
+        
+        // Reduce chart animations
+        const charts = window.StatisticsModule?.charts || {};
+        Object.values(charts).forEach(chart => {
+            if (chart && chart.options) {
+                chart.options.animation = { duration: 0 };
+                chart.update('none');
+            }
+        });
+    }
+
+    handleOrientationChange() {
+        console.log('📱 Orientation changed to:', this.orientation);
+        
+        // Update layout
+        this.adjustChartsForOrientation();
+        
+        // Refresh charts after orientation stabilizes
+        setTimeout(() => {
+            this.triggerChartRefresh();
+        }, 500);
+    }
+
+    handleResize() {
+        if (!this.isMobileDevice()) return;
+        
+        console.log('📱 Mobile resize detected');
+        this.addMobileSpecificClasses();
+        this.adjustChartsForOrientation();
+        
+        // Debounced chart refresh
+        clearTimeout(this.resizeTimeout);
+        this.resizeTimeout = setTimeout(() => {
+            this.triggerChartRefresh();
+        }, 300);
+    }
+
+    handleVisibilityChange() {
+        if (document.hidden) {
+            // App went to background - pause animations
+            this.pauseChartAnimations();
+        } else {
+            // App came to foreground - resume and refresh
+            this.resumeChartAnimations();
+            setTimeout(() => {
+                this.triggerChartRefresh();
+            }, 100);
+        }
+    }
+
+    pauseChartAnimations() {
+        const charts = window.StatisticsModule?.charts || {};
+        Object.values(charts).forEach(chart => {
+            if (chart && chart.options) {
+                chart.options.animation = { duration: 0 };
+            }
+        });
+    }
+
+    resumeChartAnimations() {
+        const charts = window.StatisticsModule?.charts || {};
+        const isMobile = this.isMobileDevice();
+        
+        Object.values(charts).forEach(chart => {
+            if (chart && chart.options) {
+                chart.options.animation = { 
+                    duration: isMobile ? 400 : 800,
+                    easing: 'easeOutQuart'
+                };
+            }
+        });
+    }
+
+    triggerChartRefresh() {
+        if (window.StatisticsModule && window.StatisticsModule.isInitialized) {
+            try {
+                // SỬA Ở ĐÂY: Gọi phương thức refresh() hoặc refreshAll()
+                // Giả sử refresh() là public API để làm mới module thống kê
+                window.StatisticsModule.refresh(); 
+                console.log('MobileChartEnhancements: Called StatisticsModule.refresh()');
+            } catch (error) {
+                console.error('Error calling StatisticsModule.refresh() from MobileChartEnhancements:', error);
+            }
+        } else {
+            console.warn('MobileChartEnhancements: StatisticsModule not available or not initialized for chart refresh.');
+        }
+    }
+
+    isMobileDevice() {
+        return window.innerWidth <= 768 || 
+               /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+
+    // Public method to manually trigger optimizations
+    optimize() {
+        this.adjustChartsForOrientation();
+        this.triggerChartRefresh();
+        console.log('📱 Manual mobile optimization triggered');
+    }
+
+    // Debug method
+    getDebugInfo() {
+        return {
+            isMobile: this.isMobileDevice(),
+            orientation: this.orientation,
+            viewport: {
+                width: window.innerWidth,
+                height: window.innerHeight
+            },
+            devicePixelRatio: window.devicePixelRatio,
+            userAgent: navigator.userAgent,
+            classes: Array.from(document.body.classList),
+            isInitialized: this.isInitialized
+        };
+    }
+}
+
+// CSS for mobile enhancements
+const mobileEnhancementCSS = `
+<style>
+/* Performance mode optimizations */
+.performance-mode * {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+}
+
+/* Keyboard open state for iOS */
+.keyboard-open {
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Reduce motion support */
+.reduce-motion * {
+    animation-duration: 0.01s !important;
+    transition-duration: 0.01s !important;
+}
+
+/* Mobile device specific */
+.mobile-device .chart-legend {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+.ios-device .chart-container {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+}
+
+/* Small mobile adjustments */
+.small-mobile .stats-card {
+    min-height: 80px;
+}
+
+.small-mobile .legend-item {
+    min-height: 40px;
+}
+
+/* Orientation specific */
+.orientation-landscape .chart-container-wrapper {
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+.orientation-portrait .chart-container-wrapper {
+    flex-direction: column;
+}
+
+/* Touch optimization */
+.chart-legend,
+.chart-type-selector,
+.legend-item {
+    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Scrollbar for mobile legend */
+.chart-legend::-webkit-scrollbar {
+    width: 4px;
+}
+
+.chart-legend::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+}
+
+.chart-legend::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 2px;
+}
+
+/* High DPI optimization */
+@media (-webkit-min-device-pixel-ratio: 2) {
+    .chart-container canvas {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+</style>
+`;
+
+// Auto-initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    // Add CSS
+    if (!document.getElementById('mobile-enhancement-css')) {
+        const styleElement = document.createElement('div');
+        styleElement.id = 'mobile-enhancement-css';
+        styleElement.innerHTML = mobileEnhancementCSS;
+        document.head.appendChild(styleElement);
+    }
+
+    // Initialize enhancements
+    window.MobileChartEnhancements = new MobileChartEnhancements();
+    
+    // Wait for other modules to load
+    setTimeout(() => {
+        window.MobileChartEnhancements.init();
+    }, 500);
+});
+
+// Export for use in other modules
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = MobileChartEnhancements;
+}
 // Khởi tạo ứng dụng khi DOM đã sẵn sàng
 document.addEventListener('DOMContentLoaded', async () => {
     try {

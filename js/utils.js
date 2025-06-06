@@ -890,6 +890,143 @@ Utils.UpdateManager = {
     }
 };
 
+const VietnameseNumberFormatter = {
+    /**
+     * Format số tiền thành dạng rút gọn tiếng Việt
+     * @param {number} amount - Số tiền cần format
+     * @param {boolean} showCurrency - Có hiển thị ký hiệu tiền tệ không
+     * @returns {string} - Số đã format
+     */
+    formatVietnameseShort(amount, showCurrency = false) {
+        if (!amount || isNaN(amount)) return showCurrency ? '0 ₫' : '0';
+        
+        const absAmount = Math.abs(amount);
+        const sign = amount < 0 ? '-' : '';
+        let result = '';
+
+        if (absAmount >= 1000000000) {
+            // Tỷ
+            const billions = absAmount / 1000000000;
+            if (billions >= 100) {
+                result = `${sign}${Math.round(billions)} tỷ`;
+            } else if (billions >= 10) {
+                result = `${sign}${billions.toFixed(1)} tỷ`;
+            } else {
+                result = `${sign}${billions.toFixed(2)} tỷ`;
+            }
+        } else if (absAmount >= 1000000) {
+            // Triệu
+            const millions = absAmount / 1000000;
+            if (millions >= 100) {
+                result = `${sign}${Math.round(millions)} tr`;
+            } else if (millions >= 10) {
+                result = `${sign}${millions.toFixed(1)} tr`;
+            } else {
+                result = `${sign}${millions.toFixed(2)} tr`;
+            }
+        } else if (absAmount >= 1000) {
+            // Nghìn
+            const thousands = absAmount / 1000;
+            if (thousands >= 100) {
+                result = `${sign}${Math.round(thousands)} ng`;
+            } else if (thousands >= 10) {
+                result = `${sign}${thousands.toFixed(1)} ng`;
+            } else {
+                result = `${sign}${thousands.toFixed(2)} ng`;
+            }
+        } else {
+            // Dưới 1000
+            result = `${sign}${Math.round(absAmount)}`;
+        }
+
+        return showCurrency ? `${result} ₫` : result;
+    },
+
+    /**
+     * Format số tiền cho tooltip (chi tiết hơn)
+     * @param {number} amount - Số tiền
+     * @returns {string} - Số đã format cho tooltip
+     */
+    formatTooltip(amount) {
+        if (!amount || isNaN(amount)) return '0 ₫';
+        
+        const absAmount = Math.abs(amount);
+        const sign = amount < 0 ? '-' : '';
+        
+        if (absAmount >= 1000000000) {
+            const billions = absAmount / 1000000000;
+            return `${sign}${billions.toFixed(2)} tỷ ₫`;
+        } else if (absAmount >= 1000000) {
+            const millions = absAmount / 1000000;
+            return `${sign}${millions.toFixed(2)} triệu ₫`;
+        } else if (absAmount >= 1000) {
+            const thousands = absAmount / 1000;
+            return `${sign}${thousands.toFixed(0)} nghìn ₫`;
+        } else {
+            return `${sign}${Math.round(absAmount)} ₫`;
+        }
+    },
+
+    /**
+     * Format số tiền cho legend (ngắn gọn)
+     * @param {number} amount - Số tiền
+     * @returns {string} - Số đã format cho legend
+     */
+    formatLegend(amount) {
+        if (!amount || isNaN(amount)) return '0₫';
+        
+        const absAmount = Math.abs(amount);
+        const sign = amount < 0 ? '-' : '';
+        
+        if (absAmount >= 1000000000) {
+            const billions = absAmount / 1000000000;
+            return `${sign}${billions.toFixed(1)}T₫`;
+        } else if (absAmount >= 1000000) {
+            const millions = absAmount / 1000000;
+            return `${sign}${millions.toFixed(1)}M₫`;
+        } else if (absAmount >= 1000) {
+            const thousands = absAmount / 1000;
+            return `${sign}${thousands.toFixed(0)}K₫`;
+        } else {
+            return `${sign}${Math.round(absAmount)}₫`;
+        }
+    },
+
+    /**
+     * Format cho trục Y của chart (siêu ngắn gọn)
+     * @param {number} amount - Số tiền
+     * @returns {string} - Số đã format cho trục Y
+     */
+    formatAxis(amount) {
+        if (!amount || isNaN(amount)) return '0';
+        
+        const absAmount = Math.abs(amount);
+        const sign = amount < 0 ? '-' : '';
+        
+        if (absAmount >= 1000000000) {
+            const billions = absAmount / 1000000000;
+            return `${sign}${billions.toFixed(0)}T`;
+        } else if (absAmount >= 1000000) {
+            const millions = absAmount / 1000000;
+            return `${sign}${millions.toFixed(0)}M`;
+        } else if (absAmount >= 1000) {
+            const thousands = absAmount / 1000;
+            return `${sign}${thousands.toFixed(0)}K`;
+        } else {
+            return `${sign}${Math.round(absAmount)}`;
+        }
+    }
+};
+
+// Thêm vào Utils.CurrencyUtils
+if (typeof Utils !== 'undefined' && Utils.CurrencyUtils) {
+    // Thêm các method vào Utils.CurrencyUtils
+    Utils.CurrencyUtils.formatVietnameseShort = VietnameseNumberFormatter.formatVietnameseShort;
+    Utils.CurrencyUtils.formatTooltip = VietnameseNumberFormatter.formatTooltip;
+    Utils.CurrencyUtils.formatLegend = VietnameseNumberFormatter.formatLegend;
+    Utils.CurrencyUtils.formatAxis = VietnameseNumberFormatter.formatAxis;
+}
+
 // CSS cho animation update
 const updateAnimationCSS = `
 <style>
@@ -912,5 +1049,6 @@ if (!document.getElementById('update-animation-css')) {
     styleElement.innerHTML = updateAnimationCSS;
     document.head.appendChild(styleElement);
 }
+
 
 console.log("✅ Utils.js with FIXED UpdateManager loaded.");
