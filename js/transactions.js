@@ -1095,18 +1095,18 @@ class TransactionsModule {
      * Focus amount input for next entry
      */
 	focusAmountInput() {
-		// Comment out để không auto focus sau khi thêm giao dịch
-		// setTimeout(() => {
-		//     if (this.elements.amountInput) {
-		//         this.elements.amountInput.focus();
-		//         this.elements.amountInput.placeholder = 'Nhập số tiền...';
-		//     }
-		// }, 100);
-		
-		// Chỉ set placeholder, không focus
-		if (this.elements.amountInput) {
-			this.elements.amountInput.placeholder = 'Nhập số tiền...';
-		}
+		// BỎ COMMENT CÁC DÒNG DƯỚI ĐÂY
+		setTimeout(() => {
+			if (this.elements.amountInput) {
+				this.elements.amountInput.focus();
+				this.elements.amountInput.placeholder = 'Nhập số tiền...';
+			}
+		}, 100);
+
+		// Chỉ set placeholder, không focus  // <--- XÓA DÒNG NÀY
+		// if (this.elements.amountInput) { // <--- XÓA DÒNG NÀY
+		// 	this.elements.amountInput.placeholder = 'Nhập số tiền...'; // <--- XÓA DÒNG NÀY
+		// } // <--- XÓA DÒNG NÀY
 	}
 
     /**

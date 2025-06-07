@@ -1,81 +1,70 @@
 {
-  "name": "Quản Lý Tài Chính",
+  "name": "Quản Lý Tài Chính Cá Nhân",
   "short_name": "Tài Chính",
-  "description": "Ứng dụng quản lý tài chính cá nhân",
-  "version": "1.0.4",
-  "start_url": "/",
+  "description": "Ứng dụng theo dõi và quản lý tài chính cá nhân một cách hiệu quả.",
+  "id": "/?source=pwa",
+  "start_url": "/index.html",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#ffffff",
-  "theme_color": "#3b82f6",
-  "icons": [
-    {
-      "src": "./LogoFinance.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./LogoFinance.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+  "display_override": [
+    "window-controls-overlay",
+    "standalone"
   ],
+  "orientation": "portrait",
+  "background_color": "#f1f5f9",
+  "theme_color": "#3b82f6",
+  "categories": [
+    "finance",
+    "productivity",
+    "utilities"
+  ],
+	"icons": [
+	  { "src": "./LogoFinance.png", "sizes": "48x48", "type": "image/png" },
+	  { "src": "./LogoFinance.png", "sizes": "72x72", "type": "image/png" },
+	  { "src": "./LogoFinance.png", "sizes": "96x96", "type": "image/png" },
+	  { "src": "./LogoFinance.png", "sizes": "144x144", "type": "image/png" },
+	  { "src": "./LogoFinance.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+	  { "src": "./LogoFinance.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+	  { "src": "./LogoFinance.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+	],
   "shortcuts": [
-    {
-      "name": "💰 Thêm Thu Nhập",
-      "short_name": "Thu",
-      "description": "Thêm giao dịch thu nhập nhanh",
-      "url": "/quick-add.html?action=income&source=shortcut",
-      "icons": [
-        {
-          "src": "./LogoFinance.png",
-          "sizes": "96x96",
-          "type": "image/png"
-        }
-      ]
-    },
     {
       "name": "💸 Thêm Chi Tiêu",
       "short_name": "Chi",
-      "description": "Thêm giao dịch chi tiêu nhanh",
-      "url": "/quick-add.html?action=expense&source=shortcut",
-      "icons": [
-        {
-          "src": "./LogoFinance.png",
-          "sizes": "96x96",
-          "type": "image/png"
-        }
-      ]
+      "description": "Thêm một giao dịch chi tiêu nhanh",
+      "url": "/index.html#transactions?action=expense&source=shortcut",
+      "icons": [{ "src": "./LogoFinance.png", "sizes": "96x96" }]
     },
     {
-      "name": "↔️ Chuyển Tiền",
-      "short_name": "Chuyển",
-      "description": "Tạo giao dịch chuyển tiền",
-      "url": "/quick-add.html?action=transfer&source=shortcut",
-      "icons": [
-        {
-          "src": "./LogoFinance.png",
-          "sizes": "96x96",
-          "type": "image/png"
-        }
-      ]
+      "name": "💰 Thêm Thu Nhập",
+      "short_name": "Thu",
+      "description": "Thêm một giao dịch thu nhập nhanh",
+      "url": "/index.html#transactions?action=income&source=shortcut",
+      "icons": [{ "src": "./LogoFinance.png", "sizes": "96x96" }]
     },
     {
       "name": "📊 Xem Thống Kê",
-      "short_name": "Stats",
-      "description": "Xem báo cáo tài chính nhanh",
-      "url": "/?tab=statistics&source=shortcut",
-      "icons": [
-        {
-          "src": "./LogoFinance.png",
-          "sizes": "96x96",
-          "type": "image/png"
-        }
-      ]
+      "short_name": "Thống Kê",
+      "description": "Xem báo cáo và thống kê tài chính",
+      "url": "/index.html#statistics",
+      "icons": [{ "src": "./LogoFinance.png", "sizes": "96x96" }]
     }
   ],
+	"screenshots": [
+	  {
+		"src": "/screenshot1.png",
+		"sizes": "1080x1920",
+		"type": "image/png",
+		"form_factor": "narrow",
+		"label": "Giao diện Giao dịch"
+	  },
+	  {
+		"src": "/screenshot2.png",
+		"sizes": "1080x1920",
+		"type": "image/png",
+		"form_factor": "narrow",
+		"label": "Giao diện Thống kê"
+	  }
+	],
   "prefer_related_applications": false
 }

@@ -505,7 +505,8 @@ window.addEventListener('appinstalled', () => {
 Utils.UpdateManager = {
     // 🚨 Lấy version từ global APP_VERSION (từ version.js)
     // GitHub Action sẽ cập nhật giá trị chuỗi '1.0.3' này
-    swRegistration: null,
+    currentVersion: '0.0.0',
+	swRegistration: null,
     isUpdateAvailable: false,
     isRefreshing: false,
     swVersion: null, // Version từ Service Worker

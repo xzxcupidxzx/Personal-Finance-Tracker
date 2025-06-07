@@ -665,47 +665,51 @@ class FinancialApp {
 		const nowISO = new Date().toISOString();
 
 		try {
+			// Xử lý cập nhật cho giao dịch chuyển khoản
 			if (existingTransaction.isTransfer) {
-				// Xử lý cập nhật cho giao dịch chuyển khoản
 				const pairIndex = this.data.transactions.findIndex(tx => tx && tx.id === existingTransaction.transferPairId);
 				if (pairIndex === -1) {
 					throw new Error('Không tìm thấy giao dịch đối ứng trong cặp chuyển khoản.');
 				}
 				const pairTransaction = this.data.transactions[pairIndex];
 
-				// Cập nhật thông tin chung cho cả hai
+				// Lấy thông tin mới từ form
 				const newAmount = parseFloat(transactionData.amount) || 0;
-				const fromAccountName = this.getAccountName(transactionData.account);
-				const toAccountName = this.getAccountName(transactionData.toAccount);
+				const fromAccount = transactionData.account;
+				const toAccount = transactionData.toAccount;
+				const newDatetime = transactionData.datetime;
+				const newDescription = transactionData.description || ''; // Lấy mô tả mới từ form
 
-				// Cập nhật giao dịch CHI (out)
+				const fromAccountName = this.getAccountName(fromAccount);
+				const toAccountName = this.getAccountName(toAccount);
+
+				// Xác định giao dịch nào là Chi, giao dịch nào là Thu
 				const expenseTx = existingTransaction.type === 'Chi' ? existingTransaction : pairTransaction;
+				const incomeTx = existingTransaction.type === 'Thu' ? existingTransaction : pairTransaction;
+
+				// Cập nhật đồng bộ cả hai giao dịch
 				Object.assign(expenseTx, {
 					amount: newAmount,
-					account: transactionData.account, // Tài khoản nguồn
-					toAccount: transactionData.toAccount, // Tài khoản đích
-					datetime: transactionData.datetime,
-					description: `Chuyển tiền đến ${toAccountName}`,
+					account: fromAccount,
+					datetime: newDatetime,
+					description: newDescription || `Chuyển tiền đến ${toAccountName}`,
 					originalAmount: transactionData.originalAmount || newAmount,
 					originalCurrency: transactionData.originalCurrency,
 					updatedAt: nowISO
 				});
 
-				// Cập nhật giao dịch THU (in)
-				const incomeTx = existingTransaction.type === 'Thu' ? existingTransaction : pairTransaction;
 				Object.assign(incomeTx, {
 					amount: newAmount,
-					account: transactionData.toAccount, // Tài khoản đích
-					fromAccount: transactionData.account, // Tài khoản nguồn
-					datetime: transactionData.datetime,
-					description: `Nhận tiền từ ${fromAccountName}`,
+					account: toAccount,
+					datetime: newDatetime,
+					description: newDescription || `Nhận tiền từ ${fromAccountName}`,
 					originalAmount: transactionData.originalAmount || newAmount,
 					originalCurrency: transactionData.originalCurrency,
 					updatedAt: nowISO
 				});
 
 			} else {
-				// Xử lý cập nhật cho giao dịch thường
+				// Xử lý cập nhật cho giao dịch thường (đã hoạt động tốt)
 				const updatedTransaction = {
 					...existingTransaction,
 					...transactionData,
@@ -717,7 +721,7 @@ class FinancialApp {
 			}
 
 			this.saveData();
-			this.refreshAllModules(); // Dùng refreshAllModules để đảm bảo mọi thứ được cập nhật
+			this.refreshAllModules(); // Refresh tất cả để đảm bảo UI đồng bộ
 			Utils.UIUtils.showMessage('Giao dịch đã được cập nhật thành công', 'success');
 			return true;
 
@@ -1330,4 +1334,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Hiển thị một UI lỗi tối giản nhất có thể
         document.body.innerHTML = `<div style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:white;color:red;font-family:sans-serif;padding:20px;text-align:center;"><h1>Ứng dụng gặp lỗi nghiêm trọng</h1><p>Không thể khởi động. Vui lòng thử tải lại hoặc xóa dữ liệu trang.</p><button onclick="location.reload(true)" style="padding:8px 12px;margin:10px;cursor:pointer;">Tải lại</button></div>`;
     }
+});
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Ngăn trình duyệt hiển thị pop-up mặc định
+    e.preventDefault();
+    // Lưu sự kiện lại để sử dụng sau
+    this.installPromptEvent = e;
+    console.log('👍 `beforeinstallprompt` event fired. App is installable.');
+
+    // Hiển thị nút cài đặt tùy chỉnh của bạn
+    this.showInstallButton();
 });

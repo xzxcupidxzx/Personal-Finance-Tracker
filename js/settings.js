@@ -548,55 +548,58 @@ class SettingsModule {
     /**
      * Enhanced data export with progress tracking
      */
-    async exportData() {
-        if (this.fileProcessing.isProcessing) {
-            Utils.UIUtils.showMessage('Đang xử lý tác vụ khác, vui lòng đợi', 'warning');
-            return;
-        }
+	async exportData() {
+		if (this.fileProcessing.isProcessing) {
+			Utils.UIUtils.showMessage('Đang xử lý tác vụ khác, vui lòng đợi', 'warning');
+			return;
+		}
 
-        try {
-            this.startOperation('export_json');
-            
-            if (!this.app) {
-                throw new Error('App instance not available');
-            }
+		try {
+			this.startOperation('export_json');
+			
+			if (!this.app) {
+				throw new Error('App instance not available');
+			}
 
-            const exportData = this.app.exportData();
-            if (!exportData) {
-                throw new Error('No data to export');
-            }
+			// === DÒNG ĐÃ SỬA ===
+			const exportData = this.app.data; 
+			// ===================
+			
+			if (!exportData) {
+				throw new Error('No data to export');
+			}
 
-            if (!exportData.transactions || !Array.isArray(exportData.transactions)) {
-                throw new Error('Invalid transaction data');
-            }
+			if (!exportData.transactions || !Array.isArray(exportData.transactions)) {
+				throw new Error('Invalid transaction data');
+			}
 
-            // Add export metadata
-            exportData._exportMetadata = {
-                exportedAt: new Date().toISOString(),
-                version: typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'unknown',
-                transactionCount: exportData.transactions.length,
-                checksum: this.calculateDataChecksum(exportData)
-            };
+			// Add export metadata
+			exportData._exportMetadata = {
+				exportedAt: new Date().toISOString(),
+				version: typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'unknown',
+				transactionCount: exportData.transactions.length,
+				checksum: this.calculateDataChecksum(exportData)
+			};
 
-            const success = Utils.ExportUtils.exportJSON(exportData, 'financial_data');
-            
-            if (success) {
-                await this.updateLastBackupTime();
-                this.addToBackupHistory('json_export');
-                Utils.UIUtils.showMessage('Đã xuất dữ liệu thành công', 'success');
-                this.emitEvent('data:exported', { type: 'json', size: JSON.stringify(exportData).length });
-            } else {
-                throw new Error('Export function failed');
-            }
-            
-        } catch (error) {
-            console.error('Export error:', error);
-            Utils.UIUtils.showMessage(`Có lỗi khi xuất dữ liệu: ${error.message}`, 'error');
-            this.emitEvent('data:export_failed', { type: 'json', error: error.message });
-        } finally {
-            this.endOperation();
-        }
-    }
+			const success = Utils.ExportUtils.exportJSON(exportData, 'financial_data');
+			
+			if (success) {
+				await this.updateLastBackupTime();
+				this.addToBackupHistory('json_export');
+				Utils.UIUtils.showMessage('Đã xuất dữ liệu thành công', 'success');
+				this.emitEvent('data:exported', { type: 'json', size: JSON.stringify(exportData).length });
+			} else {
+				throw new Error('Export function failed');
+			}
+			
+		} catch (error) {
+			console.error('Export error:', error);
+			Utils.UIUtils.showMessage(`Có lỗi khi xuất dữ liệu: ${error.message}`, 'error');
+			this.emitEvent('data:export_failed', { type: 'json', error: error.message });
+		} finally {
+			this.endOperation();
+		}
+	}
 
     /**
      * Enhanced CSV export
