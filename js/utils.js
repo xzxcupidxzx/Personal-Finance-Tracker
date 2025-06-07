@@ -946,15 +946,25 @@ Utils.UpdateManager = {
 
 			// Hiển thị thông báo và thực hiện hard reload sau một khoảng trễ ngắn
 			Utils.UIUtils.showMessage('Đã dọn dẹp xong, đang tải lại...', 'success');
+			
+			// === THAY ĐỔI CỐT LÕI NẰM Ở ĐÂY ===
+			// Thay thế window.location.reload(true) bằng phương pháp cache-busting.
 			setTimeout(() => {
-				window.location.reload(true); // true để bỏ qua cache của trình duyệt
+				const url = new URL(window.location.href);
+				// Thêm một tham số ngẫu nhiên để buộc trình duyệt tải lại từ mạng
+				url.searchParams.set('_force_reload', Date.now());
+				window.location.href = url.href;
 			}, 1500);
 
 		} catch (error) {
 			console.error('❌ UpdateManager: Force refresh thất bại:', error);
 			Utils.UIUtils.showMessage('Lỗi khi làm mới, đang thử lại...', 'error');
 			// Fallback: thực hiện hard reload ngay lập tức
-			setTimeout(() => window.location.reload(true), 1000);
+			setTimeout(() => {
+				const url = new URL(window.location.href);
+				url.searchParams.set('_force_reload_fallback', Date.now());
+				window.location.href = url.href;
+			}, 1000);
 		}
 	},
 
