@@ -937,7 +937,7 @@ Utils.UpdateManager = {
 			console.log('🔄 UpdateManager: Force refreshing application...');
 			this.showLoadingMessage('Đang làm mới ứng dụng hoàn toàn...');
 
-			// Unregister service workers để đảm bảo không còn phiên bản cũ nào chạy
+			// Gỡ bỏ tất cả các service worker đang hoạt động
 			if ('serviceWorker' in navigator) {
 				const registrations = await navigator.serviceWorker.getRegistrations();
 				for (const registration of registrations) {
@@ -946,34 +946,23 @@ Utils.UpdateManager = {
 				}
 			}
 
-			// Xóa toàn bộ cache của ứng dụng
+			// Xóa cache
 			if ('caches' in window) {
 				const cacheNames = await caches.keys();
 				await Promise.all(cacheNames.map(name => caches.delete(name)));
 				console.log('✅ Toàn bộ cache đã được xóa.');
 			}
 
-			// Hiển thị thông báo và thực hiện hard reload sau một khoảng trễ ngắn
-			Utils.UIUtils.showMessage('Đã dọn dẹp xong, đang tải lại...', 'success');
-			
-			// === THAY ĐỔI CỐT LÕI NẰM Ở ĐÂY ===
-			// Thay thế window.location.reload(true) bằng phương pháp cache-busting.
+			// Tải lại bằng cache-busting
 			setTimeout(() => {
 				const url = new URL(window.location.href);
-				// Thêm một tham số ngẫu nhiên để buộc trình duyệt tải lại từ mạng
 				url.searchParams.set('_force_reload', Date.now());
 				window.location.href = url.href;
 			}, 1500);
 
 		} catch (error) {
 			console.error('❌ UpdateManager: Force refresh thất bại:', error);
-			Utils.UIUtils.showMessage('Lỗi khi làm mới, đang thử lại...', 'error');
-			// Fallback: thực hiện hard reload ngay lập tức
-			setTimeout(() => {
-				const url = new URL(window.location.href);
-				url.searchParams.set('_force_reload_fallback', Date.now());
-				window.location.href = url.href;
-			}, 1000);
+			// Fallback
 		}
 	},
 
