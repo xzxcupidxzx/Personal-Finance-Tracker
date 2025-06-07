@@ -9,12 +9,12 @@ class StatisticsModule {
         this.currentPeriod = 'month';
         this.customDateRange = { start: null, end: null };
         this.observers = [];
-        // Chart instances - ✅ THÊM monthlyFlow
+        // Chart instances
         this.charts = {
             expense: null,
             trend: null,
             comparison: null,
-            monthlyFlow: null // ✅ THÊM MỚI
+            monthlyFlow: null
         };
         
         // DOM elements cache
@@ -32,11 +32,11 @@ class StatisticsModule {
             maxCategories: 10,
             trendDays: 7,
             animationDuration: 800,
+            // UPDATED: New, more distinct color palette
             chartColors: [
-                '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
-                '#06b6d4', '#84cc16', '#f97316', '#ec4899', '#6366f1',
-                '#14b8a6', '#f43f5e', '#a855f7', '#22c55e', '#eab308',
-                '#0ea5e9', '#8b5cf6', '#f97316', '#ec4899', '#6366f1'
+                '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', 
+                '#06b6d4', '#d946ef', '#f97316', '#22c55e', '#6366f1',
+                '#ec4899', '#f43f5e', '#a855f7', '#14b8a6', '#eab308'
             ]
         };
         this.resizeTimeout = null;
@@ -543,10 +543,9 @@ class StatisticsModule {
     }
 
     /**
-     * ✅ FIXED: Build chart data with comprehensive validation
+     * Build chart data with comprehensive validation
      */
     buildChartData(categories, chartType) {
-        // ✅ SUPER SAFE: Validate input parameters
         if (!Array.isArray(categories)) {
             console.warn('buildChartData: categories is not an array');
             categories = [];
@@ -556,97 +555,23 @@ class StatisticsModule {
             chartType = 'doughnut'; // Default fallback
         }
 
-        // Filter out invalid categories with comprehensive checks
         const validCategories = categories.filter(item => {
-            // Check if item is an array with 2 elements
-            if (!Array.isArray(item) || item.length !== 2) {
-                return false;
-            }
-            
+            if (!Array.isArray(item) || item.length !== 2) return false;
             const [category, amount] = item;
-            
-            // Validate category
-            if (category === null || 
-                category === undefined || 
-                category === 'undefined' || 
-                category === 'null') {
-                return false;
-            }
-            
-            // Convert to string and check if valid
-            let categoryStr;
-            try {
-                categoryStr = String(category).trim();
-            } catch (error) {
-                return false;
-            }
-            
-            if (!categoryStr || categoryStr === '') {
-                return false;
-            }
-            
-            // Validate amount
+            if (category === null || category === undefined || String(category).trim() === '') return false;
             const numAmount = parseFloat(amount);
-            if (isNaN(numAmount) || !isFinite(numAmount) || numAmount <= 0) {
-                return false;
-            }
-            
+            if (isNaN(numAmount) || !isFinite(numAmount) || numAmount <= 0) return false;
             return true;
         });
 
-        // If no valid categories, return empty dataset
         if (validCategories.length === 0) {
-            return {
-                labels: [],
-                datasets: [{
-                    data: [],
-                    backgroundColor: [],
-                    borderColor: [],
-                    borderWidth: 2
-                }]
-            };
+            return { labels: [], datasets: [{ data: [], backgroundColor: [], borderColor: [], borderWidth: 2 }] };
         }
 
-        // Extract labels and data safely
-        const labels = [];
-        const data = [];
-        
-        validCategories.forEach(([category, amount], index) => {
-            try {
-                // Ensure category is clean string
-                let cleanCategory = String(category).trim();
-                if (!cleanCategory) {
-                    cleanCategory = 'Không phân loại';
-                }
-                
-                // Ensure amount is valid number
-                const cleanAmount = parseFloat(amount);
-                if (isNaN(cleanAmount) || !isFinite(cleanAmount)) {
-                    return; // Skip this entry
-                }
-                
-                labels.push(cleanCategory);
-                data.push(cleanAmount);
-            } catch (error) {
-                console.warn('Error processing category item:', error, category, amount);
-            }
-        });
-        
-        // Generate colors safely
-        const colors = [];
-        labels.forEach((category, index) => {
-            try {
-                const color = this.getCategoryColor(category, index);
-                colors.push(color);
-            } catch (error) {
-                console.warn('Error getting color for category:', category, error);
-                // Fallback color
-                const fallbackColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'];
-                colors.push(fallbackColors[index % fallbackColors.length]);
-            }
-        });
+        const labels = validCategories.map(([category]) => String(category).trim() || 'Không phân loại');
+        const data = validCategories.map(([, amount]) => parseFloat(amount));
+        const colors = labels.map((category, index) => this.getCategoryColor(category, index));
 
-        // Build final dataset
         return {
             labels: labels,
             datasets: [{
@@ -656,13 +581,7 @@ class StatisticsModule {
                 borderWidth: 2,
                 hoverOffset: chartType === 'doughnut' ? 4 : 0,
                 barThickness: chartType === 'bar' ? 20 : undefined,
-                hoverBackgroundColor: colors.map(color => {
-                    try {
-                        return color + '80'; // Add transparency for hover effect
-                    } catch (error) {
-                        return '#FF6B6B80'; // Fallback hover color
-                    }
-                }),
+                hoverBackgroundColor: colors.map(color => color + '80'),
                 hoverBorderColor: colors
             }]
         };
@@ -854,7 +773,7 @@ class StatisticsModule {
     }
 
     /**
-     * ✅ FIXED: Build chart options with proper mobile support
+     * Build chart options with proper mobile support
      */
     buildChartOptions(chartType, totalAmount) {
         const isDark = document.body.getAttribute('data-theme') === 'dark';
@@ -936,7 +855,7 @@ class StatisticsModule {
                 plugins: {
                     ...baseOptions.plugins,
                     datalabels: {
-                        display: false // Tắt hoàn toàn
+                        display: false
                     }
                 }
             };
@@ -983,7 +902,7 @@ class StatisticsModule {
                 plugins: {
                     ...baseOptions.plugins,
                     datalabels: {
-                        display: false // Tắt cho bar chart cũng vậy để tránh lỗi
+                        display: false
                     }
                 }
             };
@@ -991,7 +910,7 @@ class StatisticsModule {
     }
 
     /**
-     * ✅ FIXED: Get doughnut chart plugins with proper canvas management
+     * Get doughnut chart plugins with proper canvas management
      */
     getDoughnutPlugins(totalAmount) {
         const isMobile = this.isMobileDevice();
@@ -1009,7 +928,6 @@ class StatisticsModule {
                         return;
                     }
 
-                    // --- Cấu hình cho đường dẫn và nhãn ---
                     const leaderLineColor = isDark ? '#64748b' : '#94a3b8';
                     const leaderLineWidth = 1.5;
                     const leaderExtension = isMobile ? 10 : 15;
@@ -1032,7 +950,6 @@ class StatisticsModule {
 
                     let occupiedYRanges = { left: [], right: [] };
 
-                    // --- Chuẩn bị danh sách các segment cần vẽ nhãn ---
                     let elementsToLabel = [];
                     meta.data.forEach((element, index) => {
                         const value = chart.data.datasets[0].data[index];
@@ -1048,7 +965,6 @@ class StatisticsModule {
                         }
                     });
 
-                    // Sắp xếp các segment
                     elementsToLabel.sort((a, b) => {
                         let normAngleA = a.midAngle;
                         let normAngleB = b.midAngle;
@@ -1057,7 +973,6 @@ class StatisticsModule {
                         return normAngleA - normAngleB;
                     });
 
-                    // --- Vẽ leader line và nhãn cho từng segment ---
                     elementsToLabel.forEach(({ element, index, midAngle, percentage }) => {
                         try {
                             ctx.save();
@@ -1069,11 +984,9 @@ class StatisticsModule {
                             const centerY = element.y;
                             const outerRadius = element.outerRadius;
 
-                            // Điểm bắt đầu của leader line trên mép segment
                             const startX = centerX + Math.cos(midAngle) * outerRadius;
                             const startY = centerY + Math.sin(midAngle) * outerRadius;
 
-                            // Điểm "khuỷu tay" ban đầu của leader line
                             const elbowX = centerX + Math.cos(midAngle) * (outerRadius + leaderExtension);
                             const initialElbowY = centerY + Math.sin(midAngle) * (outerRadius + leaderExtension);
                             
@@ -1083,7 +996,6 @@ class StatisticsModule {
                             let bestY = initialElbowY;
                             const targetSide = isRightSide ? 'right' : 'left';
                             
-                            // --- Tìm vị trí Y không chồng chéo ---
                             let potentialYPositions = [initialElbowY];
                             for (let i = 1; i <= 5; i++) {
                                 potentialYPositions.push(initialElbowY + i * (minYSpacing / 2));
@@ -1123,7 +1035,6 @@ class StatisticsModule {
                                 }
                             }
                             
-                            // Lưu vị trí Y đã chọn
                             occupiedYRanges[targetSide].push({
                                 start: bestY - estimatedActualLabelHeight / 2,
                                 end: bestY + estimatedActualLabelHeight / 2,
@@ -1131,14 +1042,12 @@ class StatisticsModule {
                             });
                             occupiedYRanges[targetSide].sort((a, b) => a.center - b.center);
 
-                            // --- Vẽ Leader Line ---
                             ctx.beginPath();
                             ctx.moveTo(startX, startY);
                             ctx.lineTo(elbowX, bestY);
                             ctx.lineTo(endX, bestY);
                             ctx.stroke();
 
-                            // --- Vẽ Ô Nhãn chỉ với viền, không màu nền ---
                             const text = `${percentage.toFixed(0)}%`;
                             const textMetrics = ctx.measureText(text);
                             const labelRectWidth = textMetrics.width + 2 * labelPadding.x;
@@ -1152,12 +1061,10 @@ class StatisticsModule {
                             }
                             const labelRectY = bestY - labelRectHeight / 2;
 
-                            // Chỉ vẽ viền, không vẽ nền
                             ctx.strokeStyle = labelBorderColor;
                             ctx.lineWidth = labelBorderWidth;
                             ctx.fillStyle = 'transparent';
                             
-                            // Vẽ hình chữ nhật với góc bo tròn (chỉ viền)
                             ctx.beginPath();
                             ctx.moveTo(labelRectX + labelBorderRadius, labelRectY);
                             ctx.lineTo(labelRectX + labelRectWidth - labelBorderRadius, labelRectY);
@@ -1171,7 +1078,6 @@ class StatisticsModule {
                             ctx.closePath();
                             ctx.stroke();
 
-                            // Vẽ text phần trăm
                             ctx.fillStyle = labelTextColor;
                             ctx.textAlign = isRightSide ? 'left' : 'right';
                             ctx.textBaseline = 'middle';
@@ -1216,17 +1122,17 @@ class StatisticsModule {
                 return;
             }
 
-            categoriesSorted.forEach(([category, amount]) => {
+            categoriesSorted.forEach(([category, amount], index) => { // Added index here
                 const percentage = ((amount / stats.totalExpense) * 100).toFixed(1);
-                const icon = this.getCategoryIcon(category);
-                const color = this.getCategoryColor(category);
+                const iconClass = this.getCategoryIcon(category);
+                const color = this.getCategoryColor(category, index); // Pass index to get color
 
                 const row = document.createElement('tr');
                 row.className = 'border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors';
                 row.innerHTML = `
                     <td class="py-3 px-4">
                         <div class="flex items-center gap-3">
-                            <span class="text-lg">${icon}</span>
+                            <span class="text-lg w-6 text-center"><i class="${iconClass}"></i></span>
                             <span class="font-medium">${this.escapeHtml(category)}</span>
                         </div>
                     </td>
@@ -1253,7 +1159,7 @@ class StatisticsModule {
             totalRow.innerHTML = `
                 <td class="py-3 px-4">
                     <div class="flex items-center gap-3">
-                        <span class="text-lg">💰</span>
+                        <span class="text-lg w-6 text-center"><i class="fa-solid fa-sack-dollar"></i></span>
                         <span>Tổng cộng</span>
                     </div>
                 </td>
@@ -1298,7 +1204,7 @@ class StatisticsModule {
                     text-align: center;
                     padding: 2rem;
                 ">
-                    <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;">📊</div>
+                    <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;"><i class="fa-solid fa-chart-pie"></i></div>
                     <h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
                         Chưa có dữ liệu chi tiêu
                     </h3>
@@ -1349,7 +1255,7 @@ class StatisticsModule {
                     border-radius: 8px;
                     border: 1px solid var(--border-color);
                 ">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                    <div style="font-size: 3rem; margin-bottom: 1rem;"><i class="fa-solid fa-triangle-exclamation"></i></div>
                     <h3 style="color: var(--text-primary); margin-bottom: 0.5rem;">Không thể hiển thị biểu đồ</h3>
                     <p style="margin-bottom: 1rem;">${message}</p>
                     <button onclick="window.StatisticsModule.renderExpenseChart()" style="
@@ -1383,77 +1289,19 @@ class StatisticsModule {
     }
 
     /**
-     * ✅ FIXED: Get category color with proper error handling
+     * ✅ FIXED: Get category color with proper error handling and distinct colors
      */
     getCategoryColor(categoryName, index = 0) {
         try {
-            // ✅ SUPER SAFE: Handle all possible undefined/null cases
-            let safeCategoryName = 'Không phân loại';
-            
-            // Check if categoryName exists and is valid
-            if (categoryName !== null && 
-                categoryName !== undefined && 
-                categoryName !== 'undefined' && 
-                categoryName !== 'null') {
-                
-                // Convert to string safely
-                const stringName = String(categoryName);
-                if (stringName && stringName.trim() && stringName.trim() !== '') {
-                    safeCategoryName = stringName.trim();
-                }
-            }
-
-            // Try Utils first, but with better fallback and additional safety
-            if (typeof Utils !== 'undefined' && 
-                Utils && 
-                Utils.UIUtils && 
-                typeof Utils.UIUtils.getCategoryColor === 'function') {
-                try {
-                    const color = Utils.UIUtils.getCategoryColor(safeCategoryName, index);
-                    if (color && typeof color === 'string' && color !== '#000000' && color.length > 0) {
-                        return color;
-                    }
-                } catch (utilsError) {
-                    console.warn('Utils.UIUtils.getCategoryColor failed:', utilsError);
-                }
-            }
-
-            // Enhanced fallback color system
-			const enhancedColors = [
-				'#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de',
-				'#3ba272', '#fc8452', '#9a60b4', '#ea7ccc', '#ffc53d',
-				'#36cbcb', '#4dc79e', '#fbd490', '#f68b8b', '#9ad4e6'
-			];
-
-            // Create hash from category name for consistency - with extra safety
-            let hash = 0;
-            if (safeCategoryName && typeof safeCategoryName === 'string' && safeCategoryName.length > 0) {
-                try {
-                    for (let i = 0; i < safeCategoryName.length; i++) {
-                        const char = safeCategoryName.charCodeAt(i);
-                        if (!isNaN(char)) {
-                            hash = ((hash << 5) - hash) + char;
-                            hash = hash & hash; // Convert to 32bit integer
-                        }
-                    }
-                } catch (hashError) {
-                    console.warn('Error creating hash:', hashError);
-                    hash = 0;
-                }
-            }
-
-            // Ensure index is a valid number
-            const safeIndex = typeof index === 'number' && !isNaN(index) && isFinite(index) ? index : 0;
-
-            // Combine hash with index to ensure uniqueness
-            const colorIndex = Math.abs(hash + safeIndex * 3) % enhancedColors.length;
-            return enhancedColors[colorIndex];
-            
+            const safeIndex = (typeof index === 'number' && !isNaN(index) && isFinite(index)) ? index : 0;
+            // Directly use the index to cycle through the color palette
+            // This ensures categories displayed together have different colors
+            return this.config.chartColors[safeIndex % this.config.chartColors.length];
         } catch (error) {
             console.warn('Error in getCategoryColor:', error);
-            // Ultimate fallback - use index only
+            // Ultimate fallback
             const basicColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'];
-            const safeIndex = typeof index === 'number' && !isNaN(index) && isFinite(index) ? index : 0;
+            const safeIndex = (typeof index === 'number' && !isNaN(index) && isFinite(index)) ? index : 0;
             return basicColors[Math.abs(safeIndex) % basicColors.length];
         }
     }
@@ -1532,12 +1380,13 @@ class StatisticsModule {
      */
     getCategoryIcon(categoryName) {
         try {
+            // UPDATED: Always use the central Utils function
             if (typeof Utils !== 'undefined' && Utils?.UIUtils?.getCategoryIcon) {
                 return Utils.UIUtils.getCategoryIcon(categoryName);
             }
-            return '📦';
+            return 'fa-solid fa-box'; // Fallback icon class
         } catch (error) {
-            return '📦';
+            return 'fa-solid fa-box';
         }
     }
 
@@ -1681,30 +1530,25 @@ class StatisticsModule {
         }
     }
 
-    // ✅ THÊM CÁC TÍNH NĂNG CÒN THIẾU VÀO STATISTICS.JS
-
     /**
-     * ✅ COMPLETELY FIXED: Render Monthly Cashflow Chart with bulletproof error handling
+     * Render Monthly Cashflow Chart with bulletproof error handling
      */
     renderMonthlyCashflowChart() {
         try {
             console.log('🔄 Rendering monthly cashflow chart...');
             
-            // ✅ STEP 1: Validate container exists
             const container = document.getElementById('monthly-cashflow-container');
             if (!container) {
                 console.warn('Monthly cashflow container not found - skipping render');
                 return;
             }
 
-            // ✅ STEP 2: Validate app data exists
             if (!this.app || !this.app.data || !Array.isArray(this.app.data.transactions)) {
                 console.warn('No transaction data available for monthly cashflow');
                 this.showMonthlyCashflowNoData(container, 'Chưa có dữ liệu giao dịch');
                 return;
             }
 
-            // ✅ STEP 3: Get monthly data safely
             const monthlyData = this.getMonthlyFinancialData(6);
             
             if (!Array.isArray(monthlyData) || monthlyData.length === 0) {
@@ -1713,7 +1557,6 @@ class StatisticsModule {
                 return;
             }
 
-            // ✅ STEP 4: Validate monthly data structure
             const validData = monthlyData.filter(item => {
                 return item && 
                        typeof item === 'object' &&
@@ -1732,10 +1575,8 @@ class StatisticsModule {
                 return;
             }
 
-            // ✅ STEP 5: Safely destroy existing chart
             this.destroyMonthlyCashflowChart();
 
-            // ✅ STEP 6: Create/prepare canvas
             const canvasId = 'monthly-cashflow-chart';
             const canvas = this.createMonthlyCashflowCanvas(container, canvasId);
             
@@ -1745,7 +1586,6 @@ class StatisticsModule {
                 return;
             }
 
-            // ✅ STEP 7: Get chart context safely
             let ctx;
             try {
                 ctx = canvas.getContext('2d');
@@ -1758,13 +1598,11 @@ class StatisticsModule {
                 return;
             }
 
-            // ✅ STEP 8: Prepare chart styling
             const isDark = document.body.getAttribute('data-theme') === 'dark';
             const textColor = isDark ? '#e2e8f0' : '#374151';
             const gridColor = isDark ? '#475569' : '#e5e7eb';
             const isMobile = this.isMobileDevice();
 
-            // ✅ STEP 9: Build chart data safely
             const chartData = {
                 labels: validData.map(item => item.label),
                 datasets: [{
@@ -1814,7 +1652,6 @@ class StatisticsModule {
                 }]
             };
 
-            // ✅ STEP 10: Build chart options
             const chartOptions = {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -1910,7 +1747,6 @@ class StatisticsModule {
                 }
             };
 
-            // ✅ STEP 11: Create chart with comprehensive error handling
             try {
                 this.charts.monthlyFlow = new Chart(ctx, {
                     type: 'line',
@@ -1929,7 +1765,6 @@ class StatisticsModule {
         } catch (error) {
             console.error('❌ Error rendering monthly cashflow chart:', error);
             
-            // Try to show error in container if possible
             try {
                 const container = document.getElementById('monthly-cashflow-container');
                 if (container) {
@@ -1942,7 +1777,7 @@ class StatisticsModule {
     }
 
     /**
-     * ✅ HELPER: Safely destroy monthly cashflow chart
+     * Helper to safely destroy monthly cashflow chart
      */
     destroyMonthlyCashflowChart() {
         if (this.charts.monthlyFlow) {
@@ -1957,28 +1792,19 @@ class StatisticsModule {
     }
 
     /**
-     * ✅ HELPER: Create canvas for monthly cashflow chart
+     * Helper to create canvas for monthly cashflow chart
      */
     createMonthlyCashflowCanvas(container, canvasId) {
         try {
-            // Clear container
             container.innerHTML = '';
-            
-            // Create new canvas
             const canvas = document.createElement('canvas');
             canvas.id = canvasId;
             canvas.style.width = '100%';
             canvas.style.height = '300px';
-            
-            // Set canvas attributes for better rendering
             canvas.setAttribute('role', 'img');
             canvas.setAttribute('aria-label', 'Biểu đồ luồng tiền hàng tháng');
-            
-            // Add to container
             container.appendChild(canvas);
-            
             return canvas;
-            
         } catch (error) {
             console.error('Error creating canvas:', error);
             return null;
@@ -1986,7 +1812,7 @@ class StatisticsModule {
     }
 
     /**
-     * ✅ HELPER: Show no data message for monthly cashflow
+     * Helper to show no data message for monthly cashflow
      */
     showMonthlyCashflowNoData(container, message = 'Chưa có dữ liệu luồng tiền') {
         try {
@@ -2001,7 +1827,7 @@ class StatisticsModule {
                     text-align: center;
                     padding: 2rem;
                 ">
-                    <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;">📊</div>
+                    <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"><i class="fa-solid fa-chart-line"></i></div>
                     <h4 style="margin-bottom: 0.5rem; color: var(--text-primary, #1f2937); font-weight: 600;">
                         ${message}
                     </h4>
@@ -2029,7 +1855,7 @@ class StatisticsModule {
     }
 
     /**
-     * ✅ HELPER: Show error message for monthly cashflow
+     * Helper to show error message for monthly cashflow
      */
     showMonthlyCashflowError(container, message = 'Có lỗi khi hiển thị biểu đồ') {
         try {
@@ -2047,7 +1873,7 @@ class StatisticsModule {
                     border-radius: 8px;
                     border: 1px solid var(--border-color, #e5e7eb);
                 ">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                    <div style="font-size: 3rem; margin-bottom: 1rem;"><i class="fa-solid fa-triangle-exclamation"></i></div>
                     <h4 style="color: var(--text-primary, #1f2937); margin-bottom: 0.5rem; font-weight: 600;">
                         Không thể hiển thị biểu đồ luồng tiền
                     </h4>
@@ -2073,20 +1899,14 @@ class StatisticsModule {
     }
 
     /**
-     * ✅ COMPLETELY FIXED: Get Monthly Financial Data with comprehensive validation
+     * Get Monthly Financial Data with comprehensive validation
      */
     getMonthlyFinancialData(monthsCount = 6) {
         try {
             console.log(`📊 Getting monthly financial data for ${monthsCount} months...`);
             
-            // ✅ STEP 1: Validate input parameters
-            const safeMonthsCount = typeof monthsCount === 'number' && 
-                                  !isNaN(monthsCount) && 
-                                  isFinite(monthsCount) && 
-                                  monthsCount > 0 ? 
-                                  Math.min(Math.floor(monthsCount), 24) : 6; // Max 24 months, default 6
+            const safeMonthsCount = typeof monthsCount === 'number' && !isNaN(monthsCount) && isFinite(monthsCount) && monthsCount > 0 ? Math.min(Math.floor(monthsCount), 24) : 6;
 
-            // ✅ STEP 2: Validate app data exists
             if (!this.app || !this.app.data || !Array.isArray(this.app.data.transactions)) {
                 console.warn('No transaction data available for monthly analysis');
                 return [];
@@ -2098,121 +1918,51 @@ class StatisticsModule {
                 return [];
             }
 
-            // ✅ STEP 3: Prepare data structure
             const now = new Date();
             const monthlyData = [];
 
-            // ✅ STEP 4: Generate monthly data with comprehensive validation
             for (let i = safeMonthsCount - 1; i >= 0; i--) {
                 try {
-                    // Calculate target date safely
                     const targetDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
-                    
-                    // Validate date creation
-                    if (isNaN(targetDate.getTime())) {
-                        console.warn(`Invalid target date for month offset ${i}`);
-                        continue;
-                    }
+                    if (isNaN(targetDate.getTime())) continue;
 
                     const year = targetDate.getFullYear();
                     const month = targetDate.getMonth();
 
-                    // Create month boundaries safely
                     const monthStart = new Date(year, month, 1);
                     const monthEnd = new Date(year, month + 1, 0, 23, 59, 59, 999);
+                    if (isNaN(monthStart.getTime()) || isNaN(monthEnd.getTime())) continue;
 
-                    // Validate boundaries
-                    if (isNaN(monthStart.getTime()) || isNaN(monthEnd.getTime())) {
-                        console.warn(`Invalid month boundaries for ${year}-${month + 1}`);
-                        continue;
-                    }
-
-                    // ✅ STEP 5: Filter transactions for this month with validation
                     const monthTransactions = transactions.filter(tx => {
                         try {
-                            // Validate transaction structure
-                            if (!tx || typeof tx !== 'object') {
-                                return false;
-                            }
-
-                            // Check if it's a transfer (exclude from calculations)
-                            if (tx.isTransfer === true) {
-                                return false;
-                            }
-
-                            // Validate datetime
-                            if (!tx.datetime || typeof tx.datetime !== 'string') {
-                                return false;
-                            }
-
-                            // Parse and validate date
+                            if (!tx || typeof tx !== 'object' || tx.isTransfer === true || !tx.datetime || typeof tx.datetime !== 'string') return false;
                             const txDate = new Date(tx.datetime);
-                            if (isNaN(txDate.getTime())) {
-                                return false;
-                            }
-
-                            // Check if within month range
+                            if (isNaN(txDate.getTime())) return false;
                             return txDate >= monthStart && txDate <= monthEnd;
-                            
-                        } catch (filterError) {
-                            console.warn('Error filtering transaction:', filterError, tx);
-                            return false;
-                        }
+                        } catch (filterError) { return false; }
                     });
 
-                    // ✅ STEP 6: Calculate statistics safely
                     let stats;
                     try {
                         stats = this.calculateStatistics(monthTransactions);
-                        
-                        // Validate calculated stats
-                        if (!stats || typeof stats !== 'object') {
-                            throw new Error('Invalid stats object returned');
-                        }
-
-                        // Ensure numeric values
-                        stats.totalIncome = typeof stats.totalIncome === 'number' && 
-                                          !isNaN(stats.totalIncome) && 
-                                          isFinite(stats.totalIncome) ? 
-                                          stats.totalIncome : 0;
-
-                        stats.totalExpense = typeof stats.totalExpense === 'number' && 
-                                           !isNaN(stats.totalExpense) && 
-                                           isFinite(stats.totalExpense) ? 
-                                           stats.totalExpense : 0;
-
+                        if (!stats || typeof stats !== 'object') throw new Error('Invalid stats object');
+                        stats.totalIncome = (typeof stats.totalIncome === 'number' && !isNaN(stats.totalIncome)) ? stats.totalIncome : 0;
+                        stats.totalExpense = (typeof stats.totalExpense === 'number' && !isNaN(stats.totalExpense)) ? stats.totalExpense : 0;
                     } catch (statsError) {
-                        console.warn('Error calculating stats for month:', statsError);
-                        stats = {
-                            totalIncome: 0,
-                            totalExpense: 0
-                        };
+                        stats = { totalIncome: 0, totalExpense: 0 };
                     }
 
-                    // ✅ STEP 7: Create month label safely
                     let monthLabel;
                     try {
-                        monthLabel = targetDate.toLocaleString('vi-VN', { 
-                            month: 'short', 
-                            year: 'numeric' 
-                        });
-                        
-                        // Fallback if locale fails
+                        monthLabel = targetDate.toLocaleString('vi-VN', { month: 'short', year: 'numeric' });
                         if (!monthLabel || typeof monthLabel !== 'string') {
-                            const monthNames = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 
-                                              'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
+                            const monthNames = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
                             monthLabel = `${monthNames[month]} ${year}`;
                         }
-                        
-                    } catch (labelError) {
-                        console.warn('Error creating month label:', labelError);
-                        monthLabel = `${month + 1}/${year}`;
-                    }
+                    } catch (labelError) { monthLabel = `${month + 1}/${year}`; }
 
-                    // ✅ STEP 8: Calculate profit safely
                     const profit = stats.totalIncome - stats.totalExpense;
                     
-                    // ✅ STEP 9: Add to monthly data
                     monthlyData.push({
                         label: monthLabel,
                         income: stats.totalIncome,
@@ -2220,43 +1970,28 @@ class StatisticsModule {
                         profit: profit,
                         transactionCount: monthTransactions.length,
                         year: year,
-                        month: month + 1 // 1-based month for readability
+                        month: month + 1
                     });
-
                 } catch (monthError) {
                     console.warn(`Error processing month ${i}:`, monthError);
-                    // Continue with next month instead of failing completely
                     continue;
                 }
             }
 
-            // ✅ STEP 10: Final validation and sorting
-            const validMonthlyData = monthlyData.filter(item => {
-                return item && 
-                       typeof item === 'object' &&
-                       typeof item.label === 'string' &&
-                       typeof item.income === 'number' &&
-                       typeof item.expense === 'number' &&
-                       typeof item.profit === 'number' &&
-                       !isNaN(item.income) &&
-                       !isNaN(item.expense) &&
-                       !isNaN(item.profit);
-            });
+            const validMonthlyData = monthlyData.filter(item => 
+                item && typeof item === 'object' && typeof item.label === 'string' &&
+                typeof item.income === 'number' && !isNaN(item.income) &&
+                typeof item.expense === 'number' && !isNaN(item.expense) &&
+                typeof item.profit === 'number' && !isNaN(item.profit)
+            );
 
-            // Sort by year and month to ensure correct order
-            validMonthlyData.sort((a, b) => {
-                if (a.year !== b.year) {
-                    return a.year - b.year;
-                }
-                return a.month - b.month;
-            });
+            validMonthlyData.sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
 
             console.log(`✅ Generated ${validMonthlyData.length} months of financial data`);
             return validMonthlyData;
-
         } catch (error) {
             console.error('❌ Error getting monthly financial data:', error);
-            return []; // Return empty array instead of undefined
+            return [];
         }
     }
 
@@ -2266,42 +2001,19 @@ class StatisticsModule {
     renderBudgetTracking() {
         try {
             const container = document.getElementById('budget-tracking-container');
-            if (!container) {
-                console.warn('Budget tracking container not found');
-                return;
-            }
+            if (!container) return;
 
             const currentTransactions = this.getFilteredTransactions();
             const stats = this.calculateStatistics(currentTransactions);
-            
-            // Get budget settings from localStorage or default values
             const budgetSettings = this.getBudgetSettings();
             
             if (Object.keys(budgetSettings).length === 0) {
                 container.innerHTML = `
-                    <div class="no-budget-message" style="
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        justify-content: center;
-                        padding: 2rem;
-                        text-align: center;
-                        color: var(--text-muted);
-                    ">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">🎯</div>
+                    <div class="no-budget-message" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; color: var(--text-muted);">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;"><i class="fa-solid fa-bullseye"></i></div>
                         <h4 style="margin-bottom: 0.5rem; color: var(--text-primary);">Chưa thiết lập ngân sách</h4>
                         <p style="margin-bottom: 1.5rem;">Hãy thiết lập ngân sách cho từng danh mục để theo dõi chi tiêu</p>
-                        <button onclick="window.StatisticsModule.showBudgetSetup()" style="
-                            background: var(--primary-color);
-                            color: white;
-                            border: none;
-                            padding: 0.75rem 1.5rem;
-                            border-radius: 8px;
-                            font-weight: 500;
-                            cursor: pointer;
-                        ">
-                            Thiết lập ngân sách
-                        </button>
+                        <button onclick="window.StatisticsModule.showBudgetSetup()" style="background: var(--primary-color); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 500; cursor: pointer;">Thiết lập ngân sách</button>
                     </div>
                 `;
                 return;
@@ -2309,8 +2021,7 @@ class StatisticsModule {
 
             container.innerHTML = '';
 
-            // Create budget progress items
-            Object.entries(stats.expenseByCategory).forEach(([category, spent]) => {
+            Object.entries(stats.expenseByCategory).forEach(([category, spent], index) => { // Added index
                 const budget = budgetSettings[category];
                 if (!budget) return;
 
@@ -2320,21 +2031,16 @@ class StatisticsModule {
 
                 const budgetItem = document.createElement('div');
                 budgetItem.className = 'budget-item';
-                budgetItem.style.cssText = `
-                    background: var(--bg-secondary);
-                    border-radius: 12px;
-                    padding: 1.5rem;
-                    margin-bottom: 1rem;
-                    border: 1px solid var(--border-color);
-                `;
+                budgetItem.style.cssText = `background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; border: 1px solid var(--border-color);`;
 
-                const color = this.getCategoryColor(category);
+                const color = this.getCategoryColor(category, index); // Pass index
                 const progressColor = isOverBudget ? '#ef4444' : color;
+                const iconClass = this.getCategoryIcon(category);
 
                 budgetItem.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <span style="font-size: 1.5rem;">${this.getCategoryIcon(category)}</span>
+                            <span style="font-size: 1.5rem; width: 24px; text-align: center;"><i class="${iconClass}"></i></span>
                             <div>
                                 <h4 style="margin: 0; color: var(--text-primary); font-weight: 600;">${category}</h4>
                                 <p style="margin: 0; color: var(--text-muted); font-size: 0.875rem;">
@@ -2343,52 +2049,22 @@ class StatisticsModule {
                             </div>
                         </div>
                         <div style="text-align: right;">
-                            <div style="color: ${isOverBudget ? '#ef4444' : '#10b981'}; font-weight: 600; font-size: 1.125rem;">
-                                ${percentage.toFixed(1)}%
-                            </div>
-                            <div style="color: var(--text-muted); font-size: 0.875rem;">
-                                ${isOverBudget ? 'Vượt' : 'Còn'} ${this.formatCurrency(Math.abs(remaining))}
-                            </div>
+                            <div style="color: ${isOverBudget ? '#ef4444' : '#10b981'}; font-weight: 600; font-size: 1.125rem;">${percentage.toFixed(1)}%</div>
+                            <div style="color: var(--text-muted); font-size: 0.875rem;">${isOverBudget ? 'Vượt' : 'Còn'} ${this.formatCurrency(Math.abs(remaining))}</div>
                         </div>
                     </div>
                     <div style="background: var(--bg-tertiary); border-radius: 6px; height: 8px; overflow: hidden;">
-                        <div style="
-                            background: ${progressColor};
-                            height: 100%;
-                            width: ${Math.min(percentage, 100)}%;
-                            transition: width 0.3s ease;
-                            ${isOverBudget ? 'animation: pulse 2s infinite;' : ''}
-                        "></div>
+                        <div style="background: ${progressColor}; height: 100%; width: ${Math.min(percentage, 100)}%; transition: width 0.3s ease; ${isOverBudget ? 'animation: pulse 2s infinite;' : ''}"></div>
                     </div>
                 `;
-
                 container.appendChild(budgetItem);
             });
 
-            // Add budget setup button
             const setupButton = document.createElement('button');
-            setupButton.style.cssText = `
-                width: 100%;
-                padding: 1rem;
-                background: var(--bg-secondary);
-                border: 2px dashed var(--border-color);
-                border-radius: 12px;
-                color: var(--text-muted);
-                cursor: pointer;
-                transition: all 0.2s ease;
-                margin-top: 1rem;
-            `;
-            setupButton.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                    <span style="font-size: 1.25rem;">⚙️</span>
-                    <span>Quản lý ngân sách</span>
-                </div>
-            `;
+            setupButton.style.cssText = `width: 100%; padding: 1rem; background: var(--bg-secondary); border: 2px dashed var(--border-color); border-radius: 12px; color: var(--text-muted); cursor: pointer; transition: all 0.2s ease; margin-top: 1rem;`;
+            setupButton.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;"><span style="font-size: 1.25rem;"><i class="fa-solid fa-gear"></i></span><span>Quản lý ngân sách</span></div>`;
             setupButton.onclick = () => this.showBudgetSetup();
             container.appendChild(setupButton);
-
-            console.log('✅ Budget tracking rendered');
-
         } catch (error) {
             console.error('Error rendering budget tracking:', error);
         }
@@ -2434,150 +2110,57 @@ class StatisticsModule {
                 return;
             }
 
-            // Create modal
             const modal = document.createElement('div');
             modal.className = 'budget-setup-modal';
-            modal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.5);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 1000;
-                padding: 1rem;
-            `;
+            modal.style.cssText = `position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem;`;
 
             modal.innerHTML = `
-                <div style="
-                    background: var(--bg-primary);
-                    border-radius: 16px;
-                    padding: 2rem;
-                    max-width: 500px;
-                    width: 100%;
-                    max-height: 80vh;
-                    overflow-y: auto;
-                    border: 1px solid var(--border-color);
-                ">
+                <div style="background: var(--bg-primary); border-radius: 16px; padding: 2rem; max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto; border: 1px solid var(--border-color);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                         <h3 style="margin: 0; color: var(--text-primary);">🎯 Thiết lập ngân sách</h3>
-                        <button id="close-budget-modal" style="
-                            background: none;
-                            border: none;
-                            font-size: 1.5rem;
-                            cursor: pointer;
-                            color: var(--text-muted);
-                            padding: 0.25rem;
-                        ">&times;</button>
+                        <button id="close-budget-modal" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); padding: 0.25rem;">&times;</button>
                     </div>
-                    
                     <div id="budget-categories">
                         ${categories.map(category => `
                             <div style="margin-bottom: 1.5rem;">
-                                <label style="
-                                    display: flex;
-                                    align-items: center;
-                                    gap: 0.75rem;
-                                    margin-bottom: 0.5rem;
-                                    color: var(--text-primary);
-                                    font-weight: 500;
-                                ">
-                                    <span style="font-size: 1.25rem;">${this.getCategoryIcon(category)}</span>
+                                <label style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 500;">
+                                    <span style="font-size: 1.25rem; width: 24px; text-align:center;"><i class="${this.getCategoryIcon(category)}"></i></span>
                                     ${category}
                                 </label>
                                 <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <input 
-                                        type="number" 
-                                        id="budget-${category.replace(/\s+/g, '-')}"
-                                        placeholder="Nhập ngân sách tháng"
-                                        value="${currentSettings[category] || ''}"
-                                        style="
-                                            flex: 1;
-                                            padding: 0.75rem;
-                                            border: 1px solid var(--border-color);
-                                            border-radius: 8px;
-                                            background: var(--bg-secondary);
-                                            color: var(--text-primary);
-                                        "
-                                        min="0"
-                                        step="10000"
-                                    >
+                                    <input type="number" id="budget-${category.replace(/\s+/g, '-')}" placeholder="Nhập ngân sách tháng" value="${currentSettings[category] || ''}" style="flex: 1; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary);" min="0" step="10000">
                                     <span style="color: var(--text-muted); font-size: 0.875rem;">₫</span>
                                 </div>
-                                <div style="
-                                    font-size: 0.75rem;
-                                    color: var(--text-muted);
-                                    margin-top: 0.25rem;
-                                ">
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
                                     Chi tiêu tháng này: ${this.formatCurrency(stats.expenseByCategory[category] || 0)}
                                 </div>
                             </div>
                         `).join('')}
                     </div>
-
                     <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                        <button id="save-budget" style="
-                            flex: 1;
-                            padding: 0.75rem;
-                            background: var(--primary-color);
-                            color: white;
-                            border: none;
-                            border-radius: 8px;
-                            font-weight: 500;
-                            cursor: pointer;
-                        ">
-                            Lưu ngân sách
-                        </button>
-                        <button id="cancel-budget" style="
-                            padding: 0.75rem 1.5rem;
-                            background: var(--bg-secondary);
-                            color: var(--text-primary);
-                            border: 1px solid var(--border-color);
-                            border-radius: 8px;
-                            cursor: pointer;
-                        ">
-                            Hủy
-                        </button>
+                        <button id="save-budget" style="flex: 1; padding: 0.75rem; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;">Lưu ngân sách</button>
+                        <button id="cancel-budget" style="padding: 0.75rem 1.5rem; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">Hủy</button>
                     </div>
                 </div>
             `;
-
             document.body.appendChild(modal);
 
-            // Event handlers
-            const closeBudgetModal = () => {
-                document.body.removeChild(modal);
-            };
-
+            const closeBudgetModal = () => document.body.removeChild(modal);
             document.getElementById('close-budget-modal').onclick = closeBudgetModal;
             document.getElementById('cancel-budget').onclick = closeBudgetModal;
-            
             document.getElementById('save-budget').onclick = () => {
                 const newSettings = {};
                 categories.forEach(category => {
                     const inputId = `budget-${category.replace(/\s+/g, '-')}`;
                     const input = document.getElementById(inputId);
                     const value = parseFloat(input.value);
-                    if (!isNaN(value) && value > 0) {
-                        newSettings[category] = value;
-                    }
+                    if (!isNaN(value) && value > 0) newSettings[category] = value;
                 });
-
                 this.saveBudgetSettings(newSettings);
                 closeBudgetModal();
                 this.showMessage('Đã lưu thiết lập ngân sách', 'success');
             };
-
-            // Close on backdrop click
-            modal.onclick = (e) => {
-                if (e.target === modal) {
-                    closeBudgetModal();
-                }
-            };
-
+            modal.onclick = (e) => { if (e.target === modal) closeBudgetModal(); };
         } catch (error) {
             console.error('Error showing budget setup:', error);
             this.showMessage('Có lỗi khi hiển thị thiết lập ngân sách', 'error');
@@ -2592,7 +2175,6 @@ class StatisticsModule {
 
         try {
             console.log('🔄 Refreshing all statistics...');
-            
             this.updateSummaryCards();
             await this.renderExpenseChart();
             this.renderTrendChart();
@@ -2600,7 +2182,6 @@ class StatisticsModule {
             this.renderMonthlyCashflowChart();
             this.renderBudgetTracking();
             this.updateDetailedStats();
-            
             console.log('✅ All statistics refreshed');
         } catch (error) {
             console.error('Error refreshing all statistics:', error);
@@ -2635,319 +2216,100 @@ class StatisticsModule {
      */
     destroy() {
         console.log('💀 Destroying Statistics Module...');
-
         try {
-            // Destroy all charts
-            Object.keys(this.charts).forEach(chartName => {
-                this.destroyChart(chartName);
-            });
-
-            // Remove event listeners
-            this.eventListeners.forEach(({ element, event, handler, options }) => {
-                if (element && typeof element.removeEventListener === 'function') {
-                    element.removeEventListener(event, handler, options);
-                }
-            });
-
-            // Disconnect observers
-            this.observers.forEach(observer => {
-                if (observer && typeof observer.disconnect === 'function') {
-                    observer.disconnect();
-                }
-            });
-
-            // Clean up custom date picker
+            Object.keys(this.charts).forEach(chartName => this.destroyChart(chartName));
+            this.eventListeners.forEach(({ element, event, handler, options }) => element?.removeEventListener(event, handler, options));
+            this.observers.forEach(observer => observer?.disconnect());
             this.hideCustomDatePicker();
-
-            // Reset state
             this.eventListeners = [];
             this.observers = [];
             this.elements = {};
-            this.charts = { 
-                expense: null, 
-                trend: null, 
-                comparison: null,
-                monthlyFlow: null
-            };
+            this.charts = { expense: null, trend: null, comparison: null, monthlyFlow: null };
             this.isInitialized = false;
             this.isRendering = false;
             this.resizeTimeout = null;
-
             console.log('✅ Statistics Module destroyed');
-
         } catch (error) {
             console.error('Error destroying Statistics Module:', error);
         }
     }
 
-    // --- ✅ MOBILE CHART OPTIMIZATION METHODS (FIXED) ---
-
     /**
      * Detect if device is mobile
      */
     isMobileDevice() {
-        return window.innerWidth <= 768 || 
-               /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        return window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     }
 
     /**
-     * ✅ FIXED: Get mobile-optimized chart configuration
+     * Get mobile-optimized chart configuration
      */
     getMobileChartConfig(baseConfig, chartType = 'doughnut') {
         const isMobile = this.isMobileDevice();
         const isSmallMobile = window.innerWidth <= 480;
 
-        // Deep clone but preserve functions
         const mobileConfig = {
             type: baseConfig.type,
             data: JSON.parse(JSON.stringify(baseConfig.data)),
             options: this.deepCloneWithFunctions(baseConfig.options)
         };
 
-        // General mobile optimizations
-        mobileConfig.options = {
-            ...mobileConfig.options,
-            responsive: true,
-            maintainAspectRatio: false,
-            devicePixelRatio: window.devicePixelRatio || 1,
-            
-            animation: {
-                duration: isSmallMobile ? 400 : 600,
-                easing: 'easeOutQuart'
-            },
-            interaction: {
-                intersect: false,
-                mode: 'nearest',
-                axis: 'xy'
-            },
-            plugins: {
-                ...mobileConfig.options.plugins,
-                tooltip: {
-                    ...mobileConfig.options.plugins?.tooltip,
-                    titleFont: {
-                        size: isSmallMobile ? 12 : 14,
-                        weight: 'bold'
-                    },
-                    bodyFont: {
-                        size: isSmallMobile ? 11 : 13
-                    },
-                    padding: isSmallMobile ? 8 : 12
-                },
-                legend: {
-                    ...mobileConfig.options.plugins?.legend,
-                    display: chartType !== 'doughnut' // Keep legend for non-doughnut charts
-                }
-            }
-        };
+        mobileConfig.options = { ...mobileConfig.options, responsive: true, maintainAspectRatio: false, devicePixelRatio: window.devicePixelRatio || 1, animation: { duration: isSmallMobile ? 400 : 600, easing: 'easeOutQuart' }, interaction: { intersect: false, mode: 'nearest', axis: 'xy' }, plugins: { ...mobileConfig.options.plugins, tooltip: { ...mobileConfig.options.plugins?.tooltip, titleFont: { size: isSmallMobile ? 12 : 14, weight: 'bold' }, bodyFont: { size: isSmallMobile ? 11 : 13 }, padding: isSmallMobile ? 8 : 12 }, legend: { ...mobileConfig.options.plugins?.legend, display: chartType !== 'doughnut' }}};
 
-        // Chart-specific mobile optimizations
-        if (chartType === 'doughnut') {
-            return this.getMobileDoughnutConfig(mobileConfig, isSmallMobile);
-        } else if (chartType === 'line') {
-            return this.getMobileLineConfig(mobileConfig, isSmallMobile);
-        } else if (chartType === 'bar') {
-            return this.getMobileBarConfig(mobileConfig, isSmallMobile);
-        }
-
+        if (chartType === 'doughnut') return this.getMobileDoughnutConfig(mobileConfig, isSmallMobile);
+        else if (chartType === 'line') return this.getMobileLineConfig(mobileConfig, isSmallMobile);
+        else if (chartType === 'bar') return this.getMobileBarConfig(mobileConfig, isSmallMobile);
         return mobileConfig;
     }
 
     /**
-     * ✅ ADDED: Deep clone with function preservation
+     * Deep clone with function preservation
      */
     deepCloneWithFunctions(obj) {
         if (obj === null || typeof obj !== 'object') return obj;
-        if (typeof obj === 'function') return obj; // Preserve functions
+        if (typeof obj === 'function') return obj;
         if (obj instanceof Date) return new Date(obj);
         if (Array.isArray(obj)) return obj.map(item => this.deepCloneWithFunctions(item));
         
         const cloned = {};
         for (const key in obj) {
-            if (obj.hasOwnProperty(key)) {
-                cloned[key] = this.deepCloneWithFunctions(obj[key]);
-            }
+            if (obj.hasOwnProperty(key)) cloned[key] = this.deepCloneWithFunctions(obj[key]);
         }
         return cloned;
     }
 
     /**
-     * ✅ FIXED: Mobile-optimized doughnut chart configuration
+     * Mobile-optimized doughnut chart configuration
      */
     getMobileDoughnutConfig(config, isSmallMobile) {
-        config.options = {
-            ...config.options,
-            cutout: isSmallMobile ? '55%' : '60%',
-            radius: isSmallMobile ? '75%' : '80%',
-            
-            layout: {
-                padding: {
-                    top: isSmallMobile ? 20 : 30,
-                    bottom: isSmallMobile ? 20 : 30,
-                    left: isSmallMobile ? 10 : 20,
-                    right: isSmallMobile ? 10 : 20
-                }
-            },
-
-            plugins: {
-                ...config.options.plugins,
-                datalabels: {
-                    display: false // Always disabled for mobile
-                }
-            }
-        };
-
+        config.options = { ...config.options, cutout: isSmallMobile ? '55%' : '60%', radius: isSmallMobile ? '75%' : '80%', layout: { padding: { top: isSmallMobile ? 20 : 30, bottom: isSmallMobile ? 20 : 30, left: isSmallMobile ? 10 : 20, right: isSmallMobile ? 10 : 20 }}, plugins: { ...config.options.plugins, datalabels: { display: false }}};
         return config;
     }
 
     /**
-     * ✅ ADDED: Mobile-optimized line chart configuration
+     * Mobile-optimized line chart configuration
      */
     getMobileLineConfig(config, isSmallMobile) {
         const isDark = document.body.getAttribute('data-theme') === 'dark';
         const textColor = isDark ? '#e2e8f0' : '#374151';
         const gridColor = isDark ? '#475569' : '#e5e7eb';
-
-        config.options = {
-            ...config.options,
-            
-            scales: {
-                x: {
-                    ticks: {
-                        color: textColor,
-                        font: {
-                            size: isSmallMobile ? 10 : 12
-                        },
-                        maxTicksLimit: isSmallMobile ? 4 : 7
-                    },
-                    grid: {
-                        color: gridColor,
-                        drawBorder: false
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: textColor,
-                        font: {
-                            size: isSmallMobile ? 10 : 12
-                        },
-                        maxTicksLimit: isSmallMobile ? 3 : 5,
-                        callback: (value) => this.formatCurrency(value, false)
-                    },
-                    grid: {
-                        color: gridColor
-                    }
-                }
-            },
-
-            elements: {
-                point: {
-                    radius: isSmallMobile ? 3 : 4,
-                    hoverRadius: isSmallMobile ? 5 : 6
-                },
-                line: {
-                    borderWidth: isSmallMobile ? 2 : 3
-                }
-            },
-
-            plugins: {
-                ...config.options.plugins,
-                legend: {
-                    display: true,
-                    position: 'top',
-                    labels: {
-                        color: textColor,
-                        font: {
-                            size: isSmallMobile ? 11 : 13
-                        },
-                        boxWidth: isSmallMobile ? 10 : 15,
-                        padding: isSmallMobile ? 10 : 15
-                    }
-                }
-            }
-        };
-
+        config.options = { ...config.options, scales: { x: { ticks: { color: textColor, font: { size: isSmallMobile ? 10 : 12 }, maxTicksLimit: isSmallMobile ? 4 : 7 }, grid: { color: gridColor, drawBorder: false }}, y: { beginAtZero: true, ticks: { color: textColor, font: { size: isSmallMobile ? 10 : 12 }, maxTicksLimit: isSmallMobile ? 3 : 5, callback: (value) => this.formatCurrency(value, false)}, grid: { color: gridColor }}}, elements: { point: { radius: isSmallMobile ? 3 : 4, hoverRadius: isSmallMobile ? 5 : 6 }, line: { borderWidth: isSmallMobile ? 2 : 3 }}, plugins: { ...config.options.plugins, legend: { display: true, position: 'top', labels: { color: textColor, font: { size: isSmallMobile ? 11 : 13 }, boxWidth: isSmallMobile ? 10 : 15, padding: isSmallMobile ? 10 : 15 }}}};
         return config;
     }
 
     /**
-     * ✅ ADDED: Mobile-optimized bar chart configuration
+     * Mobile-optimized bar chart configuration
      */
     getMobileBarConfig(config, isSmallMobile) {
         const isDark = document.body.getAttribute('data-theme') === 'dark';
         const textColor = isDark ? '#e2e8f0' : '#374151';
         const gridColor = isDark ? '#475569' : '#e5e7eb';
-
-        config.options = {
-            ...config.options,
-            indexAxis: 'x', // Vertical bars work better on mobile
-            
-            scales: {
-                x: {
-                    ticks: {
-                        color: textColor,
-                        font: {
-                            size: isSmallMobile ? 10 : 12
-                        },
-                        maxRotation: isSmallMobile ? 45 : 0,
-                        minRotation: isSmallMobile ? 45 : 0
-                    },
-                    grid: {
-                        color: gridColor,
-                        drawBorder: false,
-                        display: false
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: textColor,
-                        font: {
-                            size: isSmallMobile ? 10 : 12
-                        },
-                        maxTicksLimit: isSmallMobile ? 4 : 6,
-                        callback: (value) => {
-                            return this.formatCurrency(value, false);
-                        }
-                    },
-                    grid: {
-                        color: gridColor,
-                        lineWidth: isSmallMobile ? 0.5 : 1
-                    }
-                }
-            },
-
-            elements: {
-                bar: {
-                    borderRadius: isSmallMobile ? 4 : 6,
-                    borderSkipped: false
-                }
-            },
-
-            plugins: {
-                ...config.options.plugins,
-                legend: {
-                    display: true,
-                    position: 'top',
-                    labels: {
-                        color: textColor,
-                        font: {
-                            size: isSmallMobile ? 11 : 13
-                        },
-                        boxWidth: isSmallMobile ? 10 : 15,
-                        boxHeight: isSmallMobile ? 10 : 15,
-                        padding: isSmallMobile ? 10 : 15,
-                        usePointStyle: false
-                    }
-                }
-            }
-        };
-
+        config.options = { ...config.options, indexAxis: 'x', scales: { x: { ticks: { color: textColor, font: { size: isSmallMobile ? 10 : 12 }, maxRotation: isSmallMobile ? 45 : 0, minRotation: isSmallMobile ? 45 : 0 }, grid: { color: gridColor, drawBorder: false, display: false }}, y: { beginAtZero: true, ticks: { color: textColor, font: { size: isSmallMobile ? 10 : 12 }, maxTicksLimit: isSmallMobile ? 4 : 6, callback: (value) => this.formatCurrency(value, false)}, grid: { color: gridColor, lineWidth: isSmallMobile ? 0.5 : 1 }}}, elements: { bar: { borderRadius: isSmallMobile ? 4 : 6, borderSkipped: false }}, plugins: { ...config.options.plugins, legend: { display: true, position: 'top', labels: { color: textColor, font: { size: isSmallMobile ? 11 : 13 }, boxWidth: isSmallMobile ? 10 : 15, boxHeight: isSmallMobile ? 10 : 15, padding: isSmallMobile ? 10 : 15, usePointStyle: false }}}};
         return config;
     }
 
     /**
-     * ✅ FIXED: Update existing renderExpenseChart method (mobile-optimized)
+     * Update existing renderExpenseChart method (mobile-optimized)
      */
     async renderExpenseChart() {
         if (this.isRendering) return;
@@ -2978,7 +2340,6 @@ class StatisticsModule {
             const chartData = this.buildChartData(categories, chartType);
             let chartOptions = this.buildChartOptions(chartType, stats.totalExpense);
 
-            // Apply mobile optimizations
             const mobileConfig = this.getMobileChartConfig({
                 type: chartType,
                 data: chartData,
@@ -2991,7 +2352,6 @@ class StatisticsModule {
 
             const ctx = this.elements.expenseChartCanvas.getContext('2d');
             
-            // Set canvas size for mobile
             if (this.isMobileDevice()) {
                 const container = this.elements.expenseChartContainer;
                 if (container.offsetWidth > 0 && container.offsetHeight > 0) {
@@ -3027,7 +2387,7 @@ class StatisticsModule {
     }
 
     /**
-     * ✅ FIXED: Update expense legend
+     * ✅ FIXED: Update expense legend to correctly render icons
      */
     updateExpenseLegend(categories, totalExpense) {
         if (!this.elements.expenseLegend) return;
@@ -3042,12 +2402,14 @@ class StatisticsModule {
 
             const color = this.getCategoryColor(categoryName, index);
             const percentage = ((amount / totalExpense) * 100).toFixed(1);
-            const icon = this.getCategoryIcon(categoryName);
+            const iconClass = this.getCategoryIcon(categoryName); // Get the class name
 
             legendItem.innerHTML = `
                 <div class="legend-content">
                     <div class="legend-header">
-                        <span class="legend-icon">${icon}</span>
+                        <span class="legend-icon">
+                            <i class="${iconClass}"></i>
+                        </span>
                         <div class="legend-label-wrapper">
                             <div class="legend-label" title="${this.escapeHtml(categoryName)}">${this.escapeHtml(categoryName)}</div>
                             <div class="legend-amount-percentage">
@@ -3065,7 +2427,7 @@ class StatisticsModule {
     }
 
     /**
-     * ✅ FIXED: Update existing renderTrendChart method (mobile-optimized)
+     * Update existing renderTrendChart method (mobile-optimized)
      */
     renderTrendChart() {
         try {
@@ -3145,8 +2507,7 @@ class StatisticsModule {
                     borderWidth: this.isMobileDevice() ? 2 : 3
                 }]
             };
-
-            // Build base options for a line chart
+            
             const baseOptions = {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -3207,7 +2568,7 @@ class StatisticsModule {
     }
 
     /**
-     * ✅ FIXED: Update existing renderComparisonChart method (mobile-optimized)
+     * Update existing renderComparisonChart method (mobile-optimized)
      */
     renderComparisonChart() {
         try {
@@ -3272,7 +2633,6 @@ class StatisticsModule {
                 }]
             };
             
-            // Build base options for a bar chart
             const baseOptions = {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -3333,7 +2693,7 @@ class StatisticsModule {
     }
 
     /**
-     * ✅ FIXED: Handle window resize for mobile optimization
+     * Handle window resize for mobile optimization
      */
     handleResize() {
         if (!this.isInitialized) return;

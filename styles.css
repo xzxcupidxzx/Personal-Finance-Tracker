@@ -287,7 +287,11 @@ input:checked + .slider:before {
     backdrop-filter: blur(10px);
     border-radius: var(--border-radius);
     padding: var(--spacing-md);
-    text-align: center;
+
+    display: flex;
+    flex-direction: column; /* Xếp chồng label và giá trị theo chiều dọc */
+    align-items: flex-start; /* Đây là dòng quan trọng: CĂN TRÁI tất cả item */
+    text-align: left; /* Đảm bảo văn bản cũng được căn trái */
 }
 
 .summary-label {
@@ -782,10 +786,23 @@ input:checked + .slider:before {
 }
 
 .transaction-amount-section {
-    text-align: right;
-    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;   /* Chia 2 hàng dọc */
+    align-items: flex-end;    /* Dồn phải */
+    min-width: 80px;          /* Tuỳ chỉnh, để tránh bị quá nhỏ */
 }
-
+.transaction-actions {
+    display: flex;
+    flex-direction: row;    /* 2 icon nằm ngang */
+    gap: 0.5rem;
+    margin-top: 0.15rem;    /* Cách ra với số tiền */
+}
+.transaction-row {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    /* thêm nếu cần */
+}
 .transaction-amount {
     font-weight: 600;
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
@@ -804,10 +821,7 @@ input:checked + .slider:before {
     color: var(--primary-color);
 }
 
-.transaction-actions {
-    display: flex;
-    gap: var(--spacing-xs);
-}
+
 
 .action-btn-small {
     padding: var(--spacing-xs);
@@ -2349,8 +2363,8 @@ input:checked + .slider:before {
         font-size: 0.9rem;
     }
     .modal-content.extra-compact {
-        max-width: 400px;
-        max-height: 60vh;
+        max-width: 800px;
+        max-height: 90vh;
     }
 }
 
@@ -3898,4 +3912,488 @@ input, textarea, select {
         padding: var(--spacing-md);
         font-size: 1rem; /* Cỡ chữ 16px */
     }
+}
+
+/* === ICON PICKER MODAL STYLES === */
+.modal-content.extra-compact {
+    max-width: 1000px; /* Tăng chiều rộng modal cho dễ nhìn */
+    max-height: 200px; /* Giới hạn chiều cao */
+}
+
+.icon-picker-search-wrapper {
+    margin-bottom: 1rem;
+}
+.modal-body .icon-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+    gap: 10px;
+    margin-top: 1rem;
+    max-height: 65vh; /* Dài hơn: Tăng chiều cao vùng chứa icon từ 35vh lên 65vh */
+    overflow-y: auto;
+    padding: 10px;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+}
+.modal-body .icon-picker-set {
+    margin-bottom: 1.5rem;
+}
+.modal-body .icon-picker-set-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-body .icon-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 50px;
+    font-size: 1.8rem;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.modal-body .icon-option:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: scale(1.1);
+}
+
+.modal-body .icon-option img {
+    width: 32px; /* Kích thước cho icon tùy chỉnh */
+    height: 32px;
+    object-fit: contain;
+}
+
+#icon-picker-search {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.icon-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 0.75rem;
+    max-height: 45vh;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+.icon-picker-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.5rem; /* Kích thước icon */
+    color: var(--text-secondary);
+}
+
+.icon-picker-item:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    transform: scale(1.1);
+}
+
+/* Add pointer to category icons that are editable */
+.category-item .category-icon {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.category-item .category-icon:hover {
+    transform: scale(1.15);
+    opacity: 0.8;
+}
+/* Thêm đoạn mã CSS này vào cuối file styles.css của bạn */
+
+/* === ICON PICKER MODAL STYLES === */
+.modal-content.extra-compact {
+    max-width: 450px;
+    max-height: 70vh;
+}
+
+#icon-picker-search {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.icon-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 0.75rem;
+    max-height: 45vh;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+.icon-picker-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.5rem; /* Kích thước icon */
+    color: var(--text-secondary);
+}
+
+.icon-picker-item:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    transform: scale(1.1);
+}
+
+/* Add pointer to category icons that are editable */
+.category-item .category-icon.editable {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.category-item .category-icon.editable:hover {
+    transform: scale(1.15);
+    opacity: 0.8;
+}
+.custom-category-icon {
+    width: 100%;       /* Đảm bảo ảnh vừa với ô chứa */
+    height: 100%;      /* Đảm bảo ảnh vừa với ô chứa */
+    object-fit: contain; /* Giữ tỷ lệ ảnh, không làm méo */
+    border-radius: 4px;  /* Bo góc nhẹ cho đẹp */
+}
+/* --- Cải tiến cho nút Upload --- */
+
+
+#icon-upload-input {
+    display: none; /* Ẩn nút "Choose File" mặc định */
+}
+/* --- CSS cho thanh điều khiển tìm kiếm và upload --- */
+.picker-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Khoảng cách giữa ô tìm kiếm và nút upload */
+    margin-bottom: 1rem;
+}
+
+/* Định dạng cho hộp tìm kiếm */
+.search-container {
+    flex-grow: 1; /* Cho phép ô tìm kiếm chiếm hết không gian còn lại */
+    display: flex;
+    align-items: center;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0 12px;
+}
+
+/* Icon kính lúp bên trong ô tìm kiếm */
+.search-container i {
+    color: var(--text-muted);
+    margin-right: 8px;
+}
+
+/* Input tìm kiếm bên trong */
+#icon-picker-search {
+    width: 100%;
+    padding: 12px 0; /* Tăng padding để ô input cao hơn */
+    border-radius: 0;
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 1rem;
+    outline: none; /* Bỏ viền khi focus */
+}
+
+/* Nút upload dạng icon mới */
+.upload-btn-icon-only {
+    flex-shrink: 0; /* Không cho nút bị co lại */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.upload-btn-icon-only:hover {
+    background: #0056b3; /* Màu đậm hơn khi hover */
+}
+
+@media (max-width: 768px) {
+
+    /* --- Tối ưu kích thước Modal --- */
+    .modal-content.extra-compact {
+        width: 95vw; /* Chiếm gần hết chiều rộng màn hình */
+        max-width: 95vw;
+        height: 85vh; /* Tăng chiều cao để tận dụng không gian dọc */
+        max-height: 85vh;
+        padding: 0.75rem; /* Giảm padding để có thêm không gian */
+    }
+
+    .modal-body {
+        padding: 0.5rem;
+    }
+
+    /* --- Tối ưu Thanh điều khiển (Tìm kiếm & Upload) --- */
+    .picker-controls {
+        gap: 8px; /* Giảm khoảng cách giữa 2 nút */
+        margin-bottom: 0.75rem;
+    }
+
+    .search-container {
+        padding: 0 10px; /* Giảm padding ngang */
+        border-radius: 10px;
+    }
+
+    #icon-picker-search {
+        padding: 10px 0;
+        /* QUAN TRỌNG: Đặt font-size là 16px để iOS không tự động zoom khi focus */
+        font-size: 16px !important; 
+    }
+
+    .upload-btn-icon-only {
+        width: 44px; /* Giảm nhẹ kích thước nút upload */
+        height: 44px;
+        border-radius: 10px;
+        font-size: 1.1rem;
+    }
+    
+    hr {
+        margin: 0.75rem 0 !important;
+    }
+    
+    /* --- Tối ưu Lưới Icon --- */
+    .modal-body .icon-picker-set-title {
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .modal-body .icon-picker-grid {
+        gap: 8px; /* Giảm khoảng cách giữa các icon */
+        padding: 8px;
+        /* Tăng chiều cao tối đa của lưới trên mobile */
+        max-height: calc(85vh - 200px); 
+    }
+
+    .modal-body .icon-option {
+        height: 48px; /* Giảm nhẹ chiều cao nút icon */
+        font-size: 1.6rem; /* Giảm nhẹ kích thước icon */
+    }
+}
+
+@media (max-width: 480px) {
+
+    /* --- Sắp xếp lại thanh điều khiển --- */
+    .picker-controls {
+        flex-direction: column; /* Chuyển thành layout cột */
+        align-items: stretch;   /* Kéo dài các phần tử theo chiều rộng */
+        gap: 8px;
+    }
+
+    .upload-btn-icon-only {
+        width: auto; /* Để nút upload chiếm toàn bộ chiều rộng */
+        padding: 10px;
+    }
+
+    /* --- Làm cho lưới icon nhỏ gọn hơn --- */
+    .modal-body .icon-set-grid {
+        grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); /* Cột icon nhỏ hơn */
+        gap: 5px; /* Khoảng cách giữa các icon nhỏ hơn */
+    }
+
+    .modal-body .icon-option {
+        height: 45px; /* Nút icon nhỏ hơn */
+        font-size: 1.5rem;
+    }
+    
+    .modal-content.extra-compact {
+         padding: 0.5rem; /* Giảm padding tổng thể của modal */
+    }
+}
+.current-icon-display {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.current-icon-display .category-icon {
+    font-size: 2rem;
+    width: 48px;
+    height: 48px;
+}
+
+/* Style cho ảnh custom trong phần hiển thị icon */
+.current-icon-display .custom-category-icon {
+    width: 100%;      
+    height: 100%;     
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+
+.category-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.category-icon {
+    font-size: 1.2rem;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.category-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.category-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.category-usage {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.account-balance {
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+}
+
+.category-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.protected-badge {
+    font-size: 0.9rem;
+    opacity: 0.6;
+    cursor: help;
+}
+
+/* Đảm bảo hiệu lực, đặt ở cuối file */
+@media (max-width: 480px) {
+  .picker-controls {
+    display: flex;
+    flex-direction: row;     
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+	.search-container {
+	  display: flex;
+	  align-items: center;
+	  flex: 1;
+	  min-width: 0;
+	}
+  .icon-search-input {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    text-align: left;
+	padding-right: 20px;
+  }
+
+  /* Căn giữa nút upload (nếu có style riêng) */
+  .action-btn-icon-only {
+    margin: 0 auto;
+    display: block;
+  }
+}
+.header-summary .summary-value {
+    background-color: rgba(0, 0, 0, 0.2); /* Nền đen mờ. Bạn có thể thay đổi số 0.2 thành 0.3 hoặc 0.4 để nền tối hơn. */
+    padding: 4px 12px;           /* Thêm một chút khoảng đệm xung quanh con số cho đẹp mắt. */
+    border-radius: 8px;          /* Bo tròn các góc của lớp nền. */
+    display: inline-block;       /* Đảm bảo padding và background hiển thị đúng cách. */
+    transition: background-color 0.3s; /* Hiệu ứng chuyển cảnh mượt mà khi có thay đổi. */
+    
+    /* --- Tùy chọn: Thêm hiệu ứng "kính mờ" (glassmorphism) cho hiện đại hơn --- */
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Thêm viền trắng mờ để tăng hiệu ứng chiều sâu. */
+    text-shadow: 
+        -1px -1px 0 #000,  
+         1px -1px 0 #000,
+        -1px  1px 0 #000,
+         1px  1px 0 #000;
+}
+/* Container cho label và nút con mắt */
+.summary-label-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+/* Style cho nút con mắt trong header */
+.eye-toggle-btn.header-eye {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem; /* Kích thước icon */
+    padding: 0 4px;
+    color: rgba(255, 255, 255, 0.7); /* Màu icon */
+    transition: color 0.2s, transform 0.2s;
+}
+
+.eye-toggle-btn.header-eye:hover {
+    color: rgba(255, 255, 255, 1);
+}
+
+.eye-toggle-btn.header-eye:active {
+    transform: scale(0.9);
+}
+
+/* (Tùy chọn) Hiệu ứng làm mờ thay vì '******' */
+.summary-value.blurred {
+    filter: blur(5px);
+    transition: filter 0.3s ease;
 }

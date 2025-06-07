@@ -404,7 +404,7 @@ class HistoryModule {
         if (!transactions || transactions.length === 0) { //
             this.elements.modalDayTransactions.innerHTML = `
                 <div class="no-transactions-day">
-                    📝 Không có giao dịch nào trong ngày này
+                    <i class="fa-regular fa-calendar-xmark"></i> Không có giao dịch nào trong ngày này
                 </div>
             `;
             return;
@@ -556,14 +556,15 @@ class HistoryModule {
 
             const numBalance = parseFloat(balance) || 0; //
             const balanceClass = numBalance >= 0 ? 'positive' : 'negative'; //
-            const balanceIcon = numBalance >= 0 ? '📈' : '📉'; //
+            const balanceIconClass = numBalance >= 0 ? 'fa-solid fa-arrow-trend-up' : 'fa-solid fa-arrow-trend-down'; //
+            const accountIconClass = Utils.UIUtils.getCategoryIcon(account.value) || 'fa-solid fa-landmark';
 
             card.innerHTML = `
                 <div class="account-name">
-                    🏦 ${this.escapeHtml(account.text)}
+                    <i class="${accountIconClass}"></i> ${this.escapeHtml(account.text)}
                 </div>
                 <div class="account-balance ${balanceClass}">
-                    ${balanceIcon} ${Utils.CurrencyUtils.formatCurrency(numBalance)}
+                    <i class="${balanceIconClass}"></i> ${Utils.CurrencyUtils.formatCurrency(numBalance)}
                 </div>
             `; //
 
@@ -1077,7 +1078,7 @@ class HistoryModule {
             if (history.length === 0) { //
                 this.elements.reconciliationHistory.innerHTML = `
                     <div class="no-data">
-                        <span class="no-data-icon">📋</span>
+                        <span class="no-data-icon"><i class="fa-solid fa-rectangle-list"></i></span>
                         <span class="no-data-text">Chưa có lịch sử đối soát</span>
                     </div>
                 `;
@@ -1132,15 +1133,16 @@ class HistoryModule {
             const difference = parseFloat(item.difference) || 0; //
             const differenceClass = difference > 0 ? 'text-success' : //
                 difference < 0 ? 'text-danger' : 'text-muted'; //
-            const statusIcon = Math.abs(difference) < 0.01 ? '✅' : '⚠️'; //
+            const statusIconClass = Math.abs(difference) < 0.01 ? 'fa-solid fa-circle-check text-success' : 'fa-solid fa-triangle-exclamation text-warning'; //
+            const accountIconClass = Utils.UIUtils.getCategoryIcon(item.account) || 'fa-solid fa-landmark';
 
             card.innerHTML = `
                 <div class="history-header">
                     <div class="history-account">
-                        🏦 ${this.escapeHtml(accountName)}
+                        <i class="${accountIconClass}"></i> ${this.escapeHtml(accountName)}
                     </div>
                     <div class="history-status">
-                        ${statusIcon} ${Utils.DateUtils.formatDisplayDateTime(item.timestamp)}
+                        <i class="${statusIconClass}"></i> ${Utils.DateUtils.formatDisplayDateTime(item.timestamp)}
                     </div>
                 </div>
                 <div class="history-details">
@@ -1241,11 +1243,17 @@ const historyCSS = `
 .history-account {
     font-weight: 600;
     color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .history-status {
     font-size: 0.8rem;
     color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
 }
 
 .history-details {

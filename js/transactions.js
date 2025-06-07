@@ -631,8 +631,11 @@ class TransactionsModule {
             btnText.textContent = selectedType === 'Transfer' ? 'Thêm Chuyển Khoản' : 'Thêm Giao Dịch';
         }
         
+        // UPDATED: Use Font Awesome icons
         if (btnIcon) {
-            btnIcon.textContent = selectedType === 'Transfer' ? '↔️' : '➕';
+            btnIcon.innerHTML = selectedType === 'Transfer' 
+                ? '<i class="fa-solid fa-right-left"></i>' 
+                : '<i class="fa-solid fa-plus"></i>';
         }
     }
 
@@ -1504,6 +1507,8 @@ class TransactionsModule {
             throw new Error('Vui lòng chọn tài khoản đích');
         }
         data.toAccount = this.elements.accountTo.value;
+        // SỬA ĐỔI: Thêm dòng sau để lấy mô tả từ người dùng
+        data.description = this.sanitizeDescription(this.elements.descriptionInput?.value || '');
     }
 
     /**
@@ -1582,7 +1587,7 @@ class TransactionsModule {
         const btnIcon = this.elements.submitBtn?.querySelector('.btn-icon');
         
         if (btnText) btnText.textContent = 'Thêm Giao Dịch';
-        if (btnIcon) btnIcon.textContent = '➕';
+        if (btnIcon) btnIcon.innerHTML = '<i class="fa-solid fa-plus"></i>';
     }
 
     /**
@@ -1707,8 +1712,9 @@ class TransactionsModule {
         if (this.elements.noTransactions) {
             this.elements.noTransactions.style.display = 'block';
 
+            // UPDATED: Use Font Awesome
+            const icon = customMessage ? '<i class="fa-solid fa-triangle-exclamation"></i>' : '<i class="fa-solid fa-clipboard-list"></i>';
             const message = customMessage || 'Chưa có giao dịch nào';
-            const icon = customMessage ? '⚠️' : '📝';
 
             this.elements.noTransactions.innerHTML = `
                 <div class="no-data">
@@ -1769,7 +1775,8 @@ class TransactionsModule {
      * Build transaction item content
      */
     buildTransactionItemContent(transaction, typeClass) {
-        const icon = this.getTransactionIcon(transaction);
+        // UPDATED: get icon class instead of emoji
+        const iconClass = this.getTransactionIcon(transaction);
         const accountDisplay = this.getAccountDisplay(transaction);
         const amountDisplay = this.getAmountDisplay(transaction);
         const description = this.escapeHtml(transaction.description || 'Không có mô tả');
@@ -1778,7 +1785,7 @@ class TransactionsModule {
 
         return `
             <div class="transaction-type-icon ${typeClass}">
-                ${icon}
+                <i class="${iconClass}"></i>
             </div>
             <div class="transaction-content">
                 <div class="transaction-description">
@@ -1803,10 +1810,10 @@ class TransactionsModule {
                 </div>
                 <div class="transaction-actions">
                     <button class="action-btn-small edit" onclick="window.TransactionsModule.editTransaction('${transaction.id}')" title="Sửa">
-                        ✏️
+                        <i class="fa-solid fa-pen-to-square"></i>
                     </button>
                     <button class="action-btn-small delete" onclick="window.TransactionsModule.deleteTransaction('${transaction.id}')" title="Xóa">
-                        🗑️
+                        <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </div>
             </div>
@@ -1923,22 +1930,31 @@ class TransactionsModule {
     /**
      * Get transaction icon
      */
-    getTransactionIcon(transaction) {
-        try {
-            if (transaction.isTransfer) {
-                return transaction.type === 'Chi' ? '➡️' : '⬅️';
-            }
+	getTransactionIcon(transaction) {
+		try {
+			// Nếu là chuyển khoản, lấy icon của tài khoản liên quan
+			if (transaction.isTransfer) {
+				const account = this.app.data.accounts.find(acc => acc.value === transaction.account);
+				if (account && Utils?.UIUtils?.getCategoryIcon) {
+					// Trả về icon class từ tài khoản (đoạn này đã đúng)
+					return Utils.UIUtils.getCategoryIcon(account).value || 'fa-solid fa-right-left';
+				}
+				// Fallback icon cho chuyển khoản nếu không tìm thấy tài khoản
+				return 'fa-solid fa-right-left';
+			}
 
-            if (transaction.category && Utils?.UIUtils?.getCategoryIcon) {
-                return Utils.UIUtils.getCategoryIcon(transaction.category);
-            }
-            
-            return '📦';
-        } catch (error) {
-            console.error('Error getting transaction icon:', error);
-            return '📦';
-        }
-    }
+			// SỬA LỖI Ở ĐÂY: Lấy thuộc tính .value từ object trả về
+			if (transaction.category && Utils?.UIUtils?.getCategoryIcon) {
+				const iconInfo = Utils.UIUtils.getCategoryIcon(transaction.category);
+				return iconInfo.value || 'fa-solid fa-box'; // Thêm .value và fallback
+			}
+			
+			return 'fa-solid fa-box'; // Default fallback icon
+		} catch (error) {
+			console.error('Error getting transaction icon:', error);
+			return 'fa-solid fa-box';
+		}
+	}
 
     /**
      * Edit transaction
@@ -2177,7 +2193,8 @@ class TransactionsModule {
         const btnIcon = this.elements.submitBtn?.querySelector('.btn-icon');
         
         if (btnText) btnText.textContent = 'Cập Nhật Giao Dịch';
-        if (btnIcon) btnIcon.textContent = '💾';
+        // UPDATED: Use Font Awesome
+        if (btnIcon) btnIcon.innerHTML = '<i class="fa-solid fa-floppy-disk"></i>';
 
         // Scroll to form and focus
         this.elements.form.scrollIntoView({ behavior: 'smooth', block: 'start' });

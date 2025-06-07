@@ -1,6 +1,5 @@
 /**
- * FINANCIAL APP UTILITIES - FIX UPDATE MANAGER
- * Sửa lỗi kiểm tra cập nhật và đồng bộ version
+ * FINANCIAL APP UTILITIES - UPDATED FOR ICON PICKER & ICON SETS
  */
 
 // ===== CONSTANTS =====
@@ -166,6 +165,158 @@ const Utils = {
     },
     // ========== UI ==========
     UIUtils: {
+        categoryIcons: {
+            "Lương": "fa-solid fa-wallet",
+            "Thưởng": "fa-solid fa-gift",
+            "Tiền được trả nợ": "fa-solid fa-hand-holding-dollar",
+            "Lãi tiết kiệm": "fa-solid fa-piggy-bank",
+            "Thu nhập từ đầu tư": "fa-solid fa-arrow-trend-up",
+            "Thu nhập phụ": "fa-solid fa-briefcase",
+            "Thu nhập khác": "fa-solid fa-ellipsis",
+            "Nhận tiền chuyển": "fa-solid fa-arrow-down-to-bracket",
+            "Ăn uống": "fa-solid fa-utensils",
+            "Đi lại": "fa-solid fa-car",
+            "Nhà ở": "fa-solid fa-house",
+            "Hóa đơn": "fa-solid fa-file-invoice-dollar",
+            "Mua sắm": "fa-solid fa-cart-shopping",
+            "Giải trí": "fa-solid fa-gamepad",
+            "Sức khỏe": "fa-solid fa-heart-pulse",
+            "Giáo dục": "fa-solid fa-graduation-cap",
+            "Chi cho đầu tư": "fa-solid fa-arrow-trend-down",
+            "Trả nợ": "fa-solid fa-money-bill-transfer",
+            "Chi phí khác": "fa-solid fa-ellipsis",
+            "Điều chỉnh Đối Soát (Thu)": "fa-solid fa-file-circle-plus",
+            "Điều chỉnh Đối Soát (Chi)": "fa-solid fa-file-circle-minus",
+            "Tiền mặt": "fa-solid fa-money-bill-wave",
+            "Momo": "fa-solid fa-mobile-screen-button",
+            "Thẻ tín dụng": "fa-regular fa-credit-card",
+            "Techcombank": "fa-solid fa-building-columns",
+            "BIDV": "fa-solid fa-building-columns",
+            "Khác": "fa-solid fa-circle-question"
+        },
+        
+		getCategoryIcon(category) {
+			// Nếu category là object và có thuộc tính 'icon'
+			if (typeof category === 'object' && category !== null && category.icon) {
+				const iconIdentifier = category.icon;
+				// Nếu là đường dẫn file ảnh
+				if (iconIdentifier.includes('/') || iconIdentifier.includes('.')) {
+					return { type: 'img', value: iconIdentifier };
+				}
+				// Nếu là class Font Awesome
+				return { type: 'fa', value: iconIdentifier };
+			}
+
+			// --- Logic cũ để tìm icon mặc định ---
+			const categoryName = (typeof category === 'object' && category !== null) ? category.value : category;
+			if (!categoryName || typeof categoryName !== 'string' || categoryName.trim() === '') {
+				return { type: 'fa', value: 'fa-solid fa-box' }; // Fallback
+			}
+
+			const cleanName = categoryName.trim();
+			if (this.categoryIcons[cleanName]) {
+				return { type: 'fa', value: this.categoryIcons[cleanName] };
+			}
+
+			return { type: 'fa', value: 'fa-solid fa-box' }; // Fallback cuối cùng
+		},
+        
+        getIconList() {
+            return [
+                {
+                    set: "Tài chính & Tiền tệ",
+                    icons: [
+                        { name: "Tiền mặt", class: "fa-solid fa-money-bill-wave" },
+                        { name: "Ví tiền", class: "fa-solid fa-wallet" },
+                        { name: "Thẻ tín dụng", class: "fa-regular fa-credit-card" },
+                        { name: "Ngân hàng", class: "fa-solid fa-building-columns" },
+                        { name: "Heo đất", class: "fa-solid fa-piggy-bank" },
+                        { name: "Đồng Dollar", class: "fa-solid fa-dollar-sign" },
+                        { name: "Đầu tư tăng", class: "fa-solid fa-arrow-trend-up" },
+                        { name: "Đầu tư giảm", class: "fa-solid fa-arrow-trend-down" },
+                        { name: "Hóa đơn", class: "fa-solid fa-file-invoice-dollar" },
+                        { name: "Biểu đồ", class: "fa-solid fa-chart-pie" },
+                    ]
+                },
+                {
+                    set: "Ăn uống",
+                    icons: [
+                        { name: "Ăn uống chung", class: "fa-solid fa-utensils" },
+                        { name: "Cà phê", class: "fa-solid fa-mug-saucer" },
+                        { name: "Pizza", class: "fa-solid fa-pizza-slice" },
+                        { name: "Bánh Hamburger", class: "fa-solid fa-burger" },
+                        { name: "Đồ uống", class: "fa-solid fa-martini-glass-citrus" },
+                        { name: "Bánh kem", class: "fa-solid fa-cake-candles" },
+                    ]
+                },
+                {
+                    set: "Di chuyển & Du lịch",
+                    icons: [
+                        { name: "Xe hơi", class: "fa-solid fa-car" },
+                        { name: "Bus", class: "fa-solid fa-bus-simple" },
+                        { name: "Xe máy", class: "fa-solid fa-motorcycle" },
+                        { name: "Máy bay", class: "fa-solid fa-plane" },
+                        { name: "Tàu hỏa", class: "fa-solid fa-train" },
+                        { name: "Tàu thủy", class: "fa-solid fa-ship" },
+                        { name: "Xăng dầu", class: "fa-solid fa-gas-pump" },
+                        { name: "Du lịch", class: "fa-solid fa-umbrella-beach" },
+                        { name: "Vali", class: "fa-solid fa-briefcase" },
+                    ]
+                },
+                {
+                    set: "Gia đình & Nhà cửa",
+                    icons: [
+                         { name: "Nhà", class: "fa-solid fa-house" },
+                         { name: "Gia đình", class: "fa-solid fa-people-roof" },
+                         { name: "Trẻ em", class: "fa-solid fa-children" },
+                         { name: "Thú cưng", class: "fa-solid fa-paw" },
+                         { name: "Điện", class: "fa-solid fa-bolt" },
+                         { name: "Nước", class: "fa-solid fa-droplet" },
+                    ]
+                },
+                {
+                    set: "Mua sắm & Giải trí",
+                    icons: [
+                        { name: "Giỏ hàng", class: "fa-solid fa-cart-shopping" },
+                        { name: "Quần áo", class: "fa-solid fa-shirt" },
+                        { name: "Quà tặng", class: "fa-solid fa-gift" },
+                        { name: "Trò chơi", class: "fa-solid fa-gamepad" },
+                        { name: "Xem phim", class: "fa-solid fa-film" },
+                        { name: "Âm nhạc", class: "fa-solid fa-music" },
+                    ]
+                },
+                 {
+                    set: "Sức khỏe & Giáo dục",
+                    icons: [
+                        { name: "Sức khỏe", class: "fa-solid fa-heart-pulse" },
+                        { name: "Bệnh viện", class: "fa-solid fa-hospital" },
+                        { name: "Thuốc", class: "fa-solid fa-pills" },
+                        { name: "Giáo dục", class: "fa-solid fa-graduation-cap" },
+                        { name: "Sách", class: "fa-solid fa-book" },
+                    ]
+                },
+                {
+                    set: "Công nghệ & Tiện ích",
+                    icons: [
+                        { name: "Điện thoại", class: "fa-solid fa-mobile-screen-button" },
+                        { name: "Laptop", class: "fa-solid fa-laptop" },
+                        { name: "Internet", class: "fa-solid fa-wifi" },
+                    ]
+                },
+                {
+                    set: "Hệ thống & Khác",
+                    icons: [
+                        { name: "Tag", class: "fa-solid fa-tag" },
+                        { name: "Câu hỏi", class: "fa-solid fa-circle-question" },
+                        { name: "Chuyển tiền đi", class: "fa-solid fa-arrow-up-from-bracket" },
+                        { name: "Nhận tiền", class: "fa-solid fa-arrow-down-to-bracket" },
+                        { name: "Điều chỉnh cộng", class: "fa-solid fa-file-circle-plus" },
+                        { name: "Điều chỉnh trừ", class: "fa-solid fa-file-circle-minus" }
+                    ]
+                }
+            ];
+        },
+
         showMessage(message, type = 'info', duration = 3000) {
             const messageBox = document.getElementById('message-box');
             if (!messageBox) { alert(`${type.toUpperCase()}: ${message}`); return; }
@@ -196,13 +347,6 @@ const Utils = {
             } catch (error) {
                 input.value = Utils.CurrencyUtils.formatAmountInput(value);
             }
-        },
-        getCategoryIcon(category) {
-            const icons = {
-                'Lương': '💼', 'Thưởng': '🎁', 'Ăn uống': '🍽️', 'Đi lại': '🚗', 'Nhà ở': '🏠', 'Hóa đơn': '📄',
-                'Mua sắm': '🛒', 'Giải trí': '🎮', 'Sức khỏe': '⚕️', 'Giáo dục': '📚', 'Tiền mặt': '💵', 'Thẻ tín dụng': '💳'
-            };
-            return icons[category] || '📦';
         },
         getCategoryColor(category, index = 0) {
             if (typeof category === 'string') {
