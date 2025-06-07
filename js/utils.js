@@ -60,6 +60,7 @@ const Utils = {
             return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
         }
     },
+	// SỬA LỖI & CẢI TIẾN: Hàm phân tích CSV được viết lại hoàn toàn.
 	CSVUtils: {
 		/**
 		 * Phân tích nội dung text của file CSV thành một mảng các đối tượng.
@@ -112,6 +113,7 @@ const Utils = {
 			return results;
 		}
 	},
+	// SỬA LỖI & CẢI TIẾN: Các hàm phân tích cú pháp linh hoạt hơn.
 	ParsingUtils: {
 		/**
 		 * Chuyển đổi một chuỗi ngày tháng với nhiều định dạng khác nhau thành đối tượng Date.
@@ -1277,7 +1279,7 @@ const VietnameseNumberFormatter = {
     },
 
     /**
-     * Format số tiền cho legend (ngắn gọn)
+     * Format cho legend (ngắn gọn)
      * @param {number} amount - Số tiền
      * @returns {string} - Số đã format cho legend
      */

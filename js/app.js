@@ -375,7 +375,7 @@ class FinancialApp {
             return false;
         }
     }
-	// Thêm hàm này vào trong class FinancialApp
+	// SỬA LỖI & CẢI TIẾN: Hàm nhập CSV được làm lại hoàn toàn để mạnh mẽ hơn.
 	async importFromCSV(parsedData) {
 		let successCount = 0;
 		let failedRows = []; // Mảng để lưu các dòng lỗi
@@ -701,29 +701,29 @@ class FinancialApp {
         }
     }
 
-    addRegularTransaction(data) {
-        const amount = parseFloat(data.amount) || 0;
+    addRegularTransaction(transaction) {
+        const amount = parseFloat(transaction.amount) || 0;
         if (isNaN(amount) || amount <= 0) {
             throw new Error('Số tiền giao dịch không hợp lệ.');
         }
-        const transaction = {
+        const newTransaction = {
             id: Utils.UIUtils.generateId(), 
-            datetime: data.datetime || Utils.DateUtils.formatDateTimeLocal(), 
-            type: data.type, 
-            category: data.category,
+            datetime: transaction.datetime || Utils.DateUtils.formatDateTimeLocal(), 
+            type: transaction.type, 
+            category: transaction.category,
             amount, 
-            account: data.account, 
-            description: data.description || '',
-            originalAmount: data.originalAmount || amount, 
-            originalCurrency: data.originalCurrency || 'VND',
+            account: transaction.account, 
+            description: transaction.description || '',
+            originalAmount: transaction.originalAmount || amount, 
+            originalCurrency: transaction.originalCurrency || 'VND',
             isTransfer: false, 
             transferPairId: null, 
             createdAt: new Date().toISOString()
         };
-        this.data.transactions.unshift(transaction);
+        this.data.transactions.unshift(newTransaction);
         this.saveData(); 
         this.updateHeaderSummary();
-        return transaction;
+        return newTransaction;
     }
     
     addTransaction(transactionData) {
