@@ -378,7 +378,7 @@ class FinancialApp {
         }
     }
 	// SỬA LỖI & CẢI TIẾN: Hàm nhập CSV được làm lại hoàn toàn để mạnh mẽ hơn.
-	async importFromCSV(parsedData) {
+async importFromCSV(parsedData) {
 		let successCount = 0;
 		let failedRows = []; // Mảng để lưu các dòng lỗi
 
@@ -395,7 +395,7 @@ class FinancialApp {
 			try {
 				const transaction = {};
 				for (const key in row) {
-					const standardizedKey = headerMapping[key.toLowerCase()];
+					const standardizedKey = headerMapping[key.toLowerCase().trim()];
 					if (standardizedKey) {
 						transaction[standardizedKey] = row[key];
 					}
@@ -426,7 +426,7 @@ class FinancialApp {
 				if (!date) throw new Error(`Định dạng ngày không hợp lệ: "${transaction.datetime}"`);
 				transaction.datetime = Utils.DateUtils.formatDateTimeLocal(date);
 				
-				// 4. Hạng mục & Tài khoản
+				// 4. Hạng mục & Tài khoản (tự động tạo nếu chưa có)
 				if (!transaction.account) throw new Error("Thiếu cột 'Tài khoản'");
 				transaction.category = String(transaction.category || "Chưa phân loại").trim();
 				transaction.account = String(transaction.account).trim();
@@ -440,23 +440,23 @@ class FinancialApp {
 					this.data.accounts.push({ value: transaction.account, text: transaction.account });
 				}
 
-				this.addRegularTransaction(transaction);
+				this.addRegularTransaction(transaction); // Sử dụng hàm đã có để thêm giao dịch
 				successCount++;
 
 			} catch (error) {
 				// Thêm dòng lỗi vào mảng để báo cáo
-				failedRows.push({ line: index + 2, reason: error.message, data: row });
+				failedRows.push({ line: index + 2, reason: error.message, data: JSON.stringify(row) });
 			}
 		}
 
-		// Lưu tất cả dữ liệu sau khi hoàn tất
+		// Lưu tất cả dữ liệu (bao gồm cả danh mục/tài khoản mới) sau khi hoàn tất
 		this.saveData();
 
 		// Báo cáo lỗi chi tiết nếu có
 		if (failedRows.length > 0) {
 			console.error("====== BÁO CÁO LỖI NHẬP CSV ======");
 			console.table(failedRows);
-			alert(`Hoàn tất! Đã thêm ${successCount} giao dịch.\n\nĐã bỏ qua ${failedRows.length} giao dịch do lỗi.\nVui lòng nhấn F12 và xem chi tiết trong Console.`);
+			Utils.UIUtils.showMessage(`Hoàn tất! Thêm ${successCount} giao dịch. Lỗi ${failedRows.length} dòng. Xem Console (F12) để biết chi tiết.`, 'warning', 10000);
 		}
 
 		return { success: successCount, failed: failedRows.length };

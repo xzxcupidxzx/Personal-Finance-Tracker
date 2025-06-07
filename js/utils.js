@@ -98,7 +98,7 @@ const Utils = {
 					values.push(value.trim());
 				}
 
-				if (values.length !== headers.length) {
+				if (values.length > 0 && values.length !== headers.length) {
 					console.warn(`Dòng ${index + 2} có số cột không khớp với tiêu đề. Bỏ qua dòng này.`);
 					return;
 				}
