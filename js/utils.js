@@ -922,33 +922,40 @@ Utils.UpdateManager = {
     },
 
     // ✅ Force refresh toàn bộ ứng dụng
-    async forceRefresh() {
-        try {
-            console.log('🔄 UpdateManager: Force refreshing application...');
-            this.showLoadingMessage('Đang làm mới ứng dụng hoàn toàn...');
-            
-            if (navigator.serviceWorker.controller) {
-                // Gửi message đến SW để force update (SW sẽ xóa cache và reload clients)
-                navigator.serviceWorker.controller.postMessage({ type: 'FORCE_UPDATE' });
-                console.log('📤 UpdateManager: Sent FORCE_UPDATE message to SW');
-                
-                // Không cần reload ở đây nữa vì SW sẽ gửi FORCE_UPDATE_COMPLETE để client reload
-                // setTimeout(() => {
-                //     console.log('🔄 UpdateManager: Reloading after force update message...');
-                //     this.hardReload();
-                // }, 3000); // Cho SW thời gian xử lý
-            } else {
-                // Không có controller, làm mới trực tiếp bằng cách xóa cache và hard reload
-                console.log('🔄 UpdateManager: No SW controller, clearing caches and hard reloading...');
-                await this.clearCachesAndReload(); // Hàm này đã bao gồm hardReload
-            }
-            
-        } catch (error) {
-            console.error('❌ UpdateManager: Force refresh failed:', error);
-            // Fallback: hard reload
-            this.hardReload();
-        }
-    },
+	async forceRefresh() {
+		try {
+			console.log('🔄 UpdateManager: Force refreshing application...');
+			this.showLoadingMessage('Đang làm mới ứng dụng hoàn toàn...');
+
+			// Unregister service workers để đảm bảo không còn phiên bản cũ nào chạy
+			if ('serviceWorker' in navigator) {
+				const registrations = await navigator.serviceWorker.getRegistrations();
+				for (const registration of registrations) {
+					await registration.unregister();
+					console.log('✅ Service Worker đã được gỡ bỏ.');
+				}
+			}
+
+			// Xóa toàn bộ cache của ứng dụng
+			if ('caches' in window) {
+				const cacheNames = await caches.keys();
+				await Promise.all(cacheNames.map(name => caches.delete(name)));
+				console.log('✅ Toàn bộ cache đã được xóa.');
+			}
+
+			// Hiển thị thông báo và thực hiện hard reload sau một khoảng trễ ngắn
+			Utils.UIUtils.showMessage('Đã dọn dẹp xong, đang tải lại...', 'success');
+			setTimeout(() => {
+				window.location.reload(true); // true để bỏ qua cache của trình duyệt
+			}, 1500);
+
+		} catch (error) {
+			console.error('❌ UpdateManager: Force refresh thất bại:', error);
+			Utils.UIUtils.showMessage('Lỗi khi làm mới, đang thử lại...', 'error');
+			// Fallback: thực hiện hard reload ngay lập tức
+			setTimeout(() => window.location.reload(true), 1000);
+		}
+	},
 
     // ✅ Xóa cache và reload
     async clearCachesAndReload() {
