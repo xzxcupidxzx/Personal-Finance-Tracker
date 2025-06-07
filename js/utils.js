@@ -112,6 +112,73 @@ const Utils = {
 			return results;
 		}
 	},
+	ParsingUtils: {
+		/**
+		 * Chuyển đổi một chuỗi ngày tháng với nhiều định dạng khác nhau thành đối tượng Date.
+		 * Hỗ trợ: YYYY-MM-DD, DD/MM/YYYY, MM/DD/YYYY, và các biến thể có giờ.
+		 * @param {string} dateString - Chuỗi ngày tháng cần chuyển đổi.
+		 * @returns {Date|null} Đối tượng Date nếu thành công, null nếu thất bại.
+		 */
+		parseFlexibleDate(dateString) {
+			if (!dateString || typeof dateString !== 'string') return null;
+
+			const ds = dateString.trim();
+			let date = new Date(ds);
+
+			// Nếu new Date() parse thành công và hợp lệ (thường cho định dạng ISO, MM/DD/YYYY)
+			if (!isNaN(date.getTime())) return date;
+
+			// Thử parse định dạng DD/MM/YYYY
+			const parts = ds.match(/(\d{1,2})[./-](\d{1,2})[./-](\d{4})(?:[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+			if (parts) {
+				// parts[1]=DD, parts[2]=MM, parts[3]=YYYY
+				const day = parseInt(parts[1], 10);
+				const month = parseInt(parts[2], 10) - 1; // Tháng trong JS bắt đầu từ 0
+				const year = parseInt(parts[3], 10);
+				const hour = parseInt(parts[4], 10) || 0;
+				const minute = parseInt(parts[5], 10) || 0;
+				const second = parseInt(parts[6], 10) || 0;
+				
+				// Kiểm tra tính hợp lệ của ngày tháng năm
+				if (year > 1000 && month >= 0 && month < 12 && day > 0 && day <= 31) {
+					date = new Date(year, month, day, hour, minute, second);
+					if (!isNaN(date.getTime())) return date;
+				}
+			}
+			
+			return null; // Trả về null nếu không thể parse
+		},
+
+		/**
+		 * Chuyển đổi một chuỗi tiền tệ có dấu phân cách (cả . và ,) thành số.
+		 * Ví dụ: "1.200.000,50" hoặc "1,200,000.50" đều thành 1200000.5
+		 * @param {string} amountString - Chuỗi tiền tệ.
+		 * @returns {number} Số đã được chuyển đổi.
+		 */
+		parseFlexibleAmount(amountString) {
+			if (!amountString || typeof amountString !== 'string') return 0;
+			
+			let cleanStr = amountString.trim();
+
+			// Xác định dấu thập phân (dấu cuối cùng là . hoặc ,)
+			const lastComma = cleanStr.lastIndexOf(',');
+			const lastDot = cleanStr.lastIndexOf('.');
+			
+			if (lastComma > lastDot) {
+				// Dấu phẩy là dấu thập phân (kiểu Việt Nam: 1.234,56)
+				// Xóa hết dấu chấm, thay dấu phẩy bằng dấu chấm
+				cleanStr = cleanStr.replace(/\./g, '').replace(',', '.');
+			} else {
+				// Dấu chấm là dấu thập phân (kiểu quốc tế: 1,234.56)
+				// Xóa hết dấu phẩy
+				cleanStr = cleanStr.replace(/,/g, '');
+			}
+
+			// Parse số sau khi đã làm sạch
+			const amount = parseFloat(cleanStr);
+			return isNaN(amount) ? 0 : amount;
+		}
+	},
     // ========== CURRENCY ==========
     CurrencyUtils: {
         formatCurrency(amount, currency = 'VND') {
