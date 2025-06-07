@@ -4397,3 +4397,21 @@ input, textarea, select {
     filter: blur(5px);
     transition: filter 0.3s ease;
 }
+#install-pwa-btn {
+    background-color: var(--accent-light) !important;
+    border-color: var(--accent-border) !important;
+}
+
+#install-pwa-btn .btn-title {
+    color: var(--accent-color);
+}
+
+#install-pwa-btn .btn-icon {
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+  40% {transform: translateY(-8px);}
+  60% {transform: translateY(-4px);}
+}

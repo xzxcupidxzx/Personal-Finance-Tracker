@@ -27,7 +27,7 @@ class FinancialApp {
         
         // Trạng thái ẩn/hiện header, được đọc từ localStorage
         this.isSummaryHidden = localStorage.getItem('summary_hidden') === 'true';
-
+		
         // Dữ liệu mặc định
         this.defaultData = {
             incomeCategories: [
@@ -55,6 +55,7 @@ class FinancialApp {
                 clientVersion: '1.0.0'
             }
         };
+		this.installPromptEvent = null;
     }
 
     async init() {
@@ -163,7 +164,18 @@ class FinancialApp {
     }
 
     initializeGlobalEventListeners() {
-        // Có thể thêm các event listener toàn cục khác ở đây
+        // Lắng nghe sự kiện khi ứng dụng có thể được cài đặt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Ngăn trình duyệt hiển thị pop-up mặc định
+            e.preventDefault();
+            // Lưu sự kiện lại để sử dụng sau
+            this.installPromptEvent = e;
+            console.log('👍 `beforeinstallprompt` event fired. App is installable.');
+            
+            // Hiển thị nút cài đặt tùy chỉnh của bạn
+            // Chúng ta sẽ thêm nút này vào tab Cài đặt
+            this.showInstallButton();
+        });
     }
     
     initializeVisibilityToggle() {
@@ -176,7 +188,30 @@ class FinancialApp {
             });
         }
     }
-
+    showInstallButton() {
+        const settingsSection = document.querySelector('#tab-settings .data-actions');
+        if (settingsSection && !document.getElementById('install-pwa-btn')) {
+            const installButton = document.createElement('button');
+            installButton.id = 'install-pwa-btn';
+            installButton.className = 'action-btn import'; // Tái sử dụng style có sẵn
+            installButton.innerHTML = `
+                <span class="btn-icon">🚀</span>
+                <div class="btn-content">
+                    <span class="btn-title">Cài đặt ứng dụng</span>
+                    <span class="btn-subtitle">Trải nghiệm tốt nhất trên màn hình chính</span>
+                </div>
+            `;
+            
+            // Thêm sự kiện click để kích hoạt lời mời cài đặt
+            installButton.addEventListener('click', async () => {
+                await this.promptInstall();
+            });
+            
+            // Chèn vào đầu danh sách các hành động
+            settingsSection.prepend(installButton);
+        }
+    }
+    
     handleInitialTab() {
         const hash = window.location.hash.slice(1);
         const validTabs = ['transactions', 'history', 'statistics', 'categories', 'settings'];
@@ -799,6 +834,33 @@ class FinancialApp {
 			});
 		}
 	}
+    async promptInstall() {
+        if (!this.installPromptEvent) {
+            Utils.UIUtils.showMessage('Ứng dụng không thể cài đặt lúc này.', 'info');
+            return;
+        }
+
+        // Hiển thị pop-up cài đặt của trình duyệt
+        this.installPromptEvent.prompt();
+        
+        // Chờ người dùng phản hồi
+        const { outcome } = await this.installPromptEvent.userChoice;
+        console.log(`PWA install prompt outcome: ${outcome}`);
+
+        if (outcome === 'accepted') {
+            console.log('User accepted the PWA installation.');
+            // Ẩn nút cài đặt đi
+            const installButton = document.getElementById('install-pwa-btn');
+            if (installButton) {
+                installButton.remove();
+            }
+        } else {
+            console.log('User dismissed the PWA installation.');
+        }
+
+        // Xóa sự kiện đã lưu
+        this.installPromptEvent = null;
+    }
 }
 
 // ===================================================================
