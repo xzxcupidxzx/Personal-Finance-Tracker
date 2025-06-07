@@ -333,7 +333,9 @@ class FinancialApp {
     importData(importedData) { // Dùng cho SettingsModule
         try {
             // Validation cơ bản
-            if (!importedData || typeof importedData !== 'object') throw new Error('Dữ liệu không hợp lệ.');
+            if (!importedData || typeof importedData !== 'object') {
+                throw new Error('Dữ liệu không hợp lệ.');
+            }
             
             // Backup dữ liệu hiện tại phòng trường hợp import lỗi
             const backupData = JSON.parse(JSON.stringify(this.data));
@@ -349,15 +351,14 @@ class FinancialApp {
                                      : backupData.settings;
                 this.data.reconciliationHistory = Array.isArray(importedData.reconciliationHistory) ? importedData.reconciliationHistory : backupData.reconciliationHistory;
                 
-                // Đảm bảo clientVersion hiện tại không bị ghi đè bởi file JSON cũ hơn
-                this.data.settings.clientVersion = typeof APP_VERSION !== 'undefined' ? APP_VERSION : backupData.settings.clientVersion;
+                // QUAN TRỌNG: Đảm bảo clientVersion hiện tại không bị ghi đè bởi file JSON cũ hơn
+                const currentClientVersion = typeof APP_VERSION !== 'undefined' ? APP_VERSION : backupData.settings.clientVersion;
+                this.data.settings.clientVersion = currentClientVersion;
 
                 this.ensureSystemCategories();
                 this.validateDataIntegrity(); // Hàm này nên được thêm để kiểm tra và sửa lỗi dữ liệu sau import
                 
-                if (!this.saveData()) { // Nếu saveData trả về false (lỗi)
-                    throw new Error("Không thể lưu dữ liệu đã nhập.");
-                }
+                this.saveData();
 
                 this.refreshAllModules(); // <<--- DÒNG NÀY QUAN TRỌNG ---<<
                 Utils.UIUtils.showMessage(`Đã nhập thành công ${this.data.transactions.length} giao dịch.`, 'success');
@@ -367,7 +368,8 @@ class FinancialApp {
                 console.error('Error processing imported data, restoring backup:', processingError);
                 this.data = backupData; // Khôi phục backup
                 this.saveData(); // Cố gắng lưu lại backup
-                throw new Error('Lỗi xử lý dữ liệu đã nhập: ' + processingError.message);
+                Utils.UIUtils.showMessage(`Lỗi xử lý dữ liệu: ${processingError.message}`, 'error');
+                return false;
             }
         } catch (error) {
             console.error('Import failed:', error);
