@@ -4360,10 +4360,10 @@ input, textarea, select {
     backdrop-filter: blur(3px);
     border: 1px solid rgba(255, 255, 255, 0.1); /* Thêm viền trắng mờ để tăng hiệu ứng chiều sâu. */
     text-shadow: 
-        -1px -1px 0 #000,  
-         1px -1px 0 #000,
-        -1px  1px 0 #000,
-         1px  1px 0 #000;
+        -1px -1px 0 #fff,  
+         1px -1px 0 #fff,
+        -1px  1px 0 #fff,
+         1px  1px 0 #fff;
 }
 /* Container cho label và nút con mắt */
 .summary-label-container {
