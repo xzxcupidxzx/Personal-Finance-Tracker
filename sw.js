@@ -1,75 +1,58 @@
-// sw.js - PHIÊN BẢN TỐI ƯU VÀ SỬA LỖI CHO IOS
+// sw.js - PHIÊN BẢN TỐI ƯU VÀ SỬA LỖI
 
-// 1. IMPORT VERSION VỚI CACHE-BUSTING
-// Thêm một query string ngẫu nhiên để đảm bảo version.js luôn được tải mới khi SW được kiểm tra.
-try {
-  importScripts(`/js/version.js?v=${new Date().getTime()}`);
-} catch (e) {
-  console.error('[SW] Không thể import version.js:', e);
-}
+// KHAI BÁO BIẾN TOÀN CỤC
+let APP_VERSION = 'initial'; // Giá trị ban đầu
+let CACHE_NAME = `finance-app-cache-${APP_VERSION}`;
 
-const APP_VERSION = self.APP_VERSION || 'fallback-version';
-const CACHE_NAME = `finance-app-cache-${APP_VERSION}`;
-
-// 2. DANH SÁCH CACHE BAN ĐẦU (chỉ những file tối quan trọng, không thay đổi thường xuyên)
-const IMMUTABLE_URLS = [
-  '/',
-  '/index.html', // Mặc dù sẽ áp dụng NetworkFirst, vẫn cache để có thể offline
-  '/manifest.json',
-  '/LogoFinance.png'
-];
-
-// 3. HÀM HELPER
-const cacheFirst = async (request) => {
-  const cachedResponse = await caches.match(request);
-  return cachedResponse || fetch(request);
-};
-
-const networkFirst = async (request) => {
-  try {
-    const networkResponse = await fetch(request);
-    // Nếu fetch thành công, cập nhật cache
-    if (networkResponse && networkResponse.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, networkResponse.clone());
-    }
-    return networkResponse;
-  } catch (error) {
-    // Nếu fetch thất bại (offline), trả về từ cache
-    console.warn(`[SW] Network fetch failed for ${request.url}, falling back to cache.`);
-    return caches.match(request);
-  }
-};
-
-const staleWhileRevalidate = async (request) => {
-  const cache = await caches.open(CACHE_NAME);
-  const cachedResponse = await cache.match(request);
-
-  const fetchPromise = fetch(request).then((networkResponse) => {
-    if (networkResponse && networkResponse.ok) {
-      cache.put(request, networkResponse.clone());
-    }
-    return networkResponse;
-  });
-
-  return cachedResponse || fetchPromise;
-};
-
-// 4. INSTALL EVENT: Kích hoạt ngay và chỉ cache các file cốt lõi
+// 1. INSTALL EVENT: Kích hoạt ngay và chỉ cache các file cốt lõi
 self.addEventListener('install', (event) => {
-  console.log(`[SW] Cài đặt phiên bản: ${APP_VERSION}`);
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Đang cache các tài sản cốt lõi.');
-      return cache.addAll(IMMUTABLE_URLS);
-    }).then(() => {
-      // Kích hoạt SW mới ngay lập tức mà không cần chờ người dùng đóng tất cả các tab
-      self.skipWaiting();
-    })
-  );
+  console.log('[SW] Bắt đầu quá trình cài đặt...');
+  
+  // Bắt buộc Service Worker mới bỏ qua trạng thái waiting và kích hoạt ngay
+  self.skipWaiting();
+
+  event.waitUntil((async () => {
+    try {
+      // BƯỚC 1: Import version.js một cách an toàn. Thêm cache-busting.
+      // Nếu bước này thất bại, toàn bộ quá trình cài đặt sẽ thất bại và được thử lại sau.
+      console.log('[SW] Đang import version.js...');
+      importScripts(`/js/version.js?v=${new Date().getTime()}`);
+      
+      // Kiểm tra xem APP_VERSION đã được import thành công chưa
+      if (typeof self.APP_VERSION === 'undefined') {
+        throw new Error('APP_VERSION không được định nghĩa trong version.js');
+      }
+      
+      APP_VERSION = self.APP_VERSION;
+      CACHE_NAME = `finance-app-cache-${APP_VERSION}`;
+      console.log(`[SW] Cài đặt phiên bản: ${APP_VERSION}. Tên Cache: ${CACHE_NAME}`);
+
+      // BƯỚC 2: Mở cache với tên đã được cập nhật
+      const cache = await caches.open(CACHE_NAME);
+      
+      // BƯỚC 3: Cache các tài sản cốt lõi
+      const IMMUTABLE_URLS = [
+        '/',
+        '/index.html',
+        '/manifest.json',
+        '/LogoFinance.png'
+      ];
+      
+      console.log('[SW] Đang cache các tài sản cốt lõi...');
+      await cache.addAll(IMMUTABLE_URLS);
+      
+      console.log('[SW] Cài đặt thành công.');
+
+    } catch (e) {
+      console.error('[SW] LỖI CÀI ĐẶT:', e);
+      // Nếu có lỗi, quá trình cài đặt sẽ thất bại và trình duyệt sẽ thử lại sau.
+      // Điều này an toàn hơn là tiếp tục với một phiên bản lỗi.
+      throw e; 
+    }
+  })());
 });
 
-// 5. ACTIVATE EVENT: Dọn dẹp cache cũ
+// 2. ACTIVATE EVENT: Dọn dẹp cache cũ
 self.addEventListener('activate', (event) => {
   console.log(`[SW] Kích hoạt phiên bản: ${APP_VERSION}`);
   event.waitUntil(
@@ -84,56 +67,56 @@ self.addEventListener('activate', (event) => {
       );
     }).then(() => {
       // Kiểm soát tất cả các client (tab) ngay lập tức
+      console.log('[SW] Đã kiểm soát các client.');
       return self.clients.claim();
     })
   );
 });
 
-// 6. FETCH EVENT: Áp dụng chiến lược cache phù hợp
+// 3. FETCH EVENT: Áp dụng chiến lược cache phù hợp
 self.addEventListener('fetch', (event) => {
   const { request } = event;
 
-  // Bỏ qua các request không phải GET hoặc của extension
-  if (request.method !== 'GET' || !request.url.startsWith('http')) {
-    return;
-  }
+  if (request.method !== 'GET' || !request.url.startsWith('http')) return;
   
-  // Áp dụng chiến lược NETWORK FIRST cho các file HTML (navigation requests)
-  // Điều này đảm bảo người dùng luôn nhận được phiên bản mới nhất của ứng dụng khi có mạng.
+  // Chiến lược: Network First cho các file HTML (navigation requests)
   if (request.mode === 'navigate' || request.destination === 'document') {
-    event.respondWith(networkFirst(request));
+    event.respondWith(
+      fetch(request).catch(() => caches.match(request))
+    );
     return;
   }
   
-  // Áp dụng chiến lược STALE-WHILE-REVALIDATE cho các tài sản tĩnh (CSS, JS, Fonts)
-  // Tốc độ nhanh vì trả về từ cache ngay, sau đó cập nhật dưới nền.
-  if (request.destination === 'style' || request.destination === 'script' || request.destination === 'worker' || request.destination === 'font') {
-    event.respondWith(staleWhileRevalidate(request));
+  // Chiến lược: Stale While Revalidate cho CSS, JS, Fonts
+  if (request.destination === 'style' || request.destination === 'script' || request.destination === 'font') {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE_NAME);
+      const cachedResponse = await cache.match(request);
+      
+      const fetchPromise = fetch(request).then(networkResponse => {
+        if (networkResponse.ok) {
+          cache.put(request, networkResponse.clone());
+        }
+        return networkResponse;
+      });
+      
+      return cachedResponse || fetchPromise;
+    })());
     return;
   }
 
-  // Áp dụng chiến lược CACHE-FIRST cho hình ảnh và các tài sản khác không thay đổi thường xuyên
-  // Tối ưu tốc độ, chỉ fetch từ mạng nếu chưa có trong cache.
+  // Chiến lược: Cache First cho hình ảnh, manifest
   if (request.destination === 'image' || request.destination === 'manifest') {
-    event.respondWith(cacheFirst(request));
+    event.respondWith(
+      caches.match(request).then(response => response || fetch(request))
+    );
     return;
   }
-
-  // Fallback (dự phòng) cho các request khác
-  event.respondWith(staleWhileRevalidate(request));
 });
 
-
-// 7. MESSAGE EVENT: Giao tiếp với client
+// 4. MESSAGE EVENT: Giao tiếp với client
 self.addEventListener('message', (event) => {
-  // Trả về version của SW khi client yêu cầu
   if (event.data && event.data.type === 'CHECK_VERSION') {
     event.ports[0].postMessage({ version: APP_VERSION });
-  }
-
-  // Kích hoạt SW mới ngay lập tức khi nhận được lệnh
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    console.log('[SW] Nhận lệnh SKIP_WAITING từ client. Đang kích hoạt...');
-    self.skipWaiting();
   }
 });

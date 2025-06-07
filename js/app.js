@@ -72,20 +72,20 @@ class FinancialApp {
         // ==========================================================
         // ===== THÊM ĐOẠN MÃ NÀY VÀO ĐÂY =====
         // ==========================================================
-		// ĐOẠN MÃ SAU KHI SỬA (VÔ HIỆU HÓA)
-		/*
 		try {
 			if (Utils.UpdateManager) {
 				// Truyền phiên bản client hiện tại vào UpdateManager
-				const clientVersion = this.data.settings.clientVersion || APP_VERSION;
+				// Ưu tiên APP_VERSION từ version.js để đảm bảo luôn là phiên bản mới nhất
+				const clientVersion = typeof APP_VERSION !== 'undefined' ? APP_VERSION : (this.data.settings.clientVersion || '0.0.0');
 				Utils.UpdateManager.init(clientVersion); 
+				
 				// Gán vào app instance để các module khác có thể truy cập nếu cần
 				this.updateManager = Utils.UpdateManager; 
+				console.log(`🚀 UpdateManager initialized with client version: ${clientVersion}`);
 			}
 		} catch(e) {
 			console.error('❌ Failed to initialize UpdateManager:', e);
 		}
-		*/
         // ==========================================================
         
         await this.initializeModules();
