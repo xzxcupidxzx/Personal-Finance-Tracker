@@ -503,9 +503,7 @@ window.addEventListener('appinstalled', () => {
  * ✅ FIXED UPDATE MANAGER - Sửa lỗi kiểm tra cập nhật
  */
 Utils.UpdateManager = {
-    // 🚨 Lấy version từ global APP_VERSION (từ version.js)
-    // GitHub Action sẽ cập nhật giá trị chuỗi '1.0.3' này
-    currentVersion: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0.3', 
+
     swRegistration: null,
     isUpdateAvailable: false,
     isRefreshing: false,
