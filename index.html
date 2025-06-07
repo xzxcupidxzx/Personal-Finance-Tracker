@@ -36,7 +36,6 @@
     <link rel="shortcut icon" href="./LogoFinance.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- FIXED: Using the UMD bundle for Chart.js to avoid module errors -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     
@@ -58,7 +57,7 @@
         }
     </style>
 </head>
-<body class="font-sans antialiased ...">
+<body class="font-sans antialiased">
 
     <header class="app-header">
         <div class="header-content">
@@ -213,14 +212,13 @@
                                 <option value="week">Tuần này</option>
                                 <option value="month" selected>Tháng này</option>
                                 <option value="all">Tất cả</option>
+                                <option value="custom">Tùy chỉnh ngày...</option>
                             </select>
-                            <input type="date" id="filter-date" class="filter-date">
+                            <input type="date" id="filter-date" class="filter-date" style="display: none;">
                         </div>
                     </div>
                     <div class="transaction-list" id="transaction-list"></div>
                     <div id="no-transactions" class="no-data" style="display: none;">
-                        <span class="no-data-icon">📝</span>
-                        <span class="no-data-text">Chưa có giao dịch nào</span>
                     </div>
                 </div>
             </section>
@@ -331,38 +329,33 @@
 					</div>
 				</div>
 				<div class="stats-summary">
-					<div class="stats-card">
-						<span class="stats-label">Tổng thu nhập</span>
-						<span class="stats-value" id="stats-total-income">0 ₫</span>
+					<div class="stats-card income-card">
+                        <span class="stats-icon"><i class="fa-solid fa-arrow-down"></i></span>
+						<div>
+                            <span class="stats-label">Tổng thu nhập</span>
+                            <span class="stats-value" id="stats-total-income">0 ₫</span>
+                        </div>
 						<span class="stats-change" id="stats-income-change"></span>
 					</div>
-					<div class="stats-card">
-						<span class="stats-label">Tổng chi tiêu</span>
-						<span class="stats-value" id="stats-total-expense">0 ₫</span>
+					<div class="stats-card expense-card">
+                        <span class="stats-icon"><i class="fa-solid fa-arrow-up"></i></span>
+						<div>
+						    <span class="stats-label">Tổng chi tiêu</span>
+						    <span class="stats-value" id="stats-total-expense">0 ₫</span>
+                        </div>
 						<span class="stats-change" id="stats-expense-change"></span>
 					</div>
-					<div class="stats-card">
-						<span class="stats-label">Số dư ròng</span>
-						<span class="stats-value" id="stats-net-balance">0 ₫</span>
+					<div class="stats-card balance-card">
+                        <span class="stats-icon"><i class="fa-solid fa-scale-balanced"></i></span>
+						<div>
+						    <span class="stats-label">Số dư ròng</span>
+						    <span class="stats-value" id="stats-net-balance">0 ₫</span>
+                        </div>
 						<span class="stats-change" id="stats-balance-change"></span>
 					</div>
 				</div>
 
-				<div class="detailed-stats-section">
-					<h3 class="subsection-title">Thống kê chi tiết</h3>
-					<table class="detailed-stats-table">
-						<thead>
-							<tr>
-								<th>Hạng mục</th>
-								<th>Tổng chi</th>
-								<th>Tỷ trọng</th>
-							</tr>
-						</thead>
-						<tbody id="detailed-stats-tbody">
-							</tbody>
-					</table>
-				</div>
-
+				
                 <div class="chart-section">
                     <div class="chart-header">
                         <h3 class="chart-title">Chi Tiêu Theo Danh Mục</h3>
@@ -411,8 +404,6 @@
                     <div id="budget-tracking-container" class="budget-progress-grid" style="min-height: 100px; display: flex; align-items: center; justify-content: center;">
                         </div>
                 </div>
-                <div class="detailed-stats-section">
-                    </div>
             </section>
 
             <section id="tab-categories" class="tab-content">
@@ -638,9 +629,10 @@
 								<span class="btn-subtitle">Thêm hàng loạt giao dịch từ file CSV</span>
 							</div>
 						</button>
-						<input type="file" id="import-file" accept=".json" style="display: none;">
+						<input type="file" id="import-file" accept=".json,application/json" style="display: none;">
 						<input type="file" id="import-csv-file" accept=".csv,text/csv" style="display: none;">
 					</div>
+                </div>
 
                 <div class="settings-section">
                     <h3 class="settings-section-title">
@@ -724,27 +716,27 @@
 
     <nav class="bottom-nav">
         <button class="nav-item active" data-tab="transactions">
-            <span class="nav-icon">💳</span>
+            <span class="nav-icon"><i class="fa-solid fa-credit-card"></i></span>
             <span class="nav-label">Giao Dịch</span>
         </button>
 
         <button class="nav-item" data-tab="history">
-            <span class="nav-icon">🏦</span>
+            <span class="nav-icon"><i class="fa-solid fa-calendar-days"></i></span>
             <span class="nav-label">Lịch Sử</span>
         </button>
 
         <button class="nav-item" data-tab="statistics">
-            <span class="nav-icon">📊</span>
+            <span class="nav-icon"><i class="fa-solid fa-chart-pie"></i></span>
             <span class="nav-label">Thống Kê</span>
         </button>
 
         <button class="nav-item" data-tab="categories">
-            <span class="nav-icon">🏷️</span>
+            <span class="nav-icon"><i class="fa-solid fa-tags"></i></span>
             <span class="nav-label">Danh Mục</span>
         </button>
 
         <button class="nav-item" data-tab="settings">
-            <span class="nav-icon">⚙️</span>
+            <span class="nav-icon"><i class="fa-solid fa-gear"></i></span>
             <span class="nav-label">Cài Đặt</span>
         </button>
     </nav>
@@ -824,33 +816,45 @@
 			</div>
 		</div>
 	</div>
+    
+    <!-- SCRIPT LOADING ORDER -->
+    <!-- Load version and utils first as they are dependencies -->
     <script src="./js/version.js"></script>
     <script src="./js/utils.js"></script>
+
+    <!-- Load individual modules -->
 	<script src="./js/categories.js"></script>
 	<script src="./js/settings.js"></script>
 	<script src="./js/transactions.js"></script>
 	<script src="./js/history.js"></script>
 	<script src="./js/statistics.js"></script>
+    <script src="js/virtual-keyboard.js"></script>
+    
+    <!-- Load main app logic last -->
 	<script src="./js/app.js"></script>
-	<script src="js/virtual-keyboard.js"></script>
 
 	<script>
-	// iOS Fixes
+    // iOS Fixes and PWA initialization
 	document.addEventListener('DOMContentLoaded', function() {
-		// ... (iOS fixes content)
+        // iOS specific fixes to prevent zoom on input focus
+        if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+            const viewport = document.querySelector('meta[name="viewport"]');
+            if (viewport) {
+                // Ensure viewport meta prevents scaling
+                const content = viewport.getAttribute('content');
+                if (!content.includes('user-scalable=no')) {
+                    viewport.setAttribute('content', content + ', user-scalable=no');
+                }
+            }
+        }
     });
 
-	// Service Worker registration will fail on file:/// but we keep it for when on a server
+	// Service Worker registration
 	if ('serviceWorker' in navigator) {
 		window.addEventListener('load', function() {
-			navigator.serviceWorker.register('/sw.js')
-				.then(function(registration) {
-					console.log('Service Worker registered with scope:', registration.scope);
-				})
-				.catch(function(error) {
-					// This error is expected when running from file:///
-					console.log('Service Worker registration failed:', error);
-				});
+            // The service worker registration logic is now handled inside app.js
+            // for better coordination with the UpdateManager.
+            console.log("PWA registration will be handled by app.js");
 		});
 	}
 	</script>

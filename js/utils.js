@@ -1,5 +1,6 @@
 /**
- * FINANCIAL APP UTILITIES - UPDATED FOR ICON PICKER & ICON SETS
+ * FINANCIAL APP UTILITIES - FIXED VERSION
+ * Sửa lỗi CSV parsing, export, và validation
  */
 
 // ===== CONSTANTS =====
@@ -28,23 +29,44 @@ const CONFIG = {
 
 const Utils = {
     CONFIG,
+    
     // ========== STORAGE ==========
     StorageUtils: {
         save(key, data) {
-            try { localStorage.setItem(key, JSON.stringify(data)); return true; }
-            catch (error) { console.error(`Error saving ${key}:`, error); return false; }
+            try { 
+                localStorage.setItem(key, JSON.stringify(data)); 
+                return true; 
+            } catch (error) { 
+                console.error(`Error saving ${key}:`, error); 
+                return false; 
+            }
         },
         load(key, defaultValue = null) {
-            try { const data = localStorage.getItem(key); return data ? JSON.parse(data) : defaultValue; }
-            catch (error) { console.error(`Error loading ${key}:`, error); return defaultValue; }
+            try { 
+                const data = localStorage.getItem(key); 
+                return data ? JSON.parse(data) : defaultValue; 
+            } catch (error) { 
+                console.error(`Error loading ${key}:`, error); 
+                return defaultValue; 
+            }
         },
         remove(key) {
-            try { localStorage.removeItem(key); return true; }
-            catch (error) { console.error(`Error removing ${key}:`, error); return false; }
+            try { 
+                localStorage.removeItem(key); 
+                return true; 
+            } catch (error) { 
+                console.error(`Error removing ${key}:`, error); 
+                return false; 
+            }
         },
         clearAll() {
-            try { Object.values(CONFIG.STORAGE_KEYS).forEach(key => localStorage.removeItem(key)); return true; }
-            catch (error) { console.error('Error clearing storage:', error); return false; }
+            try { 
+                Object.values(CONFIG.STORAGE_KEYS).forEach(key => localStorage.removeItem(key)); 
+                return true; 
+            } catch (error) { 
+                console.error('Error clearing storage:', error); 
+                return false; 
+            }
         },
         getStorageSize() {
             let total = 0;
@@ -60,156 +82,352 @@ const Utils = {
             return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
         }
     },
-	// SỬA LỖI & CẢI TIẾN: Hàm phân tích CSV được viết lại hoàn toàn.
-	CSVUtils: {
-		/**
-		 * Phân tích nội dung text của file CSV thành một mảng các đối tượng.
-		 * @param {string} csvText - Nội dung file CSV.
-		 * @returns {Array<Object>} Mảng các giao dịch đã được phân tích.
-		 */
-		parse(csvText) {
-			if (!csvText || typeof csvText !== 'string') {
-				return [];
-			}
 
-			// Tách các dòng, bỏ qua các dòng trống
-			const lines = csvText.trim().split(/\r\n|\n/).filter(line => line.trim() !== '');
-			if (lines.length < 2) {
-				throw new Error("File CSV cần ít nhất một dòng tiêu đề và một dòng dữ liệu.");
-			}
+    // ========== FIXED CSV UTILS ==========
+    CSVUtils: {
+        /**
+         * SỬA LỖI: Enhanced CSV parser with robust handling of quotes and delimiters
+         */
+        parse(csvText) {
+            if (!csvText || typeof csvText !== 'string') {
+                return [];
+            }
 
-			const headerLine = lines.shift();
-			// Xử lý dấu phân cách có thể là dấu phẩy hoặc chấm phẩy
-			const delimiter = headerLine.includes(';') ? ';' : ',';
-			const headers = headerLine.split(delimiter).map(h => h.trim().toLowerCase());
-			
-			const results = [];
+            const lines = csvText.trim().split(/\r\n|\n/).filter(line => line.trim() !== '');
+            if (lines.length < 2) {
+                throw new Error("File CSV cần ít nhất một dòng tiêu đề và một dòng dữ liệu.");
+            }
 
-			lines.forEach((line, index) => {
-				// Biểu thức chính quy để xử lý các trường có dấu ngoặc kép chứa dấu phân cách
-				const regex = new RegExp(`(\\"[^\\"]*\\"|[^\\${delimiter}\\"]+)(\\${delimiter}|$)`, 'g');
-				const values = [];
-				let match;
-				while (match = regex.exec(line)) {
-					let value = match[1];
-					if (value.startsWith('"') && value.endsWith('"')) {
-						value = value.substring(1, value.length - 1).replace(/""/g, '"');
-					}
-					values.push(value.trim());
-				}
+            // Detect delimiter
+            const headerLine = lines[0];
+            const delimiter = this.detectDelimiter(headerLine);
+            
+            // Parse header
+            const headers = this.parseCsvLine(headerLine, delimiter)
+                .map(h => h.trim().toLowerCase());
+            
+            const results = [];
 
-				if (values.length > 0 && values.length !== headers.length) {
-					console.warn(`Dòng ${index + 2} có số cột không khớp với tiêu đề. Bỏ qua dòng này.`);
-					return;
-				}
+            // Parse data lines
+            for (let i = 1; i < lines.length; i++) {
+                try {
+                    const values = this.parseCsvLine(lines[i], delimiter);
+                    
+                    if (values.length === 0) continue; // Skip empty lines
+                    
+                    const rowObject = {};
+                    headers.forEach((header, index) => {
+                        rowObject[header] = values[index] || '';
+                    });
+                    
+                    results.push(rowObject);
+                } catch (error) {
+                    console.warn(`CSV parsing error at line ${i + 1}:`, error.message);
+                    // Continue parsing other lines
+                }
+            }
 
-				const rowObject = {};
-				headers.forEach((header, i) => {
-					rowObject[header] = values[i];
-				});
-				results.push(rowObject);
-			});
+            return results;
+        },
 
-			return results;
-		}
-	},
-	// SỬA LỖI & CẢI TIẾN: Các hàm phân tích cú pháp linh hoạt hơn.
-	ParsingUtils: {
-		/**
-		 * Chuyển đổi một chuỗi ngày tháng với nhiều định dạng khác nhau thành đối tượng Date.
-		 * Hỗ trợ: YYYY-MM-DD, DD/MM/YYYY, MM/DD/YYYY, và các biến thể có giờ.
-		 * @param {string} dateString - Chuỗi ngày tháng cần chuyển đổi.
-		 * @returns {Date|null} Đối tượng Date nếu thành công, null nếu thất bại.
-		 */
-		parseFlexibleDate(dateString) {
-			if (!dateString || typeof dateString !== 'string') return null;
+        /**
+         * Detect CSV delimiter
+         */
+        detectDelimiter(line) {
+            const delimiters = [',', ';', '\t', '|'];
+            let bestDelimiter = ',';
+            let maxCount = 0;
 
-			const ds = dateString.trim();
-			let date = new Date(ds);
+            delimiters.forEach(delimiter => {
+                // Count occurrences outside of quotes
+                let count = 0;
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === delimiter && !inQuotes) {
+                        count++;
+                    }
+                }
+                
+                if (count > maxCount) {
+                    maxCount = count;
+                    bestDelimiter = delimiter;
+                }
+            });
 
-			// Nếu new Date() parse thành công và hợp lệ (thường cho định dạng ISO, MM/DD/YYYY)
-			if (!isNaN(date.getTime())) return date;
+            return bestDelimiter;
+        },
 
-			// Thử parse định dạng DD/MM/YYYY
-			const parts = ds.match(/(\d{1,2})[./-](\d{1,2})[./-](\d{4})(?:[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
-			if (parts) {
-				// parts[1]=DD, parts[2]=MM, parts[3]=YYYY
-				const day = parseInt(parts[1], 10);
-				const month = parseInt(parts[2], 10) - 1; // Tháng trong JS bắt đầu từ 0
-				const year = parseInt(parts[3], 10);
-				const hour = parseInt(parts[4], 10) || 0;
-				const minute = parseInt(parts[5], 10) || 0;
-				const second = parseInt(parts[6], 10) || 0;
-				
-				// Kiểm tra tính hợp lệ của ngày tháng năm
-				if (year > 1000 && month >= 0 && month < 12 && day > 0 && day <= 31) {
-					date = new Date(year, month, day, hour, minute, second);
-					if (!isNaN(date.getTime())) return date;
-				}
-			}
-			
-			return null; // Trả về null nếu không thể parse
-		},
+        /**
+         * SỬA LỖI: Robust CSV line parser that handles quotes properly
+         */
+        parseCsvLine(line, delimiter = ',') {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            let i = 0;
 
-		/**
-		 * Chuyển đổi một chuỗi tiền tệ có dấu phân cách (cả . và ,) thành số.
-		 * Ví dụ: "1.200.000,50" hoặc "1,200,000.50" đều thành 1200000.5
-		 * @param {string} amountString - Chuỗi tiền tệ.
-		 * @returns {number} Số đã được chuyển đổi.
-		 */
-		parseFlexibleAmount(amountString) {
-			if (!amountString || typeof amountString !== 'string') return 0;
-			
-			let cleanStr = amountString.trim();
+            while (i < line.length) {
+                const char = line[i];
+                const nextChar = line[i + 1];
 
-			// Xác định dấu thập phân (dấu cuối cùng là . hoặc ,)
-			const lastComma = cleanStr.lastIndexOf(',');
-			const lastDot = cleanStr.lastIndexOf('.');
-			
-			if (lastComma > lastDot) {
-				// Dấu phẩy là dấu thập phân (kiểu Việt Nam: 1.234,56)
-				// Xóa hết dấu chấm, thay dấu phẩy bằng dấu chấm
-				cleanStr = cleanStr.replace(/\./g, '').replace(',', '.');
-			} else {
-				// Dấu chấm là dấu thập phân (kiểu quốc tế: 1,234.56)
-				// Xóa hết dấu phẩy
-				cleanStr = cleanStr.replace(/,/g, '');
-			}
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') {
+                        // Escaped quote
+                        current += '"';
+                        i += 2;
+                    } else {
+                        // Toggle quote state
+                        inQuotes = !inQuotes;
+                        i++;
+                    }
+                } else if (char === delimiter && !inQuotes) {
+                    // Field separator
+                    result.push(current.trim());
+                    current = '';
+                    i++;
+                } else {
+                    // Regular character
+                    current += char;
+                    i++;
+                }
+            }
 
-			// Parse số sau khi đã làm sạch
-			const amount = parseFloat(cleanStr);
-			return isNaN(amount) ? 0 : amount;
-		}
-	},
+            // Add the last field
+            result.push(current.trim());
+
+            return result;
+        },
+
+        /**
+         * SỬA LỖI: Generate CSV with proper escaping
+         */
+        stringify(data, headers = null) {
+            if (!Array.isArray(data) || data.length === 0) {
+                return '';
+            }
+
+            const actualHeaders = headers || Object.keys(data[0]);
+            const csvLines = [];
+
+            // Add header
+            csvLines.push(actualHeaders.map(h => this.escapeField(h)).join(','));
+
+            // Add data rows
+            data.forEach(row => {
+                const values = actualHeaders.map(header => {
+                    const value = row[header];
+                    return this.escapeField(value);
+                });
+                csvLines.push(values.join(','));
+            });
+
+            return csvLines.join('\n');
+        },
+
+        /**
+         * Properly escape CSV field
+         */
+        escapeField(value) {
+            if (value === null || value === undefined) {
+                return '';
+            }
+
+            const str = String(value);
+            
+            // If field contains comma, quote, or newline, wrap in quotes
+            if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+                // Escape internal quotes by doubling them
+                const escaped = str.replace(/"/g, '""');
+                return `"${escaped}"`;
+            }
+
+            return str;
+        }
+    },
+
+    // ========== ENHANCED PARSING UTILS ==========
+    ParsingUtils: {
+        /**
+         * SỬA LỖI: More robust flexible date parsing
+         */
+        parseFlexibleDate(dateString) {
+            if (!dateString || typeof dateString !== 'string') return null;
+
+            const ds = dateString.trim();
+            
+            // Try standard Date constructor first
+            let date = new Date(ds);
+            if (!isNaN(date.getTime()) && date.getFullYear() > 1900) {
+                return date;
+            }
+
+            // Try various date formats
+            const formats = [
+                // DD/MM/YYYY or DD-MM-YYYY
+                /^(\d{1,2})[./-](\d{1,2})[./-](\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/,
+                // MM/DD/YYYY or MM-DD-YYYY  
+                /^(\d{1,2})[./-](\d{1,2})[./-](\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/,
+                // YYYY/MM/DD or YYYY-MM-DD
+                /^(\d{4})[./-](\d{1,2})[./-](\d{1,2})(?:[T\s](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/
+            ];
+
+            for (const format of formats) {
+                const match = ds.match(format);
+                if (match) {
+                    let year, month, day, hour = 0, minute = 0, second = 0;
+                    
+                    if (format.source.startsWith('^(\\d{4})')) {
+                        // YYYY-MM-DD format
+                        [, year, month, day, hour = 0, minute = 0, second = 0] = match;
+                    } else {
+                        // DD/MM/YYYY or MM/DD/YYYY - assume DD/MM/YYYY for international format
+                        [, day, month, year, hour = 0, minute = 0, second = 0] = match;
+                    }
+                    
+                    year = parseInt(year, 10);
+                    month = parseInt(month, 10) - 1; // JS months are 0-based
+                    day = parseInt(day, 10);
+                    hour = parseInt(hour, 10);
+                    minute = parseInt(minute, 10);
+                    second = parseInt(second, 10);
+                    
+                    // Validate ranges
+                    if (year >= 1900 && year <= 2100 && 
+                        month >= 0 && month <= 11 && 
+                        day >= 1 && day <= 31 &&
+                        hour >= 0 && hour <= 23 &&
+                        minute >= 0 && minute <= 59 &&
+                        second >= 0 && second <= 59) {
+                        
+                        date = new Date(year, month, day, hour, minute, second);
+                        if (!isNaN(date.getTime())) {
+                            return date;
+                        }
+                    }
+                }
+            }
+            
+            return null;
+        },
+
+        /**
+         * SỬA LỖI: Enhanced amount parsing with better number detection
+         */
+        parseFlexibleAmount(amountString) {
+            if (!amountString || typeof amountString !== 'string') return 0;
+            
+            let cleanStr = amountString.trim();
+            
+            // Remove currency symbols and common text
+            cleanStr = cleanStr.replace(/[₫$€£¥%]/g, '');
+            cleanStr = cleanStr.replace(/\s+/g, '');
+            
+            // Handle negative signs
+            const isNegative = cleanStr.includes('-') || cleanStr.includes('(');
+            cleanStr = cleanStr.replace(/[-()]/g, '');
+            
+            // Determine decimal separator
+            const lastComma = cleanStr.lastIndexOf(',');
+            const lastDot = cleanStr.lastIndexOf('.');
+            
+            if (lastComma > lastDot) {
+                // European format: 1.234.567,89
+                cleanStr = cleanStr.replace(/\./g, '').replace(',', '.');
+            } else if (lastDot > lastComma) {
+                // US format: 1,234,567.89
+                cleanStr = cleanStr.replace(/,/g, '');
+            } else if (lastComma !== -1 && lastDot === -1) {
+                // Only comma - could be thousands or decimal
+                const commaPos = cleanStr.indexOf(',');
+                const afterComma = cleanStr.substring(commaPos + 1);
+                
+                if (afterComma.length <= 2 && !/\d{4,}/.test(cleanStr.substring(0, commaPos))) {
+                    // Likely decimal separator
+                    cleanStr = cleanStr.replace(',', '.');
+                } else {
+                    // Likely thousands separator
+                    cleanStr = cleanStr.replace(/,/g, '');
+                }
+            }
+            
+            // Final cleanup - only keep digits and one decimal point
+            const match = cleanStr.match(/^\d*\.?\d*$/);
+            if (!match) return 0;
+            
+            const amount = parseFloat(cleanStr);
+            if (isNaN(amount)) return 0;
+            
+            return isNegative ? -Math.abs(amount) : Math.abs(amount);
+        }
+    },
+
     // ========== CURRENCY ==========
     CurrencyUtils: {
         formatCurrency(amount, currency = 'VND') {
             try {
                 const num = parseFloat(amount) || 0;
                 if (currency === 'VND') {
-                    const formatted = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(num);
+                    const formatted = new Intl.NumberFormat('vi-VN', { 
+                        style: 'currency', 
+                        currency: 'VND', 
+                        minimumFractionDigits: 0, 
+                        maximumFractionDigits: 0 
+                    }).format(num);
                     return formatted.replace(/\./g, ',');
                 } else {
-                    return new Intl.NumberFormat('en-US', { style: 'currency', currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+                    return new Intl.NumberFormat('en-US', { 
+                        style: 'currency', 
+                        currency, 
+                        minimumFractionDigits: 2, 
+                        maximumFractionDigits: 2 
+                    }).format(num);
                 }
-            } catch (error) { console.error('formatCurrency error:', error); return `${amount || 0} ${currency}`; }
+            } catch (error) { 
+                console.error('formatCurrency error:', error); 
+                return `${amount || 0} ${currency}`; 
+            }
         },
+
         formatCurrencyShort(amount, currency = 'VND') {
             try {
                 const num = parseFloat(amount) || 0;
                 if (currency === 'VND') {
-                    const sign = num < 0 ? '-' : '', absNum = Math.abs(num);
+                    const sign = num < 0 ? '-' : '';
+                    const absNum = Math.abs(num);
                     let formattedNum, unit = '';
-                    if (absNum < 1000) { formattedNum = new Intl.NumberFormat('vi-VN').format(absNum); return sign + formattedNum; }
-                    else if (absNum < 1000000) { formattedNum = (absNum / 1000).toFixed(0); unit = ' Ng'; }
-                    else if (absNum < 1000000000) { formattedNum = (absNum / 1000000).toFixed(1); unit = ' Tr'; }
-                    else { formattedNum = (absNum / 1000000000).toFixed(2); unit = ' Tỷ'; }
+                    
+                    if (absNum < 1000) { 
+                        formattedNum = new Intl.NumberFormat('vi-VN').format(absNum); 
+                        return sign + formattedNum; 
+                    } else if (absNum < 1000000) { 
+                        formattedNum = (absNum / 1000).toFixed(0); 
+                        unit = ' Ng'; 
+                    } else if (absNum < 1000000000) { 
+                        formattedNum = (absNum / 1000000).toFixed(1); 
+                        unit = ' Tr'; 
+                    } else { 
+                        formattedNum = (absNum / 1000000000).toFixed(2); 
+                        unit = ' Tỷ'; 
+                    }
                     return sign + formattedNum + unit;
                 } else {
-                    return new Intl.NumberFormat('en-US', { style: 'currency', currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+                    return new Intl.NumberFormat('en-US', { 
+                        style: 'currency', 
+                        currency, 
+                        minimumFractionDigits: 2, 
+                        maximumFractionDigits: 2 
+                    }).format(num);
                 }
-            } catch (error) { console.error('formatCurrencyShort error:', error); return `${amount || 0} ${currency}`; }
+            } catch (error) { 
+                console.error('formatCurrencyShort error:', error); 
+                return `${amount || 0} ${currency}`; 
+            }
         },
+
         parseAmountInput(value, currency = 'VND') {
             try {
                 if (!value) return 0;
@@ -217,8 +435,12 @@ const Utils = {
                 const amount = parseFloat(cleaned) || 0;
                 if (currency === 'USD') return amount * CONFIG.USD_TO_VND_RATE;
                 return amount;
-            } catch (error) { console.error('parseAmountInput error:', error); return 0; }
+            } catch (error) { 
+                console.error('parseAmountInput error:', error); 
+                return 0; 
+            }
         },
+
         formatAmountInput(amount) {
             try {
                 if (amount === undefined || amount === null) return '';
@@ -226,56 +448,113 @@ const Utils = {
                 const num = parseInt(str, 10);
                 if (isNaN(num)) return '';
                 return num.toLocaleString('en-US');
-            } catch (error) { console.error('formatAmountInput error:', error); return ''; }
+            } catch (error) { 
+                console.error('formatAmountInput error:', error); 
+                return ''; 
+            }
         },
+
         convertCurrency(amount, fromCurrency, toCurrency) {
             try {
                 if (fromCurrency === toCurrency) return amount;
                 if (fromCurrency === 'USD' && toCurrency === 'VND') return amount * CONFIG.USD_TO_VND_RATE;
                 if (fromCurrency === 'VND' && toCurrency === 'USD') return amount / CONFIG.USD_TO_VND_RATE;
                 return amount;
-            } catch (error) { console.error('convertCurrency error:', error); return amount; }
+            } catch (error) { 
+                console.error('convertCurrency error:', error); 
+                return amount; 
+            }
         }
     },
+
     // ========== DATE ==========
     DateUtils: {
         formatDateTimeLocal(date = new Date()) {
-            const d = new Date(date), year = d.getFullYear(), month = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0'), hours = String(d.getHours()).padStart(2, '0'), minutes = String(d.getMinutes()).padStart(2, '0');
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
             return `${year}-${month}-${day}T${hours}:${minutes}`;
         },
+
         formatDisplayDateTime(datetime) {
             try {
                 const date = new Date(datetime);
-                return date.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-            } catch (error) { return datetime; }
+                return date.toLocaleString('vi-VN', { 
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    year: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+            } catch (error) { 
+                return datetime; 
+            }
         },
+
         formatCompactDateTime(datetime) {
             try {
                 const date = new Date(datetime);
-                const hours = String(date.getHours()).padStart(2, '0'), minutes = String(date.getMinutes()).padStart(2, '0'), day = String(date.getDate()).padStart(2, '0'), month = String(date.getMonth() + 1).padStart(2, '0'), year = String(date.getFullYear()).slice(-2);
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = String(date.getFullYear()).slice(-2);
                 return { time: `${hours}:${minutes}`, date: `${day}-${month}-${year}` };
-            } catch (error) { return { time: '00:00', date: '00-00-00' }; }
+            } catch (error) { 
+                return { time: '00:00', date: '00-00-00' }; 
+            }
         },
+
         getPeriodDates(period) {
-            const now = new Date(); let start, end;
+            const now = new Date();
+            let start, end;
+            
             switch (period) {
-                case 'today': start = new Date(now.getFullYear(), now.getMonth(), now.getDate()); end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59); break;
-                case 'week': const monday = now.getDate() - now.getDay() + 1; start = new Date(now.getFullYear(), now.getMonth(), monday); end = new Date(now.getFullYear(), now.getMonth(), monday + 6, 23, 59, 59); break;
-                case 'month': start = new Date(now.getFullYear(), now.getMonth(), 1); end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59); break;
-                case 'quarter': const quarter = Math.floor(now.getMonth() / 3); start = new Date(now.getFullYear(), quarter * 3, 1); end = new Date(now.getFullYear(), quarter * 3 + 3, 0, 23, 59, 59); break;
-                case 'year': start = new Date(now.getFullYear(), 0, 1); end = new Date(now.getFullYear(), 11, 31, 23, 59, 59); break;
-                default: start = new Date(now.getFullYear(), now.getMonth(), 1); end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+                case 'today': 
+                    start = new Date(now.getFullYear(), now.getMonth(), now.getDate()); 
+                    end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59); 
+                    break;
+                case 'week': 
+                    const monday = now.getDate() - now.getDay() + 1; 
+                    start = new Date(now.getFullYear(), now.getMonth(), monday); 
+                    end = new Date(now.getFullYear(), now.getMonth(), monday + 6, 23, 59, 59); 
+                    break;
+                case 'month': 
+                    start = new Date(now.getFullYear(), now.getMonth(), 1); 
+                    end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59); 
+                    break;
+                case 'quarter': 
+                    const quarter = Math.floor(now.getMonth() / 3); 
+                    start = new Date(now.getFullYear(), quarter * 3, 1); 
+                    end = new Date(now.getFullYear(), quarter * 3 + 3, 0, 23, 59, 59); 
+                    break;
+                case 'year': 
+                    start = new Date(now.getFullYear(), 0, 1); 
+                    end = new Date(now.getFullYear(), 11, 31, 23, 59, 59); 
+                    break;
+                default: 
+                    start = new Date(now.getFullYear(), now.getMonth(), 1); 
+                    end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
             }
             return { start, end };
         },
+
         isDateInPeriod(datetime, period, customStart = null, customEnd = null) {
             try {
                 const date = new Date(datetime);
-                if (period === 'custom' && customStart && customEnd) return date >= customStart && date <= customEnd;
+                if (period === 'custom' && customStart && customEnd) {
+                    return date >= customStart && date <= customEnd;
+                }
                 const { start, end } = this.getPeriodDates(period);
                 return date >= start && date <= end;
-            } catch (error) { return false; }
+            } catch (error) { 
+                return false; 
+            }
         },
+
         getISOWeek(date) {
             const d = new Date(date);
             d.setHours(0, 0, 0, 0);
@@ -284,6 +563,7 @@ const Utils = {
             return 1 + Math.round(((d - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
         }
     },
+
     // ========== UI ==========
     UIUtils: {
         categoryIcons: {
@@ -316,31 +596,27 @@ const Utils = {
             "Khác": "fa-solid fa-circle-question"
         },
         
-		getCategoryIcon(category) {
-			// Nếu category là object và có thuộc tính 'icon'
-			if (typeof category === 'object' && category !== null && category.icon) {
-				const iconIdentifier = category.icon;
-				// Nếu là đường dẫn file ảnh
-				if (iconIdentifier.includes('/') || iconIdentifier.includes('.')) {
-					return { type: 'img', value: iconIdentifier };
-				}
-				// Nếu là class Font Awesome
-				return { type: 'fa', value: iconIdentifier };
-			}
+        getCategoryIcon(category) {
+            if (typeof category === 'object' && category !== null && category.icon) {
+                const iconIdentifier = category.icon;
+                if (iconIdentifier.includes('/') || iconIdentifier.includes('.')) {
+                    return { type: 'img', value: iconIdentifier };
+                }
+                return { type: 'fa', value: iconIdentifier };
+            }
 
-			// --- Logic cũ để tìm icon mặc định ---
-			const categoryName = (typeof category === 'object' && category !== null) ? category.value : category;
-			if (!categoryName || typeof categoryName !== 'string' || categoryName.trim() === '') {
-				return { type: 'fa', value: 'fa-solid fa-box' }; // Fallback
-			}
+            const categoryName = (typeof category === 'object' && category !== null) ? category.value : category;
+            if (!categoryName || typeof categoryName !== 'string' || categoryName.trim() === '') {
+                return { type: 'fa', value: 'fa-solid fa-box' };
+            }
 
-			const cleanName = categoryName.trim();
-			if (this.categoryIcons[cleanName]) {
-				return { type: 'fa', value: this.categoryIcons[cleanName] };
-			}
+            const cleanName = categoryName.trim();
+            if (this.categoryIcons[cleanName]) {
+                return { type: 'fa', value: this.categoryIcons[cleanName] };
+            }
 
-			return { type: 'fa', value: 'fa-solid fa-box' }; // Fallback cuối cùng
-		},
+            return { type: 'fa', value: 'fa-solid fa-box' };
+        },
         
         getIconList() {
             return [
@@ -387,12 +663,12 @@ const Utils = {
                 {
                     set: "Gia đình & Nhà cửa",
                     icons: [
-                         { name: "Nhà", class: "fa-solid fa-house" },
-                         { name: "Gia đình", class: "fa-solid fa-people-roof" },
-                         { name: "Trẻ em", class: "fa-solid fa-children" },
-                         { name: "Thú cưng", class: "fa-solid fa-paw" },
-                         { name: "Điện", class: "fa-solid fa-bolt" },
-                         { name: "Nước", class: "fa-solid fa-droplet" },
+                        { name: "Nhà", class: "fa-solid fa-house" },
+                        { name: "Gia đình", class: "fa-solid fa-people-roof" },
+                        { name: "Trẻ em", class: "fa-solid fa-children" },
+                        { name: "Thú cưng", class: "fa-solid fa-paw" },
+                        { name: "Điện", class: "fa-solid fa-bolt" },
+                        { name: "Nước", class: "fa-solid fa-droplet" },
                     ]
                 },
                 {
@@ -406,7 +682,7 @@ const Utils = {
                         { name: "Âm nhạc", class: "fa-solid fa-music" },
                     ]
                 },
-                 {
+                {
                     set: "Sức khỏe & Giáo dục",
                     icons: [
                         { name: "Sức khỏe", class: "fa-solid fa-heart-pulse" },
@@ -440,35 +716,49 @@ const Utils = {
 
         showMessage(message, type = 'info', duration = 3000) {
             const messageBox = document.getElementById('message-box');
-            if (!messageBox) { alert(`${type.toUpperCase()}: ${message}`); return; }
+            if (!messageBox) { 
+                alert(`${type.toUpperCase()}: ${message}`); 
+                return; 
+            }
             messageBox.textContent = message;
             messageBox.className = `message-box ${type}`;
             messageBox.style.display = 'block';
-            setTimeout(() => { messageBox.style.display = 'none'; }, duration);
+            setTimeout(() => { 
+                messageBox.style.display = 'none'; 
+            }, duration);
         },
+
         generateId() {
             return `id_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         },
+
         debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
-                const later = () => { clearTimeout(timeout); func(...args); };
+                const later = () => { 
+                    clearTimeout(timeout); 
+                    func(...args); 
+                };
                 clearTimeout(timeout);
                 timeout = setTimeout(later, wait);
             };
         },
+
         formatAmountInputWithCursor(input, value) {
             try {
-                const start = input.selectionStart, oldLength = input.value.length;
+                const start = input.selectionStart;
+                const oldLength = input.value.length;
                 const cleaned = value.replace(/[^\d]/g, '');
                 const formatted = Utils.CurrencyUtils.formatAmountInput(cleaned);
                 input.value = formatted;
-                const newLength = formatted.length, newPos = start + (newLength - oldLength);
+                const newLength = formatted.length;
+                const newPos = start + (newLength - oldLength);
                 input.setSelectionRange(newPos, newPos);
             } catch (error) {
                 input.value = Utils.CurrencyUtils.formatAmountInput(value);
             }
         },
+
         getCategoryColor(category, index = 0) {
             if (typeof category === 'string') {
                 let hash = 0;
@@ -479,86 +769,292 @@ const Utils = {
             }
             return CONFIG.CATEGORY_COLORS[index % CONFIG.CATEGORY_COLORS.length];
         },
+
         hexToRgba(hex, alpha = 1) {
             if (!hex) return null;
             const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
             if (!result) return null;
-            const r = parseInt(result[1], 16), g = parseInt(result[2], 16), b = parseInt(result[3], 16);
+            const r = parseInt(result[1], 16);
+            const g = parseInt(result[2], 16);
+            const b = parseInt(result[3], 16);
             return `rgba(${r}, ${g}, ${b}, ${alpha})`;
         }
     },
+
     // ========== VALIDATION ==========
     ValidationUtils: {
         validateTransaction(data) {
             const errors = [];
-            if (!data.type || !['Thu', 'Chi', 'Transfer'].includes(data.type)) errors.push('Loại giao dịch không hợp lệ');
-            if (!data.amount || isNaN(data.amount) || data.amount <= 0) errors.push('Số tiền phải lớn hơn 0');
-            if (!data.account) errors.push('Vui lòng chọn tài khoản');
-            if (!data.datetime) errors.push('Vui lòng chọn ngày và giờ');
-            if (data.type === 'Transfer' && !data.toAccount) errors.push('Vui lòng chọn tài khoản đích');
-            if (data.type !== 'Transfer' && !data.category) errors.push('Vui lòng chọn hạng mục');
+            if (!data.type || !['Thu', 'Chi', 'Transfer'].includes(data.type)) {
+                errors.push('Loại giao dịch không hợp lệ');
+            }
+            if (!data.amount || isNaN(data.amount) || data.amount <= 0) {
+                errors.push('Số tiền phải lớn hơn 0');
+            }
+            if (!data.account) {
+                errors.push('Vui lòng chọn tài khoản');
+            }
+            if (!data.datetime) {
+                errors.push('Vui lòng chọn ngày và giờ');
+            }
+            if (data.type === 'Transfer' && !data.toAccount) {
+                errors.push('Vui lòng chọn tài khoản đích');
+            }
+            if (data.type !== 'Transfer' && !data.category) {
+                errors.push('Vui lòng chọn hạng mục');
+            }
             return { isValid: errors.length === 0, errors };
         },
+
         validateCategoryName(name, existingCategories = []) {
-            if (!name || name.trim().length === 0) return { isValid: false, error: 'Tên danh mục không được để trống' };
-            if (name.length > 50) return { isValid: false, error: 'Tên danh mục không được quá 50 ký tự' };
-            const exists = existingCategories.some(cat => cat && cat.value && cat.value.toLowerCase() === name.toLowerCase());
-            if (exists) return { isValid: false, error: 'Danh mục này đã tồn tại' };
+            if (!name || name.trim().length === 0) {
+                return { isValid: false, error: 'Tên danh mục không được để trống' };
+            }
+            if (name.length > 50) {
+                return { isValid: false, error: 'Tên danh mục không được quá 50 ký tự' };
+            }
+            const exists = existingCategories.some(cat => 
+                cat && cat.value && cat.value.toLowerCase() === name.toLowerCase()
+            );
+            if (exists) {
+                return { isValid: false, error: 'Danh mục này đã tồn tại' };
+            }
             return { isValid: true };
         },
+
         validateAccountName(name, existingAccounts = []) {
-            if (!name || name.trim().length === 0) return { isValid: false, error: 'Tên tài khoản không được để trống' };
-            if (name.length > 50) return { isValid: false, error: 'Tên tài khoản không được quá 50 ký tự' };
-            const exists = existingAccounts.some(acc => acc && acc.value && acc.value.toLowerCase() === name.toLowerCase());
-            if (exists) return { isValid: false, error: 'Tài khoản này đã tồn tại' };
+            if (!name || name.trim().length === 0) {
+                return { isValid: false, error: 'Tên tài khoản không được để trống' };
+            }
+            if (name.length > 50) {
+                return { isValid: false, error: 'Tên tài khoản không được quá 50 ký tự' };
+            }
+            const exists = existingAccounts.some(acc => 
+                acc && acc.value && acc.value.toLowerCase() === name.toLowerCase()
+            );
+            if (exists) {
+                return { isValid: false, error: 'Tài khoản này đã tồn tại' };
+            }
             return { isValid: true };
         }
     },
+
     // ========== MATH ==========
     MathUtils: {
         calculatePercentageChange(oldValue, newValue) {
-            const old = parseFloat(oldValue) || 0, newVal = parseFloat(newValue) || 0;
+            const old = parseFloat(oldValue) || 0;
+            const newVal = parseFloat(newValue) || 0;
             if (old === 0) return newVal === 0 ? 0 : 100;
             return Math.round(((newVal - old) / old) * 100);
         },
+
         calculatePercentage(value, total) {
             if (!total || total === 0) return 0;
             return Math.round((value / total) * 100);
         }
     },
-    // ========== EXPORT ==========
+
+    // ========== FIXED EXPORT UTILS ==========
     ExportUtils: {
+        /**
+         * SỬA LỖI: Enhanced JSON export with better error handling
+         */
         exportJSON(data, filename = 'financial_data') {
             try {
-                const jsonString = JSON.stringify(data, null, 2);
-                const blob = new Blob([jsonString], { type: 'application/json' });
+                // Validate data before export
+                if (!data || typeof data !== 'object') {
+                    throw new Error('Dữ liệu export không hợp lệ');
+                }
+
+                // Clean data for export
+                const cleanData = this.cleanDataForExport(data);
+                
+                // Add export metadata
+                const exportData = {
+                    ...cleanData,
+                    exportInfo: {
+                        exportedAt: new Date().toISOString(),
+                        version: '2.0',
+                        source: 'Financial App'
+                    }
+                };
+
+                const jsonString = JSON.stringify(exportData, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
+                
                 this.downloadFile(blob, `${filename}_${new Date().toISOString().split('T')[0]}.json`);
+                
+                console.log('✅ JSON export successful');
                 return true;
-            } catch (error) { console.error('Error exporting JSON:', error); return false; }
+            } catch (error) { 
+                console.error('❌ Error exporting JSON:', error); 
+                Utils.UIUtils.showMessage(`Lỗi xuất JSON: ${error.message}`, 'error');
+                return false; 
+            }
         },
+
+        /**
+         * SỬA LỖI: Enhanced CSV export with proper formatting
+         */
         exportCSV(transactions, accounts = []) {
             try {
-                const headers = ['Ngày giờ', 'Loại', 'Số tiền', 'Hạng mục', 'Tài khoản', 'Mô tả'];
-                const rows = [headers];
-                transactions.forEach(tx => {
-                    if (tx) rows.push([
-                        Utils.DateUtils.formatDisplayDateTime(tx.datetime), tx.type, tx.amount || 0, tx.category || '', tx.account || '', tx.description || ''
-                    ]);
+                if (!Array.isArray(transactions)) {
+                    throw new Error('Dữ liệu giao dịch không hợp lệ');
+                }
+
+                const headers = [
+                    'Ngày giờ', 
+                    'Loại', 
+                    'Số tiền', 
+                    'Hạng mục', 
+                    'Tài khoản', 
+                    'Mô tả',
+                    'Ghi chú chuyển khoản'
+                ];
+
+                const csvData = transactions
+                    .filter(tx => tx && typeof tx === 'object')
+                    .map(tx => ({
+                        'Ngày giờ': this.formatDateForCSV(tx.datetime),
+                        'Loại': tx.type || '',
+                        'Số tiền': this.formatAmountForCSV(tx.amount),
+                        'Hạng mục': tx.category || '',
+                        'Tài khoản': tx.account || '',
+                        'Mô tả': this.cleanTextForCSV(tx.description || ''),
+                        'Ghi chú chuyển khoản': tx.isTransfer ? 'Giao dịch chuyển khoản' : ''
+                    }));
+
+                const csvContent = Utils.CSVUtils.stringify(csvData, headers);
+                
+                // Add BOM for proper UTF-8 encoding
+                const blob = new Blob(['\uFEFF' + csvContent], { 
+                    type: 'text/csv;charset=utf-8;' 
                 });
-                const csvContent = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
-                const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                
                 this.downloadFile(blob, `transactions_${new Date().toISOString().split('T')[0]}.csv`);
+                
+                console.log(`✅ CSV export successful: ${transactions.length} transactions`);
                 return true;
-            } catch (error) { console.error('Error exporting CSV:', error); return false; }
+            } catch (error) { 
+                console.error('❌ Error exporting CSV:', error); 
+                Utils.UIUtils.showMessage(`Lỗi xuất CSV: ${error.message}`, 'error');
+                return false; 
+            }
         },
+
+        /**
+         * Clean data for export by removing sensitive or unnecessary fields
+         */
+        cleanDataForExport(data) {
+            const cleaned = { ...data };
+            
+            // Remove sensitive data or clean up
+            if (cleaned.settings) {
+                // Remove sensitive settings
+                delete cleaned.settings.apiKeys;
+                delete cleaned.settings.tokens;
+            }
+
+            // Clean transactions
+            if (Array.isArray(cleaned.transactions)) {
+                cleaned.transactions = cleaned.transactions
+                    .filter(tx => tx && typeof tx === 'object')
+                    .map(tx => ({
+                        id: tx.id,
+                        datetime: tx.datetime,
+                        type: tx.type,
+                        category: tx.category,
+                        amount: parseFloat(tx.amount) || 0,
+                        account: tx.account,
+                        description: tx.description || '',
+                        originalAmount: parseFloat(tx.originalAmount) || parseFloat(tx.amount) || 0,
+                        originalCurrency: tx.originalCurrency || 'VND',
+                        isTransfer: Boolean(tx.isTransfer),
+                        transferPairId: tx.transferPairId || null,
+                        createdAt: tx.createdAt,
+                        updatedAt: tx.updatedAt || null
+                    }));
+            }
+
+            return cleaned;
+        },
+
+        /**
+         * Format date for CSV export
+         */
+        formatDateForCSV(datetime) {
+            try {
+                const date = new Date(datetime);
+                if (isNaN(date.getTime())) return datetime;
+                
+                return date.toLocaleString('vi-VN', {
+                    day: '2-digit',
+                    month: '2-digit', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (error) {
+                return datetime || '';
+            }
+        },
+
+        /**
+         * Format amount for CSV export
+         */
+        formatAmountForCSV(amount) {
+            try {
+                const num = parseFloat(amount);
+                if (isNaN(num)) return '0';
+                return num.toLocaleString('vi-VN');
+            } catch (error) {
+                return '0';
+            }
+        },
+
+        /**
+         * Clean text for CSV export
+         */
+        cleanTextForCSV(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/[\r\n]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        },
+
+        /**
+         * SỬA LỖI: Enhanced download function with better error handling
+         */
         downloadFile(blob, filename) {
             try {
-                const url = URL.createObjectURL(blob), a = document.createElement('a');
-                a.href = url; a.download = filename; document.body.appendChild(a); a.click();
-                document.body.removeChild(a); URL.revokeObjectURL(url);
-            } catch (error) { console.error('Error downloading file:', error); }
+                if (!blob || !filename) {
+                    throw new Error('Thiếu thông tin file để tải');
+                }
+
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.style.display = 'none';
+                
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                // Clean up object URL after a delay
+                setTimeout(() => {
+                    URL.revokeObjectURL(url);
+                }, 1000);
+                
+                console.log(`✅ File download initiated: ${filename}`);
+            } catch (error) { 
+                console.error('❌ Error downloading file:', error);
+                Utils.UIUtils.showMessage(`Lỗi tải file: ${error.message}`, 'error');
+            }
         }
     },
+
     // ========== NOTIFICATION ==========
     NotificationUtils: {
         async requestPermission() {
@@ -568,39 +1064,57 @@ const Utils = {
             const permission = await Notification.requestPermission();
             return permission === 'granted';
         },
+
         showNotification(title, options = {}) {
             if (Notification.permission === 'granted') {
-                const defaultOptions = { icon: '/LogoFinance.png', badge: '/LogoFinance.png', tag: 'finance-app', requireInteraction: false, ...options };
+                const defaultOptions = { 
+                    icon: '/LogoFinance.png', 
+                    badge: '/LogoFinance.png', 
+                    tag: 'finance-app', 
+                    requireInteraction: false, 
+                    ...options 
+                };
                 return new Notification(title, defaultOptions);
             }
             return null;
         }
     },
+
     // ========== THEME ==========
     ThemeUtils: {
         applyTheme(theme) {
-            const body = document.body; if (!body) return;
+            const body = document.body;
+            if (!body) return;
+            
             let actualTheme = theme;
-            if (theme === 'auto') actualTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            if (theme === 'auto') {
+                actualTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
             body.setAttribute('data-theme', actualTheme);
             this.saveTheme(theme);
         },
+
         toggleTheme() {
             const current = this.getCurrentTheme();
             const newTheme = current === 'light' ? 'dark' : 'light';
             this.applyTheme(newTheme);
         },
+
         getCurrentTheme() {
             return Utils.StorageUtils.load('theme', 'auto');
         },
+
         saveTheme(theme) {
             Utils.StorageUtils.save('theme', theme);
         },
+
         initializeTheme() {
             const saved = this.getCurrentTheme();
             this.applyTheme(saved);
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-                if (this.getCurrentTheme() === 'auto') this.applyTheme('auto');
+                if (this.getCurrentTheme() === 'auto') {
+                    this.applyTheme('auto');
+                }
             });
         }
     }
@@ -615,35 +1129,30 @@ window.addEventListener('beforeinstallprompt', (e) => {
     window.deferredPrompt = e;
     Utils.UIUtils.showMessage('💡 Cài đặt ứng dụng để trải nghiệm tốt hơn!', 'info', 5000);
 });
+
 window.addEventListener('appinstalled', () => {
     Utils.UIUtils.showMessage('🎉 Ứng dụng đã được cài đặt thành công!', 'success');
     window.deferredPrompt = null;
 });
 
 /**
- * ✅ FIXED UPDATE MANAGER - Sửa lỗi kiểm tra cập nhật
+ * ✅ FIXED UPDATE MANAGER
  */
 Utils.UpdateManager = {
-    // 🚨 Lấy version từ global APP_VERSION (từ version.js)
-    // GitHub Action sẽ cập nhật giá trị chuỗi '1.0.3' này
     currentVersion: '0.0.0',
-	swRegistration: null,
+    swRegistration: null,
     isUpdateAvailable: false,
     isRefreshing: false,
-    swVersion: null, // Version từ Service Worker
+    swVersion: null,
     lastCheck: null,
     checkInterval: null,
 
-    // ✅ Khởi tạo với clientVersion từ app
     init(clientVersion = null) {
         console.log('🔄 UpdateManager: Initializing...');
         
-        // Cập nhật currentVersion nếu được truyền vào (từ app.js, đã lấy từ settings)
-        // Hoặc nếu GHA đã cập nhật trực tiếp currentVersion ở trên
-        if (clientVersion && clientVersion !== '0.0.0') { // 0.0.0 là giá trị clientVersion mặc định trong FinancialApp
+        if (clientVersion && clientVersion !== '0.0.0') {
             this.currentVersion = clientVersion;
         }
-        // Nếu clientVersion không hợp lệ, this.currentVersion vẫn giữ giá trị được GHA cập nhật hoặc APP_VERSION.
         
         console.log(`📱 UpdateManager: Effective client version for checks: ${this.currentVersion}`);
         
@@ -652,64 +1161,49 @@ Utils.UpdateManager = {
             this.setupUpdateDetection();
             this.checkForUpdatesOnFocus();
             
-            // Auto-check mỗi 30 giây
             this.checkInterval = setInterval(() => {
-                if (!document.hidden) { // Chỉ kiểm tra khi tab đang active
+                if (!document.hidden) {
                     this.checkForUpdates();
                 }
-            }, 30000); // 30 giây
+            }, 30000);
         } else {
             console.warn('⚠️ UpdateManager: Service Worker not supported');
         }
     },
 
-    // ✅ Đăng ký Service Worker với error handling tốt hơn
+    async registerServiceWorker() {
+        try {
+            console.log('📋 UpdateManager: Registering Service Worker...');
 
-	async registerServiceWorker() {
-		try {
-			console.log('📋 UpdateManager: Bắt đầu đăng ký Service Worker...');
+            this.swRegistration = await navigator.serviceWorker.register('/sw.js', {
+                updateViaCache: 'none'
+            });
 
-			// Bước 1: Đăng ký Service Worker với tùy chọn `updateViaCache: 'none'`.
-			// Tùy chọn này rất quan trọng: nó yêu cầu trình duyệt luôn kiểm tra file `sw.js`
-			// trên server mỗi khi trang được tải, thay vì sử dụng phiên bản từ cache HTTP.
-			// Điều này khắc phục vấn đề trình duyệt không phát hiện được bản cập nhật.
-			this.swRegistration = await navigator.serviceWorker.register('/sw.js', {
-				updateViaCache: 'none'
-			});
+            console.log('✅ UpdateManager: Service Worker registered successfully. Scope:', this.swRegistration.scope);
 
-			console.log('✅ UpdateManager: Service Worker đã được đăng ký thành công. Scope:', this.swRegistration.scope);
+            this.swRegistration.addEventListener('updatefound', () => {
+                console.log('🆕 UpdateManager: Update found! Installing new worker.');
+                const newWorker = this.swRegistration.installing;
 
-			// Bước 2: Lắng nghe sự kiện 'updatefound'.
-			// Sự kiện này được kích hoạt khi trình duyệt tìm thấy một phiên bản sw.js mới.
-			this.swRegistration.addEventListener('updatefound', () => {
-				console.log('🆕 UpdateManager: Đã tìm thấy một bản cập nhật! Service Worker mới đang được cài đặt.');
-				const newWorker = this.swRegistration.installing;
+                if (newWorker) {
+                    newWorker.addEventListener('statechange', () => {
+                        console.log(`[SW New] State changed: ${newWorker.state}`);
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            console.log('🎯 UpdateManager: New worker ready. Showing update notification.');
+                            this.isUpdateAvailable = true;
+                            this.showUpdateNotification();
+                        }
+                    });
+                }
+            });
 
-				if (newWorker) {
-					// Theo dõi trạng thái của Service Worker mới.
-					newWorker.addEventListener('statechange', () => {
-						console.log(`[SW Mới] Trạng thái thay đổi: ${newWorker.state}`);
-						// Khi SW mới đã cài đặt xong và SW cũ vẫn đang kiểm soát trang...
-						if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-							console.log('🎯 UpdateManager: Service Worker mới đã sẵn sàng. Hiển thị thông báo cập nhật.');
-							this.isUpdateAvailable = true;
-							this.showUpdateNotification(); // Hiển thị thông báo cho người dùng.
-						}
-					});
-				}
-			});
+            await this.checkForUpdates();
 
-			// Bước 3: Kiểm tra ngay sau khi đăng ký thành công.
-			// Điều này giúp phát hiện các bản cập nhật đang chờ ngay khi người dùng truy cập.
-			await this.checkForUpdates();
+        } catch (error) {
+            console.error('❌ UpdateManager: Failed to register Service Worker.', error);
+        }
+    },
 
-		} catch (error) {
-			// Ghi lại lỗi một cách chi tiết nếu quá trình đăng ký thất bại.
-			console.error('❌ UpdateManager: Không thể đăng ký Service Worker. Chức năng offline và cập nhật tự động sẽ không hoạt động.', error);
-		}
-	},
-
-    // ✅ Lấy version từ Service Worker
     async getVersionFromSW() {
         try {
             if (!this.swRegistration || !this.swRegistration.active) {
@@ -730,7 +1224,7 @@ Utils.UpdateManager = {
                         console.log(`🔧 UpdateManager: Received SW version: ${this.swVersion}`);
                         resolve(event.data);
                     } else {
-                        this.swVersion = null; // Không nhận được version
+                        this.swVersion = null;
                         resolve(null);
                     }
                 };
@@ -740,10 +1234,9 @@ Utils.UpdateManager = {
                     [messageChannel.port2]
                 );
                 
-                // Timeout sau 5 giây
                 setTimeout(() => {
                     console.warn('⏳ UpdateManager: Timeout getting SW version.');
-                    this.swVersion = this.swVersion || null; // Giữ version cũ nếu đã có, nếu không thì null
+                    this.swVersion = this.swVersion || null;
                     resolve(null); 
                 }, 5000);
             });
@@ -754,57 +1247,49 @@ Utils.UpdateManager = {
         }
     },
 
-    // ✅ Setup update detection với message handling
     setupUpdateDetection() {
         if (!navigator.serviceWorker) return;
         
-        // Lắng nghe controller change
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             console.log('🔄 UpdateManager: Controller changed');
             if (this.isRefreshing) return;
             
             this.isRefreshing = true;
             this.showUpdateAppliedMessage();
-            // ✅ SỬA Ở ĐÂY: Sử dụng hardReload
             setTimeout(() => this.hardReload(), 1000);
         });
         
-        // Lắng nghe messages từ SW
         navigator.serviceWorker.addEventListener('message', event => {
             this.handleServiceWorkerMessage(event.data);
         });
         
-        // Kiểm tra khi trang được focus lại
         document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) { // Chỉ khi tab được focus
-                setTimeout(() => this.checkForUpdates(), 1000); // Delay nhỏ để tránh spam
+            if (!document.hidden) {
+                setTimeout(() => this.checkForUpdates(), 1000);
             }
         });
     },
 
-    // ✅ Xử lý messages từ Service Worker
     handleServiceWorkerMessage(data) {
         if (!data || !data.type) return;
         
         console.log('📨 UpdateManager: Received SW message:', data.type, data);
         
         switch (data.type) {
-            case 'SW_UPDATED': // Custom message, có thể không cần nếu updatefound hoạt động tốt
+            case 'SW_UPDATED':
                 this.isUpdateAvailable = true;
                 this.showUpdateNotification();
                 break;
                 
-            case 'FORCE_UPDATE_COMPLETE': // Từ SW sau khi xóa cache
+            case 'FORCE_UPDATE_COMPLETE':
                 this.showUpdateAppliedMessage();
-                // SW sẽ tự reload các client, nhưng có thể thêm reload ở đây nếu cần
                 setTimeout(() => window.location.reload(), 1500); 
                 break;
                 
-            case 'VERSION_INFO': // Phản hồi từ CHECK_VERSION
+            case 'VERSION_INFO':
                 if (data.version) {
                     this.swVersion = data.version;
                     console.log(`🔧 UpdateManager: Updated SW version from message: ${this.swVersion}`);
-                    // Sau khi nhận version từ SW, có thể check lại logic cập nhật
                     if (this.swVersion !== this.currentVersion) {
                         this.isUpdateAvailable = true;
                         this.showUpdateNotification();
@@ -814,7 +1299,6 @@ Utils.UpdateManager = {
         }
     },
 
-    // ✅ Kiểm tra cập nhật với logic tốt hơn
     async checkForUpdates() {
         if (!this.swRegistration) {
             console.log('⚠️ UpdateManager: No SW registration for update check');
@@ -825,14 +1309,11 @@ Utils.UpdateManager = {
             console.log('🔍 UpdateManager: Checking for updates...');
             this.lastCheck = new Date();
     
-            // Buộc trình duyệt kiểm tra file sw.js trên server
             await this.swRegistration.update();
     
-            // Kiểm tra xem có worker mới đang chờ kích hoạt không
             if (this.swRegistration.waiting) {
                 console.log('🆕 UpdateManager: Update available (waiting worker found).');
                 this.isUpdateAvailable = true;
-                // Cố gắng lấy version từ worker đang chờ
                 const waitingWorkerVersionInfo = await this.getVersionFromSpecificWorker(this.swRegistration.waiting);
                 if (waitingWorkerVersionInfo && waitingWorkerVersionInfo.version) {
                     this.swVersion = waitingWorkerVersionInfo.version;
@@ -841,22 +1322,18 @@ Utils.UpdateManager = {
                 return true;
             }
     
-            // Nếu không, lấy version từ worker đang hoạt động
-            await this.getVersionFromSW(); // Thao tác này sẽ cập nhật this.swVersion
+            await this.getVersionFromSW();
     
-            // === THAY ĐỔI QUAN TRỌNG NHẤT NẰM Ở ĐÂY ===
-            // Nếu SW trả về 'fallback-version', coi như có lỗi và không so sánh.
             if (this.swVersion === 'fallback-version') {
-                console.error('❌ UpdateManager: Service Worker is using a fallback version. This indicates an error loading `version.js` inside the worker. Update check is aborted to prevent false notifications.');
-                this.isUpdateAvailable = false; // Đảm bảo không hiển thị thông báo sai
-                this.dismissUpdate(); // Ẩn thông báo nếu nó đang hiển thị
-                return false; // Dừng kiểm tra tại đây
+                console.error('❌ UpdateManager: Service Worker is using a fallback version.');
+                this.isUpdateAvailable = false;
+                this.dismissUpdate();
+                return false;
             }
-            // ==========================================
     
             console.log(`ℹ️ UpdateManager: Comparing versions - Client: ${this.currentVersion}, SW: ${this.swVersion}`);
             if (this.swVersion && this.swVersion !== this.currentVersion) {
-                console.log(`🆕 UpdateManager: Version mismatch! Client: ${this.currentVersion}, SW: ${this.swVersion}. Triggering notification.`);
+                console.log(`🆕 UpdateManager: Version mismatch! Client: ${this.currentVersion}, SW: ${this.swVersion}`);
                 this.isUpdateAvailable = true;
                 this.showUpdateNotification();
                 return true;
@@ -879,19 +1356,17 @@ Utils.UpdateManager = {
             const messageChannel = new MessageChannel();
             messageChannel.port1.onmessage = (event) => resolve(event.data);
             worker.postMessage({ type: 'CHECK_VERSION' }, [messageChannel.port2]);
-            setTimeout(() => resolve(null), 2000); // Timeout
+            setTimeout(() => resolve(null), 2000);
         });
     },
 
-    // ✅ Hiển thị thông báo cập nhật với UI đẹp hơn
     showUpdateNotification() {
-        // Xóa notification cũ nếu có
         const existingNotification = document.getElementById('update-notification');
         if (existingNotification) {
             existingNotification.remove();
         }
         
-        this.isUpdateAvailable = true; // Đảm bảo flag này đúng
+        this.isUpdateAvailable = true;
         
         const updateBar = document.createElement('div');
         updateBar.id = 'update-notification';
@@ -945,70 +1420,52 @@ Utils.UpdateManager = {
         `;
         
         document.body.appendChild(updateBar);
-        
         console.log('📢 UpdateManager: Update notification shown');
     },
 
-    // ✅ Áp dụng cập nhật
-	async applyUpdate() {
-		console.log('🔄 UpdateManager: Applying update with iOS-robust method...');
+    async applyUpdate() {
+        console.log('🔄 UpdateManager: Applying update...');
 
-		if (!this.isUpdateAvailable || !this.swRegistration || !this.swRegistration.waiting) {
-			console.warn('applyUpdate called but no waiting worker found. Forcing refresh as a fallback.');
-			await this.forceRefresh();
-			return;
-		}
+        if (!this.isUpdateAvailable || !this.swRegistration || !this.swRegistration.waiting) {
+            console.warn('applyUpdate called but no waiting worker found. Forcing refresh as a fallback.');
+            await this.forceRefresh();
+            return;
+        }
 
-		// Hiển thị màn hình loading không thể tắt để ngăn người dùng tương tác
-		this.showLoadingMessage('Đang hoàn tất cập nhật... Vui lòng không tắt ứng dụng!');
+        this.showLoadingMessage('Đang hoàn tất cập nhật... Vui lòng không tắt ứng dụng!');
 
-		const waitingWorker = this.swRegistration.waiting;
+        const waitingWorker = this.swRegistration.waiting;
+        waitingWorker.postMessage({ type: 'SKIP_WAITING' });
 
-		// Gửi message để worker mới bỏ qua trạng thái waiting
-		waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+        let refreshInterval = setInterval(async () => {
+            if (!this.swRegistration.waiting) {
+                if (this.swRegistration.active === waitingWorker || navigator.serviceWorker.controller === waitingWorker) {
+                    clearInterval(refreshInterval);
+                    console.log('✅ UpdateManager: New worker is now active. Reloading page!');
+                    window.location.reload(true);
+                }
+            }
+        }, 200);
 
-		// Bắt đầu "chờ" một cách chủ động cho đến khi worker mới nắm quyền kiểm soát
-		// thay vì chỉ dựa vào sự kiện 'controllerchange'
-		let refreshInterval = setInterval(async () => {
-			// Nếu Service Worker đang chờ biến mất, nghĩa là nó đã bị kích hoạt hoặc bị hủy bỏ.
-			// Chúng ta sẽ kiểm tra xem controller mới đã đúng là worker chúng ta đang chờ chưa.
-			if (!this.swRegistration.waiting) {
-				// Kiểm tra xem controller hiện tại có phải là worker mới không
-				if (this.swRegistration.active === waitingWorker || navigator.serviceWorker.controller === waitingWorker) {
-					clearInterval(refreshInterval);
-					console.log('✅ UpdateManager: New worker is now active. Reloading page!');
-					// Sử dụng hard reload để đảm bảo tải lại toàn bộ tài nguyên
-					window.location.reload(true);
-				}
-			}
-		}, 200); // Kiểm tra mỗi 200ms
+        setTimeout(() => {
+            clearInterval(refreshInterval);
+            console.error('❌ UpdateManager: Update timed out after 10 seconds.');
+            Utils.UIUtils.showMessage('Cập nhật thất bại. Vui lòng đóng hoàn toàn và mở lại ứng dụng.', 'error', 10000);
+            const loadingDiv = document.getElementById('update-loading');
+            if (loadingDiv) loadingDiv.remove();
+        }, 10000);
+    },
 
-		// Thêm một cơ chế an toàn: nếu sau 10 giây mà vẫn chưa cập nhật được, thông báo cho người dùng
-		setTimeout(() => {
-			clearInterval(refreshInterval);
-			console.error('❌ UpdateManager: Update timed out after 10 seconds.');
-			Utils.UIUtils.showMessage('Cập nhật thất bại. Vui lòng đóng hoàn toàn và mở lại ứng dụng.', 'error', 10000);
-			// Có thể ẩn màn hình loading ở đây nếu muốn
-			const loadingDiv = document.getElementById('update-loading');
-			if (loadingDiv) loadingDiv.remove();
-		}, 10000);
-	},
-
-    // ✅ Ẩn thông báo cập nhật
     dismissUpdate() {
         const updateBar = document.getElementById('update-notification');
         if (updateBar) {
-            // Thêm animation nếu muốn, ví dụ: updateBar.style.animation = 'slideUpAndFade 0.3s ease forwards';
-            // setTimeout(() => { updateBar.remove(); }, 300);
-            updateBar.remove(); // Xóa ngay
+            updateBar.remove();
         }
-        this.isUpdateAvailable = false; // Quan trọng: reset lại flag này
+        this.isUpdateAvailable = false;
         console.log('👋 UpdateManager: Update notification dismissed');
     },
 
-    // ✅ Hiển thị loading message
     showLoadingMessage(message) {
-        // Xóa loading cũ nếu có
         const existingLoading = document.getElementById('update-loading');
         if (existingLoading) {
             existingLoading.remove();
@@ -1057,7 +1514,6 @@ Utils.UpdateManager = {
         document.body.appendChild(loadingDiv);
     },
 
-    // ✅ Hiển thị thông báo cập nhật thành công
     showUpdateAppliedMessage() {
         const loadingDiv = document.getElementById('update-loading');
         if (loadingDiv) {
@@ -1067,53 +1523,44 @@ Utils.UpdateManager = {
         Utils.UIUtils.showMessage('✅ Ứng dụng đã được cập nhật thành công! Trang sẽ tự tải lại.', 'success', 3000);
     },
 
-    // ✅ Force refresh toàn bộ ứng dụng
-	async forceRefresh() {
-		try {
-			console.log('🔄 UpdateManager: Force refreshing application...');
-			this.showLoadingMessage('Đang làm mới ứng dụng hoàn toàn...');
+    async forceRefresh() {
+        try {
+            console.log('🔄 UpdateManager: Force refreshing application...');
+            this.showLoadingMessage('Đang làm mới ứng dụng hoàn toàn...');
 
-			// Unregister service workers để đảm bảo không còn phiên bản cũ nào chạy
-			if ('serviceWorker' in navigator) {
-				const registrations = await navigator.serviceWorker.getRegistrations();
-				for (const registration of registrations) {
-					await registration.unregister();
-					console.log('✅ Service Worker đã được gỡ bỏ.');
-				}
-			}
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (const registration of registrations) {
+                    await registration.unregister();
+                    console.log('✅ Service Worker đã được gỡ bỏ.');
+                }
+            }
 
-			// Xóa toàn bộ cache của ứng dụng
-			if ('caches' in window) {
-				const cacheNames = await caches.keys();
-				await Promise.all(cacheNames.map(name => caches.delete(name)));
-				console.log('✅ Toàn bộ cache đã được xóa.');
-			}
+            if ('caches' in window) {
+                const cacheNames = await caches.keys();
+                await Promise.all(cacheNames.map(name => caches.delete(name)));
+                console.log('✅ Toàn bộ cache đã được xóa.');
+            }
 
-			// Hiển thị thông báo và thực hiện hard reload sau một khoảng trễ ngắn
-			Utils.UIUtils.showMessage('Đã dọn dẹp xong, đang tải lại...', 'success');
-			
-			// === THAY ĐỔI CỐT LÕI NẰM Ở ĐÂY ===
-			// Thay thế window.location.reload(true) bằng phương pháp cache-busting.
-			setTimeout(() => {
-				const url = new URL(window.location.href);
-				// Thêm một tham số ngẫu nhiên để buộc trình duyệt tải lại từ mạng
-				url.searchParams.set('_force_reload', Date.now());
-				window.location.href = url.href;
-			}, 1500);
+            Utils.UIUtils.showMessage('Đã dọn dẹp xong, đang tải lại...', 'success');
+            
+            setTimeout(() => {
+                const url = new URL(window.location.href);
+                url.searchParams.set('_force_reload', Date.now());
+                window.location.href = url.href;
+            }, 1500);
 
-		} catch (error) {
-			console.error('❌ UpdateManager: Force refresh thất bại:', error);
-			Utils.UIUtils.showMessage('Lỗi khi làm mới, đang thử lại...', 'error');
-			// Fallback: thực hiện hard reload ngay lập tức
-			setTimeout(() => {
-				const url = new URL(window.location.href);
-				url.searchParams.set('_force_reload_fallback', Date.now());
-				window.location.href = url.href;
-			}, 1000);
-		}
-	},
+        } catch (error) {
+            console.error('❌ UpdateManager: Force refresh thất bại:', error);
+            Utils.UIUtils.showMessage('Lỗi khi làm mới, đang thử lại...', 'error');
+            setTimeout(() => {
+                const url = new URL(window.location.href);
+                url.searchParams.set('_force_reload_fallback', Date.now());
+                window.location.href = url.href;
+            }, 1000);
+        }
+    },
 
-    // ✅ Xóa cache và reload
     async clearCachesAndReload() {
         try {
             if ('caches' in window) {
@@ -1133,48 +1580,41 @@ Utils.UpdateManager = {
         }
     },
 
-    // ✅ Hard reload trang
     hardReload() {
         try {
             console.log('🔄 UpdateManager: Performing hard reload...');
             
             if (typeof window.location.reload === 'function') {
-                // Thêm timestamp để bypass cache trình duyệt mạnh mẽ hơn
                 const url = new URL(window.location.href);
                 url.searchParams.set('_refresh', Date.now());
-                window.location.href = url.toString(); // Điều hướng lại sẽ đảm bảo tải mới
+                window.location.href = url.toString();
             } else {
-                // Fallback nếu window.location.reload không có
                 window.location.href = window.location.href.split('?')[0] + '?_refresh=' + Date.now();
             }
         } catch (error) {
             console.error('❌ UpdateManager: Hard reload failed:', error);
-            // Last resort
-            window.location.reload(true); // Cố gắng reload mạnh nhất có thể
+            window.location.reload(true);
         }
     },
 
-    // ✅ Kiểm tra cập nhật khi focus
     checkForUpdatesOnFocus() {
         let lastFocusTime = Date.now();
         
         window.addEventListener('focus', () => {
             const now = Date.now();
-            // Chỉ kiểm tra nếu đã mất focus hơn 30 giây
-            if (now - lastFocusTime > 30000) { // 30 giây
+            if (now - lastFocusTime > 30000) {
                 setTimeout(() => {
                     this.checkForUpdates();
-                }, 1000); // Delay 1 giây để tránh spam
+                }, 1000);
             }
             lastFocusTime = now;
         });
         
         window.addEventListener('blur', () => {
-            lastFocusTime = Date.now(); // Cập nhật thời gian khi mất focus
+            lastFocusTime = Date.now();
         });
     },
 
-    // ✅ Lấy thông tin version cho UI (có thể dùng trong Settings)
     getVersionInfo() {
         return {
             currentVersion: this.currentVersion,
@@ -1184,30 +1624,23 @@ Utils.UpdateManager = {
         };
     },
 
-    // ✅ Cleanup khi destroy (nếu app có cơ chế destroy module)
     destroy() {
         if (this.checkInterval) {
             clearInterval(this.checkInterval);
             this.checkInterval = null;
         }
         
-        this.dismissUpdate(); // Bỏ thông báo nếu có
+        this.dismissUpdate();
         
         const loadingDiv = document.getElementById('update-loading');
         if (loadingDiv) {
             loadingDiv.remove();
         }
-        // Xóa các event listener khác nếu có
     }
 };
 
+// Vietnamese Number Formatter
 const VietnameseNumberFormatter = {
-    /**
-     * Format số tiền thành dạng rút gọn tiếng Việt
-     * @param {number} amount - Số tiền cần format
-     * @param {boolean} showCurrency - Có hiển thị ký hiệu tiền tệ không
-     * @returns {string} - Số đã format
-     */
     formatVietnameseShort(amount, showCurrency = false) {
         if (!amount || isNaN(amount)) return showCurrency ? '0 ₫' : '0';
         
@@ -1216,7 +1649,6 @@ const VietnameseNumberFormatter = {
         let result = '';
 
         if (absAmount >= 1000000000) {
-            // Tỷ
             const billions = absAmount / 1000000000;
             if (billions >= 100) {
                 result = `${sign}${Math.round(billions)} tỷ`;
@@ -1226,7 +1658,6 @@ const VietnameseNumberFormatter = {
                 result = `${sign}${billions.toFixed(2)} tỷ`;
             }
         } else if (absAmount >= 1000000) {
-            // Triệu
             const millions = absAmount / 1000000;
             if (millions >= 100) {
                 result = `${sign}${Math.round(millions)} tr`;
@@ -1236,7 +1667,6 @@ const VietnameseNumberFormatter = {
                 result = `${sign}${millions.toFixed(2)} tr`;
             }
         } else if (absAmount >= 1000) {
-            // Nghìn
             const thousands = absAmount / 1000;
             if (thousands >= 100) {
                 result = `${sign}${Math.round(thousands)} ng`;
@@ -1246,18 +1676,12 @@ const VietnameseNumberFormatter = {
                 result = `${sign}${thousands.toFixed(2)} ng`;
             }
         } else {
-            // Dưới 1000
             result = `${sign}${Math.round(absAmount)}`;
         }
 
         return showCurrency ? `${result} ₫` : result;
     },
 
-    /**
-     * Format số tiền cho tooltip (chi tiết hơn)
-     * @param {number} amount - Số tiền
-     * @returns {string} - Số đã format cho tooltip
-     */
     formatTooltip(amount) {
         if (!amount || isNaN(amount)) return '0 ₫';
         
@@ -1278,11 +1702,6 @@ const VietnameseNumberFormatter = {
         }
     },
 
-    /**
-     * Format cho legend (ngắn gọn)
-     * @param {number} amount - Số tiền
-     * @returns {string} - Số đã format cho legend
-     */
     formatLegend(amount) {
         if (!amount || isNaN(amount)) return '0₫';
         
@@ -1303,11 +1722,6 @@ const VietnameseNumberFormatter = {
         }
     },
 
-    /**
-     * Format cho trục Y của chart (siêu ngắn gọn)
-     * @param {number} amount - Số tiền
-     * @returns {string} - Số đã format cho trục Y
-     */
     formatAxis(amount) {
         if (!amount || isNaN(amount)) return '0';
         
@@ -1331,7 +1745,6 @@ const VietnameseNumberFormatter = {
 
 // Thêm vào Utils.CurrencyUtils
 if (typeof Utils !== 'undefined' && Utils.CurrencyUtils) {
-    // Thêm các method vào Utils.CurrencyUtils
     Utils.CurrencyUtils.formatVietnameseShort = VietnameseNumberFormatter.formatVietnameseShort;
     Utils.CurrencyUtils.formatTooltip = VietnameseNumberFormatter.formatTooltip;
     Utils.CurrencyUtils.formatLegend = VietnameseNumberFormatter.formatLegend;
@@ -1361,5 +1774,4 @@ if (!document.getElementById('update-animation-css')) {
     document.head.appendChild(styleElement);
 }
 
-
-console.log("✅ Utils.js with FIXED UpdateManager loaded.");
+console.log("✅ Utils.js with FIXED CSV, Export, and UpdateManager loaded.");
