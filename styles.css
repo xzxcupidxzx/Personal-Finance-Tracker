@@ -4415,3 +4415,19 @@ input, textarea, select {
   40% {transform: translateY(-8px);}
   60% {transform: translateY(-4px);}
 }
+
+.action-btn.export .btn-title,
+.action-btn.export .btn-icon {
+    color: var(--text-primary) !important; 
+}
+
+.action-btn.export .btn-subtitle {
+    color: var(--text-secondary) !important;
+}
+
+/* Đảm bảo icon container của nút export có màu nền đúng
+  (đây là style đã có, nhưng thêm lại để chắc chắn)
+*/
+.action-btn.export .btn-icon {
+    background: var(--income-bg-light) !important;
+}

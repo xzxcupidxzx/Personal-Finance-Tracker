@@ -375,7 +375,109 @@ class FinancialApp {
             return false;
         }
     }
-	
+	// Thêm hàm này vào trong class FinancialApp
+	async importFromCSV(parsedData) {
+		let successCount = 0;
+		let failedCount = 0;
+		const newCategories = new Set();
+		const newAccounts = new Set();
+
+		// Ánh xạ các tiêu đề có thể có trong CSV sang key chuẩn của ứng dụng
+		const headerMapping = {
+			'ngày giờ': 'datetime',
+			'ngày': 'datetime',
+			'date': 'datetime',
+			'loại': 'type',
+			'type': 'type',
+			'số tiền': 'amount',
+			'amount': 'amount',
+			'hạng mục': 'category',
+			'category': 'category',
+			'tài khoản': 'account',
+			'account': 'account',
+			'mô tả': 'description',
+			'description': 'description',
+			'note': 'description'
+		};
+
+		for (const row of parsedData) {
+			try {
+				const transaction = {};
+				// Chuẩn hóa key của row dựa trên mapping
+				for (const key in row) {
+					const standardizedKey = headerMapping[key.toLowerCase()];
+					if (standardizedKey) {
+						transaction[standardizedKey] = row[key];
+					}
+				}
+
+				// --- VALIDATION & TRANSFORMATION ---
+
+				// 1. Số tiền
+				if (!transaction.amount) throw new Error("Thiếu cột 'Số tiền'");
+				const amount = parseFloat(String(transaction.amount).replace(/[^0-9.-]/g, ''));
+				if (isNaN(amount) || amount <= 0) throw new Error("Số tiền không hợp lệ");
+				transaction.amount = amount;
+
+				// 2. Loại giao dịch (Thu/Chi)
+				if (!transaction.type) throw new Error("Thiếu cột 'Loại'");
+				const typeStr = String(transaction.type).toLowerCase().trim();
+				if (typeStr.includes('thu') || typeStr.includes('income')) {
+					transaction.type = 'Thu';
+				} else if (typeStr.includes('chi') || typeStr.includes('expense')) {
+					transaction.type = 'Chi';
+				} else {
+					throw new Error(`Loại giao dịch không hợp lệ: "${transaction.type}"`);
+				}
+				
+				// 3. Ngày giờ
+				if (!transaction.datetime) throw new Error("Thiếu cột 'Ngày giờ'");
+				const date = new Date(transaction.datetime);
+				if (isNaN(date.getTime())) throw new Error(`Ngày không hợp lệ: "${transaction.datetime}"`);
+				transaction.datetime = Utils.DateUtils.formatDateTimeLocal(date);
+				
+				// 4. Hạng mục & Tài khoản (tự động tạo nếu chưa có)
+				if (!transaction.category) transaction.category = "Chưa phân loại";
+				if (!transaction.account) throw new Error("Thiếu cột 'Tài khoản'");
+
+				// Chuẩn hóa tên
+				transaction.category = String(transaction.category).trim();
+				transaction.account = String(transaction.account).trim();
+
+				if (transaction.type === 'Thu' && !this.data.incomeCategories.some(c => c.value === transaction.category)) {
+					this.data.incomeCategories.push({ value: transaction.category, text: transaction.category });
+					newCategories.add(transaction.category);
+				} else if (transaction.type === 'Chi' && !this.data.expenseCategories.some(c => c.value === transaction.category)) {
+					this.data.expenseCategories.push({ value: transaction.category, text: transaction.category });
+					newCategories.add(transaction.category);
+				}
+				if (!this.data.accounts.some(a => a.value === transaction.account)) {
+					this.data.accounts.push({ value: transaction.account, text: transaction.account });
+					newAccounts.add(transaction.account);
+				}
+
+				// Tạo giao dịch hoàn chỉnh và thêm vào danh sách
+				this.addRegularTransaction(transaction); // Sử dụng hàm có sẵn để tạo ID và các trường khác
+				successCount++;
+
+			} catch (error) {
+				failedCount++;
+				console.warn(`Bỏ qua dòng CSV do lỗi: ${error.message}`, row);
+			}
+		}
+
+		if (newCategories.size > 0) {
+			Utils.UIUtils.showMessage(`Đã tự động thêm ${newCategories.size} hạng mục mới.`, 'info');
+		}
+		if (newAccounts.size > 0) {
+			Utils.UIUtils.showMessage(`Đã tự động thêm ${newAccounts.size} tài khoản mới.`, 'info');
+		}
+
+		// Lưu tất cả dữ liệu sau khi hoàn tất
+		this.saveData();
+
+		return { success: successCount, failed: failedCount };
+	}
     validateDataIntegrity() { // Ví dụ hàm kiểm tra sơ bộ
         let issuesFound = 0;
         const initialTxCount = this.data.transactions.length;

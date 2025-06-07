@@ -606,34 +606,41 @@
                         Quản Lý Dữ Liệu
                     </h3>
 
-                    <div class="data-actions">
-                        <button id="export-json" class="action-btn export">
-                            <span class="btn-icon">📥</span>
-                            <div class="btn-content">
-                                <span class="btn-title">Xuất JSON</span>
-                                <span class="btn-subtitle">Backup toàn bộ dữ liệu</span>
-                            </div>
-                        </button>
+					<div class="data-actions">
+						<button id="export-json" class="action-btn export">
+							<span class="btn-icon">📥</span>
+							<div class="btn-content">
+								<span class="btn-title">Xuất JSON</span>
+								<span class="btn-subtitle">Backup toàn bộ dữ liệu</span>
+							</div>
+						</button>
 
-                        <button id="export-csv" class="action-btn export">
-                            <span class="btn-icon">📊</span>
-                            <div class="btn-content">
-                                <span class="btn-title">Xuất CSV</span>
-                                <span class="btn-subtitle">Dữ liệu giao dịch</span>
-                            </div>
-                        </button>
+						<button id="export-csv" class="action-btn export">
+							<span class="btn-icon">📄</span>
+							<div class="btn-content">
+								<span class="btn-title">Xuất CSV</span>
+								<span class="btn-subtitle">Dữ liệu giao dịch</span>
+							</div>
+						</button>
 
-                        <button id="import-data" class="action-btn import">
-                            <span class="btn-icon">📤</span>
-                            <div class="btn-content">
-                                <span class="btn-title">Nhập Dữ Liệu</span>
-                                <span class="btn-subtitle">Khôi phục từ file JSON</span>
-                            </div>
-                        </button>
-
-                        <input type="file" id="import-file" accept=".json" style="display: none;">
-                    </div>
-                </div>
+						<button id="import-data" class="action-btn import">
+							<span class="btn-icon">📤</span>
+							<div class="btn-content">
+								<span class="btn-title">Nhập Dữ Liệu (JSON)</span>
+								<span class="btn-subtitle">Khôi phục từ file JSON backup</span>
+							</div>
+						</button>
+						
+						<button id="import-csv-btn" class="action-btn import">
+							<span class="btn-icon">📄</span>
+							<div class="btn-content">
+								<span class="btn-title">Nhập từ CSV</span>
+								<span class="btn-subtitle">Thêm hàng loạt giao dịch từ file CSV</span>
+							</div>
+						</button>
+						<input type="file" id="import-file" accept=".json" style="display: none;">
+						<input type="file" id="import-csv-file" accept=".csv,text/csv" style="display: none;">
+					</div>
 
                 <div class="settings-section">
                     <h3 class="settings-section-title">

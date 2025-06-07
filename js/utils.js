@@ -60,6 +60,58 @@ const Utils = {
             return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
         }
     },
+	CSVUtils: {
+		/**
+		 * Phân tích nội dung text của file CSV thành một mảng các đối tượng.
+		 * @param {string} csvText - Nội dung file CSV.
+		 * @returns {Array<Object>} Mảng các giao dịch đã được phân tích.
+		 */
+		parse(csvText) {
+			if (!csvText || typeof csvText !== 'string') {
+				return [];
+			}
+
+			// Tách các dòng, bỏ qua các dòng trống
+			const lines = csvText.trim().split(/\r\n|\n/).filter(line => line.trim() !== '');
+			if (lines.length < 2) {
+				throw new Error("File CSV cần ít nhất một dòng tiêu đề và một dòng dữ liệu.");
+			}
+
+			const headerLine = lines.shift();
+			// Xử lý dấu phân cách có thể là dấu phẩy hoặc chấm phẩy
+			const delimiter = headerLine.includes(';') ? ';' : ',';
+			const headers = headerLine.split(delimiter).map(h => h.trim().toLowerCase());
+			
+			const results = [];
+
+			lines.forEach((line, index) => {
+				// Biểu thức chính quy để xử lý các trường có dấu ngoặc kép chứa dấu phân cách
+				const regex = new RegExp(`(\\"[^\\"]*\\"|[^\\${delimiter}\\"]+)(\\${delimiter}|$)`, 'g');
+				const values = [];
+				let match;
+				while (match = regex.exec(line)) {
+					let value = match[1];
+					if (value.startsWith('"') && value.endsWith('"')) {
+						value = value.substring(1, value.length - 1).replace(/""/g, '"');
+					}
+					values.push(value.trim());
+				}
+
+				if (values.length !== headers.length) {
+					console.warn(`Dòng ${index + 2} có số cột không khớp với tiêu đề. Bỏ qua dòng này.`);
+					return;
+				}
+
+				const rowObject = {};
+				headers.forEach((header, i) => {
+					rowObject[header] = values[i];
+				});
+				results.push(rowObject);
+			});
+
+			return results;
+		}
+	},
     // ========== CURRENCY ==========
     CurrencyUtils: {
         formatCurrency(amount, currency = 'VND') {
@@ -829,34 +881,49 @@ Utils.UpdateManager = {
     },
 
     // ✅ Áp dụng cập nhật
-    async applyUpdate() {
-        try {
-            console.log('🔄 UpdateManager: Applying update...');
-            this.showLoadingMessage('Đang cập nhật ứng dụng...');
-            
-            if (this.swRegistration && this.swRegistration.waiting) {
-                // Gửi message để skip waiting
-                this.swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
-                console.log('📤 UpdateManager: Sent SKIP_WAITING message');
-                // Sau khi SKIP_WAITING, controllerchange event sẽ được kích hoạt và reload
-            } else {
-                // Force refresh nếu không có waiting worker (có thể do lỗi nào đó)
-                console.log('🔄 UpdateManager: No waiting worker, or issue with it. Forcing refresh...');
-                await this.forceRefresh(); // Sẽ tự reload
-            }
-            
-            this.dismissUpdate(); // Ẩn thông báo ngay lập tức
-            
-        } catch (error) {
-            console.error('❌ UpdateManager: Error applying update:', error);
-            Utils.UIUtils.showMessage('Có lỗi khi cập nhật. Đang thử làm mới mạnh...', 'warning');
-            
-            // Fallback: force refresh
-            setTimeout(() => {
-                this.forceRefresh();
-            }, 1000);
-        }
-    },
+	async applyUpdate() {
+		console.log('🔄 UpdateManager: Applying update with iOS-robust method...');
+
+		if (!this.isUpdateAvailable || !this.swRegistration || !this.swRegistration.waiting) {
+			console.warn('applyUpdate called but no waiting worker found. Forcing refresh as a fallback.');
+			await this.forceRefresh();
+			return;
+		}
+
+		// Hiển thị màn hình loading không thể tắt để ngăn người dùng tương tác
+		this.showLoadingMessage('Đang hoàn tất cập nhật... Vui lòng không tắt ứng dụng!');
+
+		const waitingWorker = this.swRegistration.waiting;
+
+		// Gửi message để worker mới bỏ qua trạng thái waiting
+		waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+
+		// Bắt đầu "chờ" một cách chủ động cho đến khi worker mới nắm quyền kiểm soát
+		// thay vì chỉ dựa vào sự kiện 'controllerchange'
+		let refreshInterval = setInterval(async () => {
+			// Nếu Service Worker đang chờ biến mất, nghĩa là nó đã bị kích hoạt hoặc bị hủy bỏ.
+			// Chúng ta sẽ kiểm tra xem controller mới đã đúng là worker chúng ta đang chờ chưa.
+			if (!this.swRegistration.waiting) {
+				// Kiểm tra xem controller hiện tại có phải là worker mới không
+				if (this.swRegistration.active === waitingWorker || navigator.serviceWorker.controller === waitingWorker) {
+					clearInterval(refreshInterval);
+					console.log('✅ UpdateManager: New worker is now active. Reloading page!');
+					// Sử dụng hard reload để đảm bảo tải lại toàn bộ tài nguyên
+					window.location.reload(true);
+				}
+			}
+		}, 200); // Kiểm tra mỗi 200ms
+
+		// Thêm một cơ chế an toàn: nếu sau 10 giây mà vẫn chưa cập nhật được, thông báo cho người dùng
+		setTimeout(() => {
+			clearInterval(refreshInterval);
+			console.error('❌ UpdateManager: Update timed out after 10 seconds.');
+			Utils.UIUtils.showMessage('Cập nhật thất bại. Vui lòng đóng hoàn toàn và mở lại ứng dụng.', 'error', 10000);
+			// Có thể ẩn màn hình loading ở đây nếu muốn
+			const loadingDiv = document.getElementById('update-loading');
+			if (loadingDiv) loadingDiv.remove();
+		}, 10000);
+	},
 
     // ✅ Ẩn thông báo cập nhật
     dismissUpdate() {

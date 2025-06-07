@@ -179,7 +179,9 @@ class SettingsModule {
             clearCacheBtn: '#clear-app-cache',
             currentVersionEl: '#current-app-version',
             updateStatusEl: '#update-status',
-            lastUpdateCheckEl: '#last-update-check'
+            lastUpdateCheckEl: '#last-update-check',
+			importCsvBtn: '#import-csv-btn', // <-- THÊM DÒNG NÀY
+			importCsvFileInput: '#import-csv-file', // <-- THÊM DÒNG NÀY };
         };
 
         this.elements = {};
@@ -356,7 +358,17 @@ class SettingsModule {
                 element: this.elements.clearCacheBtn,
                 event: 'click',
                 handler: () => this.clearAppCache()
-            }
+            },
+			{
+				element: this.elements.importCsvBtn, // <-- THÊM MỚI
+				event: 'click',
+				handler: () => this.triggerFileImport('csv')
+			},
+			{
+				element: this.elements.importCsvFileInput, // <-- THÊM MỚI
+				event: 'change',
+				handler: (e) => this.handleImportFile(e, 'csv')
+			},
         ];
 
         let listenersAdded = 0;
@@ -644,81 +656,75 @@ class SettingsModule {
     /**
      * Trigger file import with validation
      */
-    triggerFileImport() {
-        if (this.fileProcessing.isProcessing) {
-            Utils.UIUtils.showMessage('Đang xử lý file khác, vui lòng đợi', 'warning');
-            return;
-        }
+	triggerFileImport(type = 'json') {
+		if (this.fileProcessing.isProcessing) {
+			Utils.UIUtils.showMessage('Đang xử lý file khác, vui lòng đợi', 'warning');
+			return;
+		}
 
-        if (!this.elements.importFileInput) {
-            Utils.UIUtils.showMessage('Không tìm thấy input file', 'error');
-            return;
-        }
+		const fileInput = type === 'csv' ? this.elements.importCsvFileInput : this.elements.importFileInput;
 
-        this.elements.importFileInput.click();
-    }
+		if (!fileInput) {
+			Utils.UIUtils.showMessage('Không tìm thấy element input file', 'error');
+			return;
+		}
+		fileInput.click();
+	}
 
     /**
      * Enhanced file import handling
      */
-    async handleImportFile(event) {
-        const file = event.target.files[0];
-        event.target.value = ''; // Clear input
-        
-        if (!file) return;
+	async handleImportFile(event, type = 'json') {
+		const file = event.target.files[0];
+		event.target.value = ''; // Xóa input để có thể chọn lại cùng file
 
-        if (this.fileProcessing.isProcessing) {
-            Utils.UIUtils.showMessage('Đang xử lý file khác, vui lòng đợi', 'warning');
-            return;
-        }
+		if (!file) return;
 
-        try {
-            this.startOperation('import_data');
-            
-            // Enhanced file validation
-            await this.validateImportFile(file);
-            
-            // Get user confirmation
-            const confirmed = confirm(
-                `Bạn có chắc chắn muốn nhập dữ liệu từ file "${file.name}"?\n\n` +
-                `Kích thước: ${(file.size / 1024).toFixed(1)} KB\n` +
-                `Hành động này sẽ ghi đè toàn bộ dữ liệu hiện tại.\n\n` +
-                `Bạn có muốn tiếp tục?`
-            );
-            
-            if (!confirmed) {
-                return;
-            }
+		if (this.fileProcessing.isProcessing) {
+			Utils.UIUtils.showMessage('Đang xử lý file khác, vui lòng đợi', 'warning');
+			return;
+		}
 
-            // Read and validate file content
-            const importedData = await this.readAndValidateFile(file);
-            
-            // Perform import
-            const success = await this.app.importData(importedData); // Dòng này gọi vào app.js
-            
-            if (success) {
-                await this.refresh(); // Dòng này refresh SettingsModule
-                Utils.UIUtils.showMessage('Đã nhập dữ liệu thành công', 'success');
-                this.emitEvent('data:imported', { 
-                    filename: file.name, 
-                    size: file.size,
-                    transactionCount: importedData.transactions?.length || 0
-                });
-                // <<--- THÊM LỆNH REFRESH CÁC MODULE KHÁC Ở ĐÂY ---<<
-            } else {
-                throw new Error('Import operation failed');
-            }
-        } catch (error) {
-            console.error('Import error:', error);
-            Utils.UIUtils.showMessage(`Lỗi nhập dữ liệu: ${error.message}`, 'error');
-            this.emitEvent('data:import_failed', { 
-                filename: file?.name, 
-                error: error.message 
-            });
-        } finally {
-            this.endOperation();
-        }
-    }
+		try {
+			this.startOperation(`import_${type}`);
+
+			if (type === 'json') {
+				await this.validateImportFile(file); // Validation cho JSON
+				const confirmed = confirm(`Bạn có chắc muốn nhập dữ liệu từ file JSON "${file.name}"? Hành động này sẽ GHI ĐÈ toàn bộ dữ liệu hiện tại.`);
+				if (!confirmed) return;
+
+				const importedData = await this.readAndValidateFile(file);
+				const success = await this.app.importData(importedData);
+				if (success) {
+					await this.refresh();
+					Utils.UIUtils.showMessage('Đã nhập dữ liệu từ JSON thành công!', 'success');
+				}
+			} else if (type === 'csv') {
+				if (!file.name.toLowerCase().endsWith('.csv')) {
+					throw new Error("File phải có định dạng .csv");
+				}
+				const content = await file.text();
+				const parsedData = Utils.CSVUtils.parse(content);
+
+				if (parsedData.length === 0) {
+					throw new Error("Không tìm thấy dữ liệu giao dịch hợp lệ trong file CSV.");
+				}
+
+				const confirmed = confirm(`Tìm thấy <span class="math-inline">\{parsedData\.length\} giao dịch trong file "</span>{file.name}".\n\nBạn có muốn THÊM các giao dịch này vào dữ liệu hiện tại không?`);
+				if (!confirmed) return;
+
+				// Gọi hàm mới trong app.js để xử lý
+				const result = await this.app.importFromCSV(parsedData);
+				Utils.UIUtils.showMessage(`Hoàn tất! Đã thêm ${result.success} giao dịch, bỏ qua ${result.failed} giao dịch.`, 'success');
+				this.app.refreshAllModules();
+			}
+		} catch (error) {
+			console.error(`Lỗi nhập file ${type.toUpperCase()}:`, error);
+			Utils.UIUtils.showMessage(`Lỗi nhập file: ${error.message}`, 'error');
+		} finally {
+			this.endOperation();
+		}
+	}
 
     /**
      * Enhanced file validation
