@@ -66,7 +66,23 @@ class FinancialApp {
         Utils.ThemeUtils.initializeTheme();
         this.initializeNavigation();
         this.initializeGlobalEventListeners();
-        this.initializeVisibilityToggle(); // Khởi tạo nút con mắt
+        this.initializeVisibilityToggle();
+        
+        // ==========================================================
+        // ===== THÊM ĐOẠN MÃ NÀY VÀO ĐÂY =====
+        // ==========================================================
+        try {
+            if (Utils.UpdateManager) {
+                // Truyền phiên bản client hiện tại vào UpdateManager
+                const clientVersion = this.data.settings.clientVersion || APP_VERSION;
+                Utils.UpdateManager.init(clientVersion); 
+                // Gán vào app instance để các module khác có thể truy cập nếu cần
+                this.updateManager = Utils.UpdateManager; 
+            }
+        } catch(e) {
+            console.error('❌ Failed to initialize UpdateManager:', e);
+        }
+        // ==========================================================
         
         await this.initializeModules();
 

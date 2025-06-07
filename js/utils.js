@@ -503,7 +503,8 @@ window.addEventListener('appinstalled', () => {
  * ✅ FIXED UPDATE MANAGER - Sửa lỗi kiểm tra cập nhật
  */
 Utils.UpdateManager = {
-
+    // 🚨 Lấy version từ global APP_VERSION (từ version.js)
+    // GitHub Action sẽ cập nhật giá trị chuỗi '1.0.3' này
     swRegistration: null,
     isUpdateAvailable: false,
     isRefreshing: false,
@@ -541,45 +542,50 @@ Utils.UpdateManager = {
     },
 
     // ✅ Đăng ký Service Worker với error handling tốt hơn
-    async registerServiceWorker() {
-        try {
-            console.log('📋 UpdateManager: Registering Service Worker...');
-            
-            this.swRegistration = await navigator.serviceWorker.register('/sw.js', {
-                updateViaCache: 'none' 
-            });
-            
-            console.log('✅ UpdateManager: Service Worker registered:', this.swRegistration.scope);
-            
-            // Lắng nghe SW state changes
-            this.swRegistration.addEventListener('updatefound', () => { // Dòng 418 trong ảnh
-                console.log('🆕 UpdateManager: Update found on registration object!');
-                const newWorker = this.swRegistration.installing;
-                if (newWorker) {
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            console.log('🎯 UpdateManager: New SW installed and ready (via updatefound). Controller exists.');
-                            this.isUpdateAvailable = true;
-                            this.showUpdateNotification();
-                        } else if (newWorker.state === 'installed' && !navigator.serviceWorker.controller) {
-                             console.log('🎯 UpdateManager: New SW installed for the first time or no controller. Will activate on next load or claim.');
-                        }
-                    });
-                }
-            });
-            
-            // Kiểm tra version từ SW (nếu đã active)
-            if (this.swRegistration.active) { // Dòng 430 trong ảnh
-                 await this.getVersionFromSW();
-            }
-            
-            // Kiểm tra cập nhật ngay sau khi đăng ký
-            await this.checkForUpdates(); // Sẽ gọi getVersionFromSW() nếu cần
-            
-        } catch (error) { // Dòng 437 trong ảnh
-            console.error('❌ UpdateManager: Service worker registration failed:', error);
-        }
-    },
+
+	async registerServiceWorker() {
+		try {
+			console.log('📋 UpdateManager: Bắt đầu đăng ký Service Worker...');
+
+			// Bước 1: Đăng ký Service Worker với tùy chọn `updateViaCache: 'none'`.
+			// Tùy chọn này rất quan trọng: nó yêu cầu trình duyệt luôn kiểm tra file `sw.js`
+			// trên server mỗi khi trang được tải, thay vì sử dụng phiên bản từ cache HTTP.
+			// Điều này khắc phục vấn đề trình duyệt không phát hiện được bản cập nhật.
+			this.swRegistration = await navigator.serviceWorker.register('/sw.js', {
+				updateViaCache: 'none'
+			});
+
+			console.log('✅ UpdateManager: Service Worker đã được đăng ký thành công. Scope:', this.swRegistration.scope);
+
+			// Bước 2: Lắng nghe sự kiện 'updatefound'.
+			// Sự kiện này được kích hoạt khi trình duyệt tìm thấy một phiên bản sw.js mới.
+			this.swRegistration.addEventListener('updatefound', () => {
+				console.log('🆕 UpdateManager: Đã tìm thấy một bản cập nhật! Service Worker mới đang được cài đặt.');
+				const newWorker = this.swRegistration.installing;
+
+				if (newWorker) {
+					// Theo dõi trạng thái của Service Worker mới.
+					newWorker.addEventListener('statechange', () => {
+						console.log(`[SW Mới] Trạng thái thay đổi: ${newWorker.state}`);
+						// Khi SW mới đã cài đặt xong và SW cũ vẫn đang kiểm soát trang...
+						if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+							console.log('🎯 UpdateManager: Service Worker mới đã sẵn sàng. Hiển thị thông báo cập nhật.');
+							this.isUpdateAvailable = true;
+							this.showUpdateNotification(); // Hiển thị thông báo cho người dùng.
+						}
+					});
+				}
+			});
+
+			// Bước 3: Kiểm tra ngay sau khi đăng ký thành công.
+			// Điều này giúp phát hiện các bản cập nhật đang chờ ngay khi người dùng truy cập.
+			await this.checkForUpdates();
+
+		} catch (error) {
+			// Ghi lại lỗi một cách chi tiết nếu quá trình đăng ký thất bại.
+			console.error('❌ UpdateManager: Không thể đăng ký Service Worker. Chức năng offline và cập nhật tự động sẽ không hoạt động.', error);
+		}
+	},
 
     // ✅ Lấy version từ Service Worker
     async getVersionFromSW() {

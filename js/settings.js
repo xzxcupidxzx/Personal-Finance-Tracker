@@ -1333,26 +1333,18 @@ class SettingsModule {
             this.updateUpdateStatus('Đang kiểm tra...');
             this.setButtonLoading(this.elements.checkUpdatesBtn, true);
 
+            // Chỉ cần gọi hàm của UpdateManager
+            // Nó sẽ tự động hiển thị thông báo nếu có cập nhật
             if (this.app && this.app.updateManager) {
-                const updateManager = this.app.updateManager;
-                await updateManager.checkForUpdates();
-
-                const appVersion = typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'N/A';
-                const swVersionDisplay = updateManager.swVersion || 'N/A';
-
-                if (updateManager.isUpdateAvailable) {
-                    this.updateUpdateStatus(`Có SW mới! (App v${appVersion}, SW mới v${swVersionDisplay})`);
-                } else {
-                    this.updateUpdateStatus(`Đã cập nhật (App v${appVersion}, SW v${swVersionDisplay})`);
+                const hasUpdate = await this.app.updateManager.checkForUpdates();
+                
+                if (!hasUpdate) {
                     Utils.UIUtils.showMessage('✅ Bạn đang sử dụng phiên bản mới nhất.', 'success');
                 }
-                
-                this.state.lastUpdateCheck = new Date();
-                this.updateLastCheckTime();
-                
+                // Cập nhật lại thông tin hiển thị trên UI
+                this.updateVersionInfo();
             } else {
-                this.updateUpdateStatus('Service Worker không có');
-                Utils.UIUtils.showMessage('Service Worker chưa sẵn sàng để kiểm tra cập nhật.', 'warning');
+                throw new Error('UpdateManager not available');
             }
             
         } catch (error) {
