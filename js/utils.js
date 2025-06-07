@@ -699,31 +699,40 @@ Utils.UpdateManager = {
             console.log('⚠️ UpdateManager: No SW registration for update check');
             return false;
         }
-        
+    
         try {
             console.log('🔍 UpdateManager: Checking for updates...');
             this.lastCheck = new Date();
-            
-            // Force update SW registration (trình duyệt sẽ check sw.js trên server)
+    
+            // Buộc trình duyệt kiểm tra file sw.js trên server
             await this.swRegistration.update();
-            
-            // Kiểm tra nếu có waiting worker (SW mới đã tải và cài đặt, đang chờ active)
+    
+            // Kiểm tra xem có worker mới đang chờ kích hoạt không
             if (this.swRegistration.waiting) {
-                console.log('🆕 UpdateManager: Update available (waiting worker found). Triggering notification.');
+                console.log('🆕 UpdateManager: Update available (waiting worker found).');
                 this.isUpdateAvailable = true;
-                // Lấy version từ waiting worker nếu có thể, hoặc giữ nguyên swVersion hiện tại
+                // Cố gắng lấy version từ worker đang chờ
                 const waitingWorkerVersionInfo = await this.getVersionFromSpecificWorker(this.swRegistration.waiting);
-                if(waitingWorkerVersionInfo && waitingWorkerVersionInfo.version) {
+                if (waitingWorkerVersionInfo && waitingWorkerVersionInfo.version) {
                     this.swVersion = waitingWorkerVersionInfo.version;
                 }
                 this.showUpdateNotification();
                 return true;
             }
-            
-            // Nếu không có waiting worker, kiểm tra version từ active worker
-            await this.getVersionFromSW(); // Cập nhật this.swVersion
-            
-            // So sánh version
+    
+            // Nếu không, lấy version từ worker đang hoạt động
+            await this.getVersionFromSW(); // Thao tác này sẽ cập nhật this.swVersion
+    
+            // === THAY ĐỔI QUAN TRỌNG NHẤT NẰM Ở ĐÂY ===
+            // Nếu SW trả về 'fallback-version', coi như có lỗi và không so sánh.
+            if (this.swVersion === 'fallback-version') {
+                console.error('❌ UpdateManager: Service Worker is using a fallback version. This indicates an error loading `version.js` inside the worker. Update check is aborted to prevent false notifications.');
+                this.isUpdateAvailable = false; // Đảm bảo không hiển thị thông báo sai
+                this.dismissUpdate(); // Ẩn thông báo nếu nó đang hiển thị
+                return false; // Dừng kiểm tra tại đây
+            }
+            // ==========================================
+    
             console.log(`ℹ️ UpdateManager: Comparing versions - Client: ${this.currentVersion}, SW: ${this.swVersion}`);
             if (this.swVersion && this.swVersion !== this.currentVersion) {
                 console.log(`🆕 UpdateManager: Version mismatch! Client: ${this.currentVersion}, SW: ${this.swVersion}. Triggering notification.`);
@@ -731,12 +740,12 @@ Utils.UpdateManager = {
                 this.showUpdateNotification();
                 return true;
             }
-            
+    
             console.log('✅ UpdateManager: No updates available after checks.');
-            this.isUpdateAvailable = false; // Đảm bảo reset nếu không có update
-            this.dismissUpdate(); // Ẩn thông báo nếu không còn update
+            this.isUpdateAvailable = false;
+            this.dismissUpdate();
             return false;
-            
+    
         } catch (error) {
             console.error('❌ UpdateManager: Update check failed:', error);
             return false;
