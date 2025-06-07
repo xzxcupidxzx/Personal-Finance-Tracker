@@ -2,7 +2,7 @@
   "name": "Quản Lý Tài Chính",
   "short_name": "Tài Chính",
   "description": "Ứng dụng quản lý tài chính cá nhân",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
