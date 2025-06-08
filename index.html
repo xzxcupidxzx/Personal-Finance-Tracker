@@ -65,12 +65,12 @@
                 <span class="header-icon">💰</span>
                 Quản Lý Tài Chính
             </h1>
+			<button id="toggle-summary-visibility" class="eye-toggle-btn header-eye" title="Ẩn/hiện số dư">
+				</button>
             <div class="header-summary">
 				<div class="summary-card income">
 					<div class="summary-label-container">
 						<span class="summary-label">Thu nhập tháng</span>
-						<button id="toggle-summary-visibility" class="eye-toggle-btn header-eye" title="Ẩn/hiện số dư">
-							</button>
 					</div>
 					<span class="summary-value" id="header-income">0 ₫</span>
 				</div>
@@ -779,34 +779,36 @@
 				<button id="close-edit-item-modal" class="modal-close">&times;</button>
 			</div>
 			<div class="modal-body">
-				<div class="form-row">
-					<label for="edit-item-name" class="form-label">Tên mới</label>
-					<input type="text" id="edit-item-name" class="form-input" placeholder="Nhập tên mới">
+				<div class="form-row-wrapper">
+
+					<div class="form-row">
+						<label for="edit-item-name" class="form-label">Tên mới</label>
+						<input type="text" id="edit-item-name" class="form-input" placeholder="Nhập tên mới">
+					</div>
+
+					<div class="form-row">
+						<label class="form-label">Icon</label>
+						<div class="current-icon-preview-container">
+							<span id="current-item-icon-display" class="category-icon"></span>
+							<span id="current-item-icon-label" class="current-icon-label"></span>
+						</div>
+					</div>
+
 				</div>
+				<hr class="form-divider">
 
-				<div class="form-row">
-					<label class="form-label">Icon</label>
-					
-					<div class="current-icon-preview-container">
-						<span id="current-item-icon-display" class="category-icon"></span>
-						<span id="current-item-icon-label" class="current-icon-label">Icon đang chọn</span>
+				<div class="picker-controls">
+					<div class="search-container">
+						<i class="fa-solid fa-magnifying-glass search-icon"></i>
+						<input type="text" id="icon-picker-search" class="icon-search-input" placeholder="Tìm kiếm icon...">
 					</div>
-
-					<hr class="form-divider">
-
-					<div class="picker-controls">
-						<div class="search-container">
-							<i class="fa-solid fa-magnifying-glass search-icon"></i>
-							<input type="text" id="icon-picker-search" class="icon-search-input" placeholder="Tìm kiếm icon...">
-						</div>
-						<label for="icon-upload-input" class="action-btn-icon-only" title="Tải lên icon của bạn">
-							<i class="fa-solid fa-upload"></i>
-						</label>
-						<input id="icon-upload-input" type="file" accept="image/*" style="display: none;" />
-					</div>
-					
-					<div id="icon-picker-grid" class="icon-picker-grid-scrollable">
-						</div>
+					<label for="icon-upload-input" class="action-btn-icon-only" title="Tải lên icon của bạn">
+						<i class="fa-solid fa-upload"></i>
+					</label>
+					<input id="icon-upload-input" type="file" accept="image/*" style="display: none;" />
+				</div>
+				
+				<div id="icon-picker-grid" class="icon-picker-grid-scrollable">
 				</div>
 			</div>
 			<div class="modal-footer">
