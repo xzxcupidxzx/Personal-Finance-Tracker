@@ -1692,12 +1692,12 @@ class FinancialApp {
                         return !isNaN(d.getTime()) && d >= start && d <= end; 
                     });
                 }
-            } else if (filters.period === 'custom' && filters.date) {
-                const targetDateStr = filters.date.split('T')[0];
-                filtered = filtered.filter(tx => { 
-                    if (!tx || !tx.datetime) return false; 
-                    return new Date(tx.datetime).toISOString().split('T')[0] === targetDateStr; 
-                });
+			} else if (filters.period === 'custom' && filters.startDate && filters.endDate) { // Thay đổi điều kiện để khớp với logic mới
+				filtered = filtered.filter(tx => { 
+					if (!tx || !tx.datetime) return false; 
+					const d = new Date(tx.datetime); 
+					return !isNaN(d.getTime()) && d >= filters.startDate && d <= filters.endDate; 
+				});
             } else if (filters.period === 'custom_range' && filters.startDate && filters.endDate) {
                 filtered = filtered.filter(tx => { 
                     if (!tx || !tx.datetime) return false; 

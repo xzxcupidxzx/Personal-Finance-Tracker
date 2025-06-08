@@ -315,18 +315,26 @@ body {
 }
 
 .filter-apply-button {
+    padding: 8px 16px;
     background: var(--primary-color);
     color: white;
     border: none;
-    padding: var(--spacing-md);
     border-radius: 8px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.2s ease;
-    text-align: center;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0; /* Button không co lại */
 }
 .filter-apply-button:hover {
-    background: var(--primary-dark);
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.filter-apply-button:active {
+    transform: translateY(0);
 }
 
 #install-pwa-btn {
@@ -1028,16 +1036,23 @@ input, textarea, select {
 }
 .filter-controls {
     display: flex;
-    gap: var(--spacing-sm);
-    align-items: center;
+    flex-direction: column; /* Xếp chồng các phần tử theo chiều dọc trên mobile */
+    align-items: stretch;   /* Kéo dãn các phần tử con theo chiều rộng */
+    gap: var(--spacing-md); /* Khoảng cách giữa các phần tử */
+    width: 100%;
 }
-.filter-select, .filter-date {
-    padding: var(--spacing-sm) var(--spacing-md);
+.filter-controls .filter-select {
+    max-width: 300px; /* Giới hạn chiều rộng của dropdown để không quá lớn */
+    width: 100%;
+}
+.filter-date, .filter-select {
+    flex-grow: 1; /* Ô nhập liệu sẽ chiếm hết phần không gian còn lại */
+    padding: 0.75rem;
+    font-size: 16px;
+    background: var(--bg-primary);
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    font-size: 0.875rem;
+    min-width: 0;
 }
 .transaction-list {
     display: flex;
@@ -1770,17 +1785,33 @@ input, textarea, select {
 }
 
 .custom-date-picker-container {
+    display: flex !important;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+    padding: 8px 12px;
     background: var(--bg-tertiary);
-    border-radius: var(--border-radius);
-    padding: var(--spacing-md);
-    margin-top: var(--spacing-md);
-    margin-bottom: var(--spacing-lg);
+    border-radius: 12px;
     border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-    animation: fadeIn 0.3s ease-in-out;
+    flex-wrap: nowrap; /* Giữ trên 1 dòng */
+    animation: slideDown 0.2s ease-out;
+}
+.custom-date-picker-container {
+    display: flex; 
+    flex-direction: column; 
+    align-items: stretch;
+    gap: var(--spacing-sm);
+    width: 100%;
+    background: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+}
+.custom-date-picker-container label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
 }
 .custom-date-picker-container .date-input-group {
     display: flex;
@@ -1788,16 +1819,20 @@ input, textarea, select {
     gap: var(--spacing-sm);
 }
 .custom-date-picker-container .date-input-group label {
-    font-size: 0.9rem;
-    font-weight: 500;
+    flex-basis: 40px; /* Đặt chiều rộng cơ bản cho nhãn "Từ:", "Đến:" */
+    flex-shrink: 0;
     color: var(--text-secondary);
-    min-width: 80px;
 }
+
 .custom-date-picker-container .filter-date {
-    flex-grow: 1;
-    font-size: 16px;
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-radius: 8px;
+    flex-grow: 1; 
+    padding: 0.6rem;
+    font-size: 15px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    min-width: 0;
+}border-radius: 6px;
 }
 .custom-date-picker > div {
     display: flex;
@@ -1820,7 +1855,58 @@ input, textarea, select {
     padding: var(--spacing-md);
     font-size: 1rem;
 }
+.custom-date-picker-container .filter-apply-button {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 6px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+}
+.date-input-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1; /* Chia đều không gian */
+    min-width: 0; /* Cho phép co lại khi cần */
+}
 
+.date-input-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    flex-shrink: 0; /* Label không co lại */
+}
+.filter-date {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 14px;
+    min-width: 120px;
+    transition: all 0.2s ease;
+    -webkit-appearance: none; /* Loại bỏ style mặc định iOS */
+    appearance: none;
+}
+.filter-date:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+.filter-date::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.8;
+    cursor: pointer;
+}
+.filter-date::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
 /* --- 4.4. TRANSACTION CALENDAR --- */
 .transaction-calendar-section {
     margin-bottom: var(--spacing-2xl);
@@ -2861,6 +2947,9 @@ hr {
         max-width: 450px;
         max-height: 50vh;
     }
+    .filter-controls .filter-select {
+        max-width: 300px; /* Tăng nhẹ độ rộng tối đa của dropdown */
+    }
 }
 
 
@@ -2975,7 +3064,7 @@ hr {
         flex: 1;
     }
     .filter-apply-button {
-        flex-basis: 150px;
+        padding: 0.75rem 1.5rem; /* Điều chỉnh padding cho nút trên màn hình lớn */
     }
 }
 
@@ -3167,33 +3256,67 @@ hr {
         padding: var(--spacing-md) var(--spacing-md);
     }
 
+    /* === START: UPDATED FILTER FOR COMPACT HORIZONTAL LAYOUT === */
+
     .filter-controls {
-        flex-direction: column;
+        display: flex;
+        flex-direction: column; /* Giữ dropdown và hàng ngày/nút xếp dọc */
         align-items: stretch;
         gap: var(--spacing-md);
     }
-    .date-input-group {
+
+    .filter-controls .filter-select {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    /* Container chính cho hàng ngang */
+    #custom-date-picker-container {
+        flex-direction: row; /* Giữ layout ngang */
+        flex-wrap: nowrap; /* Không xuống dòng */
+        gap: 6px; /* Giảm khoảng cách */
+        padding: 6px 8px; /* Giảm padding */
+    }
+
+    /* Nhóm label và input ngày tháng */
+    .custom-date-picker-container .date-input-group {
+        flex: 1; /* Cho phép 2 ô ngày co giãn và chia sẻ không gian */
         display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0; /* Cần thiết để flexbox co lại đúng cách */
+    }
+    .date-input-group {
+        flex: 1 1 auto;
+        gap: 4px; /* Giảm gap */
     }
     .date-input-group label {
-        white-space: nowrap;
-        font-size: 0.8rem;
-        color: var(--text-secondary);
-        margin-bottom: 0;
+        font-size: 12px; /* Giảm font size label */
+        min-width: 20px; /* Đủ cho "Từ:" và "Đến:" */
     }
+    /* Làm cho các ô input nhỏ lại */
     .filter-date {
-        flex-grow: 1;
-        min-width: 0;
-        padding: 0.6rem;
-        font-size: 15px;
+        min-width: 85px; /* Giảm min-width */
+        padding: 6px 8px; /* Giảm padding */
+        font-size: 13px; /* Font size vừa phải */
+        -webkit-appearance: none; /* Remove default iOS styling */
     }
-    .filter-controls .filter-apply-button {
-        width: 100%;
-        padding: var(--spacing-md);
-        font-size: 0.9rem;
+    
+    .date-input-group label {
+        font-size: 0.8rem;
+        white-space: nowrap;
+        color: var(--text-secondary);
     }
+
+    /* Định dạng nút Áp dụng thành icon nhỏ gọn */
+    .filter-apply-button {
+        padding: 6px 12px; /* Giảm padding */
+        font-size: 13px; /* Giảm font size */
+        flex-shrink: 0;
+    }
+
+    /* === END: UPDATED FILTER === */
+
 
     .stats-summary {
         grid-template-columns: 1fr;

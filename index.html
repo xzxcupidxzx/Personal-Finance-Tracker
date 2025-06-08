@@ -204,19 +204,31 @@
                     </form>
                 </div>
                 <div class="transaction-list-section">
-                    <div class="section-header">
-                        <h2 class="section-title"><span class="section-icon">📋</span>Giao Dịch Gần Đây</h2>
-                        <div class="filter-controls">
-                            <select id="filter-period" class="filter-select">
-                                <option value="today">Hôm nay</option>
-                                <option value="week">Tuần này</option>
-                                <option value="month" selected>Tháng này</option>
-                                <option value="all">Tất cả</option>
-                                <option value="custom">Tùy chỉnh ngày...</option>
-                            </select>
-                            <input type="date" id="filter-date" class="filter-date" style="display: none;">
-                        </div>
-                    </div>
+						<div class="section-header">
+							<h2 class="section-title"><span class="section-icon">📋</span>Giao Dịch Gần Đây</h2>
+							<div class="filter-controls">
+								<select id="filter-period" class="filter-select">
+									<option value="today">Hôm nay</option>
+									<option value="week">Tuần này</option>
+									<option value="month" selected>Tháng này</option>
+									<option value="all">Tất cả</option>
+									<option value="custom">Tùy chỉnh...</option>
+								</select>
+								
+								<div id="custom-date-picker-container" style="display: none;">
+									<div class="date-input-group">
+										<label for="filter-start-date">Từ:</label>
+										<input type="date" id="filter-start-date" class="filter-date">
+									</div>
+									<div class="date-input-group">
+										<label for="filter-end-date">Đến:</label>
+										<input type="date" id="filter-end-date" class="filter-date">
+									</div>
+									<button id="filter-apply-button" class="filter-apply-button">Áp dụng</button>
+								</div>
+							</div>
+						</div>
+					</div>
                     <div class="transaction-list" id="transaction-list"></div>
                     <div id="no-transactions" class="no-data" style="display: none;">
                     </div>

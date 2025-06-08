@@ -1,1 +1,1 @@
-const APP_VERSION = '1.0.5'; // << SỬA PHIÊN BẢN Ở ĐÂY
+const APP_VERSION = '1.0.6'; // << SỬA PHIÊN BẢN Ở ĐÂY

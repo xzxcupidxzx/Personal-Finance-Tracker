@@ -73,10 +73,13 @@ class TransactionsModule {
         this.updateFormVisibility();
     }
 
-    initializeFilters() {
-        this.elements.filterPeriod?.addEventListener('change', () => this.handleFilterChange());
-        this.elements.filterDate?.addEventListener('change', () => this.handleFilterChange());
-    }
+	initializeFilters() {
+		this.elements.filterPeriod?.addEventListener('change', () => this.handleFilterChange());
+		
+		// Gán thêm sự kiện cho các phần tử mới
+		const applyBtn = document.getElementById('filter-apply-button');
+		applyBtn?.addEventListener('click', () => this.applyCustomDateFilter());
+	}
 
     initializeSmartResetToggle() {
         const checkbox = document.getElementById('smart-reset-enabled');
@@ -95,17 +98,48 @@ class TransactionsModule {
         this.populateCategories();
     }
 
-    handleFilterChange() {
-        this.currentFilter.period = this.elements.filterPeriod.value;
-        this.currentFilter.date = this.elements.filterDate.value;
-        
-        const isCustomDate = this.currentFilter.period === 'custom';
-        this.elements.filterDate.style.display = isCustomDate ? 'block' : 'none';
-        if (!isCustomDate) this.elements.filterDate.value = '';
+	handleFilterChange() {
+		this.currentFilter.period = this.elements.filterPeriod.value;
+		const customPicker = document.getElementById('custom-date-picker-container');
 
-        this.renderTransactionList();
-    }
+		if (this.currentFilter.period === 'custom') {
+			if (customPicker) customPicker.style.display = 'flex';
+		} else {
+			if (customPicker) customPicker.style.display = 'none';
+			// Khi người dùng chọn lại các bộ lọc khác (tháng này, tuần này...),
+			// chúng ta sẽ lọc và hiển thị lại danh sách ngay lập tức.
+			this.currentFilter.startDate = null;
+			this.currentFilter.endDate = null;
+			this.renderTransactionList();
+		}
+	}
+	applyCustomDateFilter() {
+		const startDateInput = document.getElementById('filter-start-date');
+		const endDateInput = document.getElementById('filter-end-date');
 
+		if (!startDateInput || !endDateInput) return;
+
+		const startDate = startDateInput.value;
+		const endDate = endDateInput.value;
+
+		if (!startDate || !endDate) {
+			Utils.UIUtils.showMessage('Vui lòng chọn cả ngày bắt đầu và kết thúc.', 'error');
+			return;
+		}
+
+		if (new Date(startDate) > new Date(endDate)) {
+			Utils.UIUtils.showMessage('Ngày bắt đầu không thể sau ngày kết thúc.', 'error');
+			return;
+		}
+
+		// Lưu khoảng ngày vào bộ lọc và render lại danh sách
+		this.currentFilter.startDate = new Date(startDate);
+		// Đặt giờ của ngày kết thúc thành 23:59:59 để bao gồm tất cả giao dịch trong ngày
+		this.currentFilter.endDate = new Date(endDate);
+		this.currentFilter.endDate.setHours(23, 59, 59, 999);
+		
+		this.renderTransactionList();
+	}
     loadLastTransactionType() {
         const lastType = localStorage.getItem('lastTransactionType') || 'Chi';
         const radio = document.querySelector(`input[name="type"][value="${lastType}"]`);

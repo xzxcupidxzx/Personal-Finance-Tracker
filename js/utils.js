@@ -517,11 +517,14 @@ const Utils = {
                     start = new Date(now.getFullYear(), now.getMonth(), now.getDate()); 
                     end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59); 
                     break;
-                case 'week': 
-                    const monday = now.getDate() - now.getDay() + 1; 
-                    start = new Date(now.getFullYear(), now.getMonth(), monday); 
-                    end = new Date(now.getFullYear(), now.getMonth(), monday + 6, 23, 59, 59); 
-                    break;
+				case 'week':
+					const dayOfWeek = now.getDay(); // 0 (CN) -> 6 (T7)
+					// Nếu là Chủ Nhật (0), coi như là ngày thứ 7 của tuần.
+					const mondayOffset = now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
+					start = new Date(now.getFullYear(), now.getMonth(), mondayOffset);
+					start.setHours(0, 0, 0, 0); // Đảm bảo bắt đầu từ 00:00:00
+					end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6, 23, 59, 59, 999);
+					break;
                 case 'month': 
                     start = new Date(now.getFullYear(), now.getMonth(), 1); 
                     end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59); 
