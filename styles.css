@@ -2632,7 +2632,7 @@ input:checked + .slider:before {
 }
 .reconciliation-table {
     width: 100%;
-    min-width: 900px;
+    min-width: 1200px;
     table-layout: fixed;
     border-collapse: collapse;
     background: var(--bg-primary);

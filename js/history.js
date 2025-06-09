@@ -7,6 +7,8 @@ class HistoryModule {
     constructor() {
         this.app = null;
         this.reconciliationData = {};
+        // Thêm trạng thái cho bộ lọc lịch sử đối soát
+        this.historyFilter = { period: 'this_month', startDate: null, endDate: null };
 
         // DOM elements
         this.elements = {};
@@ -23,8 +25,6 @@ class HistoryModule {
 
         // Calendar specific properties
         this.currentCalendarDate = new Date();
-        // calendarElements is not used in the provided code,
-        // this.elements already holds calendar related DOM elements.
     }
 
     /**
@@ -36,11 +36,12 @@ class HistoryModule {
 
         try {
             this.initializeElements();
-            this.initializeCalendarEvents(); // Ensure this is called
+            this.initializeCalendarEvents();
             this.initializeReconciliation();
+            this.initializeHistoryFilters(); // <- THÊM HÀM GỌI NÀY
 
             this.renderAccountBalances();
-            this.renderTransactionCalendar(); // This will render the calendar grid
+            this.renderTransactionCalendar();
             this.renderReconciliationTable();
             this.renderReconciliationHistory();
 
@@ -51,6 +52,7 @@ class HistoryModule {
         }
     }
 
+
     /**
      * Initialize DOM elements with null checks
      */
@@ -59,6 +61,14 @@ class HistoryModule {
             accountBalanceGrid: document.getElementById('account-balance-grid'),
             reconciliationTable: document.getElementById('reconciliation-table'),
             reconciliationHistory: document.getElementById('reconciliation-history'),
+
+            // === Các element cho bộ lọc Lịch sử đối soát ===
+            historyFilterPeriod: document.getElementById('reconciliation-history-filter-period'),
+            historyCustomDatesContainer: document.getElementById('reconciliation-history-custom-dates'),
+            historyFilterStartDate: document.getElementById('reconciliation-filter-start-date'),
+            historyFilterEndDate: document.getElementById('reconciliation-filter-end-date'),
+            historyFilterApplyBtn: document.getElementById('reconciliation-filter-apply-button'),
+            // =============================================
 
             // Calendar elements
             prevMonthBtn: document.getElementById('prev-month-btn'),
@@ -81,21 +91,21 @@ class HistoryModule {
         });
     }
 
+
+
     /**
      * Initialize reconciliation functionality with validation
      */
     initializeReconciliation() {
-        if (!this.app || !this.app.data || !Array.isArray(this.app.data.accounts)) { //
+        if (!this.app || !this.app.data || !Array.isArray(this.app.data.accounts)) {
             console.error('Invalid app data for reconciliation initialization');
             return;
         }
-
         try {
-            // Initialize reconciliation data for each account
-            this.app.data.accounts.forEach(account => { //
+            this.app.data.accounts.forEach(account => {
                 if (account && account.value) {
                     this.reconciliationData[account.value] = {
-                        systemBalance: this.app.getAccountBalance(account.value), //
+                        systemBalance: this.app.getAccountBalance(account.value),
                         actualBalance: null,
                         difference: null,
                         lastReconciled: null
@@ -106,6 +116,7 @@ class HistoryModule {
             console.error('Error initializing reconciliation:', error);
         }
     }
+
 
     /**
      * Initialize calendar event listeners
@@ -157,7 +168,92 @@ class HistoryModule {
             console.error('Error initializing calendar events:', error);
         }
     }
+    initializeHistoryFilters() {
+        if (this.elements.historyFilterPeriod) {
+            const handler = () => this.handleHistoryFilterChange();
+            this.elements.historyFilterPeriod.addEventListener('change', handler);
+            this.eventListeners.push({ element: this.elements.historyFilterPeriod, event: 'change', handler });
+        }
+        if (this.elements.historyFilterApplyBtn) {
+            const handler = () => this.applyHistoryCustomDateFilter();
+            this.elements.historyFilterApplyBtn.addEventListener('click', handler);
+            this.eventListeners.push({ element: this.elements.historyFilterApplyBtn, event: 'click', handler });
+        }
+    }
 
+    handleHistoryFilterChange() {
+        const newPeriod = this.elements.historyFilterPeriod.value;
+        this.historyFilter.period = newPeriod;
+
+        if (newPeriod === 'custom') {
+            this.elements.historyCustomDatesContainer.style.display = 'block';
+        } else {
+            this.elements.historyCustomDatesContainer.style.display = 'none';
+            this.renderReconciliationHistory(); // Render lại danh sách ngay lập tức
+        }
+    }
+   applyHistoryCustomDateFilter() {
+        const startDate = this.elements.historyFilterStartDate.value;
+        const endDate = this.elements.historyFilterEndDate.value;
+
+        if (!startDate || !endDate) {
+            Utils.UIUtils.showMessage('Vui lòng chọn cả ngày bắt đầu và kết thúc.', 'error');
+            return;
+        }
+
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        if (start > end) {
+            Utils.UIUtils.showMessage('Ngày bắt đầu không thể sau ngày kết thúc.', 'error');
+            return;
+        }
+
+        // Lưu khoảng ngày đã chọn và render lại danh sách
+        this.historyFilter.startDate = start;
+        this.historyFilter.endDate = new Date(end.setHours(23, 59, 59, 999));
+        this.renderReconciliationHistory();
+    }
+    getFilteredReconciliationHistory(allHistory) {
+        if (!this.historyFilter.period || this.historyFilter.period === 'all') {
+            return allHistory;
+        }
+
+        if (this.historyFilter.period === 'custom') {
+            if (!this.historyFilter.startDate || !this.historyFilter.endDate) {
+                return []; // Chưa chọn ngày thì không hiển thị gì
+            }
+            return allHistory.filter(item => {
+                const itemDate = new Date(item.timestamp);
+                return itemDate >= this.historyFilter.startDate && itemDate <= this.historyFilter.endDate;
+            });
+        }
+        
+        const now = new Date();
+        let start, end;
+
+        switch (this.historyFilter.period) {
+            case 'this_month':
+                start = new Date(now.getFullYear(), now.getMonth(), 1);
+                end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+                break;
+            case 'last_month':
+                start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+                break;
+            case 'this_year':
+                start = new Date(now.getFullYear(), 0, 1);
+                end = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+                break;
+            default:
+                return allHistory;
+        }
+
+        return allHistory.filter(item => {
+            const itemDate = new Date(item.timestamp);
+            return itemDate >= start && itemDate <= end;
+        });
+    }
     /**
      * Change calendar month
      */
@@ -1000,50 +1096,62 @@ class HistoryModule {
      * Save reconciliation to history with validation
      */
     saveReconciliationHistory(accountValue, data) {
-        if (!accountValue || !data) { //
+        if (!accountValue || !data) {
             console.warn('Invalid data for reconciliation history');
             return;
         }
 
         try {
-            const historyItem = { //
-                id: Utils.UIUtils.generateId(), //
-                account: accountValue, //
-                systemBalance: parseFloat(data.systemBalance) || 0, //
-                actualBalance: parseFloat(data.actualBalance) || 0, //
-                difference: parseFloat(data.difference) || 0, //
-                timestamp: new Date().toISOString(), //
-                // Use getISOWeek and getFullYear for week and year in history
-                week: Utils.DateUtils.getISOWeek(new Date()), //
-                year: new Date().getFullYear() //
+            const historyItem = {
+                id: Utils.UIUtils.generateId(),
+                account: accountValue,
+                systemBalance: parseFloat(data.systemBalance) || 0,
+                actualBalance: parseFloat(data.actualBalance) || 0,
+                difference: parseFloat(data.difference) || 0,
+                timestamp: new Date().toISOString(),
+                week: Utils.DateUtils.getISOWeek(new Date()),
+                year: new Date().getFullYear()
             };
 
             // Validate history item
-            if (isNaN(historyItem.systemBalance) || isNaN(historyItem.actualBalance)) { //
+            if (isNaN(historyItem.systemBalance) || isNaN(historyItem.actualBalance)) {
                 console.error('Invalid balance values for history item');
                 return;
             }
 
             // Load existing history
-            let history = Utils.StorageUtils.load(Utils.CONFIG.STORAGE_KEYS.RECONCILIATION_HISTORY, []); //
+            let history = Utils.StorageUtils.load(Utils.CONFIG.STORAGE_KEYS.RECONCILIATION_HISTORY, []);
 
-            if (!Array.isArray(history)) { //
+            if (!Array.isArray(history)) {
                 console.warn('Invalid history data, resetting to empty array');
-                history = []; //
+                history = [];
             }
 
             // Add new item
-            history.push(historyItem); //
+            history.push(historyItem);
 
             // Keep only last 100 items for performance
-            if (history.length > 100) { //
-                history = history.slice(-100); //
+            if (history.length > 100) {
+                history = history.slice(-100);
             }
 
             // Save history
-            if (Utils.StorageUtils.save(Utils.CONFIG.STORAGE_KEYS.RECONCILIATION_HISTORY, history)) { //
-                // Re-render history
-                this.renderReconciliationHistory(); //
+            if (Utils.StorageUtils.save(Utils.CONFIG.STORAGE_KEYS.RECONCILIATION_HISTORY, history)) {
+                
+                // === PHẦN CẢI TIẾN ===
+                // Tự động chuyển bộ lọc về "Tháng này" để đảm bảo người dùng thấy bản ghi mới nhất.
+                if (this.elements.historyFilterPeriod) {
+                    this.elements.historyFilterPeriod.value = 'this_month';
+                    this.historyFilter.period = 'this_month';
+                    // Ẩn bộ lọc ngày tùy chỉnh nếu nó đang hiển thị
+                    if (this.elements.historyCustomDatesContainer) {
+                        this.elements.historyCustomDatesContainer.style.display = 'none';
+                    }
+                }
+                // ======================
+
+                // Re-render history (hàm này sẽ sử dụng bộ lọc đã được cập nhật)
+                this.renderReconciliationHistory();
             } else {
                 console.error('Failed to save reconciliation history');
             }
@@ -1057,62 +1165,30 @@ class HistoryModule {
      * Render reconciliation history with error handling
      */
     renderReconciliationHistory() {
-        if (!this.elements.reconciliationHistory) { //
+        if (!this.elements.reconciliationHistory) {
             console.warn('Reconciliation history element not found');
             return;
         }
-
         try {
-            const history = Utils.StorageUtils.load(Utils.CONFIG.STORAGE_KEYS.RECONCILIATION_HISTORY, []); //
-
-            if (!Array.isArray(history)) { //
-                console.warn('Invalid history data format');
-                this.elements.reconciliationHistory.innerHTML = `
-                    <div class="error-message">
-                        Dữ liệu lịch sử không hợp lệ
-                    </div>
-                `;
+            const allHistory = Utils.StorageUtils.load(Utils.CONFIG.STORAGE_KEYS.RECONCILIATION_HISTORY, []);
+            if (!Array.isArray(allHistory)) {
+                this.elements.reconciliationHistory.innerHTML = `<div class="error-message">Dữ liệu lịch sử không hợp lệ</div>`;
                 return;
             }
-
-            if (history.length === 0) { //
-                this.elements.reconciliationHistory.innerHTML = `
-                    <div class="no-data">
-                        <span class="no-data-icon"><i class="fa-solid fa-rectangle-list"></i></span>
-                        <span class="no-data-text">Chưa có lịch sử đối soát</span>
-                    </div>
-                `;
+            const filteredHistory = this.getFilteredReconciliationHistory(allHistory);
+            if (filteredHistory.length === 0) {
+                this.elements.reconciliationHistory.innerHTML = `<div class="no-data"><span class="no-data-icon"><i class="fa-solid fa-rectangle-list"></i></span><span class="no-data-text">Không có lịch sử đối soát nào trong khoảng thời gian đã chọn</span></div>`;
                 return;
             }
-
-            // Sort by timestamp (newest first)
-            const sortedHistory = history //
-                .filter(item => item && item.timestamp) // Filter out invalid items //
-                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); //
-
-            // Take only recent 20 items for performance
-            const recentHistory = sortedHistory.slice(0, 20); //
-
-            this.elements.reconciliationHistory.innerHTML = ''; //
-
-            recentHistory.forEach(item => {
-                try {
-                    const historyCard = this.createReconciliationHistoryCard(item); //
-                    if (historyCard) { //
-                        this.elements.reconciliationHistory.appendChild(historyCard);
-                    }
-                } catch (error) {
-                    console.error('Error creating history card:', error);
-                }
+            const sortedHistory = filteredHistory.filter(item => item && item.timestamp).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            this.elements.reconciliationHistory.innerHTML = '';
+            sortedHistory.forEach(item => {
+                const historyCard = this.createReconciliationHistoryCard(item);
+                if (historyCard) this.elements.reconciliationHistory.appendChild(historyCard);
             });
-
         } catch (error) {
             console.error('Error rendering reconciliation history:', error);
-            this.elements.reconciliationHistory.innerHTML = `
-                <div class="error-message">
-                    Có lỗi khi hiển thị lịch sử đối soát
-                </div>
-            `;
+            this.elements.reconciliationHistory.innerHTML = `<div class="error-message">Có lỗi khi hiển thị lịch sử đối soát</div>`;
         }
     }
 

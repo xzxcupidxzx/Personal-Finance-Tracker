@@ -317,11 +317,37 @@
                     </div>
                 </div>
 
-                <div class="reconciliation-history-section">
-                    <h3 class="subsection-title">Lịch Sử Đối Soát</h3>
-                    <div class="reconciliation-history" id="reconciliation-history">
-                        </div>
-                </div>
+				<div class="reconciliation-history-section">
+					<div class="section-header">
+						<h3 class="subsection-title" style="margin-bottom: 0;">Lịch Sử Đối Soát</h3>
+						<div class="filter-controls">
+							<select id="reconciliation-history-filter-period" class="filter-select">
+								<option value="all">Tất cả</option>
+								<option value="this_month" selected>Tháng này</option>
+								<option value="last_month">Tháng trước</option>
+								<option value="this_year">Năm này</option>
+								<option value="custom">Tùy chỉnh...</option>
+							</select>
+						</div>
+					</div>
+
+					<div id="reconciliation-history-custom-dates" style="display: none; margin-top: 1rem;">
+						<div class="custom-date-picker-container">
+							<div class="date-input-group">
+								<label for="reconciliation-filter-start-date">Từ:</label>
+								<input type="date" id="reconciliation-filter-start-date" class="filter-date">
+							</div>
+							<div class="date-input-group">
+								<label for="reconciliation-filter-end-date">Đến:</label>
+								<input type="date" id="reconciliation-filter-end-date" class="filter-date">
+							</div>
+							<button id="reconciliation-filter-apply-button" class="filter-apply-button">Áp dụng</button>
+						</div>
+					</div>
+
+					<div class="reconciliation-history" id="reconciliation-history">
+						</div>
+				</div>
             </section>
 
             <section id="tab-statistics" class="tab-content">
