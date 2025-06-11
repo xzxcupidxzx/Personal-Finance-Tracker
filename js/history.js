@@ -181,17 +181,18 @@ class HistoryModule {
         }
     }
 
-    handleHistoryFilterChange() {
-        const newPeriod = this.elements.historyFilterPeriod.value;
-        this.historyFilter.period = newPeriod;
+	handleHistoryFilterChange() {
+		const newPeriod = this.elements.historyFilterPeriod.value;
+		this.historyFilter.period = newPeriod;
 
-        if (newPeriod === 'custom') {
-            this.elements.historyCustomDatesContainer.style.display = 'block';
-        } else {
-            this.elements.historyCustomDatesContainer.style.display = 'none';
-            this.renderReconciliationHistory(); // Render lại danh sách ngay lập tức
-        }
-    }
+		if (newPeriod === 'custom') {
+			this.elements.historyCustomDatesContainer.style.display = 'block';
+		} else {
+			this.elements.historyCustomDatesContainer.style.display = 'none';
+			// Dòng mã này là mấu chốt của việc sửa lỗi:
+			this.renderReconciliationHistory(); // Render lại danh sách ngay lập tức
+		}
+	}
    applyHistoryCustomDateFilter() {
         const startDate = this.elements.historyFilterStartDate.value;
         const endDate = this.elements.historyFilterEndDate.value;
@@ -440,7 +441,7 @@ class HistoryModule {
                 // ==========================================================
                 // ===== SỬA DÒNG NÀY =====
                 // ==========================================================
-                expenseIndicatorEl.textContent = `${Utils.CurrencyUtils.formatCurrencyShort(dayData.expense)}`; // Chú ý: không cần dấu '-' vì nó đã có trong formatCurrencyShort nếu là số âm, nhưng ở đây ta đang xử lý số dương nên tự thêm
+                expenseIndicatorEl.textContent = `-${Utils.CurrencyUtils.formatCurrencyShort(dayData.expense)}`;
                 // Sửa lại: Vì expense luôn dương trong dayData, ta phải tự thêm dấu '-'
                 expenseIndicatorEl.textContent = `-${Utils.CurrencyUtils.formatCurrencyShort(dayData.expense)}`;
                 indicatorsDiv.appendChild(expenseIndicatorEl);

@@ -33,11 +33,11 @@ class StatisticsModule {
             trendDays: 7,
             animationDuration: 800,
             // UPDATED: New, more distinct color palette
-            chartColors: [
-                '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', 
-                '#06b6d4', '#d946ef', '#f97316', '#22c55e', '#6366f1',
-                '#ec4899', '#f43f5e', '#a855f7', '#14b8a6', '#eab308'
-            ]
+			chartColors: [
+				'#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', 
+				'#06b6d4', '#d946ef', '#f97316', '#22c55e', '#6366f1',
+				'#ec4899', '#f43f5e', '#a855f7', '#14b8a6', '#eab308'
+			]
         };
         this.resizeTimeout = null;
     }
@@ -1324,18 +1324,18 @@ class StatisticsModule {
             const cleanTx = { ...tx };
             
             // ✅ SUPER SAFE: Clean category with comprehensive validation
-            if (cleanTx.category !== undefined) {
-                let categoryValue = cleanTx.category;
-                
-                // Handle all possible invalid category values
-                if (categoryValue === null || 
-                    categoryValue === undefined || 
-                    categoryValue === 'undefined' || 
-                    categoryValue === 'null' ||
-                    (typeof categoryValue === 'string' && categoryValue.trim() === '') ||
-                    (typeof categoryValue !== 'string' && typeof categoryValue !== 'number')) {
-                    
-                    cleanTx.category = 'Không phân loại';
+			if (cleanTx.category !== undefined) {
+				let categoryValue = cleanTx.category;
+
+				// Handle all possible invalid category values
+				if (categoryValue === null || 
+					categoryValue === undefined || 
+					categoryValue === 'undefined' || 
+					categoryValue === 'null' ||
+					(typeof categoryValue === 'string' && categoryValue.trim() === '') ||
+					(typeof categoryValue !== 'string' && typeof categoryValue !== 'number')) {
+
+					cleanTx.category = 'Không phân loại';
                 } else {
                     // Convert to string and trim safely
                     try {

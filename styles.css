@@ -1110,6 +1110,7 @@ input, textarea, select {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    max-width: 150px; /* << THÊM DÒNG NÀY */
 }
 .transaction-meta {
     display: flex;
@@ -3436,4 +3437,9 @@ hr {
         image-rendering: -webkit-optimize-contrast;
         image-rendering: crisp-edges;
     }
+}
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+  40% {transform: translateY(-8px);}
+  60% {transform: translateY(-4px);}
 }

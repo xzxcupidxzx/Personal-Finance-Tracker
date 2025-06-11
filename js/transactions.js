@@ -320,14 +320,19 @@ class TransactionsModule {
                 accountDisplay = transaction.type === 'Chi' ? `${accountDisplay} → ${pairAccountName}` : `${pairAccountName} → ${accountDisplay}`;
             }
         }
-        
+		const isReconciliation = 
+			transaction.category === Utils.CONFIG.RECONCILE_ADJUST_INCOME_CAT ||
+			transaction.category === Utils.CONFIG.RECONCILE_ADJUST_EXPENSE_CAT;
+
+		const categoryDisplayText = isReconciliation ? "Điều chỉnh" : transaction.category;
+		const categoryTitleText = isReconciliation ? transaction.category : ''; // Để hiển thị tooltip khi cần
         item.innerHTML = `
             <div class="transaction-type-icon ${typeClass}">${icon}</div>
             <div class="transaction-content">
-                <div class="transaction-description">${transaction.description || 'Không có mô tả'}</div>
-                <div class="transaction-meta">
-                    <span class="transaction-category">${transaction.category}</span> • <span>${accountDisplay}</span>
-                </div>
+                <div class="transaction-description" title="${transaction.description || ''}">${transaction.description || 'Không có mô tả'}</div>
+				<div class="transaction-meta">
+					<span class="transaction-category" title="${categoryTitleText}">${categoryDisplayText}</span> • <span>${accountDisplay}</span>
+				</div>
             </div>
             <div class="transaction-amount-section">
                 <div class="transaction-amount ${typeClass}">${Utils.CurrencyUtils.formatCurrency(transaction.amount)}</div>

@@ -1344,14 +1344,24 @@ class FinancialApp {
         });
     }
 
-    initializeGlobalEventListeners() {
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            this.installPromptEvent = e;
-            console.log('👍 `beforeinstallprompt` event fired. App is installable.');
-            this.showInstallButton();
-        });
-    }
+	initializeGlobalEventListeners() {
+		// Listener cho sự kiện cài đặt PWA
+		window.addEventListener('beforeinstallprompt', (e) => {
+			e.preventDefault();
+			this.installPromptEvent = e;
+			console.log('👍 `beforeinstallprompt` event fired. App is installable.');
+			// Cập nhật trạng thái của nút thay vì tạo mới
+			this.updateInstallButtonState(true);
+		});
+
+		// Listener cho nút cài đặt đã có sẵn trong HTML
+		const installBtn = document.getElementById('install-pwa-btn');
+		if (installBtn) {
+			installBtn.addEventListener('click', () => {
+				this.promptInstall();
+			});
+		}
+	}
     
     initializeVisibilityToggle() {
         const toggleBtn = document.getElementById('toggle-summary-visibility');
@@ -1385,7 +1395,30 @@ class FinancialApp {
             settingsSection.prepend(installButton);
         }
     }
-    
+	updateInstallButtonState(isAvailable) {
+		const installBtn = document.getElementById('install-pwa-btn');
+		if (!installBtn) return;
+
+		const subtitle = installBtn.querySelector('.btn-subtitle');
+		const icon = installBtn.querySelector('.btn-icon');
+
+		if (isAvailable) {
+			installBtn.style.display = 'flex'; // Hiển thị nút
+			installBtn.disabled = false;
+			if (subtitle) subtitle.textContent = 'Sẵn sàng để cài đặt lên thiết bị của bạn!';
+			if (icon) icon.style.animation = 'bounce 2s infinite'; // Thêm hiệu ứng để thu hút
+			installBtn.style.opacity = '1';
+			installBtn.style.cursor = 'pointer';
+		} else {
+			// Hiển thị nút ở trạng thái không thể nhấn, thay vì ẩn đi
+			installBtn.style.display = 'flex';
+			installBtn.disabled = true;
+			if (subtitle) subtitle.textContent = 'Đã cài đặt hoặc không được hỗ trợ';
+			if (icon) icon.style.animation = 'none';
+			installBtn.style.opacity = '0.6';
+			installBtn.style.cursor = 'not-allowed';
+		}
+	}
     handleInitialTab() {
         const hash = window.location.hash.slice(1);
         const validTabs = ['transactions', 'history', 'statistics', 'categories', 'settings'];
@@ -1717,29 +1750,27 @@ class FinancialApp {
         return filtered;
     }
 
-    async promptInstall() {
-        if (!this.installPromptEvent) {
-            Utils.UIUtils.showMessage('Ứng dụng không thể cài đặt lúc này.', 'info');
-            return;
-        }
+	async promptInstall() {
+		if (this.installPromptEvent) {
+			this.installPromptEvent.prompt();
 
-        this.installPromptEvent.prompt();
-        
-        const { outcome } = await this.installPromptEvent.userChoice;
-        console.log(`PWA install prompt outcome: ${outcome}`);
+			const { outcome } = await this.installPromptEvent.userChoice;
+			console.log(`PWA install prompt outcome: ${outcome}`);
 
-        if (outcome === 'accepted') {
-            console.log('User accepted the PWA installation.');
-            const installButton = document.getElementById('install-pwa-btn');
-            if (installButton) {
-                installButton.remove();
-            }
-        } else {
-            console.log('User dismissed the PWA installation.');
-        }
+			if (outcome === 'accepted') {
+				console.log('User accepted the PWA installation.');
+				this.updateInstallButtonState(false); // Cập nhật trạng thái nút sau khi cài
+			} else {
+				console.log('User dismissed the PWA installation.');
+			}
 
-        this.installPromptEvent = null;
-    }
+			this.installPromptEvent = null;
+		} else {
+			// Thông báo cho người dùng khi không thể cài đặt
+			Utils.UIUtils.showMessage('Ứng dụng đã được cài đặt hoặc trình duyệt không hỗ trợ.', 'info');
+			console.log('Install prompt not available.');
+		}
+	}
 
     handlePWAShortcuts() {
         try {
@@ -1899,6 +1930,12 @@ class MobileChartEnhancements {
         
         this.isInitialized = true;
         console.log('✅ Mobile Chart Enhancements initialized');
+		this.handleInitialTab();
+
+		this.updateInstallButtonState(false); // <--- THÊM DÒNG NÀY
+
+		this.isInitialized = true;
+		console.log('✅ Financial App initialized successfully');
     }
 
     getOrientation() {
