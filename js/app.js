@@ -88,8 +88,7 @@ class FinancialApp {
         }
         
         await this.initializeModules();
-		this.modules.AIChatModule = new AIChatModule(this);
-		this.modules.AIChatModule.init();
+
         this.updateHeaderSummary();
         this.handleInitialTab();
         

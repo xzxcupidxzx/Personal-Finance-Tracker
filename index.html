@@ -925,6 +925,10 @@
                 }
             }
         }
+        if (window.FinancialAppInstance) {
+            window.FinancialAppInstance.modules.AIChatModule = new AIChatModule(window.FinancialAppInstance);
+            window.FinancialAppInstance.modules.AIChatModule.init();
+        }
     });
 
 	// Service Worker registration

@@ -116,7 +116,7 @@ class AIChatModule {
 
 	async callLLMAPI(userInput, incomeCategories, expenseCategories, accounts) {
 		// !!! THAY API KEY CỦA BẠN VÀO ĐÂY !!!
-		const API_KEY = CONFIG.GEMINI_API_KEY;
+		const API_KEY = window.CONFIG.GEMINI_API_KEY;
 		const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`;
 
 		const prompt = `Phân tích văn bản sau để tạo giao dịch: "${userInput}". Hạng mục Thu nhập: [${incomeCategories.join(", ")}]. Hạng mục Chi tiêu: [${expenseCategories.join(", ")}]. Tài khoản: [${accounts.join(", ")}]. Quy tắc: 1. Xác định 'type' là "Thu", "Chi", hoặc "Transfer". 2. Nếu là 'Transfer', phải có 'account' (nguồn) và 'toAccount' (đích). 3. 'amount' phải là số nguyên. Chỉ trả về một đối tượng JSON hợp lệ theo mẫu: {"type": "Chi", "amount": 50000, "category": "Đi lại", "account": "BIDV", "description": "đổ xăng"}`;
