@@ -2732,7 +2732,11 @@ input:checked + .slider:before {
 .virtual-keyboard-row button[data-key="000"] {
     letter-spacing: 1px;
 }
-
+.virtual-keyboard-row button[data-key="."] {
+    font-weight: bold;
+    font-size: 1.2em;
+    color: var(--primary-color, #3b82f6);
+}
 
 /* =============================================================================
    5. ANIMATIONS & MISCELLANEOUS
