@@ -22,7 +22,7 @@ class AIChatModule {
         this.elements.modal.addEventListener('click', (e) => {
             if (e.target === this.elements.modal) this.closeChat();
         });
-        console.log('🤖 AI Chat Module Initialized for Google Gemini');
+        console.log('🤖 AI Chat Module Initialized for DeepSeek API');
     }
 
     openChat() {
@@ -46,7 +46,7 @@ class AIChatModule {
         const messageDiv = document.createElement('div');
         messageDiv.className = `ai-chat-message ${sender}`;
         if (sender === 'loading') {
-             messageDiv.innerHTML = '<span></span><span></span><span></span>';
+            messageDiv.innerHTML = '<span></span><span></span><span></span>';
         } else {
             messageDiv.textContent = text;
         }
@@ -64,23 +64,38 @@ class AIChatModule {
         const loadingMessage = this.addMessage('', 'loading');
 
         try {
+            // Lấy dữ liệu categories/accounts hiện tại
             const incomeCategories = this.app.data.incomeCategories.map(c => c.value);
             const expenseCategories = this.app.data.expenseCategories.map(c => c.value);
             const accounts = this.app.data.accounts.map(a => a.value);
 
+            // Gọi API Worker
             const parsedData = await this.callLLMAPI(userInput, incomeCategories, expenseCategories, accounts);
 
             loadingMessage.remove();
-            
+
+            // Kiểm tra trường dữ liệu trả về từ AI
+            if (
+                !parsedData ||
+                !parsedData.type ||
+                !parsedData.amount ||
+                !parsedData.account
+            ) {
+                this.addMessage("❌ Kết quả AI trả về không hợp lệ hoặc thiếu dữ liệu. Hãy kiểm tra lại.", 'bot');
+                return;
+            }
+
+            // Format kết quả xác nhận cho user
             let confirmationText = `OK! Tôi đã ghi nhận:\n- Loại: ${parsedData.type}\n- Số tiền: ${Utils.CurrencyUtils.formatCurrency(parsedData.amount)}\n`;
             if (parsedData.type === 'Transfer') {
                 confirmationText += `- Từ: ${parsedData.account}\n- Đến: ${parsedData.toAccount}`;
             } else {
                 confirmationText += `- Hạng mục: ${parsedData.category}\n- Tài khoản: ${parsedData.account}`;
             }
-            confirmationText += `\n- Mô tả: "${parsedData.description}"`;
+            confirmationText += `\n- Mô tả: "${parsedData.description || ''}"`;
             this.addMessage(confirmationText, 'bot');
-            
+
+            // Thêm category/account nếu chưa có
             this.ensureAccountExists(parsedData.account);
             if(parsedData.type === 'Transfer') {
                 this.ensureAccountExists(parsedData.toAccount);
@@ -88,64 +103,72 @@ class AIChatModule {
                 this.ensureCategoryExists(parsedData.category, parsedData.type);
             }
 
+            // Lưu giao dịch vào app
             const success = this.app.addTransaction(parsedData);
             if (success) {
                 this.app.refreshAllModules();
-                // XÓA HOẶC VÔ HIỆU HÓA DÒNG NÀY ĐỂ CHATBOX KHÔNG TỰ ĐỘNG ĐÓNG
+                // Nếu muốn tự động đóng chat sau khi thêm, bỏ comment dòng sau:
                 // setTimeout(() => this.closeChat(), 2500); 
             }
         } catch (error) {
             console.error("Lỗi xử lý AI:", error);
             loadingMessage.remove();
-            this.addMessage(`Rất tiếc, đã xảy ra lỗi. Vui lòng kiểm tra lại API Key và cài đặt Billing trên Google Cloud.`, 'bot');
+            let message = "❌ Đã xảy ra lỗi khi gọi AI. ";
+            if (error && error.message) message += error.message;
+            this.addMessage(message + "\nVui lòng kiểm tra lại API Key, billing hoặc thử lại sau.", 'bot');
         }
     }
     
     ensureAccountExists(accountName) {
-        if (!this.app.data.accounts.some(acc => acc.value.toLowerCase() === accountName.toLowerCase())) {
+        if (
+            accountName &&
+            !this.app.data.accounts.some(acc => acc.value.toLowerCase() === String(accountName).toLowerCase())
+        ) {
             this.app.data.accounts.push({ value: accountName, text: accountName, createdAt: new Date().toISOString(), createdBy: 'ai_import' });
         }
     }
 
     ensureCategoryExists(categoryName, type) {
+        if (!categoryName) return;
         const targetArray = type === 'Thu' ? this.app.data.incomeCategories : this.app.data.expenseCategories;
-        if (!targetArray.some(cat => cat.value.toLowerCase() === categoryName.toLowerCase())) {
+        if (!targetArray.some(cat => cat.value.toLowerCase() === String(categoryName).toLowerCase())) {
             targetArray.push({ value: categoryName, text: categoryName, createdAt: new Date().toISOString(), createdBy: 'ai_import' });
         }
     }
 
+    /**
+     * Gọi DeepSeek API qua Cloudflare Worker proxy
+     */
     async callLLMAPI(userInput, incomeCategories, expenseCategories, accounts) {
-        // !!! THAY BẰNG URL WORKER CỦA BẠN !!!
-        // Bạn có thể tìm thấy URL này trên trang quản lý Worker của Cloudflare
-        const PROXY_URL = 'https://deepseek.hoangthaison2812.workers.dev'; 
+        // URL worker của bạn
+        const PROXY_URL = 'https://deepseek.hoangthaison2812.workers.dev';
 
-        // XÓA HOÀN TOÀN DÒNG CHỨA API_KEY
-
+        // Gửi data lên Worker (POST)
         const response = await fetch(PROXY_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                // Chỉ gửi các dữ liệu cần thiết cho Worker
-                userInput: userInput,
-                incomeCategories: incomeCategories,
-                expenseCategories: expenseCategories,
-                accounts: accounts
+                userInput,
+                incomeCategories,
+                expenseCategories,
+                accounts
             })
         });
 
-        if (!response.ok) {
-            console.error("API Error Response:", await response.text());
-            throw new Error('Lỗi khi gọi Google Gemini API qua proxy.');
-        }
-        
-        const data = await response.json();
-        const jsonString = data.candidates[0].content.parts[0].text;
-
+        // Kiểm tra lỗi response
+        let data;
         try {
-            return JSON.parse(jsonString);
-        } catch (e) {
-            console.error("Lỗi phân tích JSON từ AI:", jsonString);
-            throw new Error("AI đã trả về một định dạng JSON không hợp lệ.");
+            data = await response.json();
+        } catch (err) {
+            throw new Error("Không đọc được dữ liệu JSON trả về từ Worker.");
         }
+
+        // Nếu worker trả về lỗi (ví dụ error: true)
+        if (data && data.error) {
+            throw new Error(data.message || "Lỗi từ Worker/DeepSeek API.");
+        }
+
+        // DeepSeek worker trả về object JSON chuẩn, không cần parse nữa
+        return data;
     }
 }
