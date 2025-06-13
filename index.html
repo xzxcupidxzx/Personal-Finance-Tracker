@@ -864,19 +864,49 @@
 			</div>
 		</div>
 	</div>
-    
+
+    <button id="ai-chat-fab" title="Ghi chú nhanh với AI">
+        <i id="ai-chat-fab-icon" class="fa-solid fa-wand-magic-sparkles"></i>
+    </button>
+	<div id="ai-chat-modal" class="ai-chat-modal-container">
+		<div class="ai-chat-modal-content">
+			<div class="ai-chat-modal-header">
+				<h3><i class="fa-solid fa-wand-magic-sparkles"></i> Ghi Chú Nhanh với AI</h3>
+				<button id="ai-chat-close-btn" class="ai-chat-close-btn">&times;</button>
+			</div>
+			<div class="ai-chat-modal-body" id="ai-chat-history">
+				<div class="ai-chat-message bot">
+					Xin chào! Bạn đã chi tiêu những gì hôm nay? Hãy cho tôi biết, ví dụ: "cà phê 50k bằng tiền mặt"
+				</div>
+			</div>
+			<div class="ai-chat-modal-footer">
+				<div class="ai-chat-footer-info">
+					<span id="ai-chat-token-counter">Tokens: 0</span>
+				</div>
+
+				<div class="ai-chat-input-group">
+					<input type="text" id="ai-chat-input" placeholder="Nhập ghi chú giao dịch...">
+					<button id="ai-chat-send-btn">
+						<i class="fa-solid fa-paper-plane"></i>
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
     <!-- SCRIPT LOADING ORDER -->
     <!-- Load version and utils first as they are dependencies -->
     <script src="./js/version.js"></script>
     <script src="./js/utils.js"></script>
 
     <!-- Load individual modules -->
+	<script src="./js/config.js"></script>
 	<script src="./js/categories.js"></script>
 	<script src="./js/settings.js"></script>
 	<script src="./js/transactions.js"></script>
 	<script src="./js/history.js"></script>
 	<script src="./js/statistics.js"></script>
     <script src="js/virtual-keyboard.js"></script>
+	<script src="js/ai-chat.js"></script>
     
     <!-- Load main app logic last -->
 	<script src="./js/app.js"></script>
