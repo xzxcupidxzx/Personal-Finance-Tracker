@@ -117,7 +117,7 @@ class AIChatModule {
     async callLLMAPI(userInput, incomeCategories, expenseCategories, accounts) {
         // !!! THAY BẰNG URL WORKER CỦA BẠN !!!
         // Bạn có thể tìm thấy URL này trên trang quản lý Worker của Cloudflare
-        const PROXY_URL = 'gemini-proxy.hoangthaison2812.workers.dev';
+        const PROXY_URL = 'https://gemini-proxy.hoangthaison2812.workers.dev'; 
 
         // XÓA HOÀN TOÀN DÒNG CHỨA API_KEY
 
