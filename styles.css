@@ -3670,3 +3670,340 @@ hr {
     font-size: 1rem;
     cursor: pointer;
 }
+
+/* =================================================== */
+/* == STYLES FOR IMPROVED CATEGORY SPEND LIST ITEM === */
+/* =================================================== */
+
+.detailed-stats-section {
+    background: var(--bg-primary);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+}
+
+.category-spend-item {
+    background-color: transparent;
+    padding: var(--spacing-md, 1rem) 0;
+    border-bottom: 1px solid var(--border-color, #e2e8f0);
+    transition: background-color 0.2s ease;
+}
+
+.category-spend-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.category-spend-item:first-child {
+    padding-top: 0;
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-sm, 0.5rem);
+}
+
+.item-icon-name {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md, 0.75rem);
+}
+
+.item-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.item-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-primary, #1e293b);
+}
+
+.item-amount {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-primary, #1e293b);
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+}
+
+.item-progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: var(--bg-tertiary, #f1f5f9);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: var(--spacing-sm, 0.5rem);
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease-out;
+}
+
+.item-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-secondary, #64748b);
+}
+
+/* ========================================================== */
+/* == RESPONSIVE STYLES FOR CHART LEGEND ON SMALL DEVICES === */
+/* ========================================================== */
+
+@media (max-width: 480px) {
+    /*
+      Các quy tắc này sẽ làm cho phần chú giải (legend) của biểu đồ
+      trông gọn gàng và dễ đọc hơn trên điện thoại màn hình nhỏ.
+    */
+
+    .chart-legend {
+        padding: var(--spacing-sm); /* Giảm padding của cả khu vực chú giải */
+    }
+
+    .legend-item {
+        padding: var(--spacing-sm) 0; /* Chỉ giữ padding dọc giữa các mục */
+        margin-bottom: 0;
+        border-bottom: 1px solid var(--border-color); /* Thêm dòng kẻ phân cách */
+    }
+
+    .legend-item:last-child {
+        border-bottom: none; /* Bỏ dòng kẻ ở mục cuối cùng */
+    }
+
+    .legend-content {
+        gap: var(--spacing-sm); /* Giảm khoảng cách giữa cụm text và thanh màu */
+    }
+
+    .legend-header {
+        gap: var(--spacing-sm); /* Giảm khoảng cách giữa icon và text */
+    }
+
+    .legend-icon {
+        width: 36px; /* Giảm kích thước icon */
+        height: 36px;
+        font-size: 1.1rem;
+    }
+
+    .legend-label-wrapper {
+        gap: 2px; /* Giảm khoảng cách giữa tên danh mục và dòng tiền */
+    }
+
+    .legend-label {
+        font-size: 0.85rem; /* Giữ cho tên danh mục đủ lớn để đọc */
+        font-weight: 500;
+        max-width: 140px; /* Cho phép tên dài hơn một chút trước khi bị cắt */
+    }
+
+    .legend-amount-percentage {
+        /* Chuyển thành block để có thể xuống dòng tự nhiên nếu cần */
+        display: block;
+        line-height: 1.3;
+        font-size: 0.75rem;
+    }
+
+    .legend-amount {
+        font-weight: 600; /* Làm nổi bật số tiền */
+        font-size: 0.8rem;
+        margin-right: 6px; /* Khoảng cách giữa số tiền và phần trăm */
+    }
+
+    .legend-percentage {
+        font-size: 0.75rem;
+        color: var(--text-muted); /* Làm mờ màu chữ của % */
+    }
+
+    .legend-color {
+        width: 6px; /* Thu hẹp thanh màu thành một dải mỏng */
+        height: 28px;
+        border-radius: 3px;
+        align-self: center; /* Giữ cho thanh màu luôn ở giữa theo chiều dọc */
+    }
+}
+
+/* ========================================================== */
+/* == STYLES FOR IMPROVED CATEGORY SPEND LIST ITEM (V2) === */
+/* ========================================================== */
+
+.detailed-stats-section {
+    background: var(--bg-primary);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+}
+
+.category-spend-item {
+    background-color: transparent;
+    padding: var(--spacing-md, 1rem) 0;
+    border-bottom: 1px solid var(--border-color, #e2e8f0);
+    transition: background-color 0.2s ease;
+}
+
+.category-spend-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.category-spend-item:first-child {
+    padding-top: 0;
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-sm, 0.5rem);
+}
+
+.item-icon-name {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md, 0.75rem);
+    min-width: 0; /* Giúp flexbox không bị vỡ layout khi tên quá dài */
+}
+
+/* === CSS ĐƯỢC CẬP NHẬT CHO ICON === */
+.item-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px; /* Bo góc dạng squircle hiện đại */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    /* Nền và màu của icon sẽ được JS thêm vào qua style inline */
+}
+
+.item-icon i {
+    font-size: 1.5rem; /* Tăng kích thước icon bên trong */
+    line-height: 1;
+}
+/* === KẾT THÚC VÙNG CSS CẬP NHẬT === */
+
+
+.item-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-primary, #1e293b);
+    /* Chống tràn chữ khi tên danh mục quá dài */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.item-amount {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-primary, #1e293b);
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+}
+
+.item-progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: var(--bg-tertiary, #f1f5f9);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: var(--spacing-sm, 0.5rem);
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease-out;
+}
+
+.item-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-secondary, #64748b);
+}
+
+/* ========================================================== */
+/* == RESPONSIVE STYLES FOR CHART LEGEND ON SMALL DEVICES === */
+/* ========================================================== */
+
+@media (max-width: 480px) {
+    /*
+      Các quy tắc này sẽ làm cho phần chú giải (legend) của biểu đồ
+      trông gọn gàng và dễ đọc hơn trên điện thoại màn hình nhỏ.
+    */
+
+    .chart-legend {
+        padding: var(--spacing-sm); /* Giảm padding của cả khu vực chú giải */
+    }
+
+    .legend-item {
+        padding: var(--spacing-sm) 0; /* Chỉ giữ padding dọc giữa các mục */
+        margin-bottom: 0;
+        border-bottom: 1px solid var(--border-color); /* Thêm dòng kẻ phân cách */
+    }
+
+    .legend-item:last-child {
+        border-bottom: none; /* Bỏ dòng kẻ ở mục cuối cùng */
+    }
+
+    .legend-content {
+        gap: var(--spacing-sm); /* Giảm khoảng cách giữa cụm text và thanh màu */
+    }
+
+    .legend-header {
+        gap: var(--spacing-sm); /* Giảm khoảng cách giữa icon và text */
+    }
+
+    .legend-icon {
+        width: 36px; /* Giảm kích thước icon */
+        height: 36px;
+        font-size: 1.1rem;
+    }
+
+    .legend-label-wrapper {
+        gap: 2px; /* Giảm khoảng cách giữa tên danh mục và dòng tiền */
+    }
+
+    .legend-label {
+        font-size: 0.85rem; /* Giữ cho tên danh mục đủ lớn để đọc */
+        font-weight: 500;
+        max-width: 140px; /* Cho phép tên dài hơn một chút trước khi bị cắt */
+    }
+
+    .legend-amount-percentage {
+        /* Chuyển thành block để có thể xuống dòng tự nhiên nếu cần */
+        display: block;
+        line-height: 1.3;
+        font-size: 0.75rem;
+    }
+
+    .legend-amount {
+        font-weight: 600; /* Làm nổi bật số tiền */
+        font-size: 0.8rem;
+        margin-right: 6px; /* Khoảng cách giữa số tiền và phần trăm */
+    }
+
+    .legend-percentage {
+        font-size: 0.75rem;
+        color: var(--text-muted); /* Làm mờ màu chữ của % */
+    }
+
+    .legend-color {
+        width: 6px; /* Thu hẹp thanh màu thành một dải mỏng */
+        height: 28px;
+        border-radius: 3px;
+        align-self: center; /* Giữ cho thanh màu luôn ở giữa theo chiều dọc */
+    }
+}
