@@ -775,139 +775,118 @@ class StatisticsModule {
     /**
      * Build chart options with proper mobile support
      */
-    buildChartOptions(chartType, totalAmount) {
-        const isDark = document.body.getAttribute('data-theme') === 'dark';
-        const textColor = isDark ? '#e2e8f0' : '#374151';
-        const gridColor = isDark ? '#475569' : '#e5e7eb';
-        const isMobile = this.isMobileDevice();
+	buildChartOptions(chartType, totalAmount) {
+		const isDark = document.body.getAttribute('data-theme') === 'dark';
+		const textColor = isDark ? '#e2e8f0' : '#374151';
+		const gridColor = isDark ? '#475569' : '#e5e7eb';
+		const isMobile = this.isMobileDevice();
 
-        const baseOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: {
-                duration: isMobile ? 400 : (this.config.animationDuration || 800),
-                easing: 'easeOutQuart'
-            },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: isDark ? 'rgba(30, 41, 59, 0.95)' : 'rgba(0,0,0,0.8)',
-                    titleColor: '#ffffff',
-                    bodyColor: '#ffffff',
-                    titleFont: {
-                        size: isMobile ? 12 : 14,
-                        weight: 'bold'
-                    },
-                    bodyFont: {
-                        size: isMobile ? 11 : 13
-                    },
-                    padding: isMobile ? 8 : 12,
-                    cornerRadius: 6,
-                    displayColors: true,
-                    boxWidth: isMobile ? 8 : 12,
-                    boxHeight: isMobile ? 8 : 12,
-                    usePointStyle: true,
-                    callbacks: {
-                        title: () => null, 
-                        
-                        label: (context) => {
-                            let categoryName = context.label || '';
-                            
-                            if (!categoryName || 
-                                categoryName === 'undefined' || 
-                                categoryName === 'null' ||
-                                String(categoryName).trim() === '') {
-                                categoryName = 'Không phân loại';
-                            }
-                            
-                            categoryName = String(categoryName).trim();
-                            
-                            const value = context.raw || 0;
-                            const displayValue = this.formatCurrency(value);
+		const baseOptions = {
+			responsive: true,
+			maintainAspectRatio: false,
+			animation: {
+				duration: isMobile ? 400 : 800,
+				easing: 'easeOutQuart'
+			},
+			plugins: {
+				legend: {
+					display: false // Tắt legend mặc định vì chúng ta có legend tùy chỉnh bên dưới
+				},
+				tooltip: {
+					backgroundColor: isDark ? 'rgba(30, 41, 59, 0.95)' : 'rgba(0,0,0,0.8)',
+					titleColor: '#ffffff',
+					bodyColor: '#ffffff',
+					titleFont: { size: isMobile ? 12 : 14, weight: 'bold' },
+					bodyFont: { size: isMobile ? 11 : 13 },
+					padding: isMobile ? 8 : 12,
+					cornerRadius: 6,
+					displayColors: true,
+					boxWidth: isMobile ? 8 : 12,
+					boxHeight: isMobile ? 8 : 12,
+					usePointStyle: true,
+					callbacks: {
+						// Tooltip khi di chuột vào vẫn hiển thị đầy đủ thông tin
+						label: (context) => {
+							let categoryName = context.label || 'Không phân loại';
+							const value = context.raw || 0;
+							const displayValue = this.formatCurrency(value);
+							const percentage = totalAmount > 0 ? ((value / totalAmount) * 100).toFixed(1) : 0;
+							return `${categoryName}: ${displayValue} (${percentage}%)`;
+						}
+					}
+				},
+				// --- CẤU HÌNH QUAN TRỌNG CHO NHÃN TRÊN BIỂU ĐỒ ---
+				datalabels: {
+					display: (context) => {
+						// Chỉ hiển thị nhãn cho các lát có giá trị > 3% để tránh rối mắt
+						const value = context.dataset.data[context.dataIndex] || 0;
+						return (value / totalAmount) * 100 > 3;
+					},
+					formatter: (value, context) => {
+						// Định dạng nhãn trả về: một chuỗi nhiều dòng
+						const percentage = (value / totalAmount) * 100;
+						const iconUnicode = context.dataset.icons[context.dataIndex]; // Lấy icon từ dataset
+						const categoryName = context.chart.data.labels[context.dataIndex];
+						
+						// Trả về 3 dòng: Icon, Tên danh mục, Phần trăm
+						return `${iconUnicode}\n${categoryName}\n${percentage.toFixed(0)}%`;
+					},
+					color: '#ffffff', // Màu chữ của nhãn
+					textAlign: 'center',
+					font: function(context) {
+						// Sử dụng font khác nhau cho icon và chữ
+						const isIconLine = context.line.includes('\uf07a'); // Kiểm tra ký tự icon
+						return {
+							family: isIconLine ? "'Font Awesome 6 Free'" : "Inter, sans-serif",
+							weight: 'bold',
+							size: isMobile ? 10 : 12
+						};
+					},
+					// Thêm viền cho chữ để dễ đọc trên mọi màu nền
+					textStrokeColor: 'rgba(0, 0, 0, 0.6)',
+					textStrokeWidth: 2,
+					align: 'center',
+					anchor: 'center',
+					padding: 4,
+					borderRadius: 4,
+					backgroundColor: 'rgba(0, 0, 0, 0.3)' // Thêm nền mờ để nhãn nổi bật hơn
+				}
+			}
+		};
 
-                            if (chartType === 'doughnut' && totalAmount > 0) {
-                                const percentage = ((value / totalAmount) * 100).toFixed(1);
-                                return `${categoryName}: ${displayValue} (${percentage}%)`;
-                            }
-                            
-                            return `${categoryName}: ${displayValue}`;
-                        }
-                    }
-                }
-            }
-        };
-
-        if (chartType === 'doughnut') {
-            return {
-                ...baseOptions,
-                cutout: isMobile ? '55%' : '65%',
-                radius: isMobile ? '75%' : '80%',
-                layout: {
-                    padding: {
-                        top: isMobile ? 10 : 20,
-                        bottom: isMobile ? 10 : 20,
-                        left: isMobile ? 5 : 10,
-                        right: isMobile ? 5 : 10
-                    }
-                },
-                plugins: {
-                    ...baseOptions.plugins,
-                    datalabels: {
-                        display: false
-                    }
-                }
-            };
-        } else {
-            return {
-                ...baseOptions,
-                indexAxis: 'y',
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        ticks: {
-                            color: textColor,
-                            font: { size: isMobile ? 9 : 11 },
-                            maxTicksLimit: isMobile ? 4 : 6,
-                            callback: (value) => this.formatCurrency(value, false)
-                        },
-                        grid: { color: gridColor, drawBorder: false, lineWidth: isMobile ? 0.5 : 1 },
-                    },
-                    y: {
-                        ticks: {
-                            color: textColor,
-                            font: { size: isMobile ? 9 : 11 },
-                            callback: function(value, index, values) {
-                                let label = this.getLabelForValue(value);
-                                
-                                if (!label || 
-                                    label === 'undefined' || 
-                                    label === 'null' ||
-                                    String(label).trim() === '') {
-                                    label = 'Không phân loại';
-                                }
-                                
-                                label = String(label).trim();
-                                
-                                if (isMobile && label.length > 12) {
-                                    return label.substring(0, 10) + '...';
-                                }
-                                return label;
-                            }
-                        },
-                        grid: { display: false }
-                    }
-                },
-                plugins: {
-                    ...baseOptions.plugins,
-                    datalabels: {
-                        display: false
-                    }
-                }
-            };
-        }
-    }
+		if (chartType === 'doughnut') {
+			return {
+				...baseOptions,
+				cutout: isMobile ? '60%' : '70%',
+				layout: {
+					// Tăng padding để có không gian cho nhãn không bị cắt
+					padding: isMobile ? 25 : 40 
+				},
+			};
+		} else { // Cấu hình cho biểu đồ cột
+			return {
+				...baseOptions,
+				indexAxis: 'y',
+				scales: {
+					x: {
+						beginAtZero: true,
+						ticks: { color: textColor, font: { size: isMobile ? 9 : 11 }, maxTicksLimit: isMobile ? 4 : 6, callback: (value) => this.formatCurrency(value, false) },
+						grid: { color: gridColor, drawBorder: false, lineWidth: isMobile ? 0.5 : 1 },
+					},
+					y: {
+						ticks: { color: textColor, font: { size: isMobile ? 9 : 11 },
+							callback: function(value) {
+								let label = this.getLabelForValue(value) || 'Không phân loại';
+								return isMobile && label.length > 12 ? label.substring(0, 10) + '...' : label;
+							}
+						},
+						grid: { display: false }
+					}
+				},
+				plugins: { ...baseOptions.plugins, datalabels: { display: false } } // Tắt datalabels cho biểu đồ cột
+			};
+		}
+	}
     getDoughnutPlugins(totalAmount, forceRightNames = []) {
         const isMobile = this.isMobileDevice();
         const isDark = document.body.getAttribute('data-theme') === 'dark';
@@ -2421,13 +2400,13 @@ class StatisticsModule {
 
             const color = this.getCategoryColor(categoryName, index);
             const percentage = ((amount / totalExpense) * 100).toFixed(1);
-            const iconClass = this.getCategoryIcon(categoryName); // Get the class name
+			const iconInfo = this.getCategoryIcon(categoryName); // Đổi tên biến để rõ ràng hơn
 
-            legendItem.innerHTML = `
-                <div class="legend-content">
-                    <div class="legend-header">
-                        <span class="legend-icon">
-                            <i class="${iconClass}"></i>
+			legendItem.innerHTML = `
+				<div class="legend-content">
+					<div class="legend-header">
+						<span class="legend-icon">
+							<i class="${iconInfo.value}"></i> </span>
                         </span>
                         <div class="legend-label-wrapper">
                             <div class="legend-label" title="${this.escapeHtml(categoryName)}">${this.escapeHtml(categoryName)}</div>
