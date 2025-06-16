@@ -887,189 +887,157 @@ class StatisticsModule {
 			};
 		}
 	}
-    getDoughnutPlugins(totalAmount, forceRightNames = []) {
-        const isMobile = this.isMobileDevice();
-        const isDark = document.body.getAttribute('data-theme') === 'dark';
+// ... (bên trong lớp StatisticsModule)
 
-        return [{
-            id: 'customLeaderLinesAndLabels',
-            afterDatasetsDraw: (chart) => {
-                try {
-                    const ctx = chart.ctx;
-                    const chartArea = chart.chartArea;
-                    const meta = chart.getDatasetMeta(0);
+	/**
+	 * SỬA LẠI TOÀN BỘ HÀM NÀY
+	 * - Khôi phục border cho nhãn
+	 * - Tách icon ra ngoài và đặt bên trái của nhãn
+	 */
+	getDoughnutPlugins(totalAmount) {
+		const isMobile = this.isMobileDevice();
+		const isDark = document.body.getAttribute('data-theme') === 'dark';
 
-                    if (!meta || !meta.data || !meta.data.length || !totalAmount) {
-                        return;
-                    }
+		return [{
+			id: 'customLeaderLinesAndLabels',
+			afterDatasetsDraw: (chart) => {
+				try {
+					const { ctx } = chart;
+					const meta = chart.getDatasetMeta(0);
 
-                    const leaderLineColor = isDark ? '#64748b' : '#94a3b8';
-                    const leaderLineWidth = 1.5;
-                    const leaderExtension = isMobile ? 10 : 15;
-                    const horizontalExtension = isMobile ? 20 : 25;
+					if (!meta.data?.length || !totalAmount) return;
 
-                    const labelPadding = { x: isMobile ? 5 : 6, y: isMobile ? 2 : 3 };
-                    const labelBorderRadius = 4;
-                    const labelFont = {
-                        size: isMobile ? 8 : 10,
-                        weight: 'bold',
-                        family: 'Inter, sans-serif'
-                    };
+					const leaderLineColor = isDark ? 'rgba(148, 163, 184, 0.7)' : 'rgba(100, 116, 139, 0.7)';
+					const labelTextColor = isDark ? '#f1f5f9' : '#0f172a';
+					const labelBorderColor = isDark ? '#64748b' : '#cbd5e1';
+					const leaderExtension = isMobile ? 15 : 20;
+					const horizontalExtension = isMobile ? 25 : 30;
+					
+					const labelFont = { size: isMobile ? 9 : 11, weight: '600', family: 'Inter, sans-serif' };
+					const iconFont = { size: isMobile ? 10 : 12, weight: '900', family: '"Font Awesome 6 Free"' };
+					const labelPadding = { x: isMobile ? 5 : 7, y: isMobile ? 3 : 4 };
+					const iconSpacing = isMobile ? 4 : 5;
+					const minYSpacing = (isMobile ? 12 : 14) * 1.5;
 
-                    const labelTextColor = isDark ? '#ffffff' : '#000000';
-                    const labelBorderColor = isDark ? '#ffffff' : '#000000';
-                    const labelBorderWidth = 2;
+					let occupiedYRanges = { left: [], right: [] };
 
-                    const estimatedActualLabelHeight = labelFont.size + (2 * labelPadding.y) + (labelBorderWidth * 2);
-                    const minYSpacing = estimatedActualLabelHeight + (isMobile ? 3 : 4);
+					const items = meta.data.map((element, index) => ({
+						element,
+						index,
+						midAngle: element.startAngle + (element.endAngle - element.startAngle) / 2,
+						percentage: (chart.data.datasets[0].data[index] / totalAmount) * 100,
+					})).filter(item => item.percentage >= 1);
 
-                    let occupiedYRanges = { left: [], right: [] };
+					items.forEach(item => {
+						const { element, midAngle, percentage, index } = item;
+						const isRightSide = Math.cos(midAngle) >= 0;
+						
+						// --- TÍNH TOÁN VỊ TRÍ ---
+						const startX = element.x + Math.cos(midAngle) * element.outerRadius;
+						const startY = element.y + Math.sin(midAngle) * element.outerRadius;
+						const elbowX = element.x + Math.cos(midAngle) * (element.outerRadius + leaderExtension);
+						const initialElbowY = element.y + Math.sin(midAngle) * (element.outerRadius + leaderExtension);
+						const endX = isRightSide ? elbowX + horizontalExtension : elbowX - horizontalExtension;
+						
+						// --- LOGIC TRÁNH CHỒNG CHÉO NHÃN ---
+						let bestY = initialElbowY;
+						let attempts = 0;
+						let collision = true;
+						while (collision && attempts < 20) {
+							collision = false;
+							for (const range of occupiedYRanges[isRightSide ? 'right' : 'left']) {
+								if (Math.abs(bestY - range.center) < minYSpacing) {
+									collision = true;
+									bestY += (bestY < element.y ? -5 : 5);
+									break;
+								}
+							}
+							attempts++;
+						}
+						occupiedYRanges[isRightSide ? 'right' : 'left'].push({ center: bestY });
 
-                    let lastPieceItem = null;
-                    const otherItems = [];
-                    meta.data.forEach((element, index) => {
-                        const item = {
-                            element,
-                            index,
-                            midAngle: element.startAngle + (element.endAngle - element.startAngle) / 2,
-                            percentage: (chart.data.datasets[0].data[index] / totalAmount) * 100,
-                        };
-                        const categoryName = chart.data.labels[index];
-                        if (forceRightNames.includes(categoryName)) {
-                            lastPieceItem = item;
-                        } else {
-                            otherItems.push(item);
-                        }
-                    });
+						// --- BẮT ĐẦU VẼ ---
+						ctx.save();
+						
+						// 1. VẼ ĐƯỜNG KẺ (LEADER LINE)
+						ctx.strokeStyle = leaderLineColor;
+						ctx.lineWidth = 1;
+						ctx.beginPath();
+						ctx.moveTo(startX, startY);
+						ctx.lineTo(elbowX, bestY);
+						ctx.lineTo(endX, bestY);
+						ctx.stroke();
 
-                    // Hàm tiện ích để vẽ nhãn có đường gấp khúc (cho các lát bánh thông thường)
-                    const drawElbowLabel = (item) => {
-                        const { element, midAngle } = item;
-                        const isRightSide = Math.cos(midAngle) >= 0;
-                        const centerX = element.x;
-                        const centerY = element.y;
-                        const outerRadius = element.outerRadius;
-                        const startX = centerX + Math.cos(midAngle) * outerRadius;
-                        const startY = centerY + Math.sin(midAngle) * outerRadius;
-                        const elbowX = centerX + Math.cos(midAngle) * (outerRadius + leaderExtension);
-                        const initialElbowY = centerY + Math.sin(midAngle) * (outerRadius + leaderExtension);
-                        const endX = isRightSide ? elbowX + horizontalExtension : elbowX - horizontalExtension;
-                        let bestY = initialElbowY;
-                        const targetSide = isRightSide ? 'right' : 'left';
+						// 2. CHUẨN BỊ DỮ LIỆU TEXT VÀ ICON
+						ctx.textBaseline = 'middle';
+						const iconInfo = Utils.UIUtils.getCategoryIcon(chart.data.labels[index]);
+						const iconText = iconInfo.unicode || '';
+						const percentText = `${percentage.toFixed(0)}%`;
 
-                        let potentialYPositions = [initialElbowY];
-                        for (let i = 1; i <= 8; i++) {
-                            potentialYPositions.push(initialElbowY - i * (minYSpacing / 2));
-                            potentialYPositions.push(initialElbowY + i * (minYSpacing / 2));
-                        }
+						// 3. TÍNH TOÁN KÍCH THƯỚC VÀ VỊ TRÍ
+						ctx.font = `${iconFont.weight} ${iconFont.size}px ${iconFont.family}`;
+						const iconWidth = ctx.measureText(iconText).width;
 
-                        const safetyMarginY = estimatedActualLabelHeight / 2 + 5;
-                        potentialYPositions = potentialYPositions.filter(y => y >= chartArea.top + safetyMarginY && y <= chartArea.bottom - safetyMarginY);
-                        potentialYPositions.sort((a, b) => Math.abs(a - initialElbowY) - Math.abs(b - initialElbowY));
+						ctx.font = `${labelFont.weight} ${labelFont.size}px ${labelFont.family}`;
+						const percentMetrics = ctx.measureText(percentText);
+						
+						const rectHeight = labelFont.size + 2 * labelPadding.y;
+						const rectWidth = percentMetrics.width + 2 * labelPadding.x;
+						const borderRadius = rectHeight / 2;
 
-                        for (const testY of potentialYPositions) {
-                            let collision = false;
-                            for (const range of occupiedYRanges[targetSide]) {
-                                if (Math.abs(testY - range.center) < minYSpacing) {
-                                    collision = true;
-                                    break;
-                                }
-                            }
-                            if (!collision) {
-                                bestY = testY;
-                                break;
-                            }
-                        }
+						// 4. VẼ (TÙY THEO BÊN TRÁI HAY PHẢI)
+						if (isRightSide) {
+							ctx.textAlign = 'left';
+							const iconX = endX + 4;
+							const rectX = iconX + iconWidth + iconSpacing;
+							
+							// Vẽ icon
+							ctx.font = `${iconFont.weight} ${iconFont.size}px ${iconFont.family}`;
+							ctx.fillStyle = leaderLineColor;
+							ctx.fillText(iconText, iconX, bestY);
 
-                        occupiedYRanges[targetSide].push({ center: bestY });
-                        
-                        // Draw leader line and label (code reused from previous version)
-                        const { percentage } = item;
-                        ctx.save();
-                        ctx.strokeStyle = leaderLineColor; ctx.lineWidth = leaderLineWidth;
-                        ctx.beginPath(); ctx.moveTo(startX, startY); ctx.lineTo(elbowX, bestY); ctx.lineTo(endX, bestY); ctx.stroke();
-                        ctx.font = `${labelFont.weight} ${labelFont.size}px ${labelFont.family}`;
-                        const text = `${percentage.toFixed(0)}%`;
-                        const textMetrics = ctx.measureText(text);
-                        const labelRectWidth = textMetrics.width + 2 * labelPadding.x;
-                        const labelRectHeight = estimatedActualLabelHeight;
-                        let labelRectX = isRightSide ? endX : endX - labelRectWidth;
-                        if (isRightSide) labelRectX = Math.min(labelRectX, chartArea.right - labelRectWidth - 2); else labelRectX = Math.max(labelRectX, chartArea.left + 2);
-                        const labelRectY = bestY - labelRectHeight / 2;
-                        ctx.strokeStyle = labelBorderColor; ctx.lineWidth = labelBorderWidth; ctx.fillStyle = 'transparent';
-                        ctx.beginPath(); ctx.moveTo(labelRectX + labelBorderRadius, labelRectY); ctx.lineTo(labelRectX + labelRectWidth - labelBorderRadius, labelRectY); ctx.quadraticCurveTo(labelRectX + labelRectWidth, labelRectY, labelRectX + labelRectWidth, labelRectY + labelBorderRadius); ctx.lineTo(labelRectX + labelRectWidth, labelRectY + labelRectHeight - labelBorderRadius); ctx.quadraticCurveTo(labelRectX + labelRectWidth, labelRectY + labelRectHeight, labelRectX + labelRectWidth - labelBorderRadius, labelRectY + labelRectHeight); ctx.lineTo(labelRectX + labelBorderRadius, labelRectY + labelRectHeight); ctx.quadraticCurveTo(labelRectX, labelRectY + labelRectHeight, labelRectX, labelRectY + labelRectHeight - labelBorderRadius); ctx.lineTo(labelRectX, labelRectY + labelBorderRadius); ctx.quadraticCurveTo(labelRectX, labelRectY, labelRectX + labelBorderRadius, labelRectY); ctx.closePath(); ctx.stroke();
-                        ctx.fillStyle = labelTextColor; ctx.textAlign = isRightSide ? 'left' : 'right'; ctx.textBaseline = 'middle';
-                        const textX = isRightSide ? labelRectX + labelPadding.x : labelRectX + labelRectWidth - labelPadding.x;
-                        ctx.fillText(text, textX, bestY);
-                        ctx.restore();
-                    };
+							// Vẽ border
+							ctx.strokeStyle = labelBorderColor;
+							ctx.beginPath();
+							ctx.roundRect(rectX, bestY - rectHeight / 2, rectWidth, rectHeight, borderRadius);
+							ctx.stroke();
 
-                    // Vẽ các nhãn thông thường (dạng gấp khúc)
-                    otherItems.forEach(item => drawElbowLabel(item));
+							// Vẽ text %
+							ctx.font = `${labelFont.weight} ${labelFont.size}px ${labelFont.family}`;
+							ctx.fillStyle = labelTextColor;
+							ctx.fillText(percentText, rectX + labelPadding.x, bestY);
 
-                    // *** LOGIC MỚI: Xử lý đặc biệt cho lát bánh cuối cùng để vẽ đường thẳng ***
-                    if (lastPieceItem) {
-                        const { element, midAngle, percentage } = lastPieceItem;
-                        const centerX = element.x;
-                        const centerY = element.y;
-                        const outerRadius = element.outerRadius;
-                        
-                        // Độ dài của đường chỉ dẫn
-                        const lineLength = leaderExtension + horizontalExtension;
+						} else { // Bên trái
+							ctx.textAlign = 'right';
+							const rectX = endX - 4;
+							const iconX = rectX - rectWidth - iconSpacing;
+							
+							// Vẽ icon
+							ctx.font = `${iconFont.weight} ${iconFont.size}px ${iconFont.family}`;
+							ctx.fillStyle = leaderLineColor;
+							ctx.fillText(iconText, iconX, bestY);
 
-                        // Điểm bắt đầu (trên cạnh của lát bánh)
-                        const startX = centerX + Math.cos(midAngle) * outerRadius;
-                        const startY = centerY + Math.sin(midAngle) * outerRadius;
+							// Vẽ border
+							ctx.strokeStyle = labelBorderColor;
+							ctx.beginPath();
+							ctx.roundRect(rectX - rectWidth, bestY - rectHeight / 2, rectWidth, rectHeight, borderRadius);
+							ctx.stroke();
 
-                        // Điểm kết thúc (kéo dài từ điểm bắt đầu)
-                        const endX = centerX + Math.cos(midAngle) * (outerRadius + lineLength);
-                        const endY = centerY + Math.sin(midAngle) * (outerRadius + lineLength);
+							// Vẽ text %
+							ctx.font = `${labelFont.weight} ${labelFont.size}px ${labelFont.family}`;
+							ctx.fillStyle = labelTextColor;
+							ctx.fillText(percentText, rectX - labelPadding.x, bestY);
+						}
+						
+						ctx.restore();
+					});
+				} catch (error) {
+					console.error('Error in custom chart plugin:', error);
+				}
+			}
+		}];
+	}
 
-                        // Vẽ đường chỉ dẫn thẳng
-                        ctx.save();
-                        ctx.strokeStyle = leaderLineColor;
-                        ctx.lineWidth = leaderLineWidth;
-                        ctx.beginPath();
-                        ctx.moveTo(startX, startY);
-                        ctx.lineTo(endX, endY);
-                        ctx.stroke();
-
-                        // Vẽ nhãn ở điểm kết thúc
-                        ctx.font = `${labelFont.weight} ${labelFont.size}px ${labelFont.family}`;
-                        const text = `${percentage.toFixed(0)}%`;
-                        const textMetrics = ctx.measureText(text);
-                        const labelRectWidth = textMetrics.width + 2 * labelPadding.x;
-                        const labelRectHeight = estimatedActualLabelHeight;
-                        
-                        const isRightSide = Math.cos(midAngle) >= 0;
-                        const labelRectY = endY - (labelRectHeight / 2);
-                        // Căn chỉnh vị trí X của hộp nhãn dựa trên vị trí (trái/phải)
-                        const labelRectX = isRightSide ? endX + labelPadding.x : endX - labelRectWidth - labelPadding.x;
-
-                        // Vẽ hộp nhãn
-                        ctx.strokeStyle = labelBorderColor;
-                        ctx.lineWidth = labelBorderWidth;
-                        ctx.fillStyle = 'transparent';
-                        ctx.beginPath();
-                        ctx.roundRect(labelRectX, labelRectY, labelRectWidth, labelRectHeight, labelBorderRadius);
-                        ctx.stroke();
-                        
-                        // Vẽ chữ phần trăm
-                        ctx.fillStyle = labelTextColor;
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText(text, labelRectX + labelRectWidth / 2, labelRectY + labelRectHeight / 2);
-                        ctx.restore();
-                    }
-                } catch (error) {
-                    console.error('Error in custom chart plugin:', error);
-                }
-            }
-        }];
-    }
-    /**
-     * Update detailed statistics table
-     */
     updateDetailedStats() {
         if (!this.elements.detailedStatsBody) return;
 
