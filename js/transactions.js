@@ -2,6 +2,7 @@
  * TRANSACTIONS MODULE - REFINED & ROBUST VERSION
  * Handles transaction form, list, and CRUD operations.
  * Improved Smart Reset functionality and validation.
+ * FIXED: Prevent virtual keyboard from appearing after updating a transaction.
  */
 
 class TransactionsModule {
@@ -76,7 +77,6 @@ class TransactionsModule {
 	initializeFilters() {
 		this.elements.filterPeriod?.addEventListener('change', () => this.handleFilterChange());
 		
-		// Gán thêm sự kiện cho các phần tử mới
 		const applyBtn = document.getElementById('filter-apply-button');
 		applyBtn?.addEventListener('click', () => this.applyCustomDateFilter());
 	}
@@ -106,8 +106,6 @@ class TransactionsModule {
 			if (customPicker) customPicker.style.display = 'flex';
 		} else {
 			if (customPicker) customPicker.style.display = 'none';
-			// Khi người dùng chọn lại các bộ lọc khác (tháng này, tuần này...),
-			// chúng ta sẽ lọc và hiển thị lại danh sách ngay lập tức.
 			this.currentFilter.startDate = null;
 			this.currentFilter.endDate = null;
 			this.renderTransactionList();
@@ -132,9 +130,7 @@ class TransactionsModule {
 			return;
 		}
 
-		// Lưu khoảng ngày vào bộ lọc và render lại danh sách
 		this.currentFilter.startDate = new Date(startDate);
-		// Đặt giờ của ngày kết thúc thành 23:59:59 để bao gồm tất cả giao dịch trong ngày
 		this.currentFilter.endDate = new Date(endDate);
 		this.currentFilter.endDate.setHours(23, 59, 59, 999);
 		
@@ -253,15 +249,20 @@ class TransactionsModule {
     }
 
     refreshAfterSubmit() {
-        this.app.refreshAllModules(); // This will re-render the list
+        this.app.refreshAllModules();
         if (this.editingTransactionId) {
             this.exitEditMode();
         } else {
-            this.resetForm();
+            // When adding a new transaction, reset the form and focus the amount input
+            this.resetForm(true);
         }
     }
 
-    resetForm() {
+    /**
+     * Resets the form.
+     * @param {boolean} shouldFocus - Whether to focus the amount input after reset.
+     */
+    resetForm(shouldFocus = true) {
         const preservedState = {
             type: document.querySelector('input[name="type"]:checked').value,
             category: this.elements.categorySelect.value,
@@ -281,7 +282,10 @@ class TransactionsModule {
             this.updateFormVisibility();
             this.populateCategories();
         }
-        this.elements.amountInput.focus();
+
+        if (shouldFocus) {
+            this.elements.amountInput.focus();
+        }
     }
     
     setDefaultDateTime() {
@@ -325,7 +329,8 @@ class TransactionsModule {
 			transaction.category === Utils.CONFIG.RECONCILE_ADJUST_EXPENSE_CAT;
 
 		const categoryDisplayText = isReconciliation ? "Điều chỉnh" : transaction.category;
-		const categoryTitleText = isReconciliation ? transaction.category : ''; // Để hiển thị tooltip khi cần
+		const categoryTitleText = isReconciliation ? transaction.category : '';
+
         item.innerHTML = `
             <div class="transaction-type-icon ${typeClass}">${icon}</div>
             <div class="transaction-content">
@@ -379,7 +384,8 @@ class TransactionsModule {
 
     exitEditMode() {
         this.editingTransactionId = null;
-        this.resetForm();
+        // After exiting edit mode, reset the form but DON'T focus the input
+        this.resetForm(false);
         this.updateFormVisibility();
     }
 
