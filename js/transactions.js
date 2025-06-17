@@ -313,9 +313,31 @@ class TransactionsModule {
         item.dataset.id = transaction.id;
 
         const typeClass = transaction.type === 'Thu' ? 'income' : (transaction.type === 'Chi' ? 'expense' : 'transfer');
-        const iconInfo = Utils.UIUtils.getCategoryIcon(transaction.isTransfer ? transaction.account : transaction.category);
-        const icon = `<i class="${iconInfo.value || 'fa-solid fa-question-circle'}"></i>`;
-        
+
+        // --- LOGIC LẤY ICON ĐÃ ĐƯỢC CẬP NHẬT ---
+        let iconHtml;
+        // Nếu là giao dịch chuyển khoản, icon sẽ dựa trên loại giao dịch
+        if (transaction.isTransfer) {
+            const transferIconClass = transaction.type === 'Chi' ? 'fa-solid fa-arrow-up-from-bracket' : 'fa-solid fa-arrow-down-to-bracket';
+            iconHtml = `<i class="${transferIconClass}"></i>`;
+        } else {
+            // Nếu là Thu/Chi, tìm đối tượng danh mục để lấy icon tùy chỉnh
+            const categoryList = transaction.type === 'Thu'
+                ? this.app.data.incomeCategories
+                : this.app.data.expenseCategories;
+            
+            const categoryObject = categoryList.find(c => c && c.value === transaction.category);
+            
+            // Lấy thông tin icon từ đối tượng tìm được, hoặc dùng tên làm dự phòng
+            const iconInfo = Utils.UIUtils.getCategoryIcon(categoryObject || transaction.category);
+
+            // Tạo HTML cho icon, hỗ trợ cả ảnh và font-icon
+            iconHtml = iconInfo.type === 'img'
+                ? `<img src="${iconInfo.value}" class="custom-category-icon" alt="Category Icon">`
+                : `<i class="${iconInfo.value || 'fa-solid fa-question-circle'}"></i>`;
+        }
+        // --- KẾT THÚC LOGIC LẤY ICON ---
+
         let accountDisplay = this.app.getAccountName(transaction.account);
         if (transaction.isTransfer) {
             const pairTx = this.app.data.transactions.find(t => t.id === transaction.transferPairId);
@@ -324,20 +346,22 @@ class TransactionsModule {
                 accountDisplay = transaction.type === 'Chi' ? `${accountDisplay} → ${pairAccountName}` : `${pairAccountName} → ${accountDisplay}`;
             }
         }
-		const isReconciliation = 
-			transaction.category === Utils.CONFIG.RECONCILE_ADJUST_INCOME_CAT ||
-			transaction.category === Utils.CONFIG.RECONCILE_ADJUST_EXPENSE_CAT;
+        
+        const isReconciliation =
+            transaction.category === Utils.CONFIG.RECONCILE_ADJUST_INCOME_CAT ||
+            transaction.category === Utils.CONFIG.RECONCILE_ADJUST_EXPENSE_CAT;
 
-		const categoryDisplayText = isReconciliation ? "Điều chỉnh" : transaction.category;
-		const categoryTitleText = isReconciliation ? transaction.category : '';
+        // Nếu là giao dịch điều chỉnh, hiển thị tên đầy đủ hơn, ngược lại hiển thị tên danh mục
+        const categoryDisplayText = isReconciliation ? "Điều chỉnh đối soát" : (transaction.category || "Chưa phân loại");
+        const categoryTitleText = isReconciliation ? transaction.category : ''; // Tooltip cho giao dịch điều chỉnh
 
         item.innerHTML = `
-            <div class="transaction-type-icon ${typeClass}">${icon}</div>
+            <div class="transaction-type-icon ${typeClass}">${iconHtml}</div>
             <div class="transaction-content">
                 <div class="transaction-description" title="${transaction.description || ''}">${transaction.description || 'Không có mô tả'}</div>
-				<div class="transaction-meta">
-					<span class="transaction-category" title="${categoryTitleText}">${categoryDisplayText}</span> • <span>${accountDisplay}</span>
-				</div>
+                <div class="transaction-meta">
+                    <span class="transaction-category" title="${categoryTitleText}">${categoryDisplayText}</span> • <span>${accountDisplay}</span>
+                </div>
             </div>
             <div class="transaction-amount-section">
                 <div class="transaction-amount ${typeClass}">${Utils.CurrencyUtils.formatCurrency(transaction.amount)}</div>
