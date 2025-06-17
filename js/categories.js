@@ -267,6 +267,34 @@ class CategoriesModule {
         document.getElementById('icon-picker-search').oninput = (e) => this.filterIcons(e.target.value);
         
         modal.style.display = 'flex';
+		const iconUploadInput = document.getElementById('icon-upload-input');
+		const handleFileUpload = (e) => {
+			const file = e.target.files[0];
+			if (!file) return;
+
+			if (file.size > 1024 * 1024) { // Giới hạn 1MB
+				Utils.UIUtils.showMessage('Kích thước ảnh không được vượt quá 1MB', 'error');
+				return;
+			}
+
+			const reader = new FileReader();
+			reader.onload = (event) => {
+				const imageDataUrl = event.target.result;
+				// Lưu icon mới dưới dạng data URL và cập nhật hiển thị
+				this.selectIcon(imageDataUrl); 
+			};
+			reader.onerror = () => {
+				Utils.UIUtils.showMessage('Không thể đọc được file ảnh.', 'error');
+			};
+			reader.readAsDataURL(file);
+
+			// Reset input để có thể chọn lại cùng 1 file
+			iconUploadInput.value = '';
+		};
+
+		// Gán sự kiện, nhưng trước đó gỡ sự kiện cũ để tránh bị gọi nhiều lần
+		iconUploadInput.removeEventListener('change', handleFileUpload);
+		iconUploadInput.addEventListener('change', handleFileUpload);
     }
 
     populateIconGrid() {
