@@ -545,47 +545,56 @@ class StatisticsModule {
     /**
      * Build chart data with comprehensive validation
      */
-    buildChartData(categories, chartType) {
-        if (!Array.isArray(categories)) {
-            console.warn('buildChartData: categories is not an array');
-            categories = [];
-        }
-        
-        if (!chartType || typeof chartType !== 'string') {
-            chartType = 'doughnut'; // Default fallback
-        }
+	buildChartData(categories, chartType) {
+		if (!Array.isArray(categories)) {
+			console.warn('buildChartData: categories is not an array');
+			categories = [];
+		}
+		
+		if (!chartType || typeof chartType !== 'string') {
+			chartType = 'doughnut'; // Default fallback
+		}
 
-        const validCategories = categories.filter(item => {
-            if (!Array.isArray(item) || item.length !== 2) return false;
-            const [category, amount] = item;
-            if (category === null || category === undefined || String(category).trim() === '') return false;
-            const numAmount = parseFloat(amount);
-            if (isNaN(numAmount) || !isFinite(numAmount) || numAmount <= 0) return false;
-            return true;
-        });
+		const validCategories = categories.filter(item => {
+			if (!Array.isArray(item) || item.length !== 2) return false;
+			const [category, amount] = item;
+			if (category === null || category === undefined || String(category).trim() === '') return false;
+			const numAmount = parseFloat(amount);
+			if (isNaN(numAmount) || !isFinite(numAmount) || numAmount <= 0) return false;
+			return true;
+		});
 
-        if (validCategories.length === 0) {
-            return { labels: [], datasets: [{ data: [], backgroundColor: [], borderColor: [], borderWidth: 2 }] };
-        }
+		if (validCategories.length === 0) {
+			return { labels: [], datasets: [{ data: [], icons: [], backgroundColor: [], borderColor: [], borderWidth: 2 }] };
+		}
 
-        const labels = validCategories.map(([category]) => String(category).trim() || 'Không phân loại');
-        const data = validCategories.map(([, amount]) => parseFloat(amount));
-        const colors = labels.map((category, index) => this.getCategoryColor(category, index));
+		const labels = validCategories.map(([category]) => String(category).trim() || 'Không phân loại');
+		const data = validCategories.map(([, amount]) => parseFloat(amount));
+		
+		// --- BỔ SUNG LOGIC LẤY ICON ---
+		const icons = labels.map(label => {
+			const categoryObject = this.app.data.expenseCategories.find(c => c.value === label);
+			return Utils.UIUtils.getCategoryIcon(categoryObject || label);
+		});
+		// --- KẾT THÚC BỔ SUNG ---
 
-        return {
-            labels: labels,
-            datasets: [{
-                data: data,
-                backgroundColor: colors,
-                borderColor: colors,
-                borderWidth: 2,
-                hoverOffset: chartType === 'doughnut' ? 4 : 0,
-                barThickness: chartType === 'bar' ? 20 : undefined,
-                hoverBackgroundColor: colors.map(color => color + '80'),
-                hoverBorderColor: colors
-            }]
-        };
-    }
+		const colors = labels.map((category, index) => this.getCategoryColor(category, index));
+
+		return {
+			labels: labels,
+			datasets: [{
+				data: data,
+				icons: icons, // <<< Thêm mảng icons vào dataset
+				backgroundColor: colors,
+				borderColor: colors,
+				borderWidth: 2,
+				hoverOffset: chartType === 'doughnut' ? 4 : 0,
+				barThickness: chartType === 'bar' ? 20 : undefined,
+				hoverBackgroundColor: colors.map(color => color + '80'),
+				hoverBorderColor: colors
+			}]
+		};
+	}
 
     /**
      * Get date range for a period
@@ -895,14 +904,16 @@ class StatisticsModule {
 	 * - Tách icon ra ngoài và đặt bên trái của nhãn
 	 */
 	getDoughnutPlugins(totalAmount) {
+		// Lưu lại tham chiếu đến 'this' của class StatisticsModule
+		const self = this; 
 		const isMobile = this.isMobileDevice();
 		const isDark = document.body.getAttribute('data-theme') === 'dark';
 
 		return [{
 			id: 'customLeaderLinesAndLabels',
-			afterDatasetsDraw: (chart) => {
+			afterDraw: (chart) => { // Sử dụng afterDraw để đảm bảo ảnh được vẽ
 				try {
-					const { ctx } = chart;
+					const { ctx, data } = chart;
 					const meta = chart.getDatasetMeta(0);
 
 					if (!meta.data?.length || !totalAmount) return;
@@ -913,8 +924,8 @@ class StatisticsModule {
 					const leaderExtension = isMobile ? 15 : 20;
 					const horizontalExtension = isMobile ? 25 : 30;
 					
-					const labelFont = { size: isMobile ? 9 : 11, weight: '600', family: 'Inter, sans-serif' };
-					const iconFont = { size: isMobile ? 10 : 12, weight: '900', family: '"Font Awesome 6 Free"' };
+					const labelFont = { size: isMobile ? 10 : 12, weight: '600', family: 'Inter, sans-serif' };
+					const iconFont = { size: isMobile ? 14 : 16, weight: '900', family: '"Font Awesome 6 Free"' };
 					const labelPadding = { x: isMobile ? 5 : 7, y: isMobile ? 3 : 4 };
 					const iconSpacing = isMobile ? 4 : 5;
 					const minYSpacing = (isMobile ? 12 : 14) * 1.5;
@@ -925,119 +936,206 @@ class StatisticsModule {
 						element,
 						index,
 						midAngle: element.startAngle + (element.endAngle - element.startAngle) / 2,
-						percentage: (chart.data.datasets[0].data[index] / totalAmount) * 100,
+						percentage: (data.datasets[0].data[index] / totalAmount) * 100,
 					})).filter(item => item.percentage >= 1);
 
+					ctx.save();
+					
 					items.forEach(item => {
 						const { element, midAngle, percentage, index } = item;
+						
+						// LẤY THÔNG TIN ICON TỪ DATASET (ĐÂY LÀ THAY ĐỔI QUAN TRỌNG)
+						const iconInfo = data.datasets[0].icons[index];
+						if (!iconInfo) return; // Bỏ qua nếu không có icon
+
 						const isRightSide = Math.cos(midAngle) >= 0;
 						
-						// --- TÍNH TOÁN VỊ TRÍ ---
 						const startX = element.x + Math.cos(midAngle) * element.outerRadius;
 						const startY = element.y + Math.sin(midAngle) * element.outerRadius;
 						const elbowX = element.x + Math.cos(midAngle) * (element.outerRadius + leaderExtension);
-						const initialElbowY = element.y + Math.sin(midAngle) * (element.outerRadius + leaderExtension);
+						let elbowY = element.y + Math.sin(midAngle) * (element.outerRadius + leaderExtension);
 						const endX = isRightSide ? elbowX + horizontalExtension : elbowX - horizontalExtension;
 						
-						// --- LOGIC TRÁNH CHỒNG CHÉO NHÃN ---
-						let bestY = initialElbowY;
-						let attempts = 0;
+						// Logic tránh chồng chéo
 						let collision = true;
-						while (collision && attempts < 20) {
+						while (collision) {
 							collision = false;
 							for (const range of occupiedYRanges[isRightSide ? 'right' : 'left']) {
-								if (Math.abs(bestY - range.center) < minYSpacing) {
+								if (Math.abs(elbowY - range.center) < minYSpacing) {
 									collision = true;
-									bestY += (bestY < element.y ? -5 : 5);
+									elbowY += (elbowY < element.y ? -5 : 5);
 									break;
 								}
 							}
-							attempts++;
 						}
-						occupiedYRanges[isRightSide ? 'right' : 'left'].push({ center: bestY });
+						occupiedYRanges[isRightSide ? 'right' : 'left'].push({ center: elbowY });
 
-						// --- BẮT ĐẦU VẼ ---
-						ctx.save();
-						
-						// 1. VẼ ĐƯỜNG KẺ (LEADER LINE)
+						// Vẽ đường kẻ
 						ctx.strokeStyle = leaderLineColor;
 						ctx.lineWidth = 1;
 						ctx.beginPath();
 						ctx.moveTo(startX, startY);
-						ctx.lineTo(elbowX, bestY);
-						ctx.lineTo(endX, bestY);
+						ctx.lineTo(elbowX, elbowY);
+						ctx.lineTo(endX, elbowY);
 						ctx.stroke();
 
-						// 2. CHUẨN BỊ DỮ LIỆU TEXT VÀ ICON
+						// Chuẩn bị text
 						ctx.textBaseline = 'middle';
-						const iconInfo = Utils.UIUtils.getCategoryIcon(chart.data.labels[index]);
-						const iconText = iconInfo.unicode || '';
 						const percentText = `${percentage.toFixed(0)}%`;
-
-						// 3. TÍNH TOÁN KÍCH THƯỚC VÀ VỊ TRÍ
-						ctx.font = `${iconFont.weight} ${iconFont.size}px ${iconFont.family}`;
-						const iconWidth = ctx.measureText(iconText).width;
-
 						ctx.font = `${labelFont.weight} ${labelFont.size}px ${labelFont.family}`;
 						const percentMetrics = ctx.measureText(percentText);
-						
 						const rectHeight = labelFont.size + 2 * labelPadding.y;
 						const rectWidth = percentMetrics.width + 2 * labelPadding.x;
 						const borderRadius = rectHeight / 2;
 
-						// 4. VẼ (TÙY THEO BÊN TRÁI HAY PHẢI)
+						// Vẽ icon và text
+						const iconSize = isMobile ? 18 : 20;
 						if (isRightSide) {
 							ctx.textAlign = 'left';
 							const iconX = endX + 4;
-							const rectX = iconX + iconWidth + iconSpacing;
+							const rectX = iconX + iconSize + iconSpacing;
 							
-							// Vẽ icon
-							ctx.font = `${iconFont.weight} ${iconFont.size}px ${iconFont.family}`;
-							ctx.fillStyle = leaderLineColor;
-							ctx.fillText(iconText, iconX, bestY);
+							// Vẽ icon (ảnh hoặc font)
+							self.drawIconOnCanvas(ctx, iconInfo, iconX, elbowY, iconSize, iconFont);
 
-							// Vẽ border
+							// Vẽ border và text
 							ctx.strokeStyle = labelBorderColor;
 							ctx.beginPath();
-							ctx.roundRect(rectX, bestY - rectHeight / 2, rectWidth, rectHeight, borderRadius);
+							ctx.roundRect(rectX, elbowY - rectHeight / 2, rectWidth, rectHeight, borderRadius);
 							ctx.stroke();
-
-							// Vẽ text %
-							ctx.font = `${labelFont.weight} ${labelFont.size}px ${labelFont.family}`;
 							ctx.fillStyle = labelTextColor;
-							ctx.fillText(percentText, rectX + labelPadding.x, bestY);
+							ctx.font = `${labelFont.weight} ${labelFont.size}px ${labelFont.family}`;
+							ctx.fillText(percentText, rectX + labelPadding.x, elbowY);
 
 						} else { // Bên trái
 							ctx.textAlign = 'right';
 							const rectX = endX - 4;
-							const iconX = rectX - rectWidth - iconSpacing;
-							
-							// Vẽ icon
-							ctx.font = `${iconFont.weight} ${iconFont.size}px ${iconFont.family}`;
-							ctx.fillStyle = leaderLineColor;
-							ctx.fillText(iconText, iconX, bestY);
+							const iconX = rectX - rectWidth - iconSpacing - iconSize;
 
-							// Vẽ border
+							// Vẽ icon (ảnh hoặc font)
+							self.drawIconOnCanvas(ctx, iconInfo, iconX, elbowY, iconSize, iconFont);
+							
+							// Vẽ border và text
 							ctx.strokeStyle = labelBorderColor;
 							ctx.beginPath();
-							ctx.roundRect(rectX - rectWidth, bestY - rectHeight / 2, rectWidth, rectHeight, borderRadius);
+							ctx.roundRect(rectX - rectWidth, elbowY - rectHeight / 2, rectWidth, rectHeight, borderRadius);
 							ctx.stroke();
-
-							// Vẽ text %
-							ctx.font = `${labelFont.weight} ${labelFont.size}px ${labelFont.family}`;
 							ctx.fillStyle = labelTextColor;
-							ctx.fillText(percentText, rectX - labelPadding.x, bestY);
+							ctx.font = `${labelFont.weight} ${labelFont.size}px ${labelFont.family}`;
+							ctx.fillText(percentText, rectX - labelPadding.x, elbowY);
 						}
-						
-						ctx.restore();
 					});
+
+					ctx.restore();
 				} catch (error) {
-					console.error('Error in custom chart plugin:', error);
+					console.error('Lỗi khi vẽ plugin biểu đồ tròn:', error);
 				}
 			}
 		}];
 	}
 
+	// Thêm hàm tiện ích mới vào class StatisticsModule để vẽ icon lên canvas
+	drawIconOnCanvas(ctx, iconInfo, x, y, size, font) {
+		try {
+			if (iconInfo.type === 'img') {
+				const img = new Image();
+				img.src = iconInfo.value;
+				// Ảnh base64 có thể được vẽ đồng bộ
+				if (img.complete) {
+					 ctx.drawImage(img, x, y - size / 2, size, size);
+				} else {
+					// Xử lý bất đồng bộ nếu cần (hiếm khi xảy ra với data URL)
+					img.onload = () => {
+						ctx.drawImage(img, x, y - size / 2, size, size);
+					}
+				}
+			} else { // type 'fa'
+				ctx.font = `${font.weight} ${size}px ${font.family}`;
+				ctx.fillStyle = ctx.strokeStyle; // Dùng chung màu với đường kẻ
+				ctx.fillText(iconInfo.unicode || '?', x, y);
+			}
+		} catch(e) {
+			console.error("Lỗi khi vẽ icon lên canvas:", e);
+			// Vẽ icon dự phòng
+			ctx.font = `${font.weight} ${size}px ${font.family}`;
+			ctx.fillStyle = ctx.strokeStyle;
+			ctx.fillText('?', x, y);
+		}
+	}
+	renderDetailedSpendList() {
+		// Kiểm tra xem element có tồn tại không
+		if (!this.elements.detailedSpendList) {
+			console.warn('Element for detailed spend list not found.');
+			return;
+		}
+
+		try {
+			const transactions = this.getFilteredTransactions();
+			const stats = this.calculateStatistics(transactions);
+			this.elements.detailedSpendList.innerHTML = ''; // Xóa nội dung cũ
+
+			// Sắp xếp danh mục theo số tiền chi tiêu giảm dần
+			const categoriesSorted = Object.entries(stats.expenseByCategory)
+				.sort(([, a], [, b]) => b - a);
+
+			// Nếu không có dữ liệu, hiển thị thông báo
+			if (categoriesSorted.length === 0) {
+				this.elements.detailedSpendList.innerHTML = `
+					<div class="no-data-text" style="padding: 1rem; text-align: center; color: var(--text-muted);">
+						Không có dữ liệu chi tiêu để hiển thị.
+					</div>`;
+				return;
+			}
+
+			const fragment = document.createDocumentFragment();
+
+			categoriesSorted.forEach(([categoryName, amount], index) => {
+				const item = document.createElement('div');
+				item.className = 'category-spend-item';
+
+				const percentage = (stats.totalExpense > 0) ? (amount / stats.totalExpense) * 100 : 0;
+				const color = this.getCategoryColor(categoryName, index);
+
+				// --- ĐÂY LÀ LOGIC QUAN TRỌNG ĐẢM BẢO ICON ĐÚNG ---
+				// 1. Tìm kiếm đối tượng danh mục đầy đủ trong dữ liệu của app
+				const categoryObject = this.app.data.expenseCategories.find(c => c.value === categoryName);
+				
+				// 2. Lấy thông tin icon từ đối tượng đó (nếu có), nếu không thì dùng tên
+				const iconInfo = this.getCategoryIcon(categoryObject || categoryName);
+
+				// 3. Tạo HTML tương ứng (<img> cho ảnh upload, <i> cho icon font)
+				const iconHtml = iconInfo.type === 'img'
+					? `<img src="${iconInfo.value}" class="custom-category-icon" alt="${this.escapeHtml(categoryName)}">`
+					: `<i class="${iconInfo.value}"></i>`;
+				// --- KẾT THÚC LOGIC ICON ---
+
+				item.innerHTML = `
+					<span class="item-icon" style="background-color: ${Utils.UIUtils.hexToRgba(color, 0.15)}; color: ${color};">
+						${iconHtml}
+					</span>
+					<div class="item-content">
+						<div class="item-name">${this.escapeHtml(categoryName)}</div>
+						<div class="item-amount">${this.formatCurrency(amount)}</div>
+					</div>
+					<div class="item-percentage">
+						<span class="percent-value">${percentage.toFixed(1)}%</span>
+					</div>
+				`;
+				fragment.appendChild(item);
+			});
+
+			this.elements.detailedSpendList.appendChild(fragment);
+
+		} catch (error) {
+			console.error('Error rendering detailed spend list:', error);
+			if (this.elements.detailedSpendList) {
+				this.elements.detailedSpendList.innerHTML = 
+					`<div class="error-message" style="color: var(--danger-color); text-align: center; padding: 1rem;">
+						Lỗi hiển thị danh sách chi tiêu.
+					 </div>`;
+			}
+		}
+	}
     updateDetailedStats() {
         if (!this.elements.detailedStatsBody) return;
 
@@ -2355,42 +2453,57 @@ class StatisticsModule {
     /**
      * ✅ FIXED: Update expense legend to correctly render icons
      */
-    updateExpenseLegend(categories, totalExpense) {
-        if (!this.elements.expenseLegend) return;
+	updateExpenseLegend(categories, totalExpense) {
+		if (!this.elements.expenseLegend) return;
 
-        this.elements.expenseLegend.innerHTML = '';
+		this.elements.expenseLegend.innerHTML = '';
 
-        if (categories.length === 0) return;
+		if (!Array.isArray(categories) || categories.length === 0) return;
 
-        categories.forEach(([categoryName, amount], index) => {
-            const legendItem = document.createElement('div');
-            legendItem.className = 'legend-item';
+		categories.forEach(([categoryName, amount], index) => {
+			const legendItem = document.createElement('div');
+			legendItem.className = 'legend-item';
 
-            const color = this.getCategoryColor(categoryName, index);
-            const percentage = ((amount / totalExpense) * 100).toFixed(1);
-			const iconInfo = this.getCategoryIcon(categoryName); // Đổi tên biến để rõ ràng hơn
+			const color = this.getCategoryColor(categoryName, index);
+			const percentage = (totalExpense > 0) ? ((amount / totalExpense) * 100).toFixed(1) : 0;
+			
+			// --- BẮT ĐẦU VÙNG SỬA ĐỔI ---
+			
+			// 1. Tìm đối tượng danh mục đầy đủ trong dữ liệu của app
+			// Điều này đảm bảo chúng ta có được thông tin icon mới nhất
+			const categoryObject = this.app.data.expenseCategories.find(c => c.value === categoryName);
+
+			// 2. Lấy thông tin icon từ đối tượng đã tìm được
+			const iconInfo = this.getCategoryIcon(categoryObject || categoryName);
+
+			// 3. Tạo HTML cho icon, hỗ trợ cả ảnh (img) và font-icon (i)
+			const iconHtml = iconInfo.type === 'img'
+				? `<img src="${iconInfo.value}" class="custom-category-icon">`
+				: `<i class="${iconInfo.value || 'fa-solid fa-question-circle'}"></i>`;
+			
+			// --- KẾT THÚC VÙNG SỬA ĐỔI ---
 
 			legendItem.innerHTML = `
 				<div class="legend-content">
 					<div class="legend-header">
 						<span class="legend-icon">
-							<i class="${iconInfo.value}"></i> </span>
-                        </span>
-                        <div class="legend-label-wrapper">
-                            <div class="legend-label" title="${this.escapeHtml(categoryName)}">${this.escapeHtml(categoryName)}</div>
-                            <div class="legend-amount-percentage">
-                                <span class="legend-amount">${this.formatCurrency(amount)}</span>
-                                <span class="legend-percentage">(${percentage}%)</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="legend-color" style="background-color: ${color}; border: 2px solid ${color};"></div>
-                </div>
-            `;
+							${iconHtml}
+						</span>
+						<div class="legend-label-wrapper">
+							<div class="legend-label" title="${this.escapeHtml(categoryName)}">${this.escapeHtml(categoryName)}</div>
+							<div class="legend-amount-percentage">
+								<span class="legend-amount">${this.formatCurrency(amount)}</span>
+								<span class="legend-percentage">(${percentage}%)</span>
+							</div>
+						</div>
+					</div>
+					<div class="legend-color" style="background-color: ${color};"></div>
+				</div>
+			`;
 
-            this.elements.expenseLegend.appendChild(legendItem);
-        });
-    }
+			this.elements.expenseLegend.appendChild(legendItem);
+		});
+	}
 
     /**
      * Update existing renderTrendChart method (mobile-optimized)

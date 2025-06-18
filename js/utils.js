@@ -599,43 +599,47 @@ const Utils = {
             "Khác": "fa-solid fa-circle-question"
         },
         
-		getCategoryIcon(category) {
-			// TÌM ICON DỰA TRÊN TÊN HOẶC OBJECT
-			let iconObject = null;
-			const categoryName = (typeof category === 'object' && category !== null) ? category.value : category;
+	getCategoryIcon(category) {
+		// TÌM ICON DỰA TRÊN TÊN HOẶC OBJECT
+		let iconObject = null;
+		const categoryName = (typeof category === 'object' && category !== null) ? category.value : category;
 
-			if (typeof category === 'object' && category !== null && category.icon) {
-				// Tìm trong list để lấy unicode
-				for (const set of this.getIconList()) {
-					const found = set.icons.find(i => i.class === category.icon);
-					if (found) {
-						iconObject = found;
-						break;
-					}
-				}
-				// Nếu là ảnh thì trả về ảnh
-				if (!iconObject && (category.icon.includes('/') || category.icon.includes('.'))) {
-					return { type: 'img', value: category.icon, unicode: '🖼️' };
-				}
-			} else if (categoryName) {
-				// Tìm trong list mặc định
-				for (const set of this.getIconList()) {
-					const found = set.icons.find(i => i.name === categoryName.trim());
-					if (found) {
-						iconObject = found;
-						break;
-					}
+		// Nếu đối tượng category có thuộc tính 'icon' và đó không phải là icon Font Awesome mặc định (như 'fa-solid fa-box')
+		if (typeof category === 'object' && category !== null && category.icon) {
+			// Kiểm tra xem có phải là ảnh (data URL hoặc path) hay không
+			if (category.icon.includes('/') || category.icon.includes('.')) {
+				return { type: 'img', value: category.icon, unicode: '🖼️' };
+			}
+			// Nếu không phải ảnh, thử tìm trong list để lấy unicode của Font Awesome
+			for (const set of this.getIconList()) {
+				const found = set.icons.find(i => i.class === category.icon);
+				if (found) {
+					iconObject = found;
+					break;
 				}
 			}
-			
-			// NẾU TÌM THẤY, TRẢ VỀ THÔNG TIN ĐẦY ĐỦ
-			if (iconObject) {
-				return { type: 'fa', value: iconObject.class, unicode: iconObject.unicode };
+		}
+
+		// Nếu không tìm thấy từ thuộc tính 'icon' của đối tượng, hoặc category là string,
+		// thì tìm theo tên mặc định trong list (cho các icon Font Awesome phổ biến)
+		if (!iconObject && categoryName) {
+			for (const set of this.getIconList()) {
+				const found = set.icons.find(i => i.name.toLowerCase() === categoryName.trim().toLowerCase());
+				if (found) {
+					iconObject = found;
+					break;
+				}
 			}
-			
-			// FALLBACK
-			return { type: 'fa', value: 'fa-solid fa-box', unicode: '\uf466' };
-		},
+		}
+
+		// NẾU TÌM THẤY, TRẢ VỀ THÔNG TIN ĐẦY ĐỦ
+		if (iconObject) {
+			return { type: 'fa', value: iconObject.class, unicode: iconObject.unicode };
+		}
+
+		// FALLBACK mặc định nếu không tìm thấy
+		return { type: 'fa', value: 'fa-solid fa-box', unicode: '\uf466' };
+	},
         
 		getIconList() {
 			return [
@@ -683,11 +687,11 @@ const Utils = {
 				{
 					set: "Mua sắm & Giải trí",
 					icons: [
-						{ name: "Mua sắm", class: "fa-solid fa-cart-shopping", unicode: "\uf07a" },
-						{ name: "Quần áo", class: "fa-solid fa-shirt", unicode: "\uf553" },
-						{ name: "Quà tặng", class: "fa-solid fa-gift", unicode: "\uf06b" },
-						{ name: "Giải trí", class: "fa-solid fa-gamepad", unicode: "\uf11b" },
-						{ name: "Xem phim", class: "fa-solid fa-film", unicode: "\uf008" },
+						{ name: "Mua sắm", class: "fa-solid fa-cart-shopping", unicode: "\uf07a" }, // Đã thêm unicode
+						{ name: "Quần áo", class: "fa-solid fa-shirt", unicode: "\uf553" },        // Đã thêm unicode
+						{ name: "Quà tặng", class: "fa-solid fa-gift", unicode: "\uf06b" },         // Đã thêm unicode
+						{ name: "Giải trí", class: "fa-solid fa-gamepad", unicode: "\uf11b" },      // Đã thêm unicode
+						{ name: "Xem phim", class: "fa-solid fa-film", unicode: "\uf008" },         // Đã thêm unicode
 					]
 				},
 				{

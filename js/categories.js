@@ -1,8 +1,3 @@
-/**
- * CATEGORIES MODULE - FIXED BALANCE COLOR & REFINED LAYOUT
- * Handles category and account management with an optimized account list item layout.
- */
-
 class CategoriesModule {
     constructor() {
         this.app = null;
@@ -119,6 +114,10 @@ class CategoriesModule {
     }
 
     deleteAccount(value) {
+        if (this.isProtectedAccount(value)) { // Thêm dòng này
+            Utils.UIUtils.showMessage('Không thể xóa tài khoản hệ thống', 'error'); // Thêm dòng này
+            return; // Thêm dòng này
+        }
         const usageCount = this.app.data.transactions.filter(tx => tx.account === value).length;
         if (!confirm(`Bạn có chắc muốn xóa tài khoản "${value}"?` + (usageCount > 0 ? `\n(Đang được dùng trong ${usageCount} giao dịch)` : ''))) return;
 
@@ -177,13 +176,14 @@ class CategoriesModule {
 
         const balance = this.app.getAccountBalance(account.value);
         const usageCount = this.app.data.transactions.filter(tx => tx.account === account.value).length;
-        const iconInfo = Utils.UIUtils.getCategoryIcon(account);
-        const iconHtml = `<i class="${iconInfo.value || 'fa-solid fa-landmark'}"></i>`;
+        const iconInfo = Utils.UIUtils.getCategoryIcon(account); // Sử dụng Utils.UIUtils.getCategoryIcon để lấy icon từ đối tượng tài khoản
+        const iconHtml = iconInfo.type === 'img' ? `<img src="${iconInfo.value}" class="custom-category-icon">` : `<i class="${iconInfo.value || 'fa-solid fa-landmark'}"></i>`; // Áp dụng logic icon HTML
         const isHidden = localStorage.getItem(`balance_hidden_${account.value}`) === 'true';
         const escapedValue = this.escapeHtml(account.value);
         
         // FIX 1: Thêm lại class màu (text-success hoặc text-danger) vào span chứa số dư
         const balanceColorClass = balance >= 0 ? 'text-success' : 'text-danger';
+        const isProtected = this.isProtectedAccount(account.value); // Thêm dòng này
 
         li.innerHTML = `
             <div class="account-icon-balance-stack">
@@ -200,12 +200,14 @@ class CategoriesModule {
                 <button class="action-btn-small eye-toggle-btn" title="${isHidden ? 'Hiện' : 'Ẩn'} số dư" data-account="${escapedValue}">
                     ${isHidden ? '🙈' : '👁️'}
                 </button>
-                <button class="action-btn-small edit-btn" onclick="window.CategoriesModule.showEditModal('${escapedValue}', 'account')" title="Chỉnh sửa">
-                    <i class="fa-solid fa-pencil"></i>
-                </button>
-                <button class="action-btn-small delete-btn" onclick="window.CategoriesModule.deleteAccount('${escapedValue}')" title="Xóa">
-                    <i class="fa-solid fa-trash-can"></i>
-                </button>
+                ${!isProtected ? `
+                    <button class="action-btn-small edit-btn" onclick="window.CategoriesModule.showEditModal('${escapedValue}', 'account')" title="Chỉnh sửa">
+                        <i class="fa-solid fa-pencil"></i>
+                    </button>
+                    <button class="action-btn-small delete-btn" onclick="window.CategoriesModule.deleteAccount('${escapedValue}')" title="Xóa">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                ` : `<span class="protected-badge" title="Tài khoản hệ thống">🔒</span>`}
             </div>
         `;
         
@@ -320,14 +322,21 @@ class CategoriesModule {
         iconEl.className = 'icon-option';
         iconEl.title = icon.name;
         iconEl.dataset.name = icon.name.toLowerCase();
-        iconEl.innerHTML = `<i class="${icon.class}"></i>`;
+        // Kiểm tra loại icon để hiển thị đúng thẻ
+        if (icon.type === 'img') {
+            iconEl.innerHTML = `<img src="${icon.class}" class="custom-category-icon">`;
+        } else {
+            iconEl.innerHTML = `<i class="${icon.class}"></i>`;
+        }
         iconEl.onclick = () => this.selectIcon(icon.class);
         return iconEl;
     }
 
     updateIconDisplay(itemOrClass) {
         const iconDisplay = document.getElementById('current-item-icon-display');
-        const iconInfo = typeof itemOrClass === 'string' ? { type: 'fa', value: itemOrClass } : Utils.UIUtils.getCategoryIcon(itemOrClass);
+        // Sử dụng hàm Utils.UIUtils.getCategoryIcon để lấy thông tin icon
+        const iconInfo = Utils.UIUtils.getCategoryIcon(itemOrClass); 
+
         iconDisplay.innerHTML = iconInfo.type === 'img' ? `<img src="${iconInfo.value}" class="custom-category-icon">` : `<i class="${iconInfo.value}"></i>`;
     }
 
@@ -390,7 +399,16 @@ class CategoriesModule {
 
     // --- UTILITY METHODS ---
     escapeHtml(text) { return text?.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") || ''; }
-    isProtectedCategory(value) { return [Utils.CONFIG.TRANSFER_CATEGORY_IN, Utils.CONFIG.TRANSFER_CATEGORY_OUT, Utils.CONFIG.RECONCILE_ADJUST_INCOME_CAT, Utils.CONFIG.RECONCILE_ADJUST_EXPENSE_CAT].includes(value); }
+    isProtectedCategory(value) {
+        // Trả về false để không có danh mục nào được coi là bảo vệ
+        // CẨN THẬN KHI LÀM ĐIỀU NÀY: Có thể ảnh hưởng đến chức năng cốt lõi
+        return false;
+    }
+    isProtectedAccount(value) {
+        // Trả về false để không có tài khoản nào được coi là bảo vệ
+        // CẨN THẬN KHI LÀM ĐIỀU NÀY: Có thể ảnh hưởng đến chức năng cốt lõi
+        return false;
+    }
     isProtectedCategoryName(name) { return this.isProtectedCategory(name); }
     refreshTransactionModule() { if (window.TransactionsModule) window.TransactionsModule.populateDropdowns(); }
     refreshHistoryModule() { if (window.HistoryModule) window.HistoryModule.refresh(); }
