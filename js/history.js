@@ -7,38 +7,30 @@ class HistoryModule {
     constructor() {
         this.app = null;
         this.reconciliationData = {};
-        // Thêm trạng thái cho bộ lọc lịch sử đối soát
         this.historyFilter = { period: 'this_month', startDate: null, endDate: null };
-
-        // DOM elements
         this.elements = {};
-
-        // Event listeners for cleanup
         this.eventListeners = [];
-
-        // Cache for performance
         this.cache = {
             accountBalances: null,
             lastCacheTime: null,
-            cacheDuration: 5000 // 5 seconds
+            cacheDuration: 5000
         };
-
-        // Calendar specific properties
         this.currentCalendarDate = new Date();
+        // THÊM MỚI: Thêm trạng thái cho chế độ xem
+        this.accountViewMode = 'list'; // Mặc định là 'list'
     }
 
-    /**
-     * Initialize the module with error handling
-     */
     init(app) {
         this.app = app;
         console.log('🏦 Initializing History Module...');
 
         try {
             this.initializeElements();
+            // THÊM MỚI: Gọi hàm khởi tạo nút chuyển đổi
+            this.initializeViewToggle(); 
             this.initializeCalendarEvents();
             this.initializeReconciliation();
-            this.initializeHistoryFilters(); // <- THÊM HÀM GỌI NÀY
+            this.initializeHistoryFilters();
 
             this.renderAccountBalances();
             this.renderTransactionCalendar();
@@ -59,6 +51,7 @@ class HistoryModule {
     initializeElements() {
         this.elements = {
             accountBalanceGrid: document.getElementById('account-balance-grid'),
+			accountViewToggle: document.getElementById('account-view-toggle'),
             reconciliationTable: document.getElementById('reconciliation-table'),
             reconciliationHistory: document.getElementById('reconciliation-history'),
 
@@ -91,7 +84,43 @@ class HistoryModule {
         });
     }
 
+    // THÊM MỚI: Hàm khởi tạo và xử lý sự kiện cho nút chuyển đổi
+    initializeViewToggle() {
+        if (!this.elements.accountViewToggle) return;
 
+        // Đọc chế độ xem đã lưu từ localStorage
+        const savedView = localStorage.getItem('accountViewMode') || 'list';
+        this.accountViewMode = savedView;
+        this.updateAccountView();
+
+        // Thêm sự kiện click
+        const handler = () => {
+            this.accountViewMode = this.accountViewMode === 'list' ? 'grid' : 'list';
+            localStorage.setItem('accountViewMode', this.accountViewMode);
+            this.updateAccountView();
+        };
+        this.elements.accountViewToggle.addEventListener('click', handler);
+        this.eventListeners.push({ element: this.elements.accountViewToggle, event: 'click', handler });
+    }
+    
+    // THÊM MỚI: Hàm cập nhật giao diện dựa trên chế độ xem
+    updateAccountView() {
+        if (!this.elements.accountBalanceGrid || !this.elements.accountViewToggle) return;
+
+        const gridContainer = this.elements.accountBalanceGrid;
+        const toggleButton = this.elements.accountViewToggle;
+        const icon = toggleButton.querySelector('i');
+
+        if (this.accountViewMode === 'grid') {
+            gridContainer.classList.add('view-mode-grid');
+            if(icon) icon.className = 'fa-solid fa-list';
+            toggleButton.title = 'Chuyển sang chế độ danh sách';
+        } else { // Chế độ 'list'
+            gridContainer.classList.remove('view-mode-grid');
+            if(icon) icon.className = 'fa-solid fa-grip';
+            toggleButton.title = 'Chuyển sang chế độ lưới';
+        }
+    }
 
     /**
      * Initialize reconciliation functionality with validation
@@ -464,32 +493,183 @@ class HistoryModule {
     /**
      * Show day transaction details in modal
      */
-    showDayDetails(day, dayData) {
-        if (!this.elements.dayDetailModal || !dayData) return; //
+	showDayDetails(dayNumber, dayData) {
+		if (!this.elements.dayDetailModal || !dayData) return;
 
-        try {
-            const monthName = this.currentCalendarDate.toLocaleDateString('vi-VN', { //
-                month: 'long',
-                year: 'numeric'
-            });
+		try {
+			const modal = this.elements.dayDetailModal;
+			const title = this.elements.modalDayTitle;
+			const transactionListContainer = this.elements.modalDayTransactions;
+			const summaryContainer = document.getElementById('modal-day-account-summary');
+			
+			if (!modal || !title || !transactionListContainer || !summaryContainer) {
+				console.error('Day detail modal elements are missing!');
+				return;
+			}
 
-            // Set modal title
-            if (this.elements.modalDayTitle) {
-                this.elements.modalDayTitle.textContent = `Giao dịch ngày ${day} ${monthName}`; //
-            }
+			const date = new Date(this.currentCalendarDate.getFullYear(), this.currentCalendarDate.getMonth(), dayNumber);
 
-            // Render transactions
-            this.renderDayTransactions(dayData.transactions); //
+			// 1. Cập nhật tiêu đề modal
+			title.textContent = `Giao dịch ngày ${date.toLocaleDateString('vi-VN', {
+				day: '2-digit', month: '2-digit', year: 'numeric'
+			})}`;
 
-            // Show modal
-            this.elements.dayDetailModal.style.display = 'flex'; //
+			// 2. Tính toán và hiển thị TÓM TẮT TÀI KHOẢN
+			summaryContainer.innerHTML = ''; // Xóa tóm tắt cũ
+			const dayStart = new Date(date);
+			dayStart.setHours(0, 0, 0, 0);
 
-        } catch (error) {
-            console.error('Error showing day details:', error);
-            Utils.UIUtils.showMessage('Có lỗi khi hiển thị chi tiết giao dịch', 'error'); //
-        }
-    }
+			const startBalances = this.getAccountBalancesAsOf(dayStart);
+			const endBalances = { ...startBalances };
+			const activeAccounts = new Set();
 
+			dayData.transactions.forEach(t => {
+				const amount = parseFloat(t.amount) || 0;
+				if (t.type === 'Thu') {
+					if (endBalances.hasOwnProperty(t.account)) endBalances[t.account] += amount;
+					activeAccounts.add(t.account);
+				} else if (t.type === 'Chi') {
+					if (endBalances.hasOwnProperty(t.account)) endBalances[t.account] -= amount;
+					activeAccounts.add(t.account);
+				}
+				// Logic cho chuyển tiền nếu có
+			});
+
+			let summaryHtml = '';
+			activeAccounts.forEach(accountName => {
+				const account = this.app.data.accounts.find(a => a.value === accountName);
+				if (!account) return;
+
+				const startBalance = startBalances[accountName] || 0;
+				const endBalance = endBalances[accountName] || 0;
+
+				if (startBalance !== endBalance) {
+					const iconInfo = Utils.UIUtils.getCategoryIcon(account);
+					const iconHtml = iconInfo.type === 'img' 
+						? `<img src="${iconInfo.value}" class="custom-category-icon">` 
+						: `<i class="${iconInfo.value}"></i>`;
+
+					summaryHtml += `
+						<div class="summary-item">
+							<div class="summary-item-name">
+								<span class="category-icon">${iconHtml}</span>
+								<span>${this.escapeHtml(account.text)}</span>
+							</div>
+							<div class="summary-item-balance">
+								<span>${Utils.CurrencyUtils.formatCurrency(startBalance)}</span>
+								<span class="arrow">&rarr;</span>
+								<span>${Utils.CurrencyUtils.formatCurrency(endBalance)}</span>
+							</div>
+						</div>
+					`;
+				}
+			});
+			summaryContainer.innerHTML = summaryHtml;
+
+			// 3. Hiển thị DANH SÁCH GIAO DỊCH CHI TIẾT (Phần đã bị thiếu)
+			this.renderDayTransactions(dayData.transactions);
+
+			// 4. Hiển thị modal
+			modal.style.display = 'flex';
+
+		} catch (error) {
+			console.error('Error showing day details:', error);
+			Utils.UIUtils.showMessage('Có lỗi khi hiển thị chi tiết giao dịch', 'error');
+		}
+	}
+
+	showDayDetails(dayNumber, dayData) {
+		if (!this.elements.dayDetailModal || !dayData) return;
+
+		try {
+			const modal = this.elements.dayDetailModal;
+			const title = this.elements.modalDayTitle;
+			const transactionListContainer = this.elements.modalDayTransactions;
+			const summaryContainer = document.getElementById('modal-day-account-summary');
+
+			if (!modal || !title || !transactionListContainer || !summaryContainer) {
+				console.error('Day detail modal elements are missing!');
+				return;
+			}
+
+			const date = new Date(this.currentCalendarDate.getFullYear(), this.currentCalendarDate.getMonth(), dayNumber);
+
+			title.textContent = `Giao dịch ngày ${date.toLocaleDateString('vi-VN', {
+				day: '2-digit', month: '2-digit', year: 'numeric'
+			})}`;
+
+			summaryContainer.innerHTML = '';
+
+			if (dayData.transactions.length > 0) {
+				const dayStart = new Date(date);
+				dayStart.setHours(0, 0, 0, 0);
+
+				const startBalances = this.getAccountBalancesAsOf(dayStart);
+				const endBalances = { ...startBalances };
+				const activeAccounts = new Set();
+
+				dayData.transactions.forEach(t => {
+					const amount = parseFloat(t.amount) || 0;
+					if (t.type === 'Thu') {
+						if (endBalances.hasOwnProperty(t.account)) endBalances[t.account] += amount;
+						activeAccounts.add(t.account);
+					} else if (t.type === 'Chi') {
+						if (endBalances.hasOwnProperty(t.account)) endBalances[t.account] -= amount;
+						activeAccounts.add(t.account);
+					}
+				});
+
+				let summaryHtml = '';
+				activeAccounts.forEach(accountName => {
+					const account = this.app.data.accounts.find(a => a.value === accountName);
+					if (!account) return;
+
+					const startBalance = startBalances[accountName] || 0;
+					const endBalance = endBalances[accountName] || 0;
+
+					if (startBalance.toFixed(2) !== endBalance.toFixed(2)) {
+						const iconInfo = Utils.UIUtils.getCategoryIcon(account);
+						const iconHtml = iconInfo.type === 'img' 
+							? `<img src="${iconInfo.value}" class="custom-category-icon">` 
+							: `<i class="${iconInfo.value}"></i>`;
+
+						// ==========================================================
+						// === THÊM MỚI: LOGIC XÁC ĐỊNH MÀU SẮC ===
+						// ==========================================================
+						let balanceChangeClass = '';
+						if (endBalance > startBalance) {
+							balanceChangeClass = 'text-success'; // Màu xanh cho số dư tăng
+						} else if (endBalance < startBalance) {
+							balanceChangeClass = 'text-danger'; // Màu đỏ cho số dư giảm
+						}
+						// ==========================================================
+
+						summaryHtml += `
+							<div class="summary-item">
+								<div class="summary-item-name">
+									<span class="category-icon">${iconHtml}</span>
+									<span>${this.escapeHtml(account.text)}</span>
+								</div>
+								<div class="summary-item-balance">
+									<span>${Utils.CurrencyUtils.formatCurrency(startBalance)}</span>
+									<span class="arrow">&rarr;</span>
+									<span class="${balanceChangeClass}">${Utils.CurrencyUtils.formatCurrency(endBalance)}</span>
+								</div>
+							</div>
+						`;
+					}
+				});
+				summaryContainer.innerHTML = summaryHtml;
+			}
+
+			this.renderDayTransactions(dayData.transactions);
+			modal.style.display = 'flex';
+
+		} catch (error) {
+			console.error('Error showing day details:', error);
+			Utils.UIUtils.showMessage('Có lỗi khi hiển thị chi tiết giao dịch', 'error');
+		}
+	}
     /**
      * Render transactions for a specific day
      */
@@ -569,30 +749,31 @@ class HistoryModule {
      * Render account balance cards with error handling
      */
     renderAccountBalances() {
-        if (!this.elements.accountBalanceGrid) { //
+        if (!this.elements.accountBalanceGrid) {
             console.warn('Account balance grid element not found');
             return;
         }
 
         try {
-            this.elements.accountBalanceGrid.innerHTML = ''; //
+            // Áp dụng class chế độ xem trước khi render
+            this.updateAccountView(); // <-- Thêm dòng này
 
-            const balances = this.getAllAccountBalancesWithCache(); //
+            this.elements.accountBalanceGrid.innerHTML = '';
+            const balances = this.getAllAccountBalancesWithCache();
 
-            if (!this.app.data.accounts || !Array.isArray(this.app.data.accounts)) { //
+            if (!this.app.data.accounts || !Array.isArray(this.app.data.accounts)) {
                 console.error('Invalid accounts data');
                 return;
             }
 
-            this.app.data.accounts.forEach(account => { //
-                if (!account || !account.value) { //
+            this.app.data.accounts.forEach(account => {
+                if (!account || !account.value) {
                     console.warn('Invalid account object:', account);
                     return;
                 }
-
                 try {
                     const balance = balances[account.value] || 0;
-                    const card = this.createAccountBalanceCard(account, balance); //
+                    const card = this.createAccountBalanceCard(account, balance);
                     if (card) {
                         this.elements.accountBalanceGrid.appendChild(card);
                     }
@@ -641,36 +822,49 @@ class HistoryModule {
     /**
      * Create account balance card with validation
      */
-    createAccountBalanceCard(account, balance) {
-        if (!account || !account.value || !account.text) { //
-            console.warn('Invalid account data for card creation');
-            return null;
-        }
+	createAccountBalanceCard(account, balance) {
+		if (!account || !account.value || !account.text) {
+			console.warn('Invalid account data for card creation');
+			return null;
+		}
 
-        try {
-            const card = document.createElement('div');
-            card.className = 'account-balance-card'; //
+		try {
+			const card = document.createElement('div');
+			card.className = 'account-balance-card';
 
-            const numBalance = parseFloat(balance) || 0; //
-            const balanceClass = numBalance >= 0 ? 'positive' : 'negative'; //
-            const balanceIconClass = numBalance >= 0 ? 'fa-solid fa-arrow-trend-up' : 'fa-solid fa-arrow-trend-down'; //
-            const accountIconClass = Utils.UIUtils.getCategoryIcon(account.value) || 'fa-solid fa-landmark';
+			const numBalance = parseFloat(balance) || 0;
+			const balanceClass = numBalance >= 0 ? 'text-success' : 'text-danger';
 
-            card.innerHTML = `
-                <div class="account-name">
-                    <i class="${accountIconClass}"></i> ${this.escapeHtml(account.text)}
-                </div>
-                <div class="account-balance ${balanceClass}">
-                    <i class="${balanceIconClass}"></i> ${Utils.CurrencyUtils.formatCurrency(numBalance)}
-                </div>
-            `; //
+			// Sử dụng Utils để lấy thông tin icon một cách nhất quán
+			const iconInfo = Utils.UIUtils.getCategoryIcon(account);
 
-            return card;
-        } catch (error) {
-            console.error('Error creating account balance card:', error);
-            return null;
-        }
-    }
+			// Tạo HTML cho icon, có thể là <img> hoặc <i>
+			const iconHtml = iconInfo.type === 'img' 
+				? `<img src="${iconInfo.value}" class="custom-category-icon" alt="${this.escapeHtml(account.text)}">` 
+				: `<i class="${iconInfo.value}"></i>`;
+
+			// === ĐÂY LÀ PHẦN SỬA ĐỔI QUAN TRỌNG ===
+			// Luôn bọc iconHtml trong một thẻ <span class="category-icon">
+			card.innerHTML = `
+				<div class="account-name">
+					<span class="category-icon">
+						${iconHtml}
+					</span>
+					<span>${this.escapeHtml(account.text)}</span>
+				</div>
+				<div class="account-balance ${balanceClass}">
+					${Utils.CurrencyUtils.formatCurrency(numBalance)}
+				</div>
+			`;
+			// === KẾT THÚC PHẦN SỬA ĐỔI ===
+
+			return card;
+		} catch (error) {
+			console.error('Error creating account balance card:', error);
+			return null;
+		}
+	}
+
 
     /**
      * Render reconciliation table.
@@ -1059,7 +1253,44 @@ class HistoryModule {
             Utils.UIUtils.showMessage(`Lỗi khi ghi nhận điều chỉnh: ${error.message}`, 'error'); //
         }
     }
+	getAccountBalancesAsOf(targetDate) {
+		const balances = {};
+		// Initialize all accounts with 0 balance
+		this.app.data.accounts.forEach(acc => {
+			if (acc && acc.value) {
+				balances[acc.value] = 0;
+			}
+		});
 
+		// Filter transactions that occurred strictly before the target date
+		const transactionsBefore = this.app.data.transactions.filter(t => {
+			if (!t || !t.datetime) return false;
+			return new Date(t.datetime) < targetDate;
+		});
+
+		// Calculate balances from the filtered transactions
+		transactionsBefore.forEach(t => {
+			const amount = parseFloat(t.amount) || 0;
+			if (t.type === 'Thu') {
+				if (balances.hasOwnProperty(t.account)) {
+					balances[t.account] += amount;
+				}
+			} else if (t.type === 'Chi') {
+				if (balances.hasOwnProperty(t.account)) {
+					balances[t.account] -= amount;
+				}
+			} else if (t.type === 'Chuyển tiền') {
+				if (balances.hasOwnProperty(t.account)) {
+					balances[t.account] -= amount;
+				}
+				if (balances.hasOwnProperty(t.toAccount)) {
+					balances[t.toAccount] += amount;
+				}
+			}
+		});
+
+		return balances;
+	}
     /**
      * Update reconciliation display after recording
      */

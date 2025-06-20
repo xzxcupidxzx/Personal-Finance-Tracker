@@ -113,22 +113,22 @@ class CategoriesModule {
         }
     }
 
-    deleteAccount(value) {
-        if (this.isProtectedAccount(value)) { // Thêm dòng này
-            Utils.UIUtils.showMessage('Không thể xóa tài khoản hệ thống', 'error'); // Thêm dòng này
-            return; // Thêm dòng này
-        }
-        const usageCount = this.app.data.transactions.filter(tx => tx.account === value).length;
-        if (!confirm(`Bạn có chắc muốn xóa tài khoản "${value}"?` + (usageCount > 0 ? `\n(Đang được dùng trong ${usageCount} giao dịch)` : ''))) return;
+	deleteAccount(value) {
+		if (this.isProtectedAccount(value)) { // Thêm dòng này
+			Utils.UIUtils.showMessage('Không thể xóa tài khoản hệ thống', 'error'); // Thêm dòng này
+			return; // Thêm dòng này
+		}
+		const usageCount = this.app.data.transactions.filter(tx => tx.account === value).length;
+		if (!confirm(`Bạn có chắc muốn xóa tài khoản "${value}"?` + (usageCount > 0 ? `\n(Đang được dùng trong ${usageCount} giao dịch)` : ''))) return;
 
-        const index = this.app.data.accounts.findIndex(acc => acc.value === value);
-        if (index > -1) {
-            this.app.data.accounts.splice(index, 1);
-            this.app.saveData();
-            this.app.refreshAllModules();
-            Utils.UIUtils.showMessage(`Đã xóa tài khoản "${value}"`, 'success');
-        }
-    }
+		const index = this.app.data.accounts.findIndex(acc => acc.value === value);
+		if (index > -1) {
+			this.app.data.accounts.splice(index, 1);
+			this.app.saveData();
+			this.app.refreshAllModules();
+			Utils.UIUtils.showMessage(`Đã xóa tài khoản "${value}"`, 'success');
+		}
+	}
 
     // --- RENDER METHODS ---
     renderCategoryList(type) {
@@ -242,34 +242,69 @@ class CategoriesModule {
     }
 
     // --- UNIFIED EDIT MODAL METHODS ---
-    showEditModal(value, itemType, categoryType = null) {
-        this.editingItem = { originalValue: value, itemType, categoryType, newIcon: null };
-        const modal = document.getElementById('edit-item-modal');
-        const nameInput = document.getElementById('edit-item-name');
-        
-        nameInput.value = this.editingItem.originalValue;
-        document.getElementById('icon-picker-search').value = '';
-        this.populateIconGrid();
-
-        let currentItem;
-        if (itemType === 'category') {
-            const list = categoryType === 'income' ? this.app.data.incomeCategories : this.app.data.expenseCategories;
-            currentItem = list.find(c => c.value === value);
-            document.getElementById('edit-item-modal-title').textContent = 'Chỉnh sửa Danh mục';
-        } else {
-            currentItem = this.app.data.accounts.find(a => a.value === value);
-            document.getElementById('edit-item-modal-title').textContent = 'Chỉnh sửa Tài khoản';
-        }
-
-        if (!currentItem) { Utils.UIUtils.showMessage('Không tìm thấy mục', 'error'); return; }
-        this.updateIconDisplay(currentItem);
-
-        document.getElementById('close-edit-item-modal').onclick = () => modal.style.display = 'none';
-        document.getElementById('save-item-changes-btn').onclick = () => this.saveItemChanges();
-        document.getElementById('icon-picker-search').oninput = (e) => this.filterIcons(e.target.value);
-        
-        modal.style.display = 'flex';
+	showEditModal(value, itemType, categoryType = null) {
+		this.editingItem = { originalValue: value, itemType, categoryType, newIcon: null };
+		
+		// Lấy các element cần thiết từ DOM
+		const modal = document.getElementById('edit-item-modal');
+		if (!modal) {
+			console.error('Không tìm thấy #edit-item-modal trong DOM.');
+			return; 
+		}
+		
+		const nameInput = document.getElementById('edit-item-name');
+		const searchInput = document.getElementById('icon-picker-search');
+		const modalTitle = document.getElementById('edit-item-modal-title');
+		const closeBtn = document.getElementById('close-edit-item-modal');
+		const saveBtn = document.getElementById('save-item-changes-btn');
 		const iconUploadInput = document.getElementById('icon-upload-input');
+
+		// --- 1. Thiết lập trạng thái ban đầu cho modal ---
+		nameInput.value = this.editingItem.originalValue;
+		searchInput.value = '';
+		this.populateIconGrid();
+
+		// Xác định mục đang được chỉnh sửa
+		let currentItem;
+		if (itemType === 'category') {
+			const list = categoryType === 'income' ? this.app.data.incomeCategories : this.app.data.expenseCategories;
+			currentItem = list.find(c => c.value === value);
+			modalTitle.textContent = 'Chỉnh sửa Danh mục';
+		} else {
+			currentItem = this.app.data.accounts.find(a => a.value === value);
+			modalTitle.textContent = 'Chỉnh sửa Tài khoản';
+		}
+
+		// Kiểm tra nếu không tìm thấy mục
+		if (!currentItem) {
+			Utils.UIUtils.showMessage('Không tìm thấy mục cần chỉnh sửa', 'error');
+			return;
+		}
+		
+		// Cập nhật icon hiện tại
+		this.updateIconDisplay(currentItem);
+
+		// --- 2. Định nghĩa hàm đóng modal để tái sử dụng ---
+		const closeModal = () => {
+			modal.classList.remove('visible');
+			// Chờ hiệu ứng trượt xuống hoàn tất rồi mới ẩn modal
+			setTimeout(() => {
+				modal.style.display = 'none';
+			}, 400); // 400ms phải khớp với thời gian transition trong CSS
+		};
+
+		// --- 3. Gán sự kiện cho các nút và input ---
+		// Sử dụng .onclick để đảm bảo chỉ có một listener được gán mỗi lần mở modal
+		closeBtn.onclick = closeModal;
+		
+		saveBtn.onclick = () => {
+			// Hàm saveItemChanges sẽ tự gọi closeModal sau khi lưu thành công
+			this.saveItemChanges(); 
+		};
+		
+		searchInput.oninput = (e) => this.filterIcons(e.target.value);
+
+		// Xử lý upload file icon
 		const handleFileUpload = (e) => {
 			const file = e.target.files[0];
 			if (!file) return;
@@ -282,7 +317,6 @@ class CategoriesModule {
 			const reader = new FileReader();
 			reader.onload = (event) => {
 				const imageDataUrl = event.target.result;
-				// Lưu icon mới dưới dạng data URL và cập nhật hiển thị
 				this.selectIcon(imageDataUrl); 
 			};
 			reader.onerror = () => {
@@ -290,14 +324,22 @@ class CategoriesModule {
 			};
 			reader.readAsDataURL(file);
 
-			// Reset input để có thể chọn lại cùng 1 file
-			iconUploadInput.value = '';
+			iconUploadInput.value = ''; // Reset để có thể chọn lại cùng 1 file
 		};
 
-		// Gán sự kiện, nhưng trước đó gỡ sự kiện cũ để tránh bị gọi nhiều lần
+		// Gỡ và gán lại listener để tránh bị lặp
 		iconUploadInput.removeEventListener('change', handleFileUpload);
 		iconUploadInput.addEventListener('change', handleFileUpload);
-    }
+
+		// --- 4. Kích hoạt hiệu ứng và hiển thị modal ---
+		// Bước 1: Làm cho modal container có thể nhìn thấy được
+		modal.style.display = 'flex';
+		
+		// Bước 2: Thêm class 'visible' sau một khoảng trễ ngắn để CSS transition được kích hoạt
+		setTimeout(() => {
+			modal.classList.add('visible');
+		}, 10);
+	}
 
     populateIconGrid() {
         const gridContainer = document.getElementById('icon-picker-grid');
@@ -394,7 +436,11 @@ class CategoriesModule {
             this.app.refreshAllModules();
             Utils.UIUtils.showMessage('Cập nhật thành công!', 'success');
         }
-        document.getElementById('edit-item-modal').style.display = 'none';
+		const modal = document.getElementById('edit-item-modal');
+		modal.classList.remove('visible');
+		setTimeout(() => {
+			modal.style.display = 'none';
+		}, 400);
     }
 
     // --- UTILITY METHODS ---

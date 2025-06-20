@@ -109,6 +109,7 @@ class FinancialApp {
             this.data.expenseCategories = Array.isArray(expenseCategories) && expenseCategories.length > 0 ? expenseCategories : JSON.parse(JSON.stringify(this.defaultData.expenseCategories));
             
             this.ensureSystemCategories();
+			this.ensureSystemAccounts();
 
             const accounts = Utils.StorageUtils.load(Utils.CONFIG.STORAGE_KEYS.ACCOUNTS, this.defaultData.accounts);
             this.data.accounts = Array.isArray(accounts) && accounts.length > 0 ? accounts : JSON.parse(JSON.stringify(this.defaultData.accounts));
@@ -140,7 +141,27 @@ class FinancialApp {
             }
         });
     }
+	ensureSystemAccounts() {
+		// Ví dụ: Giả sử bạn muốn tài khoản "Tiền mặt" luôn tồn tại
+		const systemAccounts = [
+			{ value: "Tiền mặt", text: "Tiền mặt" }
+			// Thêm các tài khoản hệ thống khác ở đây nếu cần
+		];
 
+		systemAccounts.forEach(accInfo => {
+			const existingAcc = this.data.accounts.find(acc => acc.value === accInfo.value);
+
+			if (existingAcc) {
+				// Đã tồn tại, đảm bảo nó có cờ 'system'
+				if (!existingAcc.system) {
+					existingAcc.system = true;
+				}
+			} else {
+				// Không tồn tại, thêm mới
+				this.data.accounts.push({ ...accInfo, system: true });
+			}
+		});
+	}
     // ===================================================================
     // FIXED IMPORT/EXPORT METHODS
     // ===================================================================

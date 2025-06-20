@@ -580,8 +580,9 @@ input, textarea, select {
     background: var(--bg-primary);
     border-radius: 16px;
     width: 90%;
+	height: 90%;
     max-width: 500px;
-    max-height: 80vh;
+    max-height: 110vh;
     overflow: hidden;
     box-shadow: var(--shadow-xl);
     border: 1px solid var(--border-color);
@@ -607,9 +608,7 @@ input, textarea, select {
     font-size: 1.25rem;
     font-weight: 600;
     color: var(--text-primary);
-	border: 1px solid var(--border-color);
-    outline: none;  /* Tắt đường viền mặc định của trình duyệt */
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4); /* Thêm hiệu ứng "phát sáng" màu xanh để thay thế */
+    outline: none;
 }
 .modal-close {
     background: none;
@@ -1473,7 +1472,7 @@ input, textarea, select {
     align-items: center;
     justify-content: space-between;
     padding: var(--spacing-md);
-    margin-bottom: var(--spacing-sm);
+	margin-bottom: 2px;
     border-radius: 8px;
     transition: all 0.2s ease;
     cursor: pointer;
@@ -2241,7 +2240,7 @@ input, textarea, select {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    border-radius: 4px;
+    border-radius: 8px;
 }
 .category-actions {
     display: flex;
@@ -2901,6 +2900,7 @@ hr {
     }
     .legend-item {
         padding: var(--spacing-md);
+		margin-bottom: 2px;
     }
     .legend-icon {
         font-size: 1.6rem;
@@ -3132,7 +3132,7 @@ hr {
     }
     .legend-item {
         padding: var(--spacing-sm);
-        margin-bottom: var(--spacing-xs);
+        margin-bottom: 2px;
         border-radius: 6px;
     }
     .legend-icon {
@@ -3434,6 +3434,7 @@ hr {
     }
     .legend-item {
         padding: var(--spacing-sm) var(--spacing-md);
+		margin-bottom: 2px;
     }
 }
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
@@ -3775,7 +3776,7 @@ hr {
 
     .legend-item {
         padding: var(--spacing-sm) 0; /* Chỉ giữ padding dọc giữa các mục */
-        margin-bottom: 0;
+        margin-bottom: 2px;
         border-bottom: 1px solid var(--border-color); /* Thêm dòng kẻ phân cách */
     }
 
@@ -3950,7 +3951,7 @@ hr {
 
     .legend-item {
         padding: var(--spacing-sm) 0; /* Chỉ giữ padding dọc giữa các mục */
-        margin-bottom: 0;
+        margin-bottom: 2px;
         border-bottom: 1px solid var(--border-color); /* Thêm dòng kẻ phân cách */
     }
 
@@ -4006,4 +4007,297 @@ hr {
         border-radius: 3px;
         align-self: center; /* Giữ cho thanh màu luôn ở giữa theo chiều dọc */
     }
+}
+/* ========================================================== */
+/* == TÙY CHỈNH POPUP CHỈNH SỬA DANH MỤC                    == */
+/* ========================================================== */
+
+/* --- 1. Layout chính cho phần Tên và Icon --- */
+/* Sử dụng Grid Layout để chia thành 2 cột: tên (chiếm phần lớn) và icon (tự động co giãn) */
+#edit-item-modal .form-row-wrapper {
+    display: grid;
+    /* Cột đầu tiên (tên) sẽ chiếm hết không gian còn lại, cột thứ hai (icon) sẽ tự co lại */
+    grid-template-columns: 1fr auto; 
+    gap: 1.5rem; /* Khoảng cách giữa 2 cột */
+    align-items: flex-start; /* Căn các mục lên trên cùng */
+}
+
+/* --- 2. Tùy chỉnh khu vực hiển thị Icon --- */
+/* Làm cho khu vực xem trước icon lớn hơn và nổi bật hơn */
+#edit-item-modal .current-icon-preview-container {
+    width: 44px;  /* Tăng chiều rộng */
+    height: 44px; /* Tăng chiều cao */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-tertiary); /* Nền nổi bật hơn */
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#edit-item-modal .current-icon-preview-container:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 10px var(--primary-color-light);
+
+}
+
+/* Tăng kích thước của chính icon bên trong */
+#edit-item-modal #current-item-icon-display {
+    width: 100%;
+    height: 100%;
+
+    /* Sử dụng Grid để căn giữa - phương pháp mạnh mẽ và hiện đại */
+    display: grid;
+    place-items: center; /* Lệnh thần thánh: căn giữa cả ngang và dọc */
+
+    /* Đảm bảo kích thước icon bên trong cũng được kiểm soát */
+    font-size: 1.2rem; /* Có thể điều chỉnh kích thước này nếu muốn */
+    line-height: 1; /* Tránh các vấn đề về chiều cao dòng */
+}
+#edit-item-modal #current-item-icon-display .custom-category-icon {
+    width: 65%;
+    height: 65%;
+    object-fit: contain; /* Đảm bảo ảnh luôn vừa vặn, không bị méo */
+}
+
+/* --- 3. Tăng diện tích cho vùng chọn icon --- */
+/* Vì phần tên và icon đã nằm trên 1 hàng, chúng ta có thêm không gian dọc.
+   Hãy tăng chiều cao tối đa của vùng cuộn icon.
+*/
+#edit-item-modal .icon-picker-grid-scrollable {
+    /* Tính toán chiều cao mới, trừ đi ít không gian hơn ở trên */
+    max-height: calc(92vh - 320px); 
+}
+
+
+/* =============================================================================
+   AI CHAT OPTIONS MENU STYLES
+   ============================================================================= */
+
+/* Bọc các nút action trong header */
+.ai-chat-header-actions {
+    position: relative; /* Quan trọng để định vị menu con */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Nút tùy chọn (dấu 3 chấm) */
+.ai-chat-options-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.ai-chat-options-btn:hover {
+    background-color: var(--bg-tertiary);
+}
+
+/* Menu tùy chọn */
+.ai-chat-options-menu {
+    display: none; /* Ẩn mặc định */
+    position: absolute;
+    top: calc(100% + 5px); /* Hiển thị ngay dưới nút cha */
+    right: 0;
+    background-color: var(--bg-primary);
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+    width: 240px;
+    z-index: 10;
+    overflow: hidden;
+    animation: fadeIn 0.15s ease-out;
+}
+
+.ai-chat-options-menu.visible {
+    display: block; /* Hiện menu khi có class .visible */
+}
+
+/* Các mục trong menu */
+.ai-chat-options-menu a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.ai-chat-options-menu a i {
+    width: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.ai-chat-options-menu a:hover {
+    background-color: var(--bg-tertiary);
+}
+
+/* Mục hành động nguy hiểm (xóa) */
+.ai-chat-options-menu a.danger-action {
+    color: var(--danger-color);
+}
+
+.ai-chat-options-menu a.danger-action i {
+    color: var(--danger-color);
+}
+
+.ai-chat-options-menu a.danger-action:hover {
+    background-color: var(--danger-light);
+}
+
+
+/* =================================================================== */
+/* == STYLES FOR COMPACT ACCOUNT BALANCE GRID (NEW) == */
+/* =================================================================== */
+
+/* Container cho header có nút điều khiển */
+.section-header-with-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg); /* Giữ khoảng cách với nội dung bên dưới */
+}
+
+/* Nút chuyển đổi chế độ xem */
+.view-toggle-btn {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.view-toggle-btn:hover {
+    background: var(--border-color);
+    color: var(--text-primary);
+}
+
+/* Container chính cho các thẻ tài khoản */
+.account-balance-grid {
+    display: grid;
+    gap: var(--spacing-md);
+    /* Mặc định là chế độ danh sách (1 cột) */
+    grid-template-columns: 1fr;
+}
+
+/* Khi ở chế độ lưới (grid view) */
+.account-balance-grid.view-mode-grid {
+    /* Tạo lưới đáp ứng (responsive), tự động điều chỉnh số cột */
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+/* Thẻ tài khoản mặc định (chế độ danh sách) */
+.account-balance-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-color);
+    display: flex; /* Sử dụng flexbox */
+    align-items: center;
+    justify-content: space-between; /* Đẩy các phần tử ra xa nhau */
+    gap: 1rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Định dạng cho tên và icon bên trái */
+.account-balance-card .account-name {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.account-balance-card .account-name i {
+    font-size: 1.3rem;
+    color: var(--text-secondary);
+}
+
+/* Định dạng cho số dư bên phải */
+.account-balance-card .account-balance {
+    font-weight: 600;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 1rem;
+    white-space: nowrap;
+}
+
+/* Khi chuyển sang chế độ lưới, áp dụng style nhỏ gọn cho thẻ */
+.account-balance-grid.view-mode-grid .account-balance-card {
+    flex-direction: column; /* Xếp các mục theo chiều dọc */
+    align-items: flex-start; /* Căn lề sang trái */
+    justify-content: flex-start;
+    padding: var(--spacing-md);
+    text-align: left;
+}
+
+.account-balance-grid.view-mode-grid .account-name {
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.account-balance-grid.view-mode-grid .account-balance {
+    font-size: 1.1rem;
+    align-self: flex-start; /* Đảm bảo số dư cũng căn trái */
+}
+
+/* =================================================================== */
+/* == STYLES FOR DAY DETAIL ACCOUNT SUMMARY (NEW) == */
+/* =================================================================== */
+
+.day-account-summary-container {
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm) 0;
+    font-size: 0.85rem; /* Chữ bé như yêu cầu */
+}
+
+.summary-item-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.summary-item-name .category-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 0.9rem;
+}
+
+.summary-item-balance {
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.summary-item-balance .arrow {
+    color: var(--text-muted);
 }

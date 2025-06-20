@@ -278,13 +278,19 @@
 				</div>
 
 				<div id="day-detail-modal" class="modal" style="display: none;">
-					<div class="modal-content">
+					<div class="modal-content large">
 						<div class="modal-header">
-							<h3 id="modal-day-title">Giao dịch ngày</h3>
+							<h3 id="modal-day-title">Chi tiết ngày</h3>
 							<button class="modal-close" id="close-day-modal">&times;</button>
 						</div>
-						<div class="modal-body" id="modal-day-transactions">
-							</div>
+						
+						<div class="modal-body">
+							<div id="modal-day-transactions" class="day-transactions-list">
+								</div>
+							
+							<div id="modal-day-account-summary" class="day-account-summary-container">
+								</div>
+						</div>
 					</div>
 				</div>
 				<div class="tab-header">
@@ -294,11 +300,16 @@
                     </h2>
                 </div>
 
-                <div class="account-balances-section">
-                    <h3 class="subsection-title">Số Dư Tài Khoản</h3>
-                    <div class="account-balance-grid" id="account-balance-grid">
-                        </div>
-                </div>
+				<div class="account-balances-section">
+					<div class="section-header-with-controls">
+						<h3 class="subsection-title">Số Dư Tài Khoản</h3>
+						<button id="account-view-toggle" class="view-toggle-btn" title="Chuyển đổi chế độ xem">
+							<i class="fa-solid fa-grip"></i>
+						</button>
+					</div>
+					<div class="account-balance-grid" id="account-balance-grid">
+						</div>
+				</div>
 
                 <div class="reconciliation-section">
                     <h3 class="subsection-title">Đối Soát Tài Khoản</h3>
@@ -866,14 +877,33 @@
 		</div>
 	</div>
 
-    <button id="ai-chat-fab" title="Ghi chú nhanh với AI">
-        <i id="ai-chat-fab-icon" class="fa-solid fa-wand-magic-sparkles"></i>
-    </button>
+	<button id="ai-chat-fab" title="Ghi chú nhanh với AI">
+		<i id="ai-chat-fab-icon" class="fa-solid fa-wand-magic-sparkles"></i>
+	</button>
+
 	<div id="ai-chat-modal" class="ai-chat-modal-container">
 		<div class="ai-chat-modal-content">
 			<div class="ai-chat-modal-header">
 				<h3><i class="fa-solid fa-wand-magic-sparkles"></i> Ghi Chú Nhanh với AI</h3>
-				<button id="ai-chat-close-btn" class="ai-chat-close-btn">&times;</button>
+				
+				<div class="ai-chat-header-actions">
+					
+					<button id="ai-chat-options-btn" class="ai-chat-options-btn" title="Tùy chọn">
+						<i class="fa-solid fa-ellipsis-vertical"></i>
+					</button>
+					
+					<button id="ai-chat-close-btn" class="ai-chat-close-btn">&times;</button>
+					
+					<div id="ai-chat-options-menu" class="ai-chat-options-menu">
+						<a href="#" id="ai-chat-copy-log">
+							<i class="fa-solid fa-copy"></i> Sao chép cuộc trò chuyện
+						</a>
+						<a href="#" id="ai-chat-delete-log" class="danger-action">
+							<i class="fa-solid fa-trash-can"></i> Xóa cuộc trò chuyện
+						</a>
+					</div>
+					
+					</div>
 			</div>
 			<div class="ai-chat-modal-body" id="ai-chat-history">
 				<div class="ai-chat-message bot">
@@ -884,7 +914,6 @@
 				<div class="ai-chat-footer-info">
 					<span id="ai-chat-token-counter">Tokens: 0</span>
 				</div>
-
 				<div class="ai-chat-input-group">
 					<input type="text" id="ai-chat-input" placeholder="Nhập ghi chú giao dịch...">
 					<button id="ai-chat-send-btn">
