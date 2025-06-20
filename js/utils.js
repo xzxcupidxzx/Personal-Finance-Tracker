@@ -599,47 +599,44 @@ const Utils = {
             "Khác": "fa-solid fa-circle-question"
         },
         
-	getCategoryIcon(category) {
-		// TÌM ICON DỰA TRÊN TÊN HOẶC OBJECT
-		let iconObject = null;
-		const categoryName = (typeof category === 'object' && category !== null) ? category.value : category;
+		getCategoryIcon(category) {
+			const categoryObject = (typeof category === 'object' && category !== null) ? category : null;
+			const categoryName = categoryObject ? categoryObject.value : category;
 
-		// Nếu đối tượng category có thuộc tính 'icon' và đó không phải là icon Font Awesome mặc định (như 'fa-solid fa-box')
-		if (typeof category === 'object' && category !== null && category.icon) {
-			// Kiểm tra xem có phải là ảnh (data URL hoặc path) hay không
-			if (category.icon.includes('/') || category.icon.includes('.')) {
-				return { type: 'img', value: category.icon, unicode: '🖼️' };
+			// --- ƯU TIÊN SỐ 1: Luôn dùng thuộc tính .icon nếu tồn tại trên đối tượng ---
+			if (categoryObject && categoryObject.icon) {
+				const customIcon = categoryObject.icon;
+
+				// Kiểm tra xem icon có phải là ảnh (data:image, URL) hay không
+				if (customIcon.startsWith('data:image') || customIcon.includes('/')) {
+					return { type: 'img', value: customIcon, unicode: '🖼️' };
+				}
+
+				// Nếu là class Font Awesome, tìm thông tin chi tiết (bao gồm cả unicode)
+				for (const set of this.getIconList()) {
+					const found = set.icons.find(i => i.class === customIcon);
+					if (found) {
+						return { type: 'fa', value: found.class, unicode: found.unicode };
+					}
+				}
+
+				// Nếu là class Font Awesome nhưng không có trong danh sách, vẫn trả về để hiển thị
+				return { type: 'fa', value: customIcon, unicode: '?' };
 			}
-			// Nếu không phải ảnh, thử tìm trong list để lấy unicode của Font Awesome
-			for (const set of this.getIconList()) {
-				const found = set.icons.find(i => i.class === category.icon);
-				if (found) {
-					iconObject = found;
-					break;
+
+			// --- ƯU TIÊN SỐ 2: Nếu không có .icon, tìm icon mặc định theo TÊN ---
+			if (categoryName) {
+				for (const set of this.getIconList()) {
+					const found = set.icons.find(i => i.name.toLowerCase() === String(categoryName).trim().toLowerCase());
+					if (found) {
+						return { type: 'fa', value: found.class, unicode: found.unicode };
+					}
 				}
 			}
-		}
 
-		// Nếu không tìm thấy từ thuộc tính 'icon' của đối tượng, hoặc category là string,
-		// thì tìm theo tên mặc định trong list (cho các icon Font Awesome phổ biến)
-		if (!iconObject && categoryName) {
-			for (const set of this.getIconList()) {
-				const found = set.icons.find(i => i.name.toLowerCase() === categoryName.trim().toLowerCase());
-				if (found) {
-					iconObject = found;
-					break;
-				}
-			}
-		}
-
-		// NẾU TÌM THẤY, TRẢ VỀ THÔNG TIN ĐẦY ĐỦ
-		if (iconObject) {
-			return { type: 'fa', value: iconObject.class, unicode: iconObject.unicode };
-		}
-
-		// FALLBACK mặc định nếu không tìm thấy
-		return { type: 'fa', value: 'fa-solid fa-box', unicode: '\uf466' };
-	},
+			// --- ƯU TIÊN SỐ 3: Icon dự phòng cuối cùng nếu không tìm thấy gì ---
+			return { type: 'fa', value: 'fa-solid fa-box', unicode: '\uf466' };
+		},
         
 		getIconList() {
 			return [
