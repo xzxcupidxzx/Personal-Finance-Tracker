@@ -3,7 +3,9 @@
  * Hỗ trợ offline, caching và push notifications
  */
 
-const CACHE_NAME = 'financial-app-v1.0.3';
+importScripts('/js/version.js'); // Dòng bạn vừa thêm
+
+const CACHE_NAME = `financial-app-v${APP_VERSION}`; // Thay đổi dòng này
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
