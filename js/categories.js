@@ -401,47 +401,77 @@ class CategoriesModule {
         });
     }
 
-    saveItemChanges() {
-        const { originalValue, itemType, categoryType, newIcon } = this.editingItem;
-        const newName = document.getElementById('edit-item-name').value.trim();
-        if (!newName) { Utils.UIUtils.showMessage('Tên không được để trống.', 'error'); return; }
-        
-        const nameChanged = newName !== originalValue;
-        const dataList = itemType === 'account' ? this.app.data.accounts : (categoryType === 'income' ? this.app.data.incomeCategories : this.app.data.expenseCategories);
-        
-        if (nameChanged && dataList.some(item => item.value.toLowerCase() === newName.toLowerCase())) {
-            Utils.UIUtils.showMessage(`Tên "${newName}" đã tồn tại.`, 'error');
-            return;
-        }
-        
-        const itemToUpdate = dataList.find(item => item.value === originalValue);
-        if (!itemToUpdate) return;
+	saveItemChanges() {
+		const { originalValue, itemType, categoryType, newIcon } = this.editingItem;
+		const newNameInput = document.getElementById('edit-item-name');
+		if (!newNameInput) return;
 
-        if (newIcon) itemToUpdate.icon = newIcon;
-        if (nameChanged) {
-            itemToUpdate.value = newName;
-            itemToUpdate.text = newName;
-            this.app.data.transactions.forEach(tx => {
-                if (itemType === 'account') {
-                    if (tx.account === originalValue) tx.account = newName;
-                    if (tx.toAccount === originalValue) tx.toAccount = newName;
-                } else if (tx.category === originalValue) {
-                    tx.category = newName;
-                }
-            });
-        }
+		const newName = newNameInput.value.trim();
+		if (!newName) {
+			Utils.UIUtils.showMessage('Tên không được để trống.', 'error');
+			return;
+		}
 
-        if (nameChanged || newIcon) {
-            this.app.saveData();
-            this.app.refreshAllModules();
-            Utils.UIUtils.showMessage('Cập nhật thành công!', 'success');
-        }
+		const nameChanged = newName.toLowerCase() !== originalValue.toLowerCase();
+		const iconChanged = !!newIcon;
+
+		// Nếu không có gì thay đổi, chỉ cần đóng modal
+		if (!nameChanged && !iconChanged) {
+			const modal = document.getElementById('edit-item-modal');
+			if (modal) modal.style.display = 'none';
+			return;
+		}
+
+		const dataList = itemType === 'account' 
+			? this.app.data.accounts 
+			: (categoryType === 'income' ? this.app.data.incomeCategories : this.app.data.expenseCategories);
+
+		// Kiểm tra tên mới đã tồn tại chưa (chỉ khi tên thay đổi)
+		if (nameChanged && dataList.some(item => item.value.toLowerCase() === newName.toLowerCase())) {
+			Utils.UIUtils.showMessage(`Tên "${newName}" đã tồn tại.`, 'error');
+			return;
+		}
+
+		const itemToUpdate = dataList.find(item => item.value.toLowerCase() === originalValue.toLowerCase());
+		if (!itemToUpdate) {
+			Utils.UIUtils.showMessage('Không tìm thấy mục để cập nhật.', 'error');
+			return;
+		}
+
+		// --- LOGIC SỬA LỖI CỐT LÕI ---
+		// Cập nhật icon NẾU có icon mới được chọn
+		if (iconChanged) {
+			itemToUpdate.icon = newIcon;
+		}
+
+		// Cập nhật tên NẾU tên đã thay đổi
+		if (nameChanged) {
+			const oldName = itemToUpdate.value;
+			itemToUpdate.value = newName;
+			itemToUpdate.text = newName;
+
+			// Cập nhật lại tất cả các giao dịch đang sử dụng tên cũ
+			this.app.data.transactions.forEach(tx => {
+				if (itemType === 'account') {
+					if (tx.account === oldName) tx.account = newName;
+					// Xử lý cả tài khoản nhận cho giao dịch chuyển tiền
+					if (tx.toAccount === oldName) tx.toAccount = newName;
+				} else { // itemType === 'category'
+					if (tx.category === oldName) tx.category = newName;
+				}
+			});
+		}
+		// --- KẾT THÚC LOGIC SỬA LỖI ---
+
+		this.app.saveData();
+		this.app.refreshAllModules();
+		Utils.UIUtils.showMessage('Cập nhật thành công!', 'success');
+
 		const modal = document.getElementById('edit-item-modal');
-		modal.classList.remove('visible');
-		setTimeout(() => {
+		if (modal) {
 			modal.style.display = 'none';
-		}, 400);
-    }
+		}
+	}
 
     // --- UTILITY METHODS ---
     escapeHtml(text) { return text?.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") || ''; }
