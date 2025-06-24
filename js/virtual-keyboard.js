@@ -54,42 +54,21 @@ class VirtualKeyboardModule {
      * Detect if device is mobile
      */
     detectMobileDevice() {
-        // Multiple detection methods for accuracy
         const userAgent = navigator.userAgent || navigator.vendor || window.opera;
         
-        // Method 1: User agent detection
-        const mobileUserAgent = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+        // Phương pháp 1: Kiểm tra User Agent chứa các từ khóa di động phổ biến.
+        const isMobileAgent = /android|webos|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
         
-        // Method 2: Touch capability and screen size
-        const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        const smallScreen = window.innerWidth <= 768; // Tablet and below
+        // Phương pháp 2: Kiểm tra trình duyệt có hỗ trợ sự kiện chạm hay không.
+        const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
         
-        // Method 3: CSS media query support
-        let isMobileCSS = false;
-        if (window.matchMedia) {
-            isMobileCSS = window.matchMedia('(max-width: 768px)').matches;
-        }
+        // Thiết bị được coi là di động NẾU là mobile agent HOẶC có hỗ trợ cảm ứng.
+        // Logic này linh hoạt và đáng tin cậy hơn.
+        this.isMobileDevice = isMobileAgent || hasTouch;
         
-        // Method 4: Check for mobile-specific features
-        const hasMobileFeatures = 'orientation' in window || 'DeviceOrientationEvent' in window;
-        
-        // Combine all methods - device is mobile if it meets multiple criteria
-        const mobileScore = [
-            mobileUserAgent,
-            hasTouch && smallScreen,
-            isMobileCSS && hasTouch,
-            hasMobileFeatures && smallScreen
-        ].filter(Boolean).length;
-        
-        this.isMobileDevice = mobileScore >= 2; // Require at least 2 indicators
-        
-        console.log('📱 Device detection:', {
-            userAgent: mobileUserAgent,
-            touch: hasTouch,
-            smallScreen: smallScreen,
-            cssQuery: isMobileCSS,
-            mobileFeatures: hasMobileFeatures,
-            score: mobileScore,
+        console.log('📱 Device detection (revised):', {
+            isMobileAgent,
+            hasTouch,
             isMobile: this.isMobileDevice
         });
         
