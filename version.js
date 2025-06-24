@@ -1,0 +1,1 @@
+const APP_VERSION = '1.1.7'; // << SỬA PHIÊN BẢN Ở ĐÂY
