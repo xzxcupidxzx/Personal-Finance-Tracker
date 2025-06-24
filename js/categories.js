@@ -262,12 +262,20 @@ class CategoriesModule {
             }
         }
     }
-
+    closeEditModal() {
+        const modal = document.getElementById('edit-item-modal');
+        if (modal) {
+            modal.classList.remove('visible');
+            // Chờ hiệu ứng transition hoàn tất (400ms) rồi mới ẩn hoàn toàn
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 400);
+        }
+    }
     // --- UNIFIED EDIT MODAL METHODS ---
 	showEditModal(value, itemType, categoryType = null) {
 		this.editingItem = { originalValue: value, itemType, categoryType, newIcon: null };
 		
-		// Lấy các element cần thiết từ DOM
 		const modal = document.getElementById('edit-item-modal');
 		if (!modal) {
 			console.error('Không tìm thấy #edit-item-modal trong DOM.');
@@ -286,7 +294,6 @@ class CategoriesModule {
 		searchInput.value = '';
 		this.populateIconGrid();
 
-		// Xác định mục đang được chỉnh sửa
 		let currentItem;
 		if (itemType === 'category') {
 			const list = categoryType === 'income' ? this.app.data.incomeCategories : this.app.data.expenseCategories;
@@ -297,71 +304,52 @@ class CategoriesModule {
 			modalTitle.textContent = 'Chỉnh sửa Tài khoản';
 		}
 
-		// Kiểm tra nếu không tìm thấy mục
 		if (!currentItem) {
 			Utils.UIUtils.showMessage('Không tìm thấy mục cần chỉnh sửa', 'error');
 			return;
 		}
 		
-		// Cập nhật icon hiện tại
 		this.updateIconDisplay(currentItem);
 
-		// --- 2. Định nghĩa hàm đóng modal để tái sử dụng ---
-		const closeModal = () => {
-			modal.classList.remove('visible');
-			// Chờ hiệu ứng trượt xuống hoàn tất rồi mới ẩn modal
-			setTimeout(() => {
-				modal.style.display = 'none';
-			}, 400); // 400ms phải khớp với thời gian transition trong CSS
-		};
-
-		// --- 3. Gán sự kiện cho các nút và input ---
-		// Sử dụng .onclick để đảm bảo chỉ có một listener được gán mỗi lần mở modal
-		closeBtn.onclick = closeModal;
+		// --- 2. Gán sự kiện ---
+        // SỬA LỖI: Gọi hàm closeEditModal mới
+		closeBtn.onclick = () => this.closeEditModal();
 		
 		saveBtn.onclick = () => {
-			// Hàm saveItemChanges sẽ tự gọi closeModal sau khi lưu thành công
 			this.saveItemChanges(); 
 		};
 		
 		searchInput.oninput = (e) => this.filterIcons(e.target.value);
 
-		// Xử lý upload file icon
 		const handleFileUpload = (e) => {
 			const file = e.target.files[0];
 			if (!file) return;
 
-			if (file.size > 1024 * 1024) { // Giới hạn 1MB
+			if (file.size > 1024 * 1024) {
 				Utils.UIUtils.showMessage('Kích thước ảnh không được vượt quá 1MB', 'error');
 				return;
 			}
 
 			const reader = new FileReader();
 			reader.onload = (event) => {
-				const imageDataUrl = event.target.result;
-				this.selectIcon(imageDataUrl); 
+				this.selectIcon(event.target.result); 
 			};
-			reader.onerror = () => {
-				Utils.UIUtils.showMessage('Không thể đọc được file ảnh.', 'error');
-			};
+			reader.onerror = () => Utils.UIUtils.showMessage('Không thể đọc được file ảnh.', 'error');
 			reader.readAsDataURL(file);
 
-			iconUploadInput.value = ''; // Reset để có thể chọn lại cùng 1 file
+			iconUploadInput.value = '';
 		};
 
-		// Gỡ và gán lại listener để tránh bị lặp
 		iconUploadInput.removeEventListener('change', handleFileUpload);
 		iconUploadInput.addEventListener('change', handleFileUpload);
 
-		// --- 4. Kích hoạt hiệu ứng và hiển thị modal ---
-		// Bước 1: Làm cho modal container có thể nhìn thấy được
+		// --- 3. Hiển thị modal ---
 		modal.style.display = 'flex';
-		
-		// Bước 2: Thêm class 'visible' sau một khoảng trễ ngắn để CSS transition được kích hoạt
 		setTimeout(() => {
 			modal.classList.add('visible');
 		}, 10);
 	}
+
 
     populateIconGrid() {
         const gridContainer = document.getElementById('icon-picker-grid');
@@ -439,8 +427,7 @@ class CategoriesModule {
 
 		// Nếu không có gì thay đổi, chỉ cần đóng modal
 		if (!nameChanged && !iconChanged) {
-			const modal = document.getElementById('edit-item-modal');
-			if (modal) modal.style.display = 'none';
+			this.closeEditModal(); // <-- SỬA Ở ĐÂY
 			return;
 		}
 
@@ -448,7 +435,6 @@ class CategoriesModule {
 			? this.app.data.accounts 
 			: (categoryType === 'income' ? this.app.data.incomeCategories : this.app.data.expenseCategories);
 
-		// Kiểm tra tên mới đã tồn tại chưa (chỉ khi tên thay đổi)
 		if (nameChanged && dataList.some(item => item.value.toLowerCase() === newName.toLowerCase())) {
 			Utils.UIUtils.showMessage(`Tên "${newName}" đã tồn tại.`, 'error');
 			return;
@@ -460,39 +446,30 @@ class CategoriesModule {
 			return;
 		}
 
-		// --- LOGIC SỬA LỖI CỐT LÕI ---
-		// Cập nhật icon NẾU có icon mới được chọn
 		if (iconChanged) {
 			itemToUpdate.icon = newIcon;
 		}
 
-		// Cập nhật tên NẾU tên đã thay đổi
 		if (nameChanged) {
 			const oldName = itemToUpdate.value;
 			itemToUpdate.value = newName;
 			itemToUpdate.text = newName;
 
-			// Cập nhật lại tất cả các giao dịch đang sử dụng tên cũ
 			this.app.data.transactions.forEach(tx => {
 				if (itemType === 'account') {
 					if (tx.account === oldName) tx.account = newName;
-					// Xử lý cả tài khoản nhận cho giao dịch chuyển tiền
 					if (tx.toAccount === oldName) tx.toAccount = newName;
-				} else { // itemType === 'category'
+				} else {
 					if (tx.category === oldName) tx.category = newName;
 				}
 			});
 		}
-		// --- KẾT THÚC LOGIC SỬA LỖI ---
 
 		this.app.saveData();
 		this.app.refreshAllModules();
 		Utils.UIUtils.showMessage('Cập nhật thành công!', 'success');
 
-		const modal = document.getElementById('edit-item-modal');
-		if (modal) {
-			modal.style.display = 'none';
-		}
+		this.closeEditModal(); // <-- SỬA Ở ĐÂY
 	}
 
     // --- UTILITY METHODS ---
