@@ -1338,6 +1338,7 @@ class FinancialApp {
 
     async initializeModules() {
         console.log('🔧 Initializing sub-modules...');
+		this.modules.VirtualKeyboardModule = new VirtualKeyboardModule();
         const moduleInitializers = {
             'TransactionsModule': window.TransactionsModule,
             'HistoryModule': window.HistoryModule,

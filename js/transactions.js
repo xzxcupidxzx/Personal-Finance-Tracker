@@ -284,7 +284,15 @@ class TransactionsModule {
         }
 
         if (shouldFocus) {
-            this.elements.amountInput.focus();
+            // Lấy module bàn phím ảo từ app chính
+            const vkModule = this.app.modules.VirtualKeyboardModule;
+            // Nếu là di động, gọi trực tiếp hàm showKeyboard
+            if (vkModule && vkModule.isMobile()) {
+                vkModule.showKeyboard(this.elements.amountInput);
+            } else {
+                // Nếu là desktop, giữ nguyên hành vi focus mặc định
+                this.elements.amountInput.focus();
+            }
         }
     }
     
