@@ -102,18 +102,38 @@ class FinancialApp {
             const transactions = Utils.StorageUtils.load(Utils.CONFIG.STORAGE_KEYS.TRANSACTIONS, []);
             this.data.transactions = Array.isArray(transactions) ? transactions : [];
 
-            const incomeCategories = Utils.StorageUtils.load(Utils.CONFIG.STORAGE_KEYS.INCOME_CATEGORIES, this.defaultData.incomeCategories);
-            this.data.incomeCategories = Array.isArray(incomeCategories) && incomeCategories.length > 0 ? incomeCategories : JSON.parse(JSON.stringify(this.defaultData.incomeCategories));
+            // =========================================================================
+            // === THAY ĐỔI LỚN: CHỈ THÊM DỮ LIỆU MẶC ĐỊNH KHI DỮ LIỆU RỖNG ===
+            // =========================================================================
 
-            const expenseCategories = Utils.StorageUtils.load(Utils.CONFIG.STORAGE_KEYS.EXPENSE_CATEGORIES, this.defaultData.expenseCategories);
-            this.data.expenseCategories = Array.isArray(expenseCategories) && expenseCategories.length > 0 ? expenseCategories : JSON.parse(JSON.stringify(this.defaultData.expenseCategories));
-            
-            this.ensureSystemCategories();
-			this.ensureSystemAccounts();
+            // 1. Tải danh mục thu nhập
+            const incomeCategories = Utils.StorageUtils.load(Utils.CONFIG.STORAGE_KEYS.INCOME_CATEGORIES, null);
+            // Nếu không có dữ liệu (lần đầu sử dụng), mới thêm danh sách mặc định
+            if (incomeCategories === null || incomeCategories.length === 0) {
+                this.data.incomeCategories = JSON.parse(JSON.stringify(this.defaultData.incomeCategories));
+            } else {
+                this.data.incomeCategories = incomeCategories;
+            }
 
-            const accounts = Utils.StorageUtils.load(Utils.CONFIG.STORAGE_KEYS.ACCOUNTS, this.defaultData.accounts);
-            this.data.accounts = Array.isArray(accounts) && accounts.length > 0 ? accounts : JSON.parse(JSON.stringify(this.defaultData.accounts));
+            // 2. Tải danh mục chi tiêu
+            const expenseCategories = Utils.StorageUtils.load(Utils.CONFIG.STORAGE_KEYS.EXPENSE_CATEGORIES, null);
+            if (expenseCategories === null || expenseCategories.length === 0) {
+                this.data.expenseCategories = JSON.parse(JSON.stringify(this.defaultData.expenseCategories));
+            } else {
+                this.data.expenseCategories = expenseCategories;
+            }
             
+            // 3. Tải tài khoản
+            const accounts = Utils.StorageUtils.load(Utils.CONFIG.STORAGE_KEYS.ACCOUNTS, null);
+            if (accounts === null || accounts.length === 0) {
+                this.data.accounts = JSON.parse(JSON.stringify(this.defaultData.accounts));
+            } else {
+                this.data.accounts = accounts;
+            }
+
+            // Luôn đảm bảo các mục CẦN THIẾT cho hệ thống tồn tại
+            this.ensureSystemItems();
+
             const settings = Utils.StorageUtils.load(Utils.CONFIG.STORAGE_KEYS.SETTINGS, {});
             this.data.settings = { ...this.defaultData.settings, ...settings };
             
@@ -125,14 +145,20 @@ class FinancialApp {
             this.initializeFallbackMode(error);
         }
     }
-    
+
+    // Đổi tên hàm để bao gồm cả tài khoản
+    ensureSystemItems() {
+        this.ensureSystemCategories();
+        this.ensureSystemAccounts();
+    }
 
 	ensureSystemCategories() {
+        // CHỈ định nghĩa các danh mục THỰC SỰ cần cho hệ thống
 		const systemCats = [
-			{ type: 'income', value: Utils.CONFIG.TRANSFER_CATEGORY_IN, text: "Nhận tiền chuyển khoản" },
-			{ type: 'expense', value: Utils.CONFIG.TRANSFER_CATEGORY_OUT, text: "Chuyển tiền đi" },
-			{ type: 'income', value: Utils.CONFIG.RECONCILE_ADJUST_INCOME_CAT, text: "Điều chỉnh Đối Soát (Thu)" },
-			{ type: 'expense', value: Utils.CONFIG.RECONCILE_ADJUST_EXPENSE_CAT, text: "Điều chỉnh Đối Soát (Chi)" }
+			{ type: 'income', value: Utils.CONFIG.TRANSFER_CATEGORY_IN, text: "Danh mục hệ thống thu 1" },
+			{ type: 'expense', value: Utils.CONFIG.TRANSFER_CATEGORY_OUT, text: "Danh mục hệ thống chi 1" },
+			{ type: 'income', value: Utils.CONFIG.RECONCILE_ADJUST_INCOME_CAT, text: "Danh mục hệ thống thu 2" },
+			{ type: 'expense', value: Utils.CONFIG.RECONCILE_ADJUST_EXPENSE_CAT, text: "Danh mục hệ thống chi 2" }
 		];
 
 		systemCats.forEach(catInfo => {

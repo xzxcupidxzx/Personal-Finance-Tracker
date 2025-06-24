@@ -322,24 +322,25 @@ class TransactionsModule {
 
         const typeClass = transaction.type === 'Thu' ? 'income' : (transaction.type === 'Chi' ? 'expense' : 'transfer');
 
-        // --- LOGIC LẤY ICON ĐÃ ĐƯỢC CẬP NHẬT ---
+        // ==========================================================
+        // === SỬA ĐỔI: TẬP TRUNG LOGIC LẤY ICON VỀ UTILS.JS ===
+        // ==========================================================
         let iconHtml;
-        // Nếu là giao dịch chuyển khoản, icon sẽ dựa trên loại giao dịch
         if (transaction.isTransfer) {
             const transferIconClass = transaction.type === 'Chi' ? 'fa-solid fa-arrow-up-from-bracket' : 'fa-solid fa-arrow-down-to-bracket';
             iconHtml = `<i class="${transferIconClass}"></i>`;
         } else {
-            // Nếu là Thu/Chi, tìm đối tượng danh mục để lấy icon tùy chỉnh
+            // 1. Tìm đối tượng danh mục đầy đủ để có thông tin icon tùy chỉnh
             const categoryList = transaction.type === 'Thu'
                 ? this.app.data.incomeCategories
                 : this.app.data.expenseCategories;
             
             const categoryObject = categoryList.find(c => c && c.value === transaction.category);
             
-            // Lấy thông tin icon từ đối tượng tìm được, hoặc dùng tên làm dự phòng
+            // 2. Gọi hàm tiện ích chung để lấy icon
             const iconInfo = Utils.UIUtils.getCategoryIcon(categoryObject || transaction.category);
 
-            // Tạo HTML cho icon, hỗ trợ cả ảnh và font-icon
+            // 3. Tạo HTML cho icon
             iconHtml = iconInfo.type === 'img'
                 ? `<img src="${iconInfo.value}" class="custom-category-icon" alt="Category Icon">`
                 : `<i class="${iconInfo.value || 'fa-solid fa-question-circle'}"></i>`;

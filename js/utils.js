@@ -8,10 +8,14 @@ const CONFIG = {
     USD_TO_VND_RATE: 25000,
     USD_RATE_MIN: 1000,
     USD_RATE_MAX: 50000,
-    TRANSFER_CATEGORY_OUT: "Chuyển tiền đi",
-    TRANSFER_CATEGORY_IN: "Nhận tiền chuyển",
-    RECONCILE_ADJUST_INCOME_CAT: "Điều chỉnh Đối Soát (Thu)",
-    RECONCILE_ADJUST_EXPENSE_CAT: "Điều chỉnh Đối Soát (Chi)",
+    // ==========================================================
+    // === THAY ĐỔI: Đổi tên các giá trị của danh mục hệ thống ===
+    // ==========================================================
+    TRANSFER_CATEGORY_OUT: "Danh mục hệ thống chi 1",
+    TRANSFER_CATEGORY_IN: "Danh mục hệ thống thu 1",
+    RECONCILE_ADJUST_INCOME_CAT: "Danh mục hệ thống thu 2",
+    RECONCILE_ADJUST_EXPENSE_CAT: "Danh mục hệ thống chi 2",
+    // ==========================================================
     STORAGE_KEYS: {
         TRANSACTIONS: 'financial_transactions_v2',
         INCOME_CATEGORIES: 'financial_income_categories_v2',

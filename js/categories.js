@@ -137,7 +137,16 @@ class CategoriesModule {
         listEl.innerHTML = '';
         const fragment = document.createDocumentFragment();
         const array = type === 'income' ? this.app.data.incomeCategories : this.app.data.expenseCategories;
-        array.forEach(item => fragment.appendChild(this.createCategoryListItem(item, type)));
+
+        // ==========================================================
+        // === THAY ĐỔI: Lọc bỏ các danh mục có cờ 'system' ===
+        // ==========================================================
+        const userVisibleCategories = array.filter(item => !item.system);
+        
+        // Render danh sách đã được lọc
+        userVisibleCategories.forEach(item => fragment.appendChild(this.createCategoryListItem(item, type)));
+        // ==========================================================
+        
         listEl.appendChild(fragment);
     }
 
@@ -145,7 +154,16 @@ class CategoriesModule {
         if (!this.elements.accountList) return;
         this.elements.accountList.innerHTML = '';
         const fragment = document.createDocumentFragment();
-        this.app.data.accounts.forEach(acc => fragment.appendChild(this.createAccountListItem(acc)));
+
+        // ========================================================
+        // === THAY ĐỔI: Lọc bỏ các tài khoản có cờ 'system' ===
+        // ========================================================
+        const userVisibleAccounts = this.app.data.accounts.filter(acc => !acc.system);
+
+        // Render danh sách đã được lọc
+        userVisibleAccounts.forEach(acc => fragment.appendChild(this.createAccountListItem(acc)));
+        // ========================================================
+
         this.elements.accountList.appendChild(fragment);
     }
 
@@ -198,15 +216,16 @@ class CategoriesModule {
 
         const balance = this.app.getAccountBalance(account.value);
         const usageCount = this.app.data.transactions.filter(tx => tx.account === account.value).length;
-        const iconInfo = Utils.UIUtils.getCategoryIcon(account); // Sử dụng Utils.UIUtils.getCategoryIcon để lấy icon từ đối tượng tài khoản
-        const iconHtml = iconInfo.type === 'img' ? `<img src="${iconInfo.value}" class="custom-category-icon">` : `<i class="${iconInfo.value || 'fa-solid fa-landmark'}"></i>`; // Áp dụng logic icon HTML
+        const iconInfo = Utils.UIUtils.getCategoryIcon(account);
+        const iconHtml = iconInfo.type === 'img' ? `<img src="${iconInfo.value}" class="custom-category-icon">` : `<i class="${iconInfo.value || 'fa-solid fa-landmark'}"></i>`;
         const isHidden = localStorage.getItem(`balance_hidden_${account.value}`) === 'true';
         const escapedValue = this.escapeHtml(account.value);
         
-        // FIX 1: Thêm lại class màu (text-success hoặc text-danger) vào span chứa số dư
+        // =======================================================
+        // === SỬA LỖI: Thêm lại class màu cho số dư tài khoản ===
+        // =======================================================
         const balanceColorClass = balance >= 0 ? 'text-success' : 'text-danger';
-        const isProtected = this.isProtectedAccount(account.value); // Thêm dòng này
-
+        const isProtected = this.isProtectedAccount(account.value);
         li.innerHTML = `
             <div class="account-icon-balance-stack">
                 <span class="category-icon compact">${iconHtml}</span>
