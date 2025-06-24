@@ -137,12 +137,13 @@ class FinancialApp {
 
 		systemCats.forEach(catInfo => {
 			const targetArray = catInfo.type === 'income' ? this.data.incomeCategories : this.data.expenseCategories;
-			const existingCat = targetArray.find(c => c.value === catInfo.value);
+			// TÌM KIẾM KHÔNG PHÂN BIỆT HOA-THƯỜNG
+			const existingCat = targetArray.find(c => c.value.toLowerCase() === catInfo.value.toLowerCase());
 
 			if (existingCat) {
-				existingCat.system = true; // Đã tồn tại -> chỉ đảm bảo có cờ system
+				existingCat.system = true;
 			} else {
-				targetArray.push({ ...catInfo, system: true }); // Chưa tồn tại -> thêm mới
+				targetArray.push({ ...catInfo, system: true });
 			}
 		});
 	}
@@ -153,14 +154,15 @@ class FinancialApp {
 		];
 
 		systemAccounts.forEach(accInfo => {
-			const existingAcc = this.data.accounts.find(acc => acc.value === accInfo.value);
+			// TÌM KIẾM KHÔNG PHÂN BIỆT HOA-THƯỜNG
+			const existingAcc = this.data.accounts.find(acc => acc.value.toLowerCase() === accInfo.value.toLowerCase());
 
 			if (existingAcc) {
-				if (!existingAcc.system) { // Đã tồn tại -> chỉ đảm bảo có cờ system
+				if (!existingAcc.system) {
 					existingAcc.system = true;
 				}
 			} else {
-				this.data.accounts.push({ ...accInfo, system: true }); // Chưa tồn tại -> thêm mới
+				this.data.accounts.push({ ...accInfo, system: true });
 			}
 		});
 	}
@@ -171,69 +173,67 @@ class FinancialApp {
     /**
      * SỬA LỖI: Enhanced JSON import with comprehensive validation
      */
-    async importData(importedData) {
-        const loadingMessage = "Đang xử lý dữ liệu nhập...";
-        this.showImportProgress(loadingMessage);
+	async importData(importedData) {
+		const loadingMessage = "Đang xử lý dữ liệu nhập...";
+		this.showImportProgress(loadingMessage);
 
-        try {
-            console.log('📥 Starting JSON data import...');
-            
-            // Basic validation
-            if (!importedData || typeof importedData !== 'object') {
-                throw new Error('Dữ liệu JSON không hợp lệ - phải là object.');
-            }
-            
-            // Create backup before any changes
-            const backupData = this.createDataBackup();
-            console.log('💾 Created backup of current data');
+		try {
+			console.log('📥 Starting JSON data import...');
+			
+			if (!importedData || typeof importedData !== 'object') {
+				throw new Error('Dữ liệu JSON không hợp lệ - phải là object.');
+			}
+			
+			const backupData = this.createDataBackup();
+			console.log('💾 Created backup of current data');
 
-            try {
-                // Validate structure
-                this.validateImportedDataStructure(importedData);
-                
-                // Show progress
-                this.showImportProgress("Đang validate dữ liệu...");
-                
-                // Process import step by step
-                const processedData = await this.processImportData(importedData, backupData);
-                
-                this.showImportProgress("Đang áp dụng thay đổi...");
-                
-                // Apply changes
-                this.applyImportedData(processedData);
-                
-                // Post-import validation and cleanup
-                this.postImportProcessing();
-                
-                const transactionCount = this.data.transactions.length;
-                const categoryCount = this.data.incomeCategories.length + this.data.expenseCategories.length;
-                const accountCount = this.data.accounts.length;
-                
-                this.hideImportProgress();
-                
-                console.log(`✅ Import successful: ${transactionCount} transactions, ${categoryCount} categories, ${accountCount} accounts`);
-                Utils.UIUtils.showMessage(
-                    `✅ Nhập dữ liệu thành công!\n📊 ${transactionCount} giao dịch\n🏷️ ${categoryCount} danh mục\n💳 ${accountCount} tài khoản`, 
-                    'success', 
-                    5000
-                );
-                
-                return true;
+			try {
+				this.validateImportedDataStructure(importedData);
+				
+				this.showImportProgress("Đang validate dữ liệu...");
+				
+				const processedData = await this.processImportData(importedData, backupData);
+				
+				this.showImportProgress("Đang áp dụng thay đổi...");
+				
+				this.applyImportedData(processedData);
+				
+				// === THAY ĐỔI QUAN TRỌNG: BỎ QUA postImportProcessing() ===
+				// Chúng ta tin tưởng hoàn toàn vào dữ liệu từ file backup.
+				// Việc chạy lại ensureSystem... sau khi import là không cần thiết và gây lỗi.
+				this.saveData();
+				this.refreshAllModules();
+				// =========================================================
+				
+				const transactionCount = this.data.transactions.length;
+				const categoryCount = this.data.incomeCategories.length + this.data.expenseCategories.length;
+				const accountCount = this.data.accounts.length;
+				
+				this.hideImportProgress();
+				
+				console.log(`✅ Import successful: ${transactionCount} transactions, ${categoryCount} categories, ${accountCount} accounts`);
+				Utils.UIUtils.showMessage(
+					`✅ Nhập dữ liệu thành công!\n📊 ${transactionCount} giao dịch\n🏷️ ${categoryCount} danh mục\n💳 ${accountCount} tài khoản`, 
+					'success', 
+					5000
+				);
+				
+				return true;
 
-            } catch (processingError) {
-                console.error('❌ Error processing imported data, restoring backup:', processingError);
-                this.restoreFromBackup(backupData);
-                this.hideImportProgress();
-                Utils.UIUtils.showMessage(`❌ Lỗi xử lý dữ liệu: ${processingError.message}`, 'error');
-                return false;
-            }
-        } catch (error) {
-            console.error('❌ Import failed:', error);
-            this.hideImportProgress();
-            Utils.UIUtils.showMessage(`❌ Lỗi nhập dữ liệu: ${error.message}`, 'error');
-            return false;
-        }
-    }
+			} catch (processingError) {
+				console.error('❌ Error processing imported data, restoring backup:', processingError);
+				this.restoreFromBackup(backupData);
+				this.hideImportProgress();
+				Utils.UIUtils.showMessage(`❌ Lỗi xử lý dữ liệu: ${processingError.message}`, 'error');
+				return false;
+			}
+		} catch (error) {
+			console.error('❌ Import failed:', error);
+			this.hideImportProgress();
+			Utils.UIUtils.showMessage(`❌ Lỗi nhập dữ liệu: ${error.message}`, 'error');
+			return false;
+		}
+	}
 
     /**
      * Show import progress modal
