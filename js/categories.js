@@ -497,16 +497,26 @@ class CategoriesModule {
 
     // --- UTILITY METHODS ---
     escapeHtml(text) { return text?.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") || ''; }
+    
+    // SỬA LẠI: Làm cho hàm này hoạt động đúng, dựa trên cờ 'system' trong dữ liệu
     isProtectedCategory(value) {
-        // Trả về false để không có danh mục nào được coi là bảo vệ
-        // CẨN THẬN KHI LÀM ĐIỀU NÀY: Có thể ảnh hưởng đến chức năng cốt lõi
+        if (!this.app || !this.app.data) return false;
+        const incomeCat = this.app.data.incomeCategories.find(c => c.value === value);
+        if (incomeCat) return !!incomeCat.system; // Dấu !! để chuyển giá trị (true/undefined) thành boolean (true/false)
+
+        const expenseCat = this.app.data.expenseCategories.find(c => c.value === value);
+        if (expenseCat) return !!expenseCat.system;
+
         return false;
     }
+
+    // SỬA LẠI: Làm cho hàm này hoạt động đúng, dựa trên cờ 'system' trong dữ liệu
     isProtectedAccount(value) {
-        // Trả về false để không có tài khoản nào được coi là bảo vệ
-        // CẨN THẬN KHI LÀM ĐIỀU NÀY: Có thể ảnh hưởng đến chức năng cốt lõi
-        return false;
+        if (!this.app || !this.app.data) return false;
+        const account = this.app.data.accounts.find(a => a.value === value);
+        return account ? !!account.system : false;
     }
+
     isProtectedCategoryName(name) { return this.isProtectedCategory(name); }
     refreshTransactionModule() { if (window.TransactionsModule) window.TransactionsModule.populateDropdowns(); }
     refreshHistoryModule() { if (window.HistoryModule) window.HistoryModule.refresh(); }

@@ -140,34 +140,27 @@ class FinancialApp {
 			const existingCat = targetArray.find(c => c.value === catInfo.value);
 
 			if (existingCat) {
-				// Danh mục đã tồn tại. Chỉ đảm bảo cờ 'system' được đặt.
-				// Tuyệt đối không ghi đè các thuộc tính khác như 'icon' người dùng đã sửa.
-				existingCat.system = true;
+				existingCat.system = true; // Đã tồn tại -> chỉ đảm bảo có cờ system
 			} else {
-				// Danh mục chưa tồn tại, thêm mới vào.
-				targetArray.push({ ...catInfo, system: true });
+				targetArray.push({ ...catInfo, system: true }); // Chưa tồn tại -> thêm mới
 			}
 		});
 	}
+
 	ensureSystemAccounts() {
-		// Ví dụ: Đảm bảo tài khoản "Tiền mặt" luôn là tài khoản hệ thống
 		const systemAccounts = [
 			{ value: "Tiền mặt", text: "Tiền mặt" }
-			// Thêm các tài khoản hệ thống khác ở đây nếu cần
 		];
 
 		systemAccounts.forEach(accInfo => {
 			const existingAcc = this.data.accounts.find(acc => acc.value === accInfo.value);
 
 			if (existingAcc) {
-				// Tài khoản đã tồn tại, chỉ cần đảm bảo có cờ 'system'.
-				// Không đụng đến các thuộc tính khác như 'icon'.
-				if (!existingAcc.system) {
+				if (!existingAcc.system) { // Đã tồn tại -> chỉ đảm bảo có cờ system
 					existingAcc.system = true;
 				}
 			} else {
-				// Tài khoản chưa tồn tại, thêm mới.
-				this.data.accounts.push({ ...accInfo, system: true });
+				this.data.accounts.push({ ...accInfo, system: true }); // Chưa tồn tại -> thêm mới
 			}
 		});
 	}
