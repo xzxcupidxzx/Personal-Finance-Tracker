@@ -150,20 +150,42 @@ class CategoriesModule {
     }
 
     // --- LIST ITEM CREATION ---
-    createCategoryListItem(category, type) {
-        const li = document.createElement('li');
-        li.className = 'category-item';
-        const iconInfo = Utils.UIUtils.getCategoryIcon(category);
-        const iconHtml = iconInfo.type === 'img' ? `<img src="${iconInfo.value}" class="custom-category-icon">` : `<i class="${iconInfo.value}"></i>`;
-        const isProtected = this.isProtectedCategory(category.value);
-        const usageCount = this.app.data.transactions.filter(tx => tx.category === category.value).length;
-        const escapedValue = this.escapeHtml(category.value);
+	createCategoryListItem(category, type) {
+		const li = document.createElement('li');
+		li.className = 'category-item';
 
-        li.innerHTML = `
-            <div class="category-info"><span class="category-icon">${iconHtml}</span><div class="category-details"><span class="category-name">${this.escapeHtml(category.text)}</span><span class="category-usage">${usageCount} giao dịch</span></div></div>
-            <div class="category-actions">${!isProtected ? `<button class="action-btn-small edit-btn" onclick="window.CategoriesModule.showEditModal('${escapedValue}', 'category', '${type}')" title="Chỉnh sửa"><i class="fa-solid fa-pencil"></i></button><button class="action-btn-small delete-btn" onclick="window.CategoriesModule.delete${type === 'income' ? 'Income' : 'Expense'}Category('${escapedValue}')" title="Xóa"><i class="fa-solid fa-trash-can"></i></button>` : `<span class="protected-badge" title="Danh mục hệ thống">🔒</span>`}</div>`;
-        return li;
-    }
+		// === PHẦN SỬA ĐỔI QUAN TRỌNG ===
+		// Tìm lại đối tượng category đầy đủ trong dữ liệu của app để đảm bảo
+		// chúng ta có thông tin icon mới nhất đã được lưu.
+		const categoryArray = type === 'income' ? this.app.data.incomeCategories : this.app.data.expenseCategories;
+		const currentItem = categoryArray.find(c => c.value === category.value) || category; // Fallback về category gốc nếu không tìm thấy
+		
+		// Sử dụng currentItem đã được cập nhật để lấy icon
+		const iconInfo = Utils.UIUtils.getCategoryIcon(currentItem); 
+		// === KẾT THÚC PHẦN SỬA ĐỔI ===
+
+		const iconHtml = iconInfo.type === 'img' ? `<img src="${iconInfo.value}" class="custom-category-icon">` : `<i class="${iconInfo.value}"></i>`;
+		const isProtected = this.isProtectedCategory(currentItem.value);
+		const usageCount = this.app.data.transactions.filter(tx => tx.category === currentItem.value).length;
+		const escapedValue = this.escapeHtml(currentItem.value);
+
+		li.innerHTML = `
+			<div class="category-info">
+				<span class="category-icon">${iconHtml}</span>
+				<div class="category-details">
+					<span class="category-name">${this.escapeHtml(currentItem.text)}</span>
+					<span class="category-usage">${usageCount} giao dịch</span>
+				</div>
+			</div>
+			<div class="category-actions">
+				${!isProtected ? `
+					<button class="action-btn-small edit-btn" onclick="window.CategoriesModule.showEditModal('${escapedValue}', 'category', '${type}')" title="Chỉnh sửa"><i class="fa-solid fa-pencil"></i></button>
+					<button class="action-btn-small delete-btn" onclick="window.CategoriesModule.delete${type === 'income' ? 'Income' : 'Expense'}Category('${escapedValue}')" title="Xóa"><i class="fa-solid fa-trash-can"></i></button>
+				` : `<span class="protected-badge" title="Danh mục hệ thống">🔒</span>`}
+			</div>
+		`;
+		return li;
+	}
 
     /**
      * Creates an account list item with the compact layout and correct balance colors.
