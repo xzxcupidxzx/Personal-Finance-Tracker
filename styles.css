@@ -3484,39 +3484,47 @@ hr {
     }
 }
 /* =============================================================================
-   AI CHATBOT MODAL STYLES - GẦN FULL MÀN HÌNH (BOTTOM SHEET)
+   AI CHATBOT MODAL STYLES - PHIÊN BẢN BOTTOM SHEET ĐƯỢC CẢI TIẾN
    ============================================================================= */
+
+/* Lớp phủ nền cho modal */
 .ai-chat-modal-container {
     position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    inset: 0; /* Tương đương top: 0; right: 0; bottom: 0; left: 0; */
+    background-color: rgba(0, 0, 0, 0.4);
     display: flex;
-    /* THAY ĐỔI CHÍNH: Căn chỉnh modal xuống dưới cùng màn hình */
-    align-items: flex-end;
+    align-items: flex-end; /* Căn chỉnh nội dung xuống dưới cùng */
     justify-content: center;
     z-index: var(--z-modal);
     opacity: 0;
-    transition: background-color 0.4s ease; /* Hiệu ứng nền mờ dần */
-    pointer-events: none;
+    transition: opacity 0.4s ease, background-color 0.4s ease;
+    pointer-events: none; /* Cho phép click xuyên qua khi bị ẩn */
 }
 
+/* Trạng thái khi modal hiển thị */
 .ai-chat-modal-container.visible {
     opacity: 1;
-    pointer-events: auto;
+    pointer-events: auto; /* Cho phép tương tác khi hiện */
 }
 
+/* Nội dung chính của modal (tấm trượt) */
 .ai-chat-modal-content {
     background: var(--bg-primary);
     width: 100%;
-    /* THAY ĐỔI CHÍNH: Chiều cao gần full màn hình, tạo khoảng hở ở trên */
-    height: 92vh;
-    box-shadow: 0 -5px 25px rgba(0,0,0,0.2);
+    
+    /* Cải thiện: Thích ứng tốt hơn trên các màn hình khác nhau */
+    height: 90vh;
+    max-height: 700px; /* Chiều cao tối đa trên màn hình lớn */
+    
+    box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.15);
     display: flex;
     flex-direction: column;
-    /* THAY ĐỔI CHÍNH: Bo góc ở trên để tạo cảm giác trượt lên */
+    
+    /* Bo góc ở trên để tạo cảm giác trượt lên */
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
-    /* THAY ĐỔI CHÍNH: Hiệu ứng trượt từ dưới lên */
+    
+    /* Hiệu ứng trượt từ dưới lên mượt mà hơn */
     transform: translateY(100%);
     transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
@@ -3525,16 +3533,22 @@ hr {
     transform: translateY(0);
 }
 
+/* Header của modal */
 .ai-chat-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border-color);
-    flex-shrink: 0;
-    /* Thêm một thanh handle để người dùng dễ nhận biết */
+    flex-shrink: 0; /* Không cho header co lại */
     position: relative;
-    cursor: grab;
+    cursor: grab; /* Gợi ý rằng có thể kéo được (cho thao tác vuốt xuống) */
+    user-select: none; /* Chặn chọn văn bản trên header */
+    -webkit-user-select: none;
+}
+
+.ai-chat-modal-header:active {
+    cursor: grabbing;
 }
 
 /* Thanh handle nhỏ ở trên cùng header */
@@ -3545,14 +3559,14 @@ hr {
     left: 50%;
     transform: translateX(-50%);
     width: 40px;
-    height: 4px;
+    height: 5px;
     background-color: var(--border-color);
-    border-radius: 2px;
+    border-radius: 2.5px;
 }
 
 .ai-chat-modal-header h3 {
     margin: 0;
-    padding-top: 10px; /* Thêm không gian cho thanh handle */
+    padding-top: 10px; /* Tạo không gian cho thanh handle */
     font-size: 1.1rem;
     font-weight: 600;
     display: flex;
@@ -3569,24 +3583,27 @@ hr {
     cursor: pointer;
     padding: 0;
     line-height: 1;
-    margin-top: 10px; /* Căn chỉnh với title */
+    margin-top: 10px;
 }
 
+/* Phần thân chứa các tin nhắn */
 .ai-chat-modal-body {
     flex-grow: 1;
-    overflow-y: auto;
+    overflow-y: auto; /* Cho phép cuộn khi nội dung dài */
     padding: 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
 }
 
+/* Định dạng từng tin nhắn */
 .ai-chat-message {
     padding: 0.75rem 1rem;
     border-radius: 18px;
-    max-width: 80%;
+    max-width: 85%; /* Tin nhắn không nên quá rộng */
     line-height: 1.5;
     font-size: 0.95rem;
+    word-wrap: break-word; /* Tự động xuống dòng cho từ dài */
 }
 
 .ai-chat-message.bot {
@@ -3603,8 +3620,12 @@ hr {
     align-self: flex-end;
 }
 
+/* Hiệu ứng loading */
 .ai-chat-message.loading {
     align-self: flex-start;
+    display: flex;
+    gap: 5px;
+    background-color: var(--bg-tertiary);
 }
 
 .ai-chat-message.loading span {
@@ -3624,14 +3645,23 @@ hr {
   40% { transform: scale(1.0); }
 }
 
+/* Footer chứa input và nút gửi */
 .ai-chat-modal-footer {
+    display: flex; /* Đổi lại thành flex */
     flex-direction: column;
     gap: 0.5rem;
     padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-primary);
+
+    /* Cải thiện: Thêm khoảng đệm an toàn cho các thiết bị có thanh home (iPhone) */
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
 }
+
 .ai-chat-footer-info {
     text-align: right;
     padding-right: 0.5rem;
+    display: none; /* Ẩn tạm thời để giao diện gọn hơn */
 }
 
 #ai-chat-token-counter {
@@ -3639,21 +3669,23 @@ hr {
     color: var(--text-muted);
     font-family: monospace;
 }
-/* Nhóm input và nút gửi */
+
 .ai-chat-input-group {
     display: flex;
     gap: 0.5rem;
     width: 100%;
 }
+
 #ai-chat-input {
     flex-grow: 1;
     border: 1px solid var(--border-color);
     background-color: var(--bg-secondary);
     border-radius: 20px;
-    padding: 0.6rem 1rem;
+    padding: 0.75rem 1.25rem;
     font-size: 16px; /* Chống zoom trên iOS */
     color: var(--text-primary);
     outline: none;
+    transition: border-color 0.2s;
 }
 
 #ai-chat-input:focus {
@@ -3662,16 +3694,28 @@ hr {
 
 #ai-chat-send-btn {
     flex-shrink: 0;
-    width: 40px;
-    height: 40px;
+    width: 44px; /* Tăng kích thước để dễ nhấn */
+    height: 44px;
     border-radius: 50%;
     border: none;
     background-color: var(--primary-color);
     color: white;
     font-size: 1rem;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
 }
 
+#ai-chat-send-btn:hover {
+    background-color: var(--primary-dark);
+}
+
+#ai-chat-send-btn:disabled {
+    background-color: var(--text-muted);
+    cursor: not-allowed;
+}
 /* =================================================== */
 /* == STYLES FOR IMPROVED CATEGORY SPEND LIST ITEM === */
 /* =================================================== */
