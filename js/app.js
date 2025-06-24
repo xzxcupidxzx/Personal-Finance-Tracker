@@ -126,23 +126,31 @@ class FinancialApp {
         }
     }
     
-    ensureSystemCategories() {
-        const systemCats = [
-            { type: 'income', value: Utils.CONFIG.TRANSFER_CATEGORY_IN, text: "Nhận tiền chuyển khoản" },
-            { type: 'expense', value: Utils.CONFIG.TRANSFER_CATEGORY_OUT, text: "Chuyển tiền đi" },
-            { type: 'income', value: Utils.CONFIG.RECONCILE_ADJUST_INCOME_CAT, text: "Điều chỉnh Đối Soát (Thu)" },
-            { type: 'expense', value: Utils.CONFIG.RECONCILE_ADJUST_EXPENSE_CAT, text: "Điều chỉnh Đối Soát (Chi)" }
-        ];
 
-        systemCats.forEach(catInfo => {
-            const targetArray = catInfo.type === 'income' ? this.data.incomeCategories : this.data.expenseCategories;
-            if (!targetArray.some(c => c.value === catInfo.value)) {
-                targetArray.push({ ...catInfo, system: true });
-            }
-        });
-    }
+	ensureSystemCategories() {
+		const systemCats = [
+			{ type: 'income', value: Utils.CONFIG.TRANSFER_CATEGORY_IN, text: "Nhận tiền chuyển khoản" },
+			{ type: 'expense', value: Utils.CONFIG.TRANSFER_CATEGORY_OUT, text: "Chuyển tiền đi" },
+			{ type: 'income', value: Utils.CONFIG.RECONCILE_ADJUST_INCOME_CAT, text: "Điều chỉnh Đối Soát (Thu)" },
+			{ type: 'expense', value: Utils.CONFIG.RECONCILE_ADJUST_EXPENSE_CAT, text: "Điều chỉnh Đối Soát (Chi)" }
+		];
+
+		systemCats.forEach(catInfo => {
+			const targetArray = catInfo.type === 'income' ? this.data.incomeCategories : this.data.expenseCategories;
+			const existingCat = targetArray.find(c => c.value === catInfo.value);
+
+			if (existingCat) {
+				// Danh mục đã tồn tại. Chỉ đảm bảo cờ 'system' được đặt.
+				// Tuyệt đối không ghi đè các thuộc tính khác như 'icon' người dùng đã sửa.
+				existingCat.system = true;
+			} else {
+				// Danh mục chưa tồn tại, thêm mới vào.
+				targetArray.push({ ...catInfo, system: true });
+			}
+		});
+	}
 	ensureSystemAccounts() {
-		// Ví dụ: Giả sử bạn muốn tài khoản "Tiền mặt" luôn tồn tại
+		// Ví dụ: Đảm bảo tài khoản "Tiền mặt" luôn là tài khoản hệ thống
 		const systemAccounts = [
 			{ value: "Tiền mặt", text: "Tiền mặt" }
 			// Thêm các tài khoản hệ thống khác ở đây nếu cần
@@ -152,12 +160,13 @@ class FinancialApp {
 			const existingAcc = this.data.accounts.find(acc => acc.value === accInfo.value);
 
 			if (existingAcc) {
-				// Đã tồn tại, đảm bảo nó có cờ 'system'
+				// Tài khoản đã tồn tại, chỉ cần đảm bảo có cờ 'system'.
+				// Không đụng đến các thuộc tính khác như 'icon'.
 				if (!existingAcc.system) {
 					existingAcc.system = true;
 				}
 			} else {
-				// Không tồn tại, thêm mới
+				// Tài khoản chưa tồn tại, thêm mới.
 				this.data.accounts.push({ ...accInfo, system: true });
 			}
 		});
