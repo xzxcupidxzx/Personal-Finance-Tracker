@@ -18,6 +18,7 @@ class AIChatModule {
         this.dragOffsetX = 0;
         this.dragOffsetY = 0;
         
+        // Sử dụng targetX/Y để requestAnimationFrame cập nhật, tránh layout thrashing
         this.fabTargetX = 0;
         this.fabTargetY = 0;
         
@@ -52,13 +53,14 @@ class AIChatModule {
         const fab = this.elements.fab;
 
         // --- SỰ KIỆN CHO CẢ CHUỘT (POINTER) VÀ CẢM ỨNG (TOUCH) ---
+        // Sử dụng pointer events làm mặc định cho cả chuột và bút cảm ứng
         fab.addEventListener('pointerdown', (e) => this.fabDragStart(e));
         document.addEventListener('pointermove', (e) => this.fabDragMove(e));
         document.addEventListener('pointerup', () => this.fabDragEnd());
 
-        // Ưu tiên sự kiện touch trên thiết bị hỗ trợ
+        // Thêm sự kiện touch để tối ưu và ngăn chặn hành vi mặc định trên iOS
         fab.addEventListener('touchstart', (e) => this.fabDragStart(e), { passive: true });
-        fab.addEventListener('touchmove', (e) => this.fabDragMove(e), { passive: false });
+        fab.addEventListener('touchmove', (e) => this.fabDragMove(e), { passive: false }); // passive: false để preventDefault() hoạt động
         fab.addEventListener('touchend', () => this.fabDragEnd());
         
         fab.addEventListener('click', () => this.handleFabClick());
@@ -94,19 +96,21 @@ class AIChatModule {
         if (e.button && e.button !== 0) return; // Chỉ cho phép kéo bằng chuột trái
 
         const fab = this.elements.fab;
-        fab.style.transition = 'none'; // Xóa hiệu ứng transition khi kéo
-        fab.style.willChange = 'transform, top, left'; // Tối ưu hóa GPU
+        fab.style.transition = 'none'; // Xóa hiệu ứng transition khi bắt đầu kéo
+        fab.style.willChange = 'transform'; // Báo cho trình duyệt tối ưu hóa transform
 
         this.isDraggingFab = true;
         this.wasDragged = false;
         
         const touch = e.touches ? e.touches[0] : e;
         const rect = fab.getBoundingClientRect();
+        
+        // Tính toán vị trí bắt đầu kéo so với vị trí của nút
         this.dragOffsetX = touch.clientX - rect.left;
         this.dragOffsetY = touch.clientY - rect.top;
 
-        document.body.classList.add('dragging-chat-modal');
-
+        // Bắt đầu vòng lặp animation
+        if(this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
         this.animationFrameId = requestAnimationFrame(() => this.updateFabPosition());
     }
 
@@ -114,12 +118,14 @@ class AIChatModule {
         if (!this.isDraggingFab) return;
         this.wasDragged = true;
         
-        // Ngăn hành vi cuộn trang mặc định trên thiết bị cảm ứng
+        // Ngăn hành vi cuộn trang mặc định trên thiết bị cảm ứng khi đang kéo nút
         if (e.cancelable) {
             e.preventDefault();
         }
         
         const touch = e.touches ? e.touches[0] : e;
+        
+        // Chỉ cập nhật tọa độ đích, không thay đổi DOM trực tiếp ở đây
         this.fabTargetX = touch.clientX - this.dragOffsetX;
         this.fabTargetY = touch.clientY - this.dragOffsetY;
     }
@@ -129,8 +135,10 @@ class AIChatModule {
 
         const fab = this.elements.fab;
         // Sử dụng transform để di chuyển sẽ mượt hơn là thay đổi top/left
+        // translate3d ép trình duyệt sử dụng GPU
         fab.style.transform = `translate3d(${this.fabTargetX}px, ${this.fabTargetY}px, 0)`;
 
+        // Tiếp tục vòng lặp animation
         this.animationFrameId = requestAnimationFrame(() => this.updateFabPosition());
     }
 
@@ -138,8 +146,8 @@ class AIChatModule {
         if (!this.isDraggingFab) return;
 
         this.isDraggingFab = false;
-        document.body.classList.remove('dragging-chat-modal');
         cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = null;
 
         const fab = this.elements.fab;
         fab.style.willChange = 'auto'; // Dọn dẹp tối ưu hóa
@@ -169,24 +177,25 @@ class AIChatModule {
 
         const finalY = Math.max(padding, Math.min(fab.offsetTop, window.innerHeight - fabSize - padding));
 
-        // Thêm hiệu ứng "hít" vào
+        // Thêm hiệu ứng "hít" vào cạnh mượt mà
         fab.style.transition = 'left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), top 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
         fab.style.left = `${finalX}px`;
-        fab.style.top = `${finalY}px`; // Cập nhật cả Y để nó không bị kẹt ở trên/dưới
+        fab.style.top = `${finalY}px`;
         
         localStorage.setItem(this.fabPositionStorageKey, JSON.stringify({ x: finalX, y: finalY }));
 
+        // Xóa transition sau khi hiệu ứng kết thúc để không ảnh hưởng lần kéo sau
         setTimeout(() => {
             fab.style.transition = '';
         }, 300);
     }
 
     handleFabClick() {
+        // Chỉ mở chat nếu nút không bị kéo đi
         if (this.wasDragged) return;
         this.openChat();
     }
     
-    // ... (Toàn bộ các hàm còn lại như openChat, closeChat, initOptionsMenu, sendMessage... giữ nguyên) ...
     openChat() {
         if (!this.elements.modal) return;
         this.elements.modal.style.display = 'flex';
@@ -195,6 +204,7 @@ class AIChatModule {
             this.elements.input.focus();
         }, 10);
     }
+
     closeChat() {
         if (!this.elements.modal) return;
         this.elements.optionsMenu.classList.remove('visible');
@@ -203,6 +213,7 @@ class AIChatModule {
             this.elements.modal.style.display = 'none';
         }, 400);
     }
+
     initOptionsMenu() {
         const { optionsBtn, optionsMenu, deleteLogBtn, copyLogBtn } = this.elements;
         if (!optionsBtn || !optionsMenu) return;
@@ -238,6 +249,7 @@ class AIChatModule {
             }
         });
     }
+
     saveChatHistory() {
         try {
             localStorage.setItem(this.storageKey, JSON.stringify(this.chatHistory));
@@ -245,6 +257,7 @@ class AIChatModule {
             console.error('Lỗi khi lưu lịch sử chat:', error);
         }
     }
+
     loadChatHistory() {
         try {
             const savedHistory = localStorage.getItem(this.storageKey);
@@ -255,6 +268,7 @@ class AIChatModule {
         }
         this.renderChatHistory();
     }
+
     renderChatHistory() {
         this.elements.history.innerHTML = '';
         if (this.chatHistory.length === 0) {
@@ -263,6 +277,7 @@ class AIChatModule {
             this.chatHistory.forEach(msg => this.addMessage(msg.text, msg.sender, false));
         }
     }
+
     addMessage(text, sender, shouldSave = true) {
         if (shouldSave) {
             this.chatHistory.push({ text, sender });
@@ -280,6 +295,7 @@ class AIChatModule {
         this.elements.history.scrollTop = this.elements.history.scrollHeight;
         return messageDiv;
     }
+
     async sendMessage() {
         const userInput = this.elements.input.value.trim();
         if (!userInput) return;
@@ -296,86 +312,3 @@ class AIChatModule {
                 accounts.map(a => a.value)
             );
             loadingMessage.remove();
-            if (!Array.isArray(parsedData)) {
-                this.addMessage(parsedData || "❌ Lỗi: AI không trả về dữ liệu đúng định dạng.", 'bot');
-                return;
-            }
-            if (parsedData.length === 0) {
-                this.addMessage("OK, tôi đã hiểu. Không có giao dịch nào được thêm.", 'bot');
-                return;
-            }
-            let confirmationText = `✅ **OK! Đã ghi nhận ${parsedData.length} giao dịch:**\n`;
-            let transactionsAdded = 0;
-            for (const transaction of parsedData) {
-                if (!transaction.type || !transaction.amount || !transaction.account || !transaction.datetime) {
-                    confirmationText += `- ⚠️ Bỏ qua 1 giao dịch không hợp lệ.\n`;
-                    continue;
-                }
-                confirmationText += `- **${transaction.type}:** ${Utils.CurrencyUtils.formatCurrency(transaction.amount)} cho "${transaction.description || 'N/A'}" vào ngày ${new Date(transaction.datetime).toLocaleDateString('vi-VN')}\n`;
-                this.ensureAccountExists(transaction.account);
-                if (transaction.type === 'Transfer') {
-                    this.ensureAccountExists(transaction.toAccount);
-                } else {
-                    this.ensureCategoryExists(transaction.category, transaction.type);
-                }
-                this.app.addTransaction(transaction);
-                transactionsAdded++;
-            }
-            this.addMessage(confirmationText, 'bot');
-            if (transactionsAdded > 0) {
-                this.app.refreshAllModules();
-            }
-        } catch (error) {
-            console.error("Lỗi xử lý AI:", error);
-            loadingMessage.remove();
-            this.addMessage(`❌ Đã xảy ra lỗi: ${error.message}`, 'bot');
-        } finally {
-            this.elements.input.disabled = false;
-            this.elements.sendBtn.disabled = false;
-            this.elements.input.focus();
-        }
-    }
-    ensureAccountExists(accountName) {
-        if (!accountName) return;
-        const trimmedName = String(accountName).trim();
-        if (trimmedName && !this.app.data.accounts.some(acc => acc.value.toLowerCase() === trimmedName.toLowerCase())) {
-            this.app.data.accounts.push({ value: trimmedName, text: trimmedName, createdAt: new Date().toISOString(), createdBy: 'ai_import' });
-        }
-    }
-    ensureCategoryExists(categoryName, type) {
-        if (!categoryName) return;
-        const trimmedName = String(categoryName).trim();
-        const targetArray = type === 'Thu' ? this.app.data.incomeCategories : this.app.data.expenseCategories;
-        if (trimmedName && !targetArray.some(cat => cat.value.toLowerCase() === trimmedName.toLowerCase())) {
-            targetArray.push({ value: trimmedName, text: trimmedName, createdAt: new Date().toISOString(), createdBy: 'ai_import' });
-        }
-    }
-    async callLLMAPI(userInput, incomeCategories, expenseCategories, accounts) {
-        const PROXY_URL = 'https://deepseek.hoangthaison2812.workers.dev';
-        const response = await fetch(PROXY_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userInput,
-                incomeCategories,
-                expenseCategories,
-                accounts
-            })
-        });
-        const responseText = await response.text();
-        if (!response.ok) {
-            try {
-                const errorJson = JSON.parse(responseText);
-                throw new Error(errorJson.message || `Lỗi từ Worker/API (HTTP ${response.status})`);
-            } catch (e) {
-                throw new Error(responseText || `Lỗi từ Worker/API (HTTP ${response.status})`);
-            }
-        }
-        try {
-            return JSON.parse(responseText);
-        } catch (err) {
-            console.error("Lỗi parse JSON từ worker:", responseText);
-            throw new Error("Không đọc được dữ liệu JSON trả về từ Worker.");
-        }
-    }
-}
