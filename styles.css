@@ -3456,37 +3456,28 @@ hr {
 /* --- 1. FLOATING ACTION BUTTON (FAB) --- */
 
 #ai-chat-fab {
-    /* Vị trí và Kích thước */
     position: fixed;
     top: 0;
     left: 0;
     width: 56px;
     height: 56px;
     z-index: var(--z-nav);
-
-    /* Giao diện */
     background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     color: white;
     border-radius: 50%;
     border: none;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     font-size: 26px;
-
-    /* Căn chỉnh và Con trỏ */
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: grab;
-
-    /* Tối ưu hóa cho Mobile & Performance */
     user-select: none;
     -webkit-user-select: none;
     touch-action: none;
     -webkit-tap-highlight-color: transparent;
-    will-change: transform;
-
-    /* Hiệu ứng chuyển động */
-    transition: box-shadow 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+    will-change: transform, box-shadow; /* Báo trình duyệt tối ưu hóa */
+    transition: box-shadow 0.2s ease, opacity 0.2s ease; /* Chỉ transition các thuộc tính an toàn */
 }
 
 /* Lớp phủ trong suốt khi đang kéo để bắt sự kiện */
@@ -3502,8 +3493,8 @@ hr {
 /* Trạng thái khi người dùng nhấn giữ để kéo */
 #ai-chat-fab.is-dragging {
     cursor: grabbing;
-    animation: pulse-drag 1.2s infinite;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    animation: pulse-drag 1.2s infinite;
 }
 
 /* Hiệu ứng hover chỉ áp dụng cho máy tính */
