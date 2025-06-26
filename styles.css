@@ -3452,7 +3452,7 @@ hr {
    AI CHATBOT FLOATING ACTION BUTTON (FAB)
    ============================================================================= */
 #ai-chat-fab {
-    position: fixed; /* BẮT BUỘC: để có thể định vị và di chuyển */
+    position: fixed;
     bottom: 30px;
     right: 30px;
     width: 50px;
@@ -3466,11 +3466,12 @@ hr {
     justify-content: center;
     font-size: 24px;
     box-shadow: var(--shadow-lg);
-    cursor: grab; /* THAY ĐỔI: Báo hiệu có thể kéo */
+    cursor: grab;
     z-index: var(--z-nav);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    user-select: none; /* Chặn chọn văn bản của nút */
+    user-select: none;
     -webkit-user-select: none;
+    touch-action: none; /* <-- THÊM DÒNG NÀY */
 }
 #ai-chat-fab:active {
     cursor: grabbing;
@@ -3484,12 +3485,7 @@ hr {
         right: 20px;
     }
 }
-@media (max-width: 480px) {
-    #ai-chat-fab {
-        bottom: 95px;
-        right: 20px;
-    }
-}
+
 #ai-chat-fab:hover {
     transform: translateY(-3px) scale(1.05);
     box-shadow: var(--shadow-xl);
