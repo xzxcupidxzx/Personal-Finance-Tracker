@@ -137,6 +137,9 @@ class AIChatModule {
         this.animationFrameId = requestAnimationFrame(() => this.updateFabPosition());
     }
 
+	// =========================================================
+	// === THAY ĐỔI QUAN TRỌNG: VÔ HIỆU HÓA NỀN KHI KÉO ===
+	// =========================================================
 	fabDragMove(e) {
 		if (!this.isDragging) return;
 
@@ -148,9 +151,8 @@ class AIChatModule {
 		if (!this.wasDragged && (Math.abs(newX - this.fabX) > this.dragThreshold || Math.abs(newY - this.fabY) > this.dragThreshold)) {
 			this.wasDragged = true;
 
-			// === THÊM MỚI: VÔ HIỆU HÓA NỀN KHI BẮT ĐẦU KÉO ===
+			// THÊM LỚP CSS VÀO BODY ĐỂ VÔ HIỆU HÓA NỀN
 			document.body.classList.add('is-dragging-chat');
-			// ===============================================
 		}
 		
 		this.fabX = newX;
@@ -166,11 +168,12 @@ class AIChatModule {
         this.animationFrameId = requestAnimationFrame(() => this.updateFabPosition());
     }
 
+	// ============================================================
+	// === THAY ĐỔI QUAN TRỌNG: KÍCH HOẠT LẠI NỀN KHI THẢ RA ===
+	// ============================================================
 	fabDragEnd(e) {
-		// === THÊM MỚI: KÍCH HOẠT LẠI NỀN KHI KẾT THÚC KÉO ===
-		// Luôn gỡ bỏ lớp CSS này khi người dùng nhấc ngón tay/chuột ra
+		// LUÔN GỠ BỎ LỚP CSS KHI NGƯỜI DÙNG KẾT THÚC KÉO
 		document.body.classList.remove('is-dragging-chat');
-		// ===============================================
 
 		if (!this.isDragging) return;
 
