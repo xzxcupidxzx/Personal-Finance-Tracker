@@ -3490,9 +3490,10 @@ hr {
 }
 #ai-chat-fab:active {
     cursor: grabbing;
-    /* Sử dụng scale nhỏ hơn để tạo hiệu ứng nhấn xuống, không dùng transform */
-    transform: scale(0.95);
-    box-shadow: none;
+    /* Không sử dụng transform để tránh xung đột với JavaScript */
+    /* Thay vào đó, có thể giảm độ sáng hoặc thay đổi bóng đổ để tạo hiệu ứng nhấn */
+    opacity: 0.9;
+    box-shadow: var(--shadow-md); /* Giảm hiệu ứng bóng đổ một chút */
 }
 
 /* Hiệu ứng hover chỉ nên áp dụng trên các thiết bị có con trỏ chuột */
