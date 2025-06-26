@@ -118,7 +118,8 @@ class AIChatModule {
     }
 
     fabDragStart(e) {
-        if (e.button && e.button !== 0) return; // Chỉ cho phép chuột trái
+        document.body.style.overflow = 'hidden';
+		if (e.button && e.button !== 0) return; // Chỉ cho phép chuột trái
 
         const fab = this.elements.fab;
         fab.setPointerCapture(e.pointerId); // Bắt con trỏ để sự kiện không bị mất
@@ -135,6 +136,7 @@ class AIChatModule {
         // Bắt đầu vòng lặp animation để cập nhật vị trí
         if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
         this.animationFrameId = requestAnimationFrame(() => this.updateFabPosition());
+		
     }
 
 	// =========================================================
@@ -175,6 +177,7 @@ class AIChatModule {
 	fabDragEnd(e) {
 		// LUÔN GỠ BỎ LỚP CSS KHI NGƯỜI DÙNG KẾT THÚC KÉO
 		document.body.classList.remove('is-dragging-chat');
+		document.body.style.overflow = '';
 
 		if (!this.isDragging) return;
 
