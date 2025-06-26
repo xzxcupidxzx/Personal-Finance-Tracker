@@ -3449,12 +3449,13 @@ hr {
   60% {transform: translateY(-4px);}
 }
 /* =============================================================================
-   AI CHATBOT FLOATING ACTION BUTTON (FAB)
+   AI CHATBOT FLOATING ACTION BUTTON (FAB) - PHIÊN BẢN HIỆU SUẤT CAO
    ============================================================================= */
 #ai-chat-fab {
     position: fixed;
-    bottom: 30px;
-    right: 30px;
+    /* Thiết lập gốc tọa độ ở góc trên cùng bên trái để `transform` hoạt động nhất quán */
+    top: 0;
+    left: 0;
     width: 50px;
     height: 50px;
     background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
@@ -3468,37 +3469,37 @@ hr {
     box-shadow: var(--shadow-lg);
     cursor: grab;
     z-index: var(--z-nav);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+    /* === Bộ tứ tối ưu hóa cho hiệu suất kéo-thả cao nhất trên iOS === */
     user-select: none;
-    -webkit-user-select: none;
-    touch-action: none; /* <-- THÊM DÒNG NÀY */
-	will-change: transform;
+    -webkit-user-select: none; /* Dành riêng cho Safari cũ */
+    touch-action: none;        /* Ngăn chặn hành vi chạm mặc định của trình duyệt */
+    will-change: transform;    /* Báo cho trình duyệt biết thuộc tính transform sẽ thay đổi */
 }
+
 #ai-chat-fab:active {
     cursor: grabbing;
+    /* Sử dụng scale nhỏ hơn để tạo hiệu ứng nhấn xuống, không dùng transform */
     transform: scale(0.95);
     box-shadow: none;
 }
-/* Điều chỉnh vị trí cho màn hình điện thoại để không bị che */
-@media (max-width: 767px) {
-    #ai-chat-fab {
-        bottom: 95px;
-        right: 20px;
+
+/* Hiệu ứng hover chỉ nên áp dụng trên các thiết bị có con trỏ chuột */
+@media (hover: hover) and (pointer: fine) {
+    #ai-chat-fab:hover {
+        /* Hiệu ứng nhấc lên nhẹ khi di chuột qua */
+        box-shadow: var(--shadow-xl);
+        transform: scale(1.05);
+    }
+
+    #ai-chat-fab:active {
+        /* Đảm bảo hiệu ứng active vẫn đúng khi có hover */
+        transform: scale(0.95);
     }
 }
 
-#ai-chat-fab:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: var(--shadow-xl);
-}
 
-/* Điều chỉnh vị trí cho màn hình điện thoại để không bị che */
-@media (max-width: 767px) {
-    #ai-chat-fab {
-        bottom: 95px;
-        right: 20px;
-    }
-}
 /* =============================================================================
    AI CHATBOT MODAL STYLES - PHIÊN BẢN BOTTOM SHEET ĐƯỢC CẢI TIẾN
    ============================================================================= */
@@ -3663,13 +3664,12 @@ hr {
 
 /* Footer chứa input và nút gửi */
 .ai-chat-modal-footer {
-    display: flex; /* Đổi lại thành flex */
+    display: flex;
     flex-direction: column;
     gap: 0.5rem;
     padding: 0.75rem 1rem;
     border-top: 1px solid var(--border-color);
     background-color: var(--bg-primary);
-
     /* Cải thiện: Thêm khoảng đệm an toàn cho các thiết bị có thanh home (iPhone) */
     padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
 }
@@ -3710,7 +3710,7 @@ hr {
 
 #ai-chat-send-btn {
     flex-shrink: 0;
-    width: 44px; /* Tăng kích thước để dễ nhấn */
+    width: 44px;
     height: 44px;
     border-radius: 50%;
     border: none;
