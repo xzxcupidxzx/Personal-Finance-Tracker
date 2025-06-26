@@ -1,8 +1,8 @@
 /**
- * AI CHAT MODULE - PHIÊN BẢN TỐI ƯU CHO CẢM ỨNG (IPHONE)
- * - Tối ưu hóa kéo-thả nút FAB siêu mượt bằng requestAnimationFrame và sự kiện touch.
- * - Sử dụng "will-change" để tăng tốc phần cứng (GPU acceleration).
- * - Giữ nguyên các chức năng cốt lõi: hít vào cạnh, ghi nhớ vị trí, phân biệt kéo/nhấn.
+ * AI CHAT MODULE - PHIÊN BẢN SỬA LỖI XUNG ĐỘT CUỘN TRANG
+ * - Sửa lỗi nền bị trượt theo khi kéo icon trên màn hình cảm ứng.
+ * - Tối ưu hóa event listener cho `touchstart` để `preventDefault()` hoạt động hiệu quả.
+ * - Giữ nguyên các tối ưu về hiệu năng (requestAnimationFrame, transform).
  */
 class AIChatModule {
     constructor(app) {
@@ -46,7 +46,7 @@ class AIChatModule {
         this.loadFabPosition();
         this.initEventListeners();
 
-        console.log('🤖 AI Chat Module Initialized (Touch-Optimized Draggable FAB)');
+        console.log('🤖 AI Chat Module Initialized (Scroll-Conflict-Fixed)');
     }
 
     initEventListeners() {
@@ -58,11 +58,15 @@ class AIChatModule {
         document.addEventListener('pointermove', (e) => this.fabDragMove(e));
         document.addEventListener('pointerup', () => this.fabDragEnd());
 
-        // Thêm sự kiện touch để tối ưu và ngăn chặn hành vi mặc định trên iOS
-        fab.addEventListener('touchstart', (e) => this.fabDragStart(e), { passive: true });
-        fab.addEventListener('touchmove', (e) => this.fabDragMove(e), { passive: false }); // passive: false để preventDefault() hoạt động
-        fab.addEventListener('touchend', () => this.fabDragEnd());
+        // ===================================================================
+        // === SỬA LỖI QUAN TRỌNG: Thay đổi `passive` để ngăn cuộn nền ===
+        // ===================================================================
+        // Đặt passive: false để có thể gọi preventDefault() trong touchmove
+        fab.addEventListener('touchstart', (e) => this.fabDragStart(e), { passive: false }); 
+        fab.addEventListener('touchmove', (e) => this.fabDragMove(e), { passive: false });
+        // ===================================================================
         
+        fab.addEventListener('touchend', () => this.fabDragEnd());
         fab.addEventListener('click', () => this.handleFabClick());
 
         // Các sự kiện khác
@@ -118,10 +122,15 @@ class AIChatModule {
         if (!this.isDraggingFab) return;
         this.wasDragged = true;
         
-        // Ngăn hành vi cuộn trang mặc định trên thiết bị cảm ứng khi đang kéo nút
+        // ===================================================================
+        // === SỬA LỖI QUAN TRỌNG: Ngăn chặn cuộn trang hiệu quả ===
+        // ===================================================================
+        // Vì touchstart đã được đặt passive: false, lệnh này sẽ hoạt động
+        // và ngăn trình duyệt cuộn trang nền.
         if (e.cancelable) {
             e.preventDefault();
         }
+        // ===================================================================
         
         const touch = e.touches ? e.touches[0] : e;
         
@@ -306,14 +315,14 @@ class AIChatModule {
         const loadingMessage = this.addMessage('', 'loading', false);
         try {
             const { incomeCategories, expenseCategories, accounts } = this.app.data;
-            // Đây là nơi bạn sẽ gọi đến API của mô hình ngôn ngữ lớn (LLM)
-            // Ví dụ: const parsedData = await this.callLLMAPI(userInput, ...);
-            // Vì không có API thật, tôi sẽ giả lập một phản hồi sau 1 giây.
+            // This is where you would call your actual LLM API
+            // const parsedData = await this.callLLMAPI(userInput, ...);
             
+            // Simulating an API call with a timeout
             setTimeout(() => {
-                loadingMessage.remove(); // Xóa tin nhắn loading
+                loadingMessage.remove();
                 
-                // Giả lập phản hồi từ AI
+                // Mock response from AI
                 const aiResponse = `Đã hiểu:
 * **Loại:** Chi tiêu
 * **Số tiền:** 50,000 ₫
@@ -323,7 +332,7 @@ class AIChatModule {
                 
                 this.addMessage(aiResponse, 'bot');
 
-                // Sau khi có phản hồi, bật lại input
+                // Re-enable input after response
                 this.elements.input.disabled = false;
                 this.elements.sendBtn.disabled = false;
                 this.elements.input.focus();
@@ -331,7 +340,7 @@ class AIChatModule {
             }, 1000);
 
         } catch (error) {
-            console.error('Lỗi khi gửi tin nhắn đến AI:', error);
+            console.error('Error sending message to AI:', error);
             loadingMessage.remove();
             this.addMessage("Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại.", 'bot');
             this.elements.input.disabled = false;
