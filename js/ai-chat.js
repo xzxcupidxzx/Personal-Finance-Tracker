@@ -1,58 +1,34 @@
-/**
- * AI CHAT MODULE - PHIÊN BẢN NÂNG CAO
- * - Giao diện cửa sổ nổi có thể kéo thả (draggable).
- * - Lưu và phục hồi vị trí cửa sổ.
- * - Lưu và tải lại lịch sử trò chuyện.
- * - Menu tùy chọn: Sao chép, Xóa cuộc trò chuyện.
- * - Tối ưu hóa cho trải nghiệm người dùng.
- */
 class AIChatModule {
     constructor(app) {
         this.app = app;
-        this.elements = {};
-        this.chatHistory = [];
-        this.storageKey = 'ai_chat_history';
-        
-        // Thuộc tính cho chức năng kéo-thả
-        this.isDragging = false;
-        this.dragStartX = 0;
-        this.dragStartY = 0;
-        this.elementStartX = 0;
-        this.elementStartY = 0;
-        this.positionStorageKey = 'ai_chat_position';
-    }
-
-    init() {
         this.elements = {
             fab: document.getElementById('ai-chat-fab'),
             modal: document.getElementById('ai-chat-modal'),
-            modalContent: document.querySelector('.ai-chat-modal-content'),
-            header: document.querySelector('.ai-chat-modal-header'),
             closeBtn: document.getElementById('ai-chat-close-btn'),
             history: document.getElementById('ai-chat-history'),
             input: document.getElementById('ai-chat-input'),
             sendBtn: document.getElementById('ai-chat-send-btn'),
+            tokenCounter: document.getElementById('ai-chat-token-counter'),
+            // THÊM MỚI: Các element cho menu tùy chọn
             optionsBtn: document.getElementById('ai-chat-options-btn'),
             optionsMenu: document.getElementById('ai-chat-options-menu'),
             deleteLogBtn: document.getElementById('ai-chat-delete-log'),
             copyLogBtn: document.getElementById('ai-chat-copy-log')
         };
-
-        if (!this.elements.fab) return;
-
-        this.loadChatHistory();
-        this.initEventListeners();
-
-        console.log('🤖 AI Chat Module Initialized (Draggable Window)');
+        // THAY ĐỔI: Khởi tạo mảng chatHistory rỗng ban đầu
+        this.chatHistory = [];
+        this.storageKey = 'ai_chat_history'; // Key để lưu vào localStorage
     }
 
-    initEventListeners() {
-        // Sự kiện cho các nút chính
+    init() {
+        if (!this.elements.fab) return;
+        
+        // Tải lịch sử chat đã lưu
+        this.loadChatHistory();
+        
         this.elements.fab.addEventListener('click', () => this.openChat());
         this.elements.closeBtn.addEventListener('click', () => this.closeChat());
         this.elements.sendBtn.addEventListener('click', () => this.sendMessage());
-        
-        // Gửi tin nhắn bằng phím Enter
         this.elements.input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -60,183 +36,136 @@ class AIChatModule {
             }
         });
 
-        // Đóng modal khi click ra ngoài lớp phủ
+        // Đóng modal khi click ra ngoài
         this.elements.modal.addEventListener('click', (e) => {
             if (e.target === this.elements.modal) this.closeChat();
         });
 
-        // Khởi tạo menu và chức năng kéo thả
+        // THÊM MỚI: Xử lý sự kiện cho menu tùy chọn
         this.initOptionsMenu();
-        this.initDraggableModal();
+
+        console.log('🤖 AI Chat Module Initialized with History & Options');
     }
 
-    // --- Chức năng Kéo-Thả (Draggable) ---
-    initDraggableModal() {
-        const { header, modalContent } = this.elements;
-        if (!header || !modalContent) return;
-
-        header.addEventListener('pointerdown', (e) => this.dragStart(e));
-        document.addEventListener('pointermove', (e) => this.dragMove(e));
-        document.addEventListener('pointerup', () => this.dragEnd());
-        document.addEventListener('pointerleave', () => this.dragEnd());
-    }
-
-    dragStart(e) {
-        if (e.button !== 0) return; // Chỉ cho phép kéo bằng chuột trái
-        this.isDragging = true;
-        
-        this.dragStartX = e.clientX;
-        this.dragStartY = e.clientY;
-
-        const rect = this.elements.modalContent.getBoundingClientRect();
-        this.elementStartX = rect.left;
-        this.elementStartY = rect.top;
-
-        this.elements.modalContent.style.transition = 'none';
-        document.body.classList.add('dragging-chat-modal');
-    }
-
-    dragMove(e) {
-        if (!this.isDragging) return;
-        e.preventDefault();
-
-        let newX = this.elementStartX + (e.clientX - this.dragStartX);
-        let newY = this.elementStartY + (e.clientY - this.dragStartY);
-        
-        const { modalContent } = this.elements;
-        const modalWidth = modalContent.offsetWidth;
-        const modalHeight = modalContent.offsetHeight;
-
-        // Giới hạn trong khung nhìn
-        newX = Math.max(0, Math.min(newX, window.innerWidth - modalWidth));
-        newY = Math.max(0, Math.min(newY, window.innerHeight - modalHeight));
-
-        modalContent.style.left = `${newX}px`;
-        modalContent.style.top = `${newY}px`;
-        modalContent.style.transform = 'none';
-    }
-
-    dragEnd() {
-        if (!this.isDragging) return;
-        this.isDragging = false;
-        
-        this.elements.modalContent.style.transition = '';
-        document.body.classList.remove('dragging-chat-modal');
-
-        localStorage.setItem(this.positionStorageKey, JSON.stringify({
-            left: this.elements.modalContent.style.left,
-            top: this.elements.modalContent.style.top
-        }));
-    }
-
-    // --- Quản lý hiển thị Modal ---
-    openChat() {
-        const { modal, modalContent } = this.elements;
-        if (!modal || !modalContent) return;
-
-        // Tải vị trí đã lưu
-        const savedPosition = localStorage.getItem(this.positionStorageKey);
-        if (savedPosition) {
-            const { left, top } = JSON.parse(savedPosition);
-            modalContent.style.left = left;
-            modalContent.style.top = top;
-            modalContent.style.transform = 'scale(1)';
-        } else {
-            // Đặt vị trí mặc định ở giữa
-            modalContent.style.left = '50%';
-            modalContent.style.top = '50%';
-            modalContent.style.transform = 'translate(-50%, -50%) scale(1)';
-        }
-
-        modal.style.display = 'flex';
-        setTimeout(() => {
-            modal.classList.add('visible');
-            this.elements.input.focus();
-        }, 10);
-    }
-
-    closeChat() {
-        const { modal } = this.elements;
-        if (!modal) return;
-        
-        this.elements.optionsMenu.classList.remove('visible');
-        modal.classList.remove('visible');
-        
-        setTimeout(() => {
-            modal.style.display = 'none';
-        }, 300); // Khớp với thời gian transition trong CSS
-    }
-
-    // --- Quản lý Menu Tùy chọn ---
+    // THÊM MỚI: Khởi tạo sự kiện cho menu tùy chọn
     initOptionsMenu() {
-        const { optionsBtn, optionsMenu, deleteLogBtn, copyLogBtn } = this.elements;
-        if (!optionsBtn || !optionsMenu) return;
+        if (!this.elements.optionsBtn || !this.elements.optionsMenu) return;
 
-        optionsBtn.addEventListener('click', (e) => {
+        this.elements.optionsBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            optionsMenu.classList.toggle('visible');
+            this.toggleOptionsMenu();
         });
 
-        deleteLogBtn.addEventListener('click', (e) => {
+        this.elements.deleteLogBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            if (confirm('Bạn có chắc chắn muốn xóa toàn bộ cuộc trò chuyện này không?')) {
-                this.chatHistory = [];
-                this.saveChatHistory();
-                this.renderChatHistory();
-                optionsMenu.classList.remove('visible');
-                Utils.UIUtils.showMessage('Đã xóa cuộc trò chuyện.', 'success');
-            }
+            this.handleDeleteLog();
         });
 
-        copyLogBtn.addEventListener('click', (e) => {
+        this.elements.copyLogBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            const conversationText = this.chatHistory.map(msg => `${msg.sender.toUpperCase()}:\n${msg.text}`).join('\n\n');
-            navigator.clipboard.writeText(conversationText)
-                .then(() => Utils.UIUtils.showMessage('Đã sao chép cuộc trò chuyện.', 'success'))
-                .catch(() => Utils.UIUtils.showMessage('Không thể sao chép.', 'error'));
-            optionsMenu.classList.remove('visible');
+            this.handleCopyLog();
         });
 
+        // Đóng menu khi click ra ngoài
         document.addEventListener('click', (e) => {
-            if (!optionsMenu.contains(e.target) && !optionsBtn.contains(e.target)) {
-                optionsMenu.classList.remove('visible');
+            if (!this.elements.optionsMenu.contains(e.target) && !this.elements.optionsBtn.contains(e.target)) {
+                this.elements.optionsMenu.classList.remove('visible');
             }
         });
     }
 
-    // --- Quản lý Lịch sử Chat ---
+    // THÊM MỚI: Bật/tắt menu tùy chọn
+    toggleOptionsMenu() {
+        this.elements.optionsMenu.classList.toggle('visible');
+    }
+    
+    // THÊM MỚI: Xử lý xóa lịch sử chat
+    handleDeleteLog() {
+        if (confirm('Bạn có chắc chắn muốn xóa toàn bộ cuộc trò chuyện này? Hành động này không thể hoàn tác.')) {
+            this.chatHistory = [];
+            this.saveChatHistory();
+            this.renderChatHistory(); // Render lại để hiển thị trạng thái rỗng
+            this.toggleOptionsMenu(); // Ẩn menu đi
+            Utils.UIUtils.showMessage('Đã xóa cuộc trò chuyện.', 'success');
+        }
+    }
+    
+    // THÊM MỚI: Xử lý sao chép lịch sử chat
+    handleCopyLog() {
+        const conversationText = this.chatHistory.map(msg => {
+            return `${msg.sender.toUpperCase()}:\n${msg.text}`;
+        }).join('\n\n');
+
+        navigator.clipboard.writeText(conversationText).then(() => {
+            Utils.UIUtils.showMessage('Đã sao chép cuộc trò chuyện vào clipboard.', 'success');
+        }, () => {
+            Utils.UIUtils.showMessage('Không thể sao chép. Vui lòng thử lại.', 'error');
+        });
+        this.toggleOptionsMenu();
+    }
+
+    // THÊM MỚI: Lưu lịch sử chat vào localStorage
     saveChatHistory() {
         try {
-            localStorage.setItem(this.storageKey, JSON.stringify(this.chatHistory));
+            const historyToSave = JSON.stringify(this.chatHistory);
+            localStorage.setItem(this.storageKey, historyToSave);
         } catch (error) {
             console.error('Lỗi khi lưu lịch sử chat:', error);
         }
     }
 
+    // THÊM MỚI: Tải lịch sử chat từ localStorage
     loadChatHistory() {
         try {
             const savedHistory = localStorage.getItem(this.storageKey);
-            this.chatHistory = savedHistory ? JSON.parse(savedHistory) : [];
+            if (savedHistory) {
+                this.chatHistory = JSON.parse(savedHistory);
+            }
         } catch (error) {
             console.error('Lỗi khi tải lịch sử chat:', error);
-            this.chatHistory = [];
+            this.chatHistory = []; // Reset nếu có lỗi
         }
         this.renderChatHistory();
     }
     
+    // THÊM MỚI: Render toàn bộ lịch sử chat ra màn hình
     renderChatHistory() {
-        this.elements.history.innerHTML = '';
+        this.elements.history.innerHTML = ''; // Xóa tin nhắn cũ
         if (this.chatHistory.length === 0) {
-            this.addMessage("Xin chào! Bạn đã chi tiêu những gì hôm nay? Hãy cho tôi biết, ví dụ: \"cà phê 50k bằng tiền mặt\"", 'bot', false);
+            // Nếu không có lịch sử, hiển thị tin nhắn chào mừng mặc định
+            this.addMessage("Xin chào! Bạn đã chi tiêu những gì hôm nay? Hãy cho tôi biết, ví dụ: \"cà phê 50k bằng tiền mặt\"", 'bot', false); // `false` để không lưu lại tin nhắn chào mừng này
         } else {
-            this.chatHistory.forEach(msg => this.addMessage(msg.text, msg.sender, false));
+            this.chatHistory.forEach(msg => {
+                this.addMessage(msg.text, msg.sender, false); // `false` để không lưu lại
+            });
         }
     }
 
+    openChat() {
+        if (!this.elements.modal) return;
+        this.elements.modal.style.display = 'flex';
+        setTimeout(() => {
+            this.elements.modal.classList.add('visible');
+            this.elements.input.focus();
+        }, 10);
+    }
+
+    closeChat() {
+        if (!this.elements.modal) return;
+        // Ẩn menu tùy chọn khi đóng modal chat
+        this.elements.optionsMenu.classList.remove('visible');
+        this.elements.modal.classList.remove('visible');
+        setTimeout(() => {
+            this.elements.modal.style.display = 'none';
+        }, 400); // Match CSS transition time
+    }
+
+    // THAY ĐỔI: Thêm tham số `shouldSave`
     addMessage(text, sender, shouldSave = true) {
+        // Nếu `shouldSave` là true, thêm tin nhắn vào mảng history
         if (shouldSave) {
             this.chatHistory.push({ text, sender });
-            this.saveChatHistory();
+            this.saveChatHistory(); // Lưu lại ngay lập tức
         }
 
         const messageDiv = document.createElement('div');
@@ -245,7 +174,10 @@ class AIChatModule {
         if (sender === 'loading') {
             messageDiv.innerHTML = '<span></span><span></span><span></span>';
         } else {
-            let formattedText = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
+            // Xử lý xuống dòng, đậm, nghiêng đơn giản
+            let formattedText = text.replace(/\n/g, '<br>');
+            formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formattedText = formattedText.replace(/\*(.*?)\*/g, '<em>$1</em>');
             messageDiv.innerHTML = formattedText;
         }
         
@@ -254,7 +186,6 @@ class AIChatModule {
         return messageDiv;
     }
 
-    // --- Xử lý Gửi tin nhắn và Tương tác với AI ---
     async sendMessage() {
         const userInput = this.elements.input.value.trim();
         if (!userInput) return;
@@ -266,17 +197,18 @@ class AIChatModule {
         const loadingMessage = this.addMessage('', 'loading', false);
 
         try {
-            const { incomeCategories, expenseCategories, accounts } = this.app.data;
-            const parsedData = await this.callLLMAPI(userInput, 
-                incomeCategories.map(c => c.value), 
-                expenseCategories.map(c => c.value), 
-                accounts.map(a => a.value)
-            );
+            const incomeCategories = this.app.data.incomeCategories.map(c => c.value);
+            const expenseCategories = this.app.data.expenseCategories.map(c => c.value);
+            const accounts = this.app.data.accounts.map(a => a.value);
+            const parsedData = await this.callLLMAPI(userInput, incomeCategories, expenseCategories, accounts);
 
             loadingMessage.remove();
 
             if (!Array.isArray(parsedData)) {
-                this.addMessage(parsedData || "❌ Lỗi: AI không trả về dữ liệu đúng định dạng.", 'bot');
+                const responseText = (typeof parsedData === 'string' && parsedData.length > 0) 
+                    ? parsedData 
+                    : "❌ Lỗi: AI không trả về dữ liệu đúng định dạng mảng.";
+                this.addMessage(responseText, 'bot');
                 return;
             }
 
@@ -316,7 +248,9 @@ class AIChatModule {
         } catch (error) {
             console.error("Lỗi xử lý AI:", error);
             loadingMessage.remove();
-            this.addMessage(`❌ Đã xảy ra lỗi: ${error.message}`, 'bot');
+            let message = "❌ Đã xảy ra lỗi khi gọi AI. ";
+            if (error && error.message) message += error.message;
+            this.addMessage(message, 'bot');
         } finally {
             this.elements.input.disabled = false;
             this.elements.sendBtn.disabled = false;
