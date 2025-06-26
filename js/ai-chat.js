@@ -143,15 +143,16 @@ class AIChatModule {
 	fabDragMove(e) {
 		if (!this.isDragging) return;
 
+		// THÊM MỚI: Ngăn chặn hành vi mặc định của trình duyệt (như cuộn)
+		e.preventDefault();
+
 		// Cập nhật vị trí mới của nút
 		const newX = e.clientX - this.dragStartX;
 		const newY = e.clientY - this.dragStartY;
-		
+
 		// Chỉ xác nhận là "đã kéo" nếu di chuyển vượt ngưỡng
 		if (!this.wasDragged && (Math.abs(newX - this.fabX) > this.dragThreshold || Math.abs(newY - this.fabY) > this.dragThreshold)) {
 			this.wasDragged = true;
-
-			// THÊM LỚP CSS VÀO BODY ĐỂ VÔ HIỆU HÓA NỀN
 			document.body.classList.add('is-dragging-chat');
 		}
 		
