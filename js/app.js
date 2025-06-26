@@ -49,7 +49,7 @@ class FinancialApp {
                 { value: "Chi phí khác", text: "Chi phí khác" },
             ],
             accounts: [
-                { value: "Tiền mặt", text: "Tiền mặt" }, 
+                { value: "Tiền mặt hệ thống", text: "Tiền mặt hệ thống" }, 
                 { value: "Momo", text: "Momo" },
                 { value: "Thẻ tín dụng", text: "Thẻ tín dụng" }, 
                 { value: "Techcombank", text: "Techcombank" }
@@ -176,7 +176,7 @@ class FinancialApp {
 
 	ensureSystemAccounts() {
 		const systemAccounts = [
-			{ value: "Tiền mặt", text: "Tiền mặt" }
+			{ value: "Tiền mặt hệ thống", text: "Tiền mặt hệ thống" }
 		];
 
 		systemAccounts.forEach(accInfo => {

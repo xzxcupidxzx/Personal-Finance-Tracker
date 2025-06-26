@@ -3452,11 +3452,11 @@ hr {
    AI CHATBOT FLOATING ACTION BUTTON (FAB)
    ============================================================================= */
 #ai-chat-fab {
-    position: fixed;
+    position: fixed; /* BẮT BUỘC: để có thể định vị và di chuyển */
     bottom: 30px;
     right: 30px;
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     color: white;
     border-radius: 50%;
@@ -3466,11 +3466,30 @@ hr {
     justify-content: center;
     font-size: 24px;
     box-shadow: var(--shadow-lg);
-    cursor: pointer;
+    cursor: grab; /* THAY ĐỔI: Báo hiệu có thể kéo */
     z-index: var(--z-nav);
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    user-select: none; /* Chặn chọn văn bản của nút */
+    -webkit-user-select: none;
 }
-
+#ai-chat-fab:active {
+    cursor: grabbing;
+    transform: scale(0.95);
+    box-shadow: none;
+}
+/* Điều chỉnh vị trí cho màn hình điện thoại để không bị che */
+@media (max-width: 767px) {
+    #ai-chat-fab {
+        bottom: 95px;
+        right: 20px;
+    }
+}
+@media (max-width: 480px) {
+    #ai-chat-fab {
+        bottom: 95px;
+        right: 20px;
+    }
+}
 #ai-chat-fab:hover {
     transform: translateY(-3px) scale(1.05);
     box-shadow: var(--shadow-xl);
@@ -3490,15 +3509,15 @@ hr {
 /* Lớp phủ nền cho modal */
 .ai-chat-modal-container {
     position: fixed;
-    inset: 0; /* Tương đương top: 0; right: 0; bottom: 0; left: 0; */
+    inset: 0;
     background-color: rgba(0, 0, 0, 0.4);
     display: flex;
-    align-items: flex-end; /* Căn chỉnh nội dung xuống dưới cùng */
+    align-items: flex-end;
     justify-content: center;
     z-index: var(--z-modal);
     opacity: 0;
     transition: opacity 0.4s ease, background-color 0.4s ease;
-    pointer-events: none; /* Cho phép click xuyên qua khi bị ẩn */
+    pointer-events: none;
 }
 
 /* Trạng thái khi modal hiển thị */
