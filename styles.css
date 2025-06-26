@@ -3449,16 +3449,13 @@ hr {
   60% {transform: translateY(-4px);}
 }
 /* =============================================================================
-   AI CHATBOT STYLES - PHIÊN BẢN CỐ ĐỊNH, TỐI ƯU
+   AI CHATBOT FLOATING ACTION BUTTON (FAB)
    ============================================================================= */
-
-/* --- 1. NÚT BẤM NỔI (FLOATING ACTION BUTTON - FAB) --- */
-
 #ai-chat-fab {
     /* Vị trí cố định ở góc dưới bên trái */
     position: fixed;
-    bottom: 95px; /* Khoảng cách từ dưới lên (chừa chỗ cho thanh điều hướng) */
-    left: 20px;   /* Khoảng cách từ cạnh trái */
+    bottom: 95px; /* Khoảng cách từ dưới lên, chừa không gian cho thanh điều hướng */
+    left: 20px;   /* Khoảng cách từ bên trái */
     z-index: var(--z-nav);
 
     /* Giao diện */
@@ -3475,19 +3472,20 @@ hr {
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
+    cursor: pointer; /* Đổi thành con trỏ bình thường */
 
-    /* Hiệu ứng chuyển động & Tối ưu hóa cảm ứng */
+    /* Hiệu ứng chuyển động */
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    -webkit-tap-highlight-color: transparent;
+    -webkit-tap-highlight-color: transparent; /* Loại bỏ highlight khi nhấn trên mobile */
 }
-
-/* Hiệu ứng khi nhấn vào icon */
 #ai-chat-fab:active {
-    transform: scale(0.9);
+    transform: scale(0.9); /* Thu nhỏ lại một chút khi nhấn */
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
-
+#ai-chat-fab:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: var(--shadow-xl);
+}
 /* Hiệu ứng hover chỉ áp dụng cho máy tính */
 @media (hover: hover) and (pointer: fine) {
     #ai-chat-fab:hover {
@@ -3495,22 +3493,29 @@ hr {
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
     }
 }
-
-
-/* --- 2. CỬA SỔ CHAT (MODAL DẠNG BOTTOM SHEET) --- */
+/* Điều chỉnh vị trí cho màn hình điện thoại để không bị che */
+@media (max-width: 767px) {
+    #ai-chat-fab {
+        bottom: 95px;
+        right: 20px;
+    }
+}
+/* =============================================================================
+   AI CHATBOT MODAL STYLES - PHIÊN BẢN BOTTOM SHEET ĐƯỢC CẢI TIẾN
+   ============================================================================= */
 
 /* Lớp phủ nền cho modal */
 .ai-chat-modal-container {
     position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    inset: 0; /* Tương đương top: 0; right: 0; bottom: 0; left: 0; */
+    background-color: rgba(0, 0, 0, 0.4);
     display: flex;
-    align-items: flex-end; /* Quan trọng: đẩy modal xuống dưới cùng */
+    align-items: flex-end; /* Căn chỉnh nội dung xuống dưới cùng */
     justify-content: center;
     z-index: var(--z-modal);
     opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none; /* Không cho tương tác khi đang ẩn */
+    transition: opacity 0.4s ease, background-color 0.4s ease;
+    pointer-events: none; /* Cho phép click xuyên qua khi bị ẩn */
 }
 
 /* Trạng thái khi modal hiển thị */
@@ -3523,35 +3528,47 @@ hr {
 .ai-chat-modal-content {
     background: var(--bg-primary);
     width: 100%;
-    height: 88vh;
-    max-height: 700px;
+    
+    /* Cải thiện: Thích ứng tốt hơn trên các màn hình khác nhau */
+    height: 90vh;
+    max-height: 700px; /* Chiều cao tối đa trên màn hình lớn */
+    
     box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.15);
     display: flex;
     flex-direction: column;
+    
+    /* Bo góc ở trên để tạo cảm giác trượt lên */
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
-    transform: translateY(100%); /* Ẩn ở dưới màn hình */
-    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Hiệu ứng trượt mượt mà */
+    
+    /* Hiệu ứng trượt từ dưới lên mượt mà hơn */
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .ai-chat-modal-container.visible .ai-chat-modal-content {
-    transform: translateY(0); /* Trượt lên khi hiển thị */
+    transform: translateY(0);
 }
 
-
-/* --- 3. CÁC THÀNH PHẦN BÊN TRONG MODAL --- */
-
-/* Header */
+/* Header của modal */
 .ai-chat-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border-color);
-    flex-shrink: 0;
+    flex-shrink: 0; /* Không cho header co lại */
     position: relative;
+    cursor: grab; /* Gợi ý rằng có thể kéo được (cho thao tác vuốt xuống) */
+    user-select: none; /* Chặn chọn văn bản trên header */
+    -webkit-user-select: none;
 }
 
+.ai-chat-modal-header:active {
+    cursor: grabbing;
+}
+
+/* Thanh handle nhỏ ở trên cùng header */
 .ai-chat-modal-header::before {
     content: '';
     position: absolute;
@@ -3566,9 +3583,12 @@ hr {
 
 .ai-chat-modal-header h3 {
     margin: 0;
-    padding-top: 10px;
+    padding-top: 10px; /* Tạo không gian cho thanh handle */
     font-size: 1.1rem;
     font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     color: var(--text-primary);
 }
 
@@ -3583,23 +3603,24 @@ hr {
     margin-top: 10px;
 }
 
-/* Body (khung chat) */
+/* Phần thân chứa các tin nhắn */
 .ai-chat-modal-body {
     flex-grow: 1;
-    overflow-y: auto;
+    overflow-y: auto; /* Cho phép cuộn khi nội dung dài */
     padding: 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
 }
 
+/* Định dạng từng tin nhắn */
 .ai-chat-message {
     padding: 0.75rem 1rem;
     border-radius: 18px;
-    max-width: 85%;
+    max-width: 85%; /* Tin nhắn không nên quá rộng */
     line-height: 1.5;
     font-size: 0.95rem;
-    word-wrap: break-word;
+    word-wrap: break-word; /* Tự động xuống dòng cho từ dài */
 }
 
 .ai-chat-message.bot {
@@ -3621,32 +3642,55 @@ hr {
     align-self: flex-start;
     display: flex;
     gap: 5px;
-    padding: 12px 15px;
     background-color: var(--bg-tertiary);
 }
 
 .ai-chat-message.loading span {
+    display: inline-block;
     width: 8px;
     height: 8px;
     background-color: var(--text-muted);
     border-radius: 50%;
     animation: bounce-dot 1.4s infinite ease-in-out both;
 }
+
 .ai-chat-message.loading span:nth-child(1) { animation-delay: -0.32s; }
 .ai-chat-message.loading span:nth-child(2) { animation-delay: -0.16s; }
+
 @keyframes bounce-dot {
   0%, 80%, 100% { transform: scale(0); }
   40% { transform: scale(1.0); }
 }
 
-/* Footer (khung nhập liệu) */
+/* Footer chứa input và nút gửi */
 .ai-chat-modal-footer {
-    display: flex;
+    display: flex; /* Đổi lại thành flex */
+    flex-direction: column;
     gap: 0.5rem;
     padding: 0.75rem 1rem;
     border-top: 1px solid var(--border-color);
     background-color: var(--bg-primary);
+
+    /* Cải thiện: Thêm khoảng đệm an toàn cho các thiết bị có thanh home (iPhone) */
     padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+}
+
+.ai-chat-footer-info {
+    text-align: right;
+    padding-right: 0.5rem;
+    display: none; /* Ẩn tạm thời để giao diện gọn hơn */
+}
+
+#ai-chat-token-counter {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: monospace;
+}
+
+.ai-chat-input-group {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
 }
 
 #ai-chat-input {
@@ -3667,7 +3711,7 @@ hr {
 
 #ai-chat-send-btn {
     flex-shrink: 0;
-    width: 44px;
+    width: 44px; /* Tăng kích thước để dễ nhấn */
     height: 44px;
     border-radius: 50%;
     border: none;
@@ -3678,16 +3722,16 @@ hr {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.2s, transform 0.1s ease;
+    transition: background-color 0.2s;
+}
+
+#ai-chat-send-btn:hover {
+    background-color: var(--primary-dark);
 }
 
 #ai-chat-send-btn:disabled {
     background-color: var(--text-muted);
     cursor: not-allowed;
-}
-
-#ai-chat-send-btn:active {
-    transform: scale(0.9);
 }
 /* =================================================== */
 /* == STYLES FOR IMPROVED CATEGORY SPEND LIST ITEM === */
@@ -3776,23 +3820,7 @@ hr {
     font-size: 0.8rem;
     color: var(--text-secondary, #64748b);
 }
-/* =================================================================== */
-/* == VÔ HIỆU HÓA TƯƠNG TÁC NỀN KHI KÉO NÚT CHAT                  == */
-/* =================================================================== */
 
-/* Khi thẻ body có lớp này, các phần tử chính sẽ bị vô hiệu hóa */
-body.is-dragging-chat .app-header,
-body.is-dragging-chat .main-container,
-body.is-dragging-chat .bottom-nav {
-    /* Vô hiệu hóa tất cả các sự kiện chuột, chạm, cuộn... */
-    pointer-events: none;
-
-    /* Ngăn người dùng vô tình chọn văn bản của các phần tử này khi kéo */
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-}
 /* ========================================================== */
 /* == RESPONSIVE STYLES FOR CHART LEGEND ON SMALL DEVICES === */
 /* ========================================================== */
