@@ -3472,6 +3472,7 @@ hr {
     user-select: none;
     -webkit-user-select: none;
     touch-action: none; /* <-- THÊM DÒNG NÀY */
+	will-change: transform;
 }
 #ai-chat-fab:active {
     cursor: grabbing;
