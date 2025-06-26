@@ -3479,7 +3479,15 @@ hr {
 	user-select: none;
     will-change: transform;    /* Báo cho trình duyệt biết thuộc tính transform sẽ thay đổi */
 }
-
+#ai-chat-overlay {
+    position: fixed;
+    z-index: 1999;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: transparent;
+    display: none;
+    touch-action: none;
+    pointer-events: auto;
+}
 #ai-chat-fab:active {
     cursor: grabbing;
     /* Sử dụng scale nhỏ hơn để tạo hiệu ứng nhấn xuống, không dùng transform */

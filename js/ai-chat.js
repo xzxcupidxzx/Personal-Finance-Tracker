@@ -118,7 +118,8 @@ class AIChatModule {
     }
 
     fabDragStart(e) {
-        document.body.style.overflow = 'hidden';
+        document.getElementById('ai-chat-overlay').style.display = 'block';
+		document.body.style.overflow = 'hidden';
 		if (e.button && e.button !== 0) return; // Chỉ cho phép chuột trái
 
         const fab = this.elements.fab;
@@ -176,6 +177,7 @@ class AIChatModule {
 	// ============================================================
 	fabDragEnd(e) {
 		// LUÔN GỠ BỎ LỚP CSS KHI NGƯỜI DÙNG KẾT THÚC KÉO
+		document.getElementById('ai-chat-overlay').style.display = 'none';
 		document.body.classList.remove('is-dragging-chat');
 		document.body.style.overflow = '';
 
