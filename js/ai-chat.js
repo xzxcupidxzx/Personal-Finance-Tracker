@@ -1,7 +1,8 @@
 /**
- * AI CHAT MODULE - PHIÊN BẢN HOÀN CHỈNH
- * - Nút FAB di chuyển mượt mà và "hít" vào cạnh màn hình như AssistiveTouch.
- * - Giữ nguyên các chức năng cốt lõi: ghi nhớ vị trí, phân biệt kéo/nhấn, bottom-sheet chat.
+ * AI CHAT MODULE - PHIÊN BẢN TỐI ƯU CHO CẢM ỨNG (IPHONE)
+ * - Tối ưu hóa kéo-thả nút FAB siêu mượt bằng requestAnimationFrame và sự kiện touch.
+ * - Sử dụng "will-change" để tăng tốc phần cứng (GPU acceleration).
+ * - Giữ nguyên các chức năng cốt lõi: hít vào cạnh, ghi nhớ vị trí, phân biệt kéo/nhấn.
  */
 class AIChatModule {
     constructor(app) {
@@ -44,24 +45,29 @@ class AIChatModule {
         this.loadFabPosition();
         this.initEventListeners();
 
-        console.log('🤖 AI Chat Module Initialized (Snap-to-Edge FAB)');
+        console.log('🤖 AI Chat Module Initialized (Touch-Optimized Draggable FAB)');
     }
 
     initEventListeners() {
-        // --- LOGIC XỬ LÝ SỰ KIỆN CHO NÚT FAB ---
-        this.elements.fab.addEventListener('pointerdown', (e) => this.fabDragStart(e));
+        const fab = this.elements.fab;
+
+        // --- SỰ KIỆN CHO CẢ CHUỘT (POINTER) VÀ CẢM ỨNG (TOUCH) ---
+        fab.addEventListener('pointerdown', (e) => this.fabDragStart(e));
         document.addEventListener('pointermove', (e) => this.fabDragMove(e));
         document.addEventListener('pointerup', () => this.fabDragEnd());
-        this.elements.fab.addEventListener('click', () => this.handleFabClick());
 
-        // Các sự kiện khác giữ nguyên
+        // Ưu tiên sự kiện touch trên thiết bị hỗ trợ
+        fab.addEventListener('touchstart', (e) => this.fabDragStart(e), { passive: true });
+        fab.addEventListener('touchmove', (e) => this.fabDragMove(e), { passive: false });
+        fab.addEventListener('touchend', () => this.fabDragEnd());
+        
+        fab.addEventListener('click', () => this.handleFabClick());
+
+        // Các sự kiện khác
         this.elements.closeBtn.addEventListener('click', () => this.closeChat());
         this.elements.sendBtn.addEventListener('click', () => this.sendMessage());
         this.elements.input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                this.sendMessage();
-            }
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.sendMessage(); }
         });
         this.elements.modal.addEventListener('click', (e) => {
             if (e.target === this.elements.modal) this.closeChat();
@@ -69,7 +75,7 @@ class AIChatModule {
         this.initOptionsMenu();
     }
 
-    // --- CÁC HÀM TỐI ƯU CHO KÉO-THẢ NÚT FAB VÀ "HÍT" CẠNH ---
+    // --- CÁC HÀM TỐI ƯU CHO KÉO-THẢ ---
 
     loadFabPosition() {
         const fab = this.elements.fab;
@@ -78,23 +84,26 @@ class AIChatModule {
             const { x, y } = JSON.parse(savedPosition);
             fab.style.left = `${x}px`;
             fab.style.top = `${y}px`;
-            fab.style.bottom = 'auto';
-            fab.style.right = 'auto';
         }
+        // Xóa thuộc tính bottom/right để đảm bảo top/left được áp dụng
+        fab.style.bottom = 'auto';
+        fab.style.right = 'auto';
     }
 
     fabDragStart(e) {
-        if (e.button !== 0 && e.pointerType !== 'touch') return;
-        
+        if (e.button && e.button !== 0) return; // Chỉ cho phép kéo bằng chuột trái
+
         const fab = this.elements.fab;
-        fab.style.transition = 'none'; // Xóa hiệu ứng transition khi bắt đầu kéo
+        fab.style.transition = 'none'; // Xóa hiệu ứng transition khi kéo
+        fab.style.willChange = 'transform, top, left'; // Tối ưu hóa GPU
 
         this.isDraggingFab = true;
         this.wasDragged = false;
         
+        const touch = e.touches ? e.touches[0] : e;
         const rect = fab.getBoundingClientRect();
-        this.dragOffsetX = e.clientX - rect.left;
-        this.dragOffsetY = e.clientY - rect.top;
+        this.dragOffsetX = touch.clientX - rect.left;
+        this.dragOffsetY = touch.clientY - rect.top;
 
         document.body.classList.add('dragging-chat-modal');
 
@@ -104,65 +113,72 @@ class AIChatModule {
     fabDragMove(e) {
         if (!this.isDraggingFab) return;
         this.wasDragged = true;
-        e.preventDefault();
-
-        this.fabTargetX = e.clientX - this.dragOffsetX;
-        this.fabTargetY = e.clientY - this.dragOffsetY;
+        
+        // Ngăn hành vi cuộn trang mặc định trên thiết bị cảm ứng
+        if (e.cancelable) {
+            e.preventDefault();
+        }
+        
+        const touch = e.touches ? e.touches[0] : e;
+        this.fabTargetX = touch.clientX - this.dragOffsetX;
+        this.fabTargetY = touch.clientY - this.dragOffsetY;
     }
     
     updateFabPosition() {
         if (!this.isDraggingFab) return;
 
         const fab = this.elements.fab;
-        const fabSize = fab.offsetWidth;
-        const padding = 16; // Khoảng đệm an toàn
+        // Sử dụng transform để di chuyển sẽ mượt hơn là thay đổi top/left
+        fab.style.transform = `translate3d(${this.fabTargetX}px, ${this.fabTargetY}px, 0)`;
 
-        // Giới hạn trong khung nhìn với khoảng đệm
-        const constrainedX = Math.max(padding, Math.min(this.fabTargetX, window.innerWidth - fabSize - padding));
-        const constrainedY = Math.max(padding, Math.min(this.fabTargetY, window.innerHeight - fabSize - padding));
-
-        fab.style.left = `${constrainedX}px`;
-        fab.style.top = `${constrainedY}px`;
-        
         this.animationFrameId = requestAnimationFrame(() => this.updateFabPosition());
     }
 
     fabDragEnd() {
         if (!this.isDraggingFab) return;
-        
+
         this.isDraggingFab = false;
         document.body.classList.remove('dragging-chat-modal');
         cancelAnimationFrame(this.animationFrameId);
-        
+
+        const fab = this.elements.fab;
+        fab.style.willChange = 'auto'; // Dọn dẹp tối ưu hóa
+
         if (this.wasDragged) {
-            const fab = this.elements.fab;
-            const fabSize = fab.offsetWidth;
-            const padding = 16;
-            const viewportCenterX = window.innerWidth / 2;
-            const fabCurrentCenterX = fab.offsetLeft + fabSize / 2;
+            // Cập nhật lại top/left từ transform trước khi "hít" vào cạnh
+            const rect = fab.getBoundingClientRect();
+            fab.style.transform = ''; // Reset transform
+            fab.style.left = `${rect.left}px`;
+            fab.style.top = `${rect.top}px`;
             
-            // Xác định vị trí cuối cùng sẽ "hít" vào
-            const finalX = (fabCurrentCenterX < viewportCenterX)
-                ? padding
-                : window.innerWidth - fabSize - padding;
-
-            const finalY = fab.offsetTop; // Vị trí Y đã được giới hạn trong lúc kéo
-
-            // Thêm hiệu ứng chuyển động mượt mà để "hít" vào cạnh
-            fab.style.transition = 'left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
-            fab.style.left = `${finalX}px`;
-
-            // Lưu vị trí mới sau khi đã "hít"
-            localStorage.setItem(this.fabPositionStorageKey, JSON.stringify({
-                x: finalX,
-                y: finalY
-            }));
-
-            // Xóa transition sau khi animation kết thúc để không ảnh hưởng lần kéo sau
-            setTimeout(() => {
-                fab.style.transition = '';
-            }, 300);
+            this.snapFabToEdge();
         }
+    }
+    
+    snapFabToEdge() {
+        const fab = this.elements.fab;
+        const fabSize = fab.offsetWidth;
+        const padding = 16;
+        const viewportCenterX = window.innerWidth / 2;
+        
+        // Lấy vị trí hiện tại sau khi kéo
+        const currentX = fab.offsetLeft;
+        const finalX = (currentX + fabSize / 2 < viewportCenterX)
+            ? padding
+            : window.innerWidth - fabSize - padding;
+
+        const finalY = Math.max(padding, Math.min(fab.offsetTop, window.innerHeight - fabSize - padding));
+
+        // Thêm hiệu ứng "hít" vào
+        fab.style.transition = 'left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), top 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
+        fab.style.left = `${finalX}px`;
+        fab.style.top = `${finalY}px`; // Cập nhật cả Y để nó không bị kẹt ở trên/dưới
+        
+        localStorage.setItem(this.fabPositionStorageKey, JSON.stringify({ x: finalX, y: finalY }));
+
+        setTimeout(() => {
+            fab.style.transition = '';
+        }, 300);
     }
 
     handleFabClick() {
@@ -170,7 +186,7 @@ class AIChatModule {
         this.openChat();
     }
     
-    // ... (Các hàm còn lại như openChat, closeChat, initOptionsMenu, sendMessage... giữ nguyên) ...
+    // ... (Toàn bộ các hàm còn lại như openChat, closeChat, initOptionsMenu, sendMessage... giữ nguyên) ...
     openChat() {
         if (!this.elements.modal) return;
         this.elements.modal.style.display = 'flex';
@@ -190,10 +206,12 @@ class AIChatModule {
     initOptionsMenu() {
         const { optionsBtn, optionsMenu, deleteLogBtn, copyLogBtn } = this.elements;
         if (!optionsBtn || !optionsMenu) return;
+
         optionsBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             optionsMenu.classList.toggle('visible');
         });
+
         deleteLogBtn.addEventListener('click', (e) => {
             e.preventDefault();
             if (confirm('Bạn có chắc chắn muốn xóa toàn bộ cuộc trò chuyện này không?')) {
@@ -204,6 +222,7 @@ class AIChatModule {
                 Utils.UIUtils.showMessage('Đã xóa cuộc trò chuyện.', 'success');
             }
         });
+
         copyLogBtn.addEventListener('click', (e) => {
             e.preventDefault();
             const conversationText = this.chatHistory.map(msg => `${msg.sender.toUpperCase()}:\n${msg.text}`).join('\n\n');
@@ -212,6 +231,7 @@ class AIChatModule {
                 .catch(() => Utils.UIUtils.showMessage('Không thể sao chép.', 'error'));
             optionsMenu.classList.remove('visible');
         });
+
         document.addEventListener('click', (e) => {
             if (!optionsMenu.contains(e.target) && !optionsBtn.contains(e.target)) {
                 optionsMenu.classList.remove('visible');
