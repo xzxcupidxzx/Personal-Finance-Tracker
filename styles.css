@@ -3818,7 +3818,23 @@ hr {
     font-size: 0.8rem;
     color: var(--text-secondary, #64748b);
 }
+/* =================================================================== */
+/* == VÔ HIỆU HÓA TƯƠNG TÁC NỀN KHI KÉO NÚT CHAT                  == */
+/* =================================================================== */
 
+/* Khi thẻ body có lớp này, các phần tử chính sẽ bị vô hiệu hóa */
+body.is-dragging-chat .app-header,
+body.is-dragging-chat .main-container,
+body.is-dragging-chat .bottom-nav {
+    /* Vô hiệu hóa tất cả các sự kiện chuột, chạm, cuộn... */
+    pointer-events: none;
+
+    /* Ngăn người dùng vô tình chọn văn bản của các phần tử này khi kéo */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
 /* ========================================================== */
 /* == RESPONSIVE STYLES FOR CHART LEGEND ON SMALL DEVICES === */
 /* ========================================================== */
