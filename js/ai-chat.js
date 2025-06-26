@@ -1,7 +1,8 @@
 /**
- * AI CHAT MODULE - PHIÊN BẢN HOÀN CHỈNH
- * - Kết hợp CSS `touch-action: none` và `passive: false` để giải quyết triệt để xung đột cuộn trang.
- * - Tối ưu hóa logic kéo thả cho hiệu năng cao nhất trên cả thiết bị cảm ứng và máy tính.
+ * AI CHAT MODULE - PHIÊN BẢN ĐÃ ĐƯỢC KIỂM TRA VÀ TỐI ƯU HÓA
+ * - Sửa lỗi logic kéo-thả, đảm bảo chỉ nút FAB được di chuyển.
+ * - Sử dụng 'transform' để tăng hiệu năng và độ mượt khi kéo.
+ * - Tái cấu trúc 'initEventListeners' để tăng tính rõ ràng và dễ bảo trì.
  * - Giữ nguyên các chức năng cốt lõi: hít vào cạnh, ghi nhớ vị trí, phân biệt kéo/nhấn.
  */
 class AIChatModule {
@@ -10,19 +11,19 @@ class AIChatModule {
         this.elements = {};
         this.chatHistory = [];
         this.storageKey = 'ai_chat_history';
-        
+
         // Thuộc tính cho chức năng kéo-thả NÚT FAB
-        this.isDraggingFab = false;
-        this.wasDragged = false; // Cờ để phân biệt kéo và nhấn
-        this.dragThreshold = 5; // Ngưỡng pixel để xác định là hành động kéo
-        
+        this.isDragging = false; // Đổi tên để rõ ràng hơn
+        this.wasDragged = false;
+        this.dragThreshold = 5;
+
         this.dragStartX = 0;
         this.dragStartY = 0;
-        
-        // Sử dụng targetX/Y để requestAnimationFrame cập nhật, tránh layout thrashing
-        this.fabTargetX = 0;
-        this.fabTargetY = 0;
-        
+
+        // Tọa độ của nút FAB
+        this.fabX = 0;
+        this.fabY = 0;
+
         this.animationFrameId = null;
         this.fabPositionStorageKey = 'ai_chat_fab_position';
     }
@@ -47,116 +48,129 @@ class AIChatModule {
         this.loadFabPosition();
         this.initEventListeners();
 
-        console.log('🤖 AI Chat Module Initialized (Final Touch-Optimized Version)');
+        console.log('🤖 AI Chat Module Initialized (Optimized & Reviewed Version)');
     }
 
     initEventListeners() {
-        const fab = this.elements.fab;
+        // ---- 1. Gán các hàm xử lý sự kiện vào thuộc tính của class ----
+        this.boundFabDragStart = this.fabDragStart.bind(this);
+        this.boundFabDragMove = this.fabDragMove.bind(this);
+        this.boundFabDragEnd = this.fabDragEnd.bind(this);
+        this.boundSendMessage = this.sendMessage.bind(this);
+        this.boundCloseChat = this.closeChat.bind(this);
+        this.boundHandleModalClick = this.handleModalClick.bind(this);
+        this.boundHandleEnterKey = this.handleEnterKey.bind(this);
 
-        // Sự kiện Pointer Down hợp nhất cho cả chuột và chạm
-        fab.addEventListener('pointerdown', (e) => this.fabDragStart(e));
-        
-        // Các sự kiện này được thêm vào `document` để bắt được chuyển động ngay cả khi con trỏ ra ngoài nút
-        document.addEventListener('pointermove', (e) => this.fabDragMove(e));
-        document.addEventListener('pointerup', (e) => this.fabDragEnd(e));
-        
-        // Các sự kiện khác
-        this.elements.closeBtn.addEventListener('click', () => this.closeChat());
-        this.elements.sendBtn.addEventListener('click', () => this.sendMessage());
-        this.elements.input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.sendMessage(); }
-        });
-        this.elements.modal.addEventListener('click', (e) => {
-            if (e.target === this.elements.modal) this.closeChat();
-        });
+        // ---- 2. Lấy các phần tử DOM ----
+        const { fab, closeBtn, sendBtn, input, modal } = this.elements;
+
+        // ---- 3. Gán sự kiện cho việc Kéo/Thả Nút FAB ----
+        fab.addEventListener('pointerdown', this.boundFabDragStart);
+        document.addEventListener('pointermove', this.boundFabDragMove);
+        document.addEventListener('pointerup', this.boundFabDragEnd);
+
+        // ---- 4. Gán sự kiện cho các hành động trong Modal Chat ----
+        closeBtn.addEventListener('click', this.boundCloseChat);
+        sendBtn.addEventListener('click', this.boundSendMessage);
+        input.addEventListener('keypress', this.boundHandleEnterKey);
+        modal.addEventListener('click', this.boundHandleModalClick);
+
+        // ---- 5. Khởi tạo menu tùy chọn ----
         this.initOptionsMenu();
     }
+
+    // == CÁC HÀM XỬ LÝ SỰ KIỆN PHỤ ==
+    handleEnterKey(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            this.sendMessage();
+        }
+    }
+
+    handleModalClick(e) {
+        if (e.target === this.elements.modal) {
+            this.closeChat();
+        }
+    }
+
+    // == LOGIC KÉO THẢ NÚT FAB ==
 
     loadFabPosition() {
         const fab = this.elements.fab;
         const savedPosition = localStorage.getItem(this.fabPositionStorageKey);
-        if (savedPosition) {
-            const { x, y } = JSON.parse(savedPosition);
-            fab.style.left = `${x}px`;
-            fab.style.top = `${y}px`;
-        } else {
-            // Vị trí mặc định ban đầu nếu chưa có gì được lưu
-            fab.style.left = `${window.innerWidth - fab.offsetWidth - 20}px`;
-            fab.style.top = `${window.innerHeight - fab.offsetHeight - 95}px`;
-        }
-        // Xóa thuộc tính bottom/right để đảm bảo top/left được áp dụng
+
+        // Xóa thuộc tính top/left/bottom/right để transform hoạt động đúng
+        fab.style.top = '0px';
+        fab.style.left = '0px';
         fab.style.bottom = 'auto';
         fab.style.right = 'auto';
+
+        if (savedPosition) {
+            const { x, y } = JSON.parse(savedPosition);
+            this.fabX = x;
+            this.fabY = y;
+        } else {
+            // Vị trí mặc định ban đầu
+            this.fabX = window.innerWidth - fab.offsetWidth - 20;
+            this.fabY = window.innerHeight - fab.offsetHeight - 95;
+        }
+        fab.style.transform = `translate3d(${this.fabX}px, ${this.fabY}px, 0)`;
     }
 
     fabDragStart(e) {
-        if (e.button && e.button !== 0) return; // Chỉ cho phép kéo bằng chuột trái
+        if (e.button && e.button !== 0) return; // Chỉ cho phép chuột trái
 
         const fab = this.elements.fab;
-        fab.setPointerCapture(e.pointerId); // Bắt con trỏ, đảm bảo các sự kiện move/up được nhận diện
-        fab.style.transition = 'none'; // Xóa hiệu ứng transition khi bắt đầu kéo
-        fab.style.willChange = 'transform'; // Báo cho trình duyệt tối ưu hóa transform
+        fab.setPointerCapture(e.pointerId); // Bắt con trỏ để sự kiện không bị mất
+        fab.style.transition = 'none'; // Tắt transition khi đang kéo
         fab.style.cursor = 'grabbing';
 
-        this.isDraggingFab = true;
+        this.isDragging = true;
         this.wasDragged = false;
-        
-        const rect = fab.getBoundingClientRect();
-        // Ghi lại vị trí bắt đầu kéo
-        this.dragStartX = e.clientX;
-        this.dragStartY = e.clientY;
-        
-        // Ghi lại vị trí ban đầu của nút để tính toán di chuyển
-        this.fabTargetX = rect.left;
-        this.fabTargetY = rect.top;
 
-        // Bắt đầu vòng lặp animation
-        if(this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
+        // Ghi lại vị trí bắt đầu kéo so với vị trí của nút
+        this.dragStartX = e.clientX - this.fabX;
+        this.dragStartY = e.clientY - this.fabY;
+
+        // Bắt đầu vòng lặp animation để cập nhật vị trí
+        if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
         this.animationFrameId = requestAnimationFrame(() => this.updateFabPosition());
     }
 
     fabDragMove(e) {
-        if (!this.isDraggingFab) return;
+        if (!this.isDragging) return;
 
-        const deltaX = e.clientX - this.dragStartX;
-        const deltaY = e.clientY - this.dragStartY;
+        // Cập nhật vị trí mới của nút
+        const newX = e.clientX - this.dragStartX;
+        const newY = e.clientY - this.dragStartY;
         
         // Chỉ xác nhận là "đã kéo" nếu di chuyển vượt ngưỡng
-        if (!this.wasDragged && (Math.abs(deltaX) > this.dragThreshold || Math.abs(deltaY) > this.dragThreshold)) {
+        if (!this.wasDragged && (Math.abs(newX - this.fabX) > this.dragThreshold || Math.abs(newY - this.fabY) > this.dragThreshold)) {
             this.wasDragged = true;
         }
         
-        // Cập nhật tọa độ đích dựa trên vị trí ban đầu và khoảng cách di chuyển
-        this.fabTargetX += deltaX;
-        this.fabTargetY += deltaY;
-
-        // Cập nhật lại điểm bắt đầu cho lần di chuyển tiếp theo
-        this.dragStartX = e.clientX;
-        this.dragStartY = e.clientY;
+        this.fabX = newX;
+        this.fabY = newY;
     }
     
     updateFabPosition() {
-        if (!this.isDraggingFab) return;
+        if (!this.isDragging) return;
 
-        const fab = this.elements.fab;
-        // Sử dụng transform để di chuyển sẽ mượt hơn là thay đổi top/left
-        fab.style.left = `${this.fabTargetX}px`;
-        fab.style.top = `${this.fabTargetY}px`;
+        this.elements.fab.style.transform = `translate3d(${this.fabX}px, ${this.fabY}px, 0)`;
 
         // Tiếp tục vòng lặp animation
         this.animationFrameId = requestAnimationFrame(() => this.updateFabPosition());
     }
 
     fabDragEnd(e) {
-        if (!this.isDraggingFab) return;
+        if (!this.isDragging) return;
 
-        this.isDraggingFab = false;
+        this.isDragging = false;
         cancelAnimationFrame(this.animationFrameId);
         this.animationFrameId = null;
 
         const fab = this.elements.fab;
         fab.releasePointerCapture(e.pointerId); // Giải phóng con trỏ
-        fab.style.willChange = 'auto'; // Dọn dẹp tối ưu hóa
         fab.style.cursor = 'grab';
 
         if (this.wasDragged) {
@@ -170,29 +184,32 @@ class AIChatModule {
     snapFabToEdge() {
         const fab = this.elements.fab;
         const fabSize = fab.offsetWidth;
-        const padding = 20; // Khoảng cách tới cạnh màn hình
+        const padding = 20;
         const viewportCenterX = window.innerWidth / 2;
-        
-        // Lấy vị trí hiện tại sau khi kéo
-        const currentX = this.fabTargetX;
-        const finalX = (currentX + fabSize / 2 < viewportCenterX)
+        const navHeight = document.querySelector('.bottom-nav')?.offsetHeight || 85;
+
+        // Xác định vị trí cuối cùng
+        const finalX = (this.fabX + fabSize / 2 < viewportCenterX)
             ? padding
             : window.innerWidth - fabSize - padding;
 
-        const finalY = Math.max(padding, Math.min(this.fabTargetY, window.innerHeight - fabSize - padding - 85)); // 85 là khoảng cách cho thanh nav dưới
+        const finalY = Math.max(padding, Math.min(this.fabY, window.innerHeight - fabSize - navHeight));
+
+        this.fabX = finalX;
+        this.fabY = finalY;
 
         // Thêm hiệu ứng "hít" vào cạnh mượt mà
-        fab.style.transition = 'left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), top 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
-        fab.style.left = `${finalX}px`;
-        fab.style.top = `${finalY}px`;
+        fab.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
+        fab.style.transform = `translate3d(${this.fabX}px, ${this.fabY}px, 0)`;
         
-        localStorage.setItem(this.fabPositionStorageKey, JSON.stringify({ x: finalX, y: finalY }));
+        localStorage.setItem(this.fabPositionStorageKey, JSON.stringify({ x: this.fabX, y: this.fabY }));
 
-        // Xóa transition sau khi hiệu ứng kết thúc để không ảnh hưởng lần kéo sau
         setTimeout(() => {
             fab.style.transition = '';
         }, 300);
     }
+
+    // == CÁC HÀM CÒN LẠI (GIỮ NGUYÊN) ==
     
     openChat() {
         if (!this.elements.modal) return;
@@ -228,7 +245,8 @@ class AIChatModule {
                 this.saveChatHistory();
                 this.renderChatHistory();
                 optionsMenu.classList.remove('visible');
-                Utils.UIUtils.showMessage('Đã xóa cuộc trò chuyện.', 'success');
+                // Giả sử bạn có Utils.UIUtils.showMessage
+                if(window.Utils) Utils.UIUtils.showMessage('Đã xóa cuộc trò chuyện.', 'success');
             }
         });
 
@@ -236,8 +254,8 @@ class AIChatModule {
             e.preventDefault();
             const conversationText = this.chatHistory.map(msg => `${msg.sender.toUpperCase()}:\n${msg.text}`).join('\n\n');
             navigator.clipboard.writeText(conversationText)
-                .then(() => Utils.UIUtils.showMessage('Đã sao chép cuộc trò chuyện.', 'success'))
-                .catch(() => Utils.UIUtils.showMessage('Không thể sao chép.', 'error'));
+                .then(() => { if(window.Utils) Utils.UIUtils.showMessage('Đã sao chép cuộc trò chuyện.', 'success')})
+                .catch(() => { if(window.Utils) Utils.UIUtils.showMessage('Không thể sao chép.', 'error')});
             optionsMenu.classList.remove('visible');
         });
 
