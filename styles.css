@@ -3449,69 +3449,55 @@ hr {
   60% {transform: translateY(-4px);}
 }
 /* =============================================================================
-   AI CHATBOT STYLES - PHIÊN BẢN TỐI ƯU HÓA
-   Bao gồm FAB, Modal dạng Bottom Sheet, và các hiệu ứng cho di động.
+   AI CHATBOT STYLES - PHIÊN BẢN CỐ ĐỊNH, TỐI ƯU
    ============================================================================= */
 
-/* --- 1. FLOATING ACTION BUTTON (FAB) --- */
+/* --- 1. NÚT BẤM NỔI (FLOATING ACTION BUTTON - FAB) --- */
 
 #ai-chat-fab {
+    /* Vị trí cố định ở góc dưới bên trái */
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 56px;
-    height: 56px;
+    bottom: 95px; /* Khoảng cách từ dưới lên (chừa chỗ cho thanh điều hướng) */
+    left: 20px;   /* Khoảng cách từ cạnh trái */
     z-index: var(--z-nav);
+
+    /* Giao diện */
+    width: 45px;
+    height: 45px;
     background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     color: white;
     border-radius: 50%;
     border: none;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    font-size: 26px;
+    font-size: 20px;
+
+    /* Căn chỉnh & Con trỏ */
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: grab;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: none;
+    cursor: pointer;
+
+    /* Hiệu ứng chuyển động & Tối ưu hóa cảm ứng */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     -webkit-tap-highlight-color: transparent;
-    will-change: transform, box-shadow; /* Báo trình duyệt tối ưu hóa */
-    transition: box-shadow 0.2s ease, opacity 0.2s ease; /* Chỉ transition các thuộc tính an toàn */
 }
 
-/* Lớp phủ trong suốt khi đang kéo để bắt sự kiện */
-#ai-chat-overlay {
-    position: fixed;
-    z-index: 1999;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: transparent;
-    display: none;
-    touch-action: none;
-}
-
-/* Trạng thái khi người dùng nhấn giữ để kéo */
-#ai-chat-fab.is-dragging {
-    cursor: grabbing;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-    animation: pulse-drag 1.2s infinite;
+/* Hiệu ứng khi nhấn vào icon */
+#ai-chat-fab:active {
+    transform: scale(0.9);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Hiệu ứng hover chỉ áp dụng cho máy tính */
 @media (hover: hover) and (pointer: fine) {
     #ai-chat-fab:hover {
-        transform: scale(1.08);
+        transform: scale(1.1);
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
     }
 }
 
-/* Animation cho hiệu ứng "rung" nhẹ khi kéo */
-@keyframes pulse-drag {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-}
 
-/* --- 2. MODAL DẠNG BOTTOM SHEET --- */
+/* --- 2. CỬA SỔ CHAT (MODAL DẠNG BOTTOM SHEET) --- */
 
 /* Lớp phủ nền cho modal */
 .ai-chat-modal-container {
@@ -3519,18 +3505,18 @@ hr {
     inset: 0;
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
-    align-items: flex-end; /* Quan trọng: đẩy modal xuống dưới */
+    align-items: flex-end; /* Quan trọng: đẩy modal xuống dưới cùng */
     justify-content: center;
     z-index: var(--z-modal);
     opacity: 0;
     transition: opacity 0.3s ease;
-    pointer-events: none;
+    pointer-events: none; /* Không cho tương tác khi đang ẩn */
 }
 
 /* Trạng thái khi modal hiển thị */
 .ai-chat-modal-container.visible {
     opacity: 1;
-    pointer-events: auto;
+    pointer-events: auto; /* Cho phép tương tác khi hiện */
 }
 
 /* Nội dung chính của modal (tấm trượt) */
@@ -3544,13 +3530,14 @@ hr {
     flex-direction: column;
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
-    transform: translateY(100%);
-    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transform: translateY(100%); /* Ẩn ở dưới màn hình */
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Hiệu ứng trượt mượt mà */
 }
 
 .ai-chat-modal-container.visible .ai-chat-modal-content {
-    transform: translateY(0);
+    transform: translateY(0); /* Trượt lên khi hiển thị */
 }
+
 
 /* --- 3. CÁC THÀNH PHẦN BÊN TRONG MODAL --- */
 
@@ -3563,9 +3550,6 @@ hr {
     border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
     position: relative;
-    cursor: grab;
-    user-select: none;
-    -webkit-user-select: none;
 }
 
 .ai-chat-modal-header::before {
@@ -3585,77 +3569,19 @@ hr {
     padding-top: 10px;
     font-size: 1.1rem;
     font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
     color: var(--text-primary);
 }
 
-/* Các nút điều khiển trên header */
-.ai-chat-header-actions {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: 10px;
-}
-
-.ai-chat-close-btn, .ai-chat-options-btn {
+.ai-chat-close-btn {
     background: none;
     border: none;
+    font-size: 1.75rem;
     color: var(--text-muted);
     cursor: pointer;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s;
+    padding: 0;
+    line-height: 1;
+    margin-top: 10px;
 }
-
-.ai-chat-close-btn { font-size: 1.75rem; }
-.ai-chat-options-btn { font-size: 1.2rem; }
-
-.ai-chat-close-btn:hover, .ai-chat-options-btn:hover {
-    background-color: var(--bg-tertiary);
-}
-
-/* Menu tùy chọn */
-.ai-chat-options-menu {
-    display: none;
-    position: absolute;
-    top: calc(100% + 5px);
-    right: 0;
-    background-color: var(--bg-primary);
-    border-radius: 8px;
-    box-shadow: var(--shadow-lg);
-    border: 1px solid var(--border-color);
-    width: 240px;
-    z-index: 10;
-    overflow: hidden;
-    animation: fadeIn 0.15s ease-out;
-}
-
-.ai-chat-options-menu.visible { display: block; }
-
-.ai-chat-options-menu a {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    color: var(--text-primary);
-    text-decoration: none;
-    font-size: 0.9rem;
-    transition: background-color 0.2s;
-}
-
-.ai-chat-options-menu a:hover { background-color: var(--bg-tertiary); }
-.ai-chat-options-menu a i { width: 20px; text-align: center; color: var(--text-secondary); }
-.ai-chat-options-menu a.danger-action { color: var(--danger-color); }
-.ai-chat-options-menu a.danger-action i { color: var(--danger-color); }
-.ai-chat-options-menu a.danger-action:hover { background-color: var(--danger-light); }
-
 
 /* Body (khung chat) */
 .ai-chat-modal-body {
@@ -3695,21 +3621,19 @@ hr {
     align-self: flex-start;
     display: flex;
     gap: 5px;
+    padding: 12px 15px;
     background-color: var(--bg-tertiary);
 }
 
 .ai-chat-message.loading span {
-    display: inline-block;
     width: 8px;
     height: 8px;
     background-color: var(--text-muted);
     border-radius: 50%;
     animation: bounce-dot 1.4s infinite ease-in-out both;
 }
-
 .ai-chat-message.loading span:nth-child(1) { animation-delay: -0.32s; }
 .ai-chat-message.loading span:nth-child(2) { animation-delay: -0.16s; }
-
 @keyframes bounce-dot {
   0%, 80%, 100% { transform: scale(0); }
   40% { transform: scale(1.0); }
@@ -3718,18 +3642,11 @@ hr {
 /* Footer (khung nhập liệu) */
 .ai-chat-modal-footer {
     display: flex;
-    flex-direction: column;
     gap: 0.5rem;
     padding: 0.75rem 1rem;
     border-top: 1px solid var(--border-color);
     background-color: var(--bg-primary);
     padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
-}
-
-.ai-chat-input-group {
-    display: flex;
-    gap: 0.5rem;
-    width: 100%;
 }
 
 #ai-chat-input {
@@ -3761,16 +3678,16 @@ hr {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.2s;
-}
-
-#ai-chat-send-btn:hover {
-    background-color: var(--primary-dark);
+    transition: background-color 0.2s, transform 0.1s ease;
 }
 
 #ai-chat-send-btn:disabled {
     background-color: var(--text-muted);
     cursor: not-allowed;
+}
+
+#ai-chat-send-btn:active {
+    transform: scale(0.9);
 }
 /* =================================================== */
 /* == STYLES FOR IMPROVED CATEGORY SPEND LIST ITEM === */
