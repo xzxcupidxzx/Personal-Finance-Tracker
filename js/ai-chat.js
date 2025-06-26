@@ -306,9 +306,36 @@ class AIChatModule {
         const loadingMessage = this.addMessage('', 'loading', false);
         try {
             const { incomeCategories, expenseCategories, accounts } = this.app.data;
-            const parsedData = await this.callLLMAPI(userInput,
-                incomeCategories.map(c => c.value),
-                expenseCategories.map(c => c.value),
-                accounts.map(a => a.value)
-            );
+            // Đây là nơi bạn sẽ gọi đến API của mô hình ngôn ngữ lớn (LLM)
+            // Ví dụ: const parsedData = await this.callLLMAPI(userInput, ...);
+            // Vì không có API thật, tôi sẽ giả lập một phản hồi sau 1 giây.
+            
+            setTimeout(() => {
+                loadingMessage.remove(); // Xóa tin nhắn loading
+                
+                // Giả lập phản hồi từ AI
+                const aiResponse = `Đã hiểu:
+* **Loại:** Chi tiêu
+* **Số tiền:** 50,000 ₫
+* **Hạng mục:** Cà phê (Gợi ý)
+* **Tài khoản:** Tiền mặt (Gợi ý)
+* **Mô tả:** Cà phê`;
+                
+                this.addMessage(aiResponse, 'bot');
+
+                // Sau khi có phản hồi, bật lại input
+                this.elements.input.disabled = false;
+                this.elements.sendBtn.disabled = false;
+                this.elements.input.focus();
+                
+            }, 1000);
+
+        } catch (error) {
+            console.error('Lỗi khi gửi tin nhắn đến AI:', error);
             loadingMessage.remove();
+            this.addMessage("Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại.", 'bot');
+            this.elements.input.disabled = false;
+            this.elements.sendBtn.disabled = false;
+        }
+    }
+}
