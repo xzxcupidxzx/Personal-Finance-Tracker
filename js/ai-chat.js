@@ -137,21 +137,25 @@ class AIChatModule {
         this.animationFrameId = requestAnimationFrame(() => this.updateFabPosition());
     }
 
-    fabDragMove(e) {
-        if (!this.isDragging) return;
+	fabDragMove(e) {
+		if (!this.isDragging) return;
 
-        // Cập nhật vị trí mới của nút
-        const newX = e.clientX - this.dragStartX;
-        const newY = e.clientY - this.dragStartY;
-        
-        // Chỉ xác nhận là "đã kéo" nếu di chuyển vượt ngưỡng
-        if (!this.wasDragged && (Math.abs(newX - this.fabX) > this.dragThreshold || Math.abs(newY - this.fabY) > this.dragThreshold)) {
-            this.wasDragged = true;
-        }
-        
-        this.fabX = newX;
-        this.fabY = newY;
-    }
+		// Cập nhật vị trí mới của nút
+		const newX = e.clientX - this.dragStartX;
+		const newY = e.clientY - this.dragStartY;
+		
+		// Chỉ xác nhận là "đã kéo" nếu di chuyển vượt ngưỡng
+		if (!this.wasDragged && (Math.abs(newX - this.fabX) > this.dragThreshold || Math.abs(newY - this.fabY) > this.dragThreshold)) {
+			this.wasDragged = true;
+
+			// === THÊM MỚI: VÔ HIỆU HÓA NỀN KHI BẮT ĐẦU KÉO ===
+			document.body.classList.add('is-dragging-chat');
+			// ===============================================
+		}
+		
+		this.fabX = newX;
+		this.fabY = newY;
+	}
     
     updateFabPosition() {
         if (!this.isDragging) return;
@@ -162,25 +166,33 @@ class AIChatModule {
         this.animationFrameId = requestAnimationFrame(() => this.updateFabPosition());
     }
 
-    fabDragEnd(e) {
-        if (!this.isDragging) return;
+	fabDragEnd(e) {
+		// === THÊM MỚI: KÍCH HOẠT LẠI NỀN KHI KẾT THÚC KÉO ===
+		// Luôn gỡ bỏ lớp CSS này khi người dùng nhấc ngón tay/chuột ra
+		document.body.classList.remove('is-dragging-chat');
+		// ===============================================
 
-        this.isDragging = false;
-        cancelAnimationFrame(this.animationFrameId);
-        this.animationFrameId = null;
+		if (!this.isDragging) return;
 
-        const fab = this.elements.fab;
-        fab.releasePointerCapture(e.pointerId); // Giải phóng con trỏ
-        fab.style.cursor = 'grab';
+		this.isDragging = false;
+		cancelAnimationFrame(this.animationFrameId);
+		this.animationFrameId = null;
 
-        if (this.wasDragged) {
-            this.snapFabToEdge();
-        } else {
-            // Nếu không kéo, đó là một cú nhấn -> mở chat
-            this.openChat();
-        }
-    }
-    
+		const fab = this.elements.fab;
+		try {
+			fab.releasePointerCapture(e.pointerId); // Giải phóng con trỏ
+		} catch(err) {
+			// Bỏ qua lỗi nếu con trỏ đã được giải phóng tự động
+		}
+		fab.style.cursor = 'grab';
+
+		if (this.wasDragged) {
+			this.snapFabToEdge();
+		} else {
+			// Nếu không kéo, đó là một cú nhấn -> mở chat
+			this.openChat();
+		}
+	}
     snapFabToEdge() {
         const fab = this.elements.fab;
         const fabSize = fab.offsetWidth;
