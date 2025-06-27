@@ -150,24 +150,26 @@ class AIChatModule {
         }
     }
 
-    openChat() {
-        if (!this.elements.modal) return;
-        this.elements.modal.style.display = 'flex';
-        setTimeout(() => {
-            this.elements.modal.classList.add('visible');
-            this.elements.input.focus();
-        }, 10);
-    }
+	openChat() {
+		if (!this.elements.modal) return;
+		this.elements.modal.style.display = 'flex'; // Đặt là flex khi mở
+		this.elements.modal.setAttribute('aria-hidden', 'false');
+		setTimeout(() => {
+			this.elements.modal.classList.add('visible');
+			this.elements.input.focus();
+		}, 10);
+	}
 
-    closeChat() {
-        if (!this.elements.modal) return;
-        // Ẩn menu tùy chọn khi đóng modal chat
-        this.elements.optionsMenu.classList.remove('visible');
-        this.elements.modal.classList.remove('visible');
-        setTimeout(() => {
-            this.elements.modal.style.display = 'none';
-        }, 400); // Match CSS transition time
-    }
+	closeChat() {
+		if (!this.elements.modal) return;
+		this.elements.optionsMenu.classList.remove('visible');
+		this.elements.modal.classList.remove('visible');
+		this.elements.modal.setAttribute('aria-hidden', 'true');
+		// Không cần đặt lại transform nữa
+		setTimeout(() => {
+			this.elements.modal.style.display = 'none'; // Đặt lại là none khi đóng
+		}, 400);
+	}
 
     // THAY ĐỔI: Thêm tham số `shouldSave`
     addMessage(text, sender, shouldSave = true) {
