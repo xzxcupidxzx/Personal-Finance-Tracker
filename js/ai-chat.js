@@ -50,6 +50,7 @@ class AIChatModule {
         // --- Thêm các hàm khởi tạo mới ---
         this.initSwipeToClose();
         this.initViewportHandler();
+		
         // ---------------------------------
 
         console.log('🤖 AI Chat Module Initialized with History, Options & Gestures');
@@ -359,27 +360,26 @@ class AIChatModule {
     }
 
     // --- HÀM MỚI ĐỂ XỬ LÝ BÀN PHÍM ẢO ---
-    initViewportHandler() {
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', this.handleViewportResize.bind(this));
-        }
-    }
+	initViewportHandler() {
+		// Chỉ chạy trên các trình duyệt hỗ trợ visualViewport (hầu hết mobile hiện đại)
+		if (window.visualViewport) {
+			window.visualViewport.addEventListener('resize', this.handleViewportResize.bind(this));
+		}
+	}
     
-    handleViewportResize() {
-        const viewport = window.visualViewport;
-        // Khi chiều cao của visualViewport nhỏ hơn chiều cao cửa sổ, có nghĩa là bàn phím đang bật
-        const keyboardVisible = viewport.height < window.innerHeight - 50; // 50px là ngưỡng an toàn
-        
-        if (keyboardVisible) {
-            // Điều chỉnh vị trí của modal để nó không bị bàn phím che
-            const offset = window.innerHeight - viewport.height;
-            this.elements.modalContent.style.transform = `translateY(-${offset}px)`;
-            this.elements.history.scrollTop = this.elements.history.scrollHeight;
-        } else {
-            // Khi bàn phím tắt, trả modal về vị trí cũ
-            this.elements.modalContent.style.transform = 'translateY(0)';
-        }
-    }
+	handleViewportResize() {
+		if (!this.elements.modalContent) return;
+
+		const viewport = window.visualViewport;
+		
+		// Cách tiếp cận mới: Điều chỉnh trực tiếp bottom và height của modal
+		// để nó luôn nằm gọn trong khu vực nhìn thấy được.
+		const newBottom = window.innerHeight - viewport.offsetTop - viewport.height;
+		this.elements.modalContent.style.height = `${viewport.height}px`;
+		
+		// Luôn cuộn xuống tin nhắn cuối cùng khi bàn phím thay đổi kích thước
+		this.elements.history.scrollTop = this.elements.history.scrollHeight;
+	}
     
     // --- Cập nhật hàm openChat và closeChat ---
     openChat() {

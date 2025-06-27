@@ -3553,21 +3553,24 @@ hr {
     background: var(--bg-primary);
     width: 100%;
     
-    /* Cải thiện: Thích ứng tốt hơn trên các màn hình khác nhau */
-    height: 90vh;
-    max-height: 700px; /* Chiều cao tối đa trên màn hình lớn */
+    /* THAY ĐỔI: Chuyển sang height: 100% để linh hoạt hơn */
+    height: 100%; 
     
     box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.15);
     display: flex;
     flex-direction: column;
     
-    /* Bo góc ở trên để tạo cảm giác trượt lên */
+    /* VẪN GIỮ: Bo góc ở trên để tạo cảm giác trượt lên */
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
     
-    /* Hiệu ứng trượt từ dưới lên mượt mà hơn */
+    /* VẪN GIỮ: Hiệu ứng trượt từ dưới lên */
     transform: translateY(100%);
     transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+    /* THÊM MỚI: Giới hạn chiều cao và chiều rộng trên màn hình lớn */
+    max-width: 100%;
+    max-height: 90vh; /* Giới hạn chiều cao tối đa ban đầu */
 }
 
 .ai-chat-modal-container.visible .ai-chat-modal-content {
@@ -3635,6 +3638,8 @@ hr {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    /* THÊM MỚI: Giúp cuộn mượt hơn trên iOS */
+    -webkit-overflow-scrolling: touch; 
 }
 
 /* Định dạng từng tin nhắn */
