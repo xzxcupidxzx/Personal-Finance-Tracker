@@ -368,16 +368,17 @@ class AIChatModule {
 	}
     
 	handleViewportResize() {
-		if (!this.elements.modalContent) return;
+		if (!this.elements.modalBody || !this.elements.modalFooter) return;
 
 		const viewport = window.visualViewport;
+		const footerHeight = this.elements.modalFooter.offsetHeight;
 		
-		// Cách tiếp cận mới: Điều chỉnh trực tiếp bottom và height của modal
-		// để nó luôn nằm gọn trong khu vực nhìn thấy được.
-		const newBottom = window.innerHeight - viewport.offsetTop - viewport.height;
-		this.elements.modalContent.style.height = `${viewport.height}px`;
-		
-		// Luôn cuộn xuống tin nhắn cuối cùng khi bàn phím thay đổi kích thước
+		// Tính toán padding-bottom cho body để vừa với chiều cao của footer
+		// và phần không gian bị bàn phím chiếm (nếu có)
+		const keyboardOverlap = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+		this.elements.modalBody.style.paddingBottom = `${footerHeight + keyboardOverlap}px`;
+
+		// Luôn cuộn xuống tin nhắn cuối cùng
 		this.elements.history.scrollTop = this.elements.history.scrollHeight;
 	}
     

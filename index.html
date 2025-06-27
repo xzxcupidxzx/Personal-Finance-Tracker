@@ -881,44 +881,29 @@
 		<i id="ai-chat-fab-icon" class="fa-solid fa-wand-magic-sparkles"></i>
 	</button>
 	
-	<div id="ai-chat-modal" 
-		 class="ai-chat-modal-container" 
-		 role="dialog" 
-		 aria-modal="true" 
-		 aria-labelledby="ai-chat-title" 
-		 aria-hidden="true">
+	<div id="ai-chat-modal" class="ai-chat-modal-container">
 
 		<div class="ai-chat-modal-content">
+
 			<div class="ai-chat-modal-header">
 				<h3 id="ai-chat-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Ghi Chú Nhanh với AI</h3>
-				
 				<div class="ai-chat-header-actions">
-					<button id="ai-chat-options-btn" class="ai-chat-options-btn" title="Tùy chọn" aria-haspopup="true" aria-expanded="false">
+					<button id="ai-chat-options-btn" class="ai-chat-options-btn" title="Tùy chọn">
 						<i class="fa-solid fa-ellipsis-vertical"></i>
 					</button>
-					
 					<button id="ai-chat-close-btn" class="ai-chat-close-btn" aria-label="Đóng chat">&times;</button>
-					
-					<div id="ai-chat-options-menu" class="ai-chat-options-menu" role="menu">
-						<a href="#" id="ai-chat-copy-log" role="menuitem">
-							<i class="fa-solid fa-copy"></i> Sao chép cuộc trò chuyện
-						</a>
-						<a href="#" id="ai-chat-delete-log" class="danger-action" role="menuitem">
-							<i class="fa-solid fa-trash-can"></i> Xóa cuộc trò chuyện
-						</a>
-					</div>
+					<div id="ai-chat-options-menu" class="ai-chat-options-menu">
+						</div>
 				</div>
 			</div>
-			
+
 			<div class="ai-chat-modal-body" id="ai-chat-history">
 				<div class="ai-chat-message bot">
 					Xin chào! Bạn đã chi tiêu những gì hôm nay? Hãy cho tôi biết, ví dụ: "cà phê 50k bằng tiền mặt"
 				</div>
 			</div>
+
 			<div class="ai-chat-modal-footer">
-				<div class="ai-chat-footer-info">
-					<span id="ai-chat-token-counter">Tokens: 0</span>
-				</div>
 				<div class="ai-chat-input-group">
 					<input type="text" id="ai-chat-input" placeholder="Nhập ghi chú giao dịch...">
 					<button id="ai-chat-send-btn">
@@ -926,6 +911,7 @@
 					</button>
 				</div>
 			</div>
+
 		</div>
 	</div>
 	<div id="ai-chat-overlay"></div>
