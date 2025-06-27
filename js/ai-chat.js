@@ -4,26 +4,31 @@ class AIChatModule {
         this.elements = {
             fab: document.getElementById('ai-chat-fab'),
             modal: document.getElementById('ai-chat-modal'),
+            // Thêm modal content để xử lý cử chỉ vuốt
+            modalContent: document.querySelector('.ai-chat-modal-content'), 
+            modalHeader: document.querySelector('.ai-chat-modal-header'),
             closeBtn: document.getElementById('ai-chat-close-btn'),
             history: document.getElementById('ai-chat-history'),
             input: document.getElementById('ai-chat-input'),
             sendBtn: document.getElementById('ai-chat-send-btn'),
             tokenCounter: document.getElementById('ai-chat-token-counter'),
-            // THÊM MỚI: Các element cho menu tùy chọn
             optionsBtn: document.getElementById('ai-chat-options-btn'),
             optionsMenu: document.getElementById('ai-chat-options-menu'),
             deleteLogBtn: document.getElementById('ai-chat-delete-log'),
             copyLogBtn: document.getElementById('ai-chat-copy-log')
         };
-        // THAY ĐỔI: Khởi tạo mảng chatHistory rỗng ban đầu
         this.chatHistory = [];
-        this.storageKey = 'ai_chat_history'; // Key để lưu vào localStorage
+        this.storageKey = 'ai_chat_history';
+        
+        // --- Thêm các biến trạng thái cho cử chỉ vuốt ---
+        this.isDragging = false;
+        this.startY = 0;
+        this.currentTranslateY = 0;
     }
 
     init() {
         if (!this.elements.fab) return;
         
-        // Tải lịch sử chat đã lưu
         this.loadChatHistory();
         
         this.elements.fab.addEventListener('click', () => this.openChat());
@@ -36,15 +41,18 @@ class AIChatModule {
             }
         });
 
-        // Đóng modal khi click ra ngoài
         this.elements.modal.addEventListener('click', (e) => {
             if (e.target === this.elements.modal) this.closeChat();
         });
 
-        // THÊM MỚI: Xử lý sự kiện cho menu tùy chọn
         this.initOptionsMenu();
+        
+        // --- Thêm các hàm khởi tạo mới ---
+        this.initSwipeToClose();
+        this.initViewportHandler();
+        // ---------------------------------
 
-        console.log('🤖 AI Chat Module Initialized with History & Options');
+        console.log('🤖 AI Chat Module Initialized with History, Options & Gestures');
     }
 
     // THÊM MỚI: Khởi tạo sự kiện cho menu tùy chọn
@@ -275,6 +283,7 @@ class AIChatModule {
         }
     }
 
+
     async callLLMAPI(userInput, incomeCategories, expenseCategories, accounts) {
         const PROXY_URL = 'https://deepseek.hoangthaison2812.workers.dev';
         const response = await fetch(PROXY_URL, {
@@ -302,5 +311,98 @@ class AIChatModule {
             console.error("Lỗi parse JSON từ worker:", responseText);
             throw new Error("Không đọc được dữ liệu JSON trả về từ Worker.");
         }
+    }
+    // --- CÁC HÀM MỚI CHO TÍNH NĂNG VUỐT ĐỂ ĐÓNG ---
+    initSwipeToClose() {
+        if (!this.elements.modalHeader || !this.elements.modalContent) return;
+        
+        this.elements.modalHeader.addEventListener('pointerdown', (e) => this.dragStart(e));
+        document.addEventListener('pointermove', (e) => this.dragMove(e));
+        document.addEventListener('pointerup', (e) => this.dragEnd(e));
+    }
+
+    dragStart(e) {
+        // Chỉ bắt đầu kéo nếu người dùng chạm vào header
+        if (this.elements.modalHeader.contains(e.target)) {
+            this.isDragging = true;
+            this.startY = e.clientY;
+            this.elements.modalContent.style.transition = 'none'; // Tắt transition khi đang kéo
+            this.elements.modalHeader.style.cursor = 'grabbing';
+        }
+    }
+
+    dragMove(e) {
+        if (!this.isDragging) return;
+        
+        const deltaY = e.clientY - this.startY;
+        // Chỉ cho phép kéo xuống
+        this.currentTranslateY = Math.max(0, deltaY);
+        
+        this.elements.modalContent.style.transform = `translateY(${this.currentTranslateY}px)`;
+    }
+
+    dragEnd(e) {
+        if (!this.isDragging) return;
+        
+        this.isDragging = false;
+        this.elements.modalContent.style.transition = ''; // Bật lại transition
+        this.elements.modalHeader.style.cursor = 'grab';
+
+        // Nếu người dùng kéo xuống hơn 100px thì đóng modal
+        if (this.currentTranslateY > 100) {
+            this.closeChat();
+        } else {
+            // Ngược lại, trả modal về vị trí cũ
+            this.elements.modalContent.style.transform = 'translateY(0)';
+        }
+        this.currentTranslateY = 0;
+    }
+
+    // --- HÀM MỚI ĐỂ XỬ LÝ BÀN PHÍM ẢO ---
+    initViewportHandler() {
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', this.handleViewportResize.bind(this));
+        }
+    }
+    
+    handleViewportResize() {
+        const viewport = window.visualViewport;
+        // Khi chiều cao của visualViewport nhỏ hơn chiều cao cửa sổ, có nghĩa là bàn phím đang bật
+        const keyboardVisible = viewport.height < window.innerHeight - 50; // 50px là ngưỡng an toàn
+        
+        if (keyboardVisible) {
+            // Điều chỉnh vị trí của modal để nó không bị bàn phím che
+            const offset = window.innerHeight - viewport.height;
+            this.elements.modalContent.style.transform = `translateY(-${offset}px)`;
+            this.elements.history.scrollTop = this.elements.history.scrollHeight;
+        } else {
+            // Khi bàn phím tắt, trả modal về vị trí cũ
+            this.elements.modalContent.style.transform = 'translateY(0)';
+        }
+    }
+    
+    // --- Cập nhật hàm openChat và closeChat ---
+    openChat() {
+        if (!this.elements.modal) return;
+        this.elements.modal.style.display = 'flex';
+        // Thêm `aria-hidden` khi mở
+        this.elements.modal.setAttribute('aria-hidden', 'false'); 
+        setTimeout(() => {
+            this.elements.modal.classList.add('visible');
+            this.elements.input.focus();
+        }, 10);
+    }
+
+    closeChat() {
+        if (!this.elements.modal) return;
+        this.elements.optionsMenu.classList.remove('visible');
+        this.elements.modal.classList.remove('visible');
+        // Thêm `aria-hidden` khi đóng
+        this.elements.modal.setAttribute('aria-hidden', 'true'); 
+        // Trả transform về mặc định
+        this.elements.modalContent.style.transform = '';
+        setTimeout(() => {
+            this.elements.modal.style.display = 'none';
+        }, 400); 
     }
 }

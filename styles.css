@@ -3523,7 +3523,31 @@ hr {
     opacity: 1;
     pointer-events: auto; /* Cho phép tương tác khi hiện */
 }
+@media (min-width: 768px) {
+    .ai-chat-modal-container {
+        /* Chuyển từ căn dưới lên căn giữa màn hình */
+        align-items: center;
+    }
 
+    .ai-chat-modal-content {
+        /* Giới hạn chiều rộng và chiều cao tối đa trên desktop */
+        max-width: 500px;
+        height: 80vh; /* 80% chiều cao màn hình */
+        max-height: 700px;
+        
+        /* Bo góc ở tất cả các cạnh và thêm hiệu ứng đổ bóng */
+        border-radius: 16px; 
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+
+        /* Hiệu ứng xuất hiện mượt hơn trên desktop */
+        transform: translateY(-20px) scale(0.95);
+        transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+    }
+
+    .ai-chat-modal-container.visible .ai-chat-modal-content {
+        transform: translateY(0) scale(1);
+    }
+}
 /* Nội dung chính của modal (tấm trượt) */
 .ai-chat-modal-content {
     background: var(--bg-primary);
@@ -3732,6 +3756,64 @@ hr {
 #ai-chat-send-btn:disabled {
     background-color: var(--text-muted);
     cursor: not-allowed;
+}
+
+/* =============================================================================
+   6.5. AI CHAT - Tối ưu cho màn hình siêu nhỏ (max-width: 480px)
+   ============================================================================= */
+
+@media (max-width: 480px) {
+    /* --- AI Chat FAB (Nút bấm tròn) --- */
+    #ai-chat-fab {
+        width: 48px;  /* Giảm kích thước một chút */
+        height: 48px;
+        font-size: 20px;
+        bottom: 85px; /* Đặt vị trí phù hợp hơn, phía trên thanh điều hướng */
+        right: 15px;
+    }
+
+    /* --- AI Chat Modal (Khung chat) --- */
+    .ai-chat-modal-content {
+        /* Cho phép modal chiếm gần hết chiều cao màn hình */
+        height: 92vh; 
+        max-height: 92vh;
+        /* Giảm bo góc một chút cho phù hợp */
+        border-top-left-radius: 16px;
+        border-top-right-radius: 16px;
+    }
+
+    /* --- Header của Modal --- */
+    .ai-chat-modal-header {
+        padding: 0.75rem 1rem; /* Giảm padding */
+    }
+    .ai-chat-modal-header h3 {
+        font-size: 1rem; /* Giảm cỡ chữ tiêu đề */
+    }
+
+    /* --- Khu vực nhập liệu --- */
+    .ai-chat-modal-footer {
+        padding: 0.5rem; /* Giảm padding footer */
+        padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)); /* Giữ khoảng trống an toàn */
+    }
+
+    .ai-chat-input-group {
+        gap: 0.5rem; /* Giảm khoảng cách giữa ô nhập và nút gửi */
+    }
+
+    #ai-chat-input {
+        padding: 0.6rem 1rem; /* Giảm padding cho ô nhập */
+    }
+
+    #ai-chat-send-btn {
+        width: 40px; /* Thu nhỏ nút gửi */
+        height: 40px;
+    }
+
+    /* --- Lịch sử chat --- */
+    .ai-chat-message {
+        padding: 0.6rem 0.85rem; /* Giảm padding tin nhắn */
+        font-size: 0.9rem; /* Giảm cỡ chữ tin nhắn */
+    }
 }
 /* =================================================== */
 /* == STYLES FOR IMPROVED CATEGORY SPEND LIST ITEM === */
