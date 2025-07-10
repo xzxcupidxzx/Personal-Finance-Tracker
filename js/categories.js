@@ -213,10 +213,11 @@ class CategoriesModule {
     createAccountListItem(account) {
         const li = document.createElement('li');
         li.className = 'account-item'; 
+		const currentAccount = this.app.data.accounts.find(a => a.value === account.value) || account;
 
         const balance = this.app.getAccountBalance(account.value);
         const usageCount = this.app.data.transactions.filter(tx => tx.account === account.value).length;
-        const iconInfo = Utils.UIUtils.getCategoryIcon(account);
+        const iconInfo = Utils.UIUtils.getCategoryIcon(currentAccount); 
         const iconHtml = iconInfo.type === 'img' ? `<img src="${iconInfo.value}" class="custom-category-icon">` : `<i class="${iconInfo.value || 'fa-solid fa-landmark'}"></i>`;
         const isHidden = localStorage.getItem(`balance_hidden_${account.value}`) === 'true';
         const escapedValue = this.escapeHtml(account.value);
