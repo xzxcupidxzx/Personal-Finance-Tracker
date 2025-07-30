@@ -4384,120 +4384,57 @@ hr {
     flex-grow: 1; /* Cho phép phần mô tả chiếm hết không gian còn lại */
 }
 
-/* ========================================================== */
-/* == BỘ LỌC TRONG MODAL (ĐÃ TỐI ƯU VÀ SẮP XẾP LẠI)      == */
-/* ========================================================== */
-
-/* --- 1. KIỂU DÁNG CƠ BẢN (CHO MÀN HÌNH LỚN & VỪA) --- */
-
-/* Kích thước cho modal lớn */
-.modal-content.large {
-    max-width: 800px;
-    height: 85vh;
-    max-height: 800px;
-}
-
-/* Container chính của cả thanh bộ lọc */
-.modal-filter-controls {
-    display: flex;
-    flex-wrap: wrap; /* Mặc định cho phép xuống dòng trên màn hình lớn */
-    align-items: center; /* Luôn căn giữa các mục theo chiều dọc */
-    gap: 0.75rem; /* Khoảng cách giữa các mục */
-
-    /* Thêm style cho nền và đường viền */
-    padding: 0.75rem 1rem;
-    margin-bottom: 1rem;
-    background-color: var(--bg-secondary);
-    border-top: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
-}
-
-/* Kiểu dáng cho ô select (chọn tháng/năm...) */
-.modal-filter-controls .filter-select {
-    flex: 1 1 150px; /* Co giãn, kích thước cơ bản 150px */
-}
-
-/* Container chứa 2 ô chọn ngày */
-.modal-filter-controls .custom-date-picker-container {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex: 2 1 300px; /* Co giãn, ưu tiên chiếm nhiều không gian hơn */
-}
-
-/* Mỗi nhóm (label và input ngày) */
-.modal-filter-controls .date-input-group {
-    flex: 1; /* Chia sẻ không gian bằng nhau */
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-/* Ô nhập ngày */
-.modal-filter-controls .filter-date {
-    width: 100%; /* Luôn chiếm đầy đủ chiều rộng của container cha */
-    height: 40px; /* Đặt chiều cao chung */
-    padding: 0 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    font-size: 16px;
-}
-
-/* Nút áp dụng */
-.modal-filter-controls .filter-apply-button {
-    flex-shrink: 0; /* Không bị co lại */
-    height: 40px; /* Đồng bộ chiều cao */
-}
-
-
 /* --- 2. TỐI ƯU CHO MÀN HÌNH NHỎ (<= 480px) --- */
 
 @media (max-width: 480px) {
     /* Ghi đè các style cần thiết cho giao diện nhỏ gọn */
     .modal-filter-controls {
-        flex-wrap: nowrap; /* ✨ QUAN TRỌNG: Buộc tất cả nằm trên 1 hàng */
+        flex-wrap: nowrap;
         padding: 8px;
         gap: 8px;
     }
 
     .modal-filter-controls .custom-date-picker-container {
-        flex: 1 1 auto; /* Cho phép co giãn và chiếm không gian trống */
-        min-width: 0;   /* Cho phép co lại nhỏ hơn kích thước nội dung */
+        flex: 1 1 auto;
+        min-width: 0;
         gap: 8px;
     }
 
-    /* Ẩn label "Từ:", "Đến:" */
     .modal-filter-controls .date-input-group label {
         display: none;
     }
     
     .modal-filter-controls .date-input-group {
-        position: relative; /* Cần thiết để định vị icon lịch */
+        position: relative;
         gap: 0;
     }
 
     /* Áp dụng mẹo biến ô input thành dạng icon-only */
     .modal-filter-controls .filter-date {
-        color: transparent; /* Ẩn chữ bên trong */
+        /* ✨ FIX CHO IPHONE: Reset giao diện gốc của trình duyệt */
+        -webkit-appearance: none;
+        appearance: none;
+
+        /* Các thuộc tính cũ giữ nguyên */
+        height: 40px;
+        color: transparent;
+        background-color: var(--bg-primary);
         padding: 0;
         text-align: center;
+        font-size: 16px;
         cursor: pointer;
-        /* ✨ Cải tiến: Sử dụng background-image để hiển thị icon, đáng tin cậy hơn */
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="%2364748b" viewBox="0 0 16 16"><path d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4V.5zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2zM9.5 7h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3 0h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3 0h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm9 3h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5zm-3 0h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5zm-3 0h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5zm-3 0h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5z"/></svg>');
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+
+        /* Kỹ thuật dùng background-image để hiển thị icon */
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="%2364748b" viewBox="0 0 16 16"><path d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4V.5zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2zM9.5 7h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3 0h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3 0h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm9 3h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5zm-3 0h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5zm-3 0h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5-.5zm-3 0h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5-.5z"/></svg>');
         background-repeat: no-repeat;
         background-position: center;
     }
-
-    /* Ẩn icon lịch mặc định của trình duyệt nhưng vẫn cho phép bấm */
-    .modal-filter-controls .filter-date::-webkit-calendar-picker-indicator {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-        opacity: 0;
-        cursor: pointer;
+    
+    /* Đồng bộ chiều cao nút "Áp dụng" */
+    .modal-filter-controls .filter-apply-button {
+        height: 40px;
     }
 }
+
