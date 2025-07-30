@@ -168,13 +168,15 @@ class TransactionsModule {
 
     populateCategories() {
         const selectedType = document.querySelector('input[name="type"]:checked')?.value;
-        const categories = selectedType === 'Thu' ? this.app.data.incomeCategories : this.app.data.expenseCategories;
+        const categories = (selectedType === 'Thu' ? this.app.data.incomeCategories : this.app.data.expenseCategories)
+                           .filter(cat => !cat.system); // <-- THAY ĐỔI: Lọc bỏ danh mục hệ thống
         this.populateSelect(this.elements.categorySelect, categories, 'Chọn hạng mục...');
     }
 
     populateAccounts() {
-        this.populateSelect(this.elements.accountFrom, this.app.data.accounts, 'Chọn tài khoản...');
-        this.populateSelect(this.elements.accountTo, this.app.data.accounts, 'Chọn tài khoản nhận...');
+        const userVisibleAccounts = this.app.data.accounts.filter(acc => !acc.system); // <-- THAY ĐỔI: Lọc bỏ tài khoản hệ thống
+        this.populateSelect(this.elements.accountFrom, userVisibleAccounts, 'Chọn tài khoản...');
+        this.populateSelect(this.elements.accountTo, userVisibleAccounts, 'Chọn tài khoản nhận...');
     }
     
     populateDescriptionSuggestions() {

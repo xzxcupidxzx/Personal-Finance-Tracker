@@ -638,8 +638,13 @@ class HistoryModule {
                 console.error('Invalid accounts data');
                 return;
             }
+            
+            // ==========================================================
+            // === FIX: Filter out system accounts before rendering ===
+            // ==========================================================
+            const userVisibleAccounts = this.app.data.accounts.filter(acc => !acc.system);
 
-            this.app.data.accounts.forEach(account => {
+            userVisibleAccounts.forEach(account => {
                 if (!account || !account.value) {
                     console.warn('Invalid account object:', account);
                     return;
@@ -663,6 +668,7 @@ class HistoryModule {
             `;
         }
     }
+
 
     /**
      * Get account balances with caching for performance
@@ -755,7 +761,11 @@ class HistoryModule {
             this.eventListeners = this.eventListeners.filter(listener => !listener.element.closest('#reconciliation-table')); 
 
 
-            const accounts = this.app.data.accounts || []; 
+            // ==========================================================
+            // === THAY ĐỔI QUAN TRỌNG: Lọc bỏ tài khoản hệ thống ===
+            // ==========================================================
+            const accounts = this.app.data.accounts.filter(acc => !acc.system) || []; 
+            // ==========================================================
 
             accounts.forEach(account => {
                 const th = document.createElement('th');
