@@ -876,7 +876,41 @@
 			</div>
 		</div>
 	</div>
+	<div id="account-history-modal" class="modal" style="display: none;">
+		<div class="modal-content large">
+			<div class="modal-header">
+				<h3 id="modal-account-title">Lịch sử giao dịch</h3>
+				<button class="modal-close" id="close-account-modal">&times;</button>
+			</div>
+			<div class="modal-body">
+				<div id="modal-account-summary" class="account-history-summary">
+					</div>
 
+				<div class="modal-filter-controls">
+					<select id="modal-account-filter-period" class="filter-select">
+						<option value="all" selected>Tất cả thời gian</option>
+						<option value="this_month">Tháng này</option>
+						<option value="last_month">Tháng trước</option>
+						<option value="this_year">Năm nay</option>
+						<option value="custom">Tùy chỉnh...</option>
+					</select>
+					<div class="custom-date-picker-container" id="modal-account-custom-dates" style="display: none;">
+						<div class="date-input-group">
+							<label for="modal-account-filter-start-date">Từ:</label>
+							<input type="date" id="modal-account-filter-start-date" class="filter-date">
+						</div>
+						<div class="date-input-group">
+							<label for="modal-account-filter-end-date">Đến:</label>
+							<input type="date" id="modal-account-filter-end-date" class="filter-date">
+						</div>
+						<button id="modal-account-filter-apply-button" class="filter-apply-button">Lọc</button>
+					</div>
+				</div>
+				<div id="modal-account-transactions" class="day-transactions-list" style="margin-top: 1rem;">
+					</div>
+			</div>
+		</div>
+	</div>
 	<button id="ai-chat-fab" title="Ghi chú nhanh với AI">
 		<i id="ai-chat-fab-icon" class="fa-solid fa-wand-magic-sparkles"></i>
 	</button>

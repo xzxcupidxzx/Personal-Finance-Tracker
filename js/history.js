@@ -18,6 +18,12 @@ class HistoryModule {
         };
         this.currentCalendarDate = new Date();
         this.accountViewMode = 'list'; // Mặc định là 'list'
+		this.modalState = {
+			currentAccount: null,
+			filterPeriod: 'all',
+			startDate: null,
+			endDate: null
+		};
     }
 
     init(app) {
@@ -72,7 +78,17 @@ class HistoryModule {
             dayDetailModal: document.getElementById('day-detail-modal'),
             closeDayModal: document.getElementById('close-day-modal'),
             modalDayTitle: document.getElementById('modal-day-title'),
-            modalDayTransactions: document.getElementById('modal-day-transactions')
+            modalDayTransactions: document.getElementById('modal-day-transactions'),
+			accountHistoryModal: document.getElementById('account-history-modal'),
+			closeAccountModal: document.getElementById('close-account-modal'),
+			modalAccountTitle: document.getElementById('modal-account-title'),
+			modalAccountSummary: document.getElementById('modal-account-summary'),
+			modalAccountTransactions: document.getElementById('modal-account-transactions'),
+			modalAccountFilterPeriod: document.getElementById('modal-account-filter-period'),
+			modalAccountCustomDates: document.getElementById('modal-account-custom-dates'),
+			modalAccountFilterStartDate: document.getElementById('modal-account-filter-start-date'),
+			modalAccountFilterEndDate: document.getElementById('modal-account-filter-end-date'),
+			modalAccountFilterApplyBtn: document.getElementById('modal-account-filter-apply-button')
         };
 
         // Warn about missing elements
@@ -191,7 +207,28 @@ class HistoryModule {
         } catch (error) {
             console.error('Error initializing calendar events:', error);
         }
+		if (this.elements.closeAccountModal) {
+			const closeHandler = () => this.closeAccountHistoryModal();
+			this.elements.closeAccountModal.addEventListener('click', closeHandler);
+			this.eventListeners.push({ element: this.elements.closeAccountModal, event: 'click', handler: closeHandler });
+		}
+		if (this.elements.accountHistoryModal) {
+			const modalHandler = (e) => {
+				if (e.target === this.elements.accountHistoryModal) {
+					this.closeAccountHistoryModal();
+				}
+			};
+			this.elements.accountHistoryModal.addEventListener('click', modalHandler);
+			this.eventListeners.push({ element: this.elements.accountHistoryModal, event: 'click', handler: modalHandler });
+		}
+		if (this.elements.modalAccountFilterPeriod) {
+			this.elements.modalAccountFilterPeriod.addEventListener('change', () => this.handleModalFilterChange());
+		}
+		if (this.elements.modalAccountFilterApplyBtn) {
+			this.elements.modalAccountFilterApplyBtn.addEventListener('click', () => this.applyModalCustomDateFilter());
+		}
     }
+	
     initializeHistoryFilters() {
         if (this.elements.historyFilterPeriod) {
             const handler = () => this.handleHistoryFilterChange();
@@ -703,32 +740,31 @@ class HistoryModule {
 			console.warn('Invalid account data for card creation');
 			return null;
 		}
-
 		try {
 			const card = document.createElement('div');
 			card.className = 'account-balance-card';
+			
+			// === THÊM DÒNG NÀY ĐỂ GỌI HÀM MỚI KHI CLICK ===
+			card.setAttribute('onclick', `window.HistoryModule.showAccountHistory('${this.escapeHtml(account.value)}')`);
+			card.style.cursor = 'pointer'; // Thêm con trỏ chuột để người dùng biết có thể nhấp
+			// =================================================
 
 			const numBalance = parseFloat(balance) || 0;
 			const balanceClass = numBalance >= 0 ? 'text-success' : 'text-danger';
-
 			const iconInfo = Utils.UIUtils.getCategoryIcon(account);
-
 			const iconHtml = iconInfo.type === 'img' 
 				? `<img src="${iconInfo.value}" class="custom-category-icon" alt="${this.escapeHtml(account.text)}">` 
 				: `<i class="${iconInfo.value}"></i>`;
-
+			
 			card.innerHTML = `
 				<div class="account-name">
-					<span class="category-icon">
-						${iconHtml}
-					</span>
+					<span class="category-icon">${iconHtml}</span>
 					<span>${this.escapeHtml(account.text)}</span>
 				</div>
 				<div class="account-balance ${balanceClass}">
 					${Utils.CurrencyUtils.formatCurrency(numBalance)}
 				</div>
 			`;
-
 			return card;
 		} catch (error) {
 			console.error('Error creating account balance card:', error);
@@ -1427,6 +1463,211 @@ class HistoryModule {
 		} catch (error) {
 			console.error('Error refreshing history module:', error);
 			Utils.UIUtils.showMessage('Có lỗi khi cập nhật module lịch sử', 'error'); 
+		}
+	}
+	/**
+	 * Hiển thị modal lịch sử giao dịch cho một tài khoản cụ thể.
+	 * @param {string} accountValue - Tên (value) của tài khoản.
+	 */
+	showAccountHistory(accountValue) {
+		if (!this.elements.accountHistoryModal || !this.app) return;
+
+		// Lưu lại tài khoản đang xem
+		this.modalState.currentAccount = accountValue;
+
+		const account = this.app.data.accounts.find(a => a.value === accountValue);
+		if (!account) return;
+
+		// Lấy tất cả giao dịch của tài khoản này trước
+		let allAccountTransactions = this.app.data.transactions
+			.filter(tx => tx.account === accountValue)
+			.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+
+		// Áp dụng bộ lọc ngày tháng
+		const transactions = this.filterTransactionsByModalState(allAccountTransactions);
+
+		// Cập nhật giao diện
+		this.elements.modalAccountTitle.textContent = `Lịch sử: ${this.escapeHtml(account.text)}`;
+		this.renderAccountSummary(accountValue, transactions);
+
+		const listContainer = this.elements.modalAccountTransactions;
+		listContainer.innerHTML = '';
+		if (transactions.length === 0) {
+			listContainer.innerHTML = `<div class="no-transactions-day" style="text-align: center; padding: 2rem;">Không có giao dịch nào khớp với bộ lọc.</div>`;
+		} else {
+			transactions.forEach(tx => {
+				const item = this.createAccountHistoryTransactionItem(tx);
+				listContainer.appendChild(item);
+			});
+		}
+
+		this.elements.accountHistoryModal.style.display = 'flex';
+		this.updateModalFilterUI(); // Cập nhật trạng thái UI của bộ lọc
+	}
+
+	/**
+	 * Đóng modal lịch sử giao dịch.
+	 */
+	closeAccountHistoryModal() {
+		if (this.elements.accountHistoryModal) {
+			this.elements.accountHistoryModal.style.display = 'none';
+		}
+	}
+
+	/**
+	 * Tạo một dòng giao dịch cho modal lịch sử tài khoản.
+	 * @param {object} transaction - Dữ liệu giao dịch.
+	 * @param {string} currentAccountValue - Tài khoản đang xem.
+	 * @returns {HTMLElement}
+	 */
+	createAccountHistoryTransactionItem(transaction) {
+		const item = document.createElement('div');
+		item.className = 'day-transaction-item';
+
+		// === SỬA LỖI LOGIC HIỂN THỊ ===
+		// Logic mới đơn giản hơn, chỉ dựa vào `transaction.type`
+		const typeClass = transaction.type === 'Thu' ? 'income' : 'expense';
+		const amountPrefix = transaction.type === 'Thu' ? '+ ' : '- ';
+
+		let description = transaction.description || 'Không có mô tả';
+		let categoryText = transaction.category || 'Chưa phân loại';
+
+		// Làm rõ mô tả và danh mục cho giao dịch chuyển tiền
+		if (transaction.isTransfer) {
+			const pairTx = this.app.data.transactions.find(t => t.id === transaction.transferPairId);
+			if (pairTx) {
+				const otherAccountName = this.app.getAccountName(pairTx.account);
+				if (transaction.type === 'Thu') { // Nhận tiền
+					description = `Nhận tiền từ ${otherAccountName}`;
+					categoryText = "Nhận tiền chuyển khoản";
+				} else { // Chuyển đi
+					description = `Chuyển tiền đến ${otherAccountName}`;
+					categoryText = "Chuyển tiền đi";
+				}
+			}
+		}
+		
+		item.innerHTML = `
+			<div class="transaction-type-indicator ${typeClass}"></div>
+			<div class="day-transaction-details">
+				<div class="day-transaction-description">${this.escapeHtml(description)}</div>
+				<div class="day-transaction-meta">
+					${this.escapeHtml(categoryText)} •
+					${Utils.DateUtils.formatDisplayDateTime(transaction.datetime)} 
+				</div>
+			</div>
+			<div class="day-transaction-actions" style="display: flex; gap: 0.5rem; margin-left: auto; align-items: center;">
+				<div class="day-transaction-amount ${typeClass}" style="margin-right: 1rem;">
+					${amountPrefix}${Utils.CurrencyUtils.formatCurrency(transaction.amount || 0)}
+				</div>
+				<button class="action-btn-small edit" onclick="window.TransactionsModule.editTransaction('${transaction.id}')" title="Chỉnh sửa"><i class="fa-solid fa-pencil"></i></button>
+				<button class="action-btn-small delete" onclick="window.TransactionsModule.deleteTransaction('${transaction.id}', () => window.HistoryModule.showAccountHistory('${transaction.account}'))" title="Xóa"><i class="fa-solid fa-trash-can"></i></button>
+			</div>
+		`;
+		return item;
+	}
+
+	/**
+	 * Render phần tóm tắt cho tài khoản trong modal.
+	 * @param {string} accountValue - Tên tài khoản.
+	 * @param {Array} transactions - Danh sách giao dịch đã lọc.
+	 */
+	renderAccountSummary(accountValue, transactions) {
+		let totalIn = 0;
+		let totalOut = 0;
+
+		transactions.forEach(tx => {
+			const amount = parseFloat(tx.amount) || 0;
+			if (tx.isTransfer) {
+				if (tx.account === accountValue) totalOut += amount; // Chuyển đi
+				else totalIn += amount; // Nhận tiền
+			} else {
+				if (tx.type === 'Thu') totalIn += amount;
+				else totalOut += amount;
+			}
+		});
+
+		const finalBalance = this.app.getAccountBalance(accountValue);
+
+		this.elements.modalAccountSummary.innerHTML = `
+			<div class="summary-item"><strong>Tổng thu:</strong> <span class="text-success">+ ${Utils.CurrencyUtils.formatCurrency(totalIn)}</span></div>
+			<div class="summary-item"><strong>Tổng chi:</strong> <span class="text-danger">- ${Utils.CurrencyUtils.formatCurrency(totalOut)}</span></div>
+			<div class="summary-item"><strong>Số dư cuối:</strong> <strong class="${finalBalance >= 0 ? 'text-success' : 'text-danger'}">${Utils.CurrencyUtils.formatCurrency(finalBalance)}</strong></div>
+		`;
+	}
+	handleModalFilterChange() {
+		const period = this.elements.modalAccountFilterPeriod.value;
+		this.modalState.filterPeriod = period;
+
+		if (period === 'custom') {
+			this.elements.modalAccountCustomDates.style.display = 'flex';
+		} else {
+			this.elements.modalAccountCustomDates.style.display = 'none';
+			// Gọi lại hàm render với tài khoản hiện tại
+			this.showAccountHistory(this.modalState.currentAccount);
+		}
+	}
+
+	applyModalCustomDateFilter() {
+		const startDate = this.elements.modalAccountFilterStartDate.value;
+		const endDate = this.elements.modalAccountFilterEndDate.value;
+		if (!startDate || !endDate) {
+			Utils.UIUtils.showMessage('Vui lòng chọn cả hai ngày.', 'error');
+			return;
+		}
+		this.modalState.startDate = new Date(startDate);
+		this.modalState.endDate = new Date(endDate);
+		this.modalState.endDate.setHours(23, 59, 59, 999);
+		
+		this.showAccountHistory(this.modalState.currentAccount);
+	}
+
+	filterTransactionsByModalState(transactions) {
+		const { filterPeriod, startDate, endDate } = this.modalState;
+
+		if (filterPeriod === 'all') {
+			return transactions;
+		}
+		if (filterPeriod === 'custom') {
+			return transactions.filter(tx => {
+				const txDate = new Date(tx.datetime);
+				return txDate >= startDate && txDate <= endDate;
+			});
+		}
+
+		// Xử lý các trường hợp còn lại (this_month, last_month, ...)
+		const now = new Date();
+		let rangeStart, rangeEnd;
+
+		switch (filterPeriod) {
+			case 'this_month':
+				rangeStart = new Date(now.getFullYear(), now.getMonth(), 1);
+				rangeEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+				break;
+			case 'last_month':
+				rangeStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+				rangeEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+				break;
+			case 'this_year':
+				rangeStart = new Date(now.getFullYear(), 0, 1);
+				rangeEnd = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+				break;
+		}
+
+		return transactions.filter(tx => {
+			const txDate = new Date(tx.datetime);
+			return txDate >= rangeStart && txDate <= rangeEnd;
+		});
+	}
+
+	updateModalFilterUI() {
+		this.elements.modalAccountFilterPeriod.value = this.modalState.filterPeriod;
+		if (this.modalState.filterPeriod === 'custom') {
+			this.elements.modalAccountCustomDates.style.display = 'flex';
+			this.elements.modalAccountFilterStartDate.valueAsDate = this.modalState.startDate;
+			this.elements.modalAccountFilterEndDate.valueAsDate = this.modalState.endDate;
+		} else {
+			this.elements.modalAccountCustomDates.style.display = 'none';
 		}
 	}
 }

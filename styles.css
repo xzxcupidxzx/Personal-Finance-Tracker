@@ -3717,7 +3717,7 @@ hr {
         font-size: 0.9rem;
     }
 }
-
+ ưd qưdqwd
 /* =================================================== */
 /* == STYLES FOR IMPROVED CATEGORY SPEND LIST ITEM === */
 /* =================================================== */
@@ -4346,4 +4346,68 @@ hr {
 
 .summary-item-balance .arrow {
     color: var(--text-muted);
+}
+
+.account-balance-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.account-balance-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Style cho khu vực tóm tắt trong modal */
+.account-history-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+    background-color: var(--bg-tertiary);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.account-history-summary .summary-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+}
+
+/* Đảm bảo các nút Sửa/Xóa nằm gọn gàng bên phải */
+.day-transaction-item {
+    display: flex;
+    align-items: center;
+}
+
+.day-transaction-details {
+    flex-grow: 1; /* Cho phép phần mô tả chiếm hết không gian còn lại */
+}
+
+/* Đảm bảo modal hiển thị trên màn hình lớn cũng đẹp */
+.modal-content.large {
+    max-width: 800px;
+    height: 85vh;
+    max-height: 800px;
+}
+.modal-filter-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    margin: 0 -1rem 1rem -1rem; /* Mở rộng ra sát lề modal-body */
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-filter-controls .filter-select {
+    width: 100%;
+}
+
+.modal-filter-controls .custom-date-picker-container {
+    padding: 0;
+    border: none;
+    background: none;
+    margin-top: 0;
 }

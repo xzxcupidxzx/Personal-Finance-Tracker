@@ -424,14 +424,19 @@ class TransactionsModule {
         this.updateFormVisibility();
     }
 
-    deleteTransaction(transactionId) {
-        if (confirm('Bạn có chắc chắn muốn xóa giao dịch này?')) {
-            if (this.app.deleteTransaction(transactionId)) {
-                Utils.UIUtils.showMessage('Đã xóa giao dịch', 'success');
-                this.refresh();
-            }
-        }
-    }
+	deleteTransaction(transactionId, callback) {
+		if (confirm('Bạn có chắc chắn muốn xóa giao dịch này?')) {
+			if (this.app.deleteTransaction(transactionId)) {
+				Utils.UIUtils.showMessage('Đã xóa giao dịch', 'success');
+				// Gọi hàm refresh của chính module này (cập nhật danh sách chính)
+				this.refresh();
+				// Nếu có hàm callback được truyền vào, gọi nó
+				if (typeof callback === 'function') {
+					callback();
+				}
+			}
+		}
+	}
 
     refresh() {
         if (!this.isInitialized) return;

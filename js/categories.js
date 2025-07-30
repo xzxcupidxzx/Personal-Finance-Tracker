@@ -172,16 +172,10 @@ class CategoriesModule {
 		const li = document.createElement('li');
 		li.className = 'category-item';
 
-		// === PHẦN SỬA ĐỔI QUAN TRỌNG ===
-		// Tìm lại đối tượng category đầy đủ trong dữ liệu của app để đảm bảo
-		// chúng ta có thông tin icon mới nhất đã được lưu.
 		const categoryArray = type === 'income' ? this.app.data.incomeCategories : this.app.data.expenseCategories;
-		const currentItem = categoryArray.find(c => c.value === category.value) || category; // Fallback về category gốc nếu không tìm thấy
+		const currentItem = categoryArray.find(c => c.value === category.value) || category;
 		
-		// Sử dụng currentItem đã được cập nhật để lấy icon
 		const iconInfo = Utils.UIUtils.getCategoryIcon(currentItem); 
-		// === KẾT THÚC PHẦN SỬA ĐỔI ===
-
 		const iconHtml = iconInfo.type === 'img' ? `<img src="${iconInfo.value}" class="custom-category-icon">` : `<i class="${iconInfo.value}"></i>`;
 		const isProtected = this.isProtectedCategory(currentItem.value);
 		const usageCount = this.app.data.transactions.filter(tx => tx.category === currentItem.value).length;
@@ -210,58 +204,54 @@ class CategoriesModule {
      * @param {object} account - The account object.
      * @returns {HTMLLIElement}
      */
-    createAccountListItem(account) {
-        const li = document.createElement('li');
-        li.className = 'account-item'; 
+	createAccountListItem(account) {
+		const li = document.createElement('li');
+		li.className = 'account-item'; 
 		const currentAccount = this.app.data.accounts.find(a => a.value === account.value) || account;
 
-        const balance = this.app.getAccountBalance(account.value);
-        const usageCount = this.app.data.transactions.filter(tx => tx.account === account.value).length;
-        const iconInfo = Utils.UIUtils.getCategoryIcon(currentAccount); 
-        const iconHtml = iconInfo.type === 'img' ? `<img src="${iconInfo.value}" class="custom-category-icon">` : `<i class="${iconInfo.value || 'fa-solid fa-landmark'}"></i>`;
-        const isHidden = localStorage.getItem(`balance_hidden_${account.value}`) === 'true';
-        const escapedValue = this.escapeHtml(account.value);
-        
-        // =======================================================
-        // === SỬA LỖI: Thêm lại class màu cho số dư tài khoản ===
-        // =======================================================
-        const balanceColorClass = balance >= 0 ? 'text-success' : 'text-danger';
-        const isProtected = this.isProtectedAccount(account.value);
-        li.innerHTML = `
-            <div class="account-icon-balance-stack">
-                <span class="category-icon compact">${iconHtml}</span>
-                <span class="account-balance compact ${balanceColorClass}" id="balance-${escapedValue.replace(/[^a-zA-Z0-9]/g, '_')}">
-                    ${isHidden ? '******' : Utils.CurrencyUtils.formatCurrencyShort(balance)}
-                </span>
-            </div>
-            <div class="category-details">
-                <span class="category-name">${this.escapeHtml(account.text)}</span>
-                <span class="category-usage">${usageCount} giao dịch</span>
-            </div>
-            <div class="category-actions">
-                <button class="action-btn-small eye-toggle-btn" title="${isHidden ? 'Hiện' : 'Ẩn'} số dư" data-account="${escapedValue}">
-                    ${isHidden ? '🙈' : '👁️'}
-                </button>
-                ${!isProtected ? `
-                    <button class="action-btn-small edit-btn" onclick="window.CategoriesModule.showEditModal('${escapedValue}', 'account')" title="Chỉnh sửa">
-                        <i class="fa-solid fa-pencil"></i>
-                    </button>
-                    <button class="action-btn-small delete-btn" onclick="window.CategoriesModule.deleteAccount('${escapedValue}')" title="Xóa">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                ` : `<span class="protected-badge" title="Tài khoản hệ thống">🔒</span>`}
-            </div>
-        `;
-        
-        setTimeout(() => { 
-            li.querySelector('.eye-toggle-btn')?.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.toggleBalanceVisibility(account.value);
-            });
-        }, 0);
-        return li;
-    }
-    
+		const balance = this.app.getAccountBalance(account.value);
+		const usageCount = this.app.data.transactions.filter(tx => tx.account === account.value).length;
+		const iconInfo = Utils.UIUtils.getCategoryIcon(currentAccount); 
+		const iconHtml = iconInfo.type === 'img' ? `<img src="${iconInfo.value}" class="custom-category-icon">` : `<i class="${iconInfo.value || 'fa-solid fa-landmark'}"></i>`;
+		const isHidden = localStorage.getItem(`balance_hidden_${account.value}`) === 'true';
+		const escapedValue = this.escapeHtml(account.value);
+		
+		const balanceColorClass = balance >= 0 ? 'text-success' : 'text-danger';
+		const isProtected = this.isProtectedAccount(account.value);
+		li.innerHTML = `
+			<div class="account-icon-balance-stack">
+				<span class="category-icon compact">${iconHtml}</span>
+				<span class="account-balance compact ${balanceColorClass}" id="balance-${escapedValue.replace(/[^a-zA-Z0-9]/g, '_')}">
+					${isHidden ? '******' : Utils.CurrencyUtils.formatCurrencyShort(balance)}
+				</span>
+			</div>
+			<div class="category-details">
+				<span class="category-name">${this.escapeHtml(account.text)}</span>
+				<span class="category-usage">${usageCount} giao dịch</span>
+			</div>
+			<div class="category-actions">
+				<button class="action-btn-small eye-toggle-btn" title="${isHidden ? 'Hiện' : 'Ẩn'} số dư" data-account="${escapedValue}">
+					${isHidden ? '🙈' : '👁️'}
+				</button>
+				${!isProtected ? `
+					<button class="action-btn-small edit-btn" onclick="window.CategoriesModule.showEditModal('${escapedValue}', 'account')" title="Chỉnh sửa">
+						<i class="fa-solid fa-pencil"></i>
+					</button>
+					<button class="action-btn-small delete-btn" onclick="window.CategoriesModule.deleteAccount('${escapedValue}')" title="Xóa">
+						<i class="fa-solid fa-trash-can"></i>
+					</button>
+				` : `<span class="protected-badge" title="Tài khoản hệ thống">🔒</span>`}
+			</div>
+		`;
+		
+		setTimeout(() => { 
+			li.querySelector('.eye-toggle-btn')?.addEventListener('click', (e) => {
+				e.stopPropagation();
+				this.toggleBalanceVisibility(account.value);
+			});
+		}, 0);
+		return li;
+	}
     toggleBalanceVisibility(accountValue) {
         const key = `balance_hidden_${accountValue}`;
         const balSpan = document.getElementById(`balance-${accountValue.replace(/[^a-zA-Z0-9]/g, '_')}`);
