@@ -4392,22 +4392,117 @@ hr {
 }
 .modal-filter-controls {
     display: flex;
-    flex-direction: column;
+    flex-direction: row; /* Chuyển sang layout hàng ngang */
+    flex-wrap: wrap;     /* Cho phép xuống dòng nếu màn hình quá hẹp */
+    align-items: center; /* Căn các mục thẳng hàng theo chiều dọc */
     gap: 0.75rem;
-    padding: 1rem;
-    margin: 0 -1rem 1rem -1rem; /* Mở rộng ra sát lề modal-body */
+    padding: 0.75rem;
+    margin: 0 -1rem 1rem -1rem;
     background-color: var(--bg-secondary);
     border-top: 1px solid var(--border-color);
     border-bottom: 1px solid var(--border-color);
 }
 
 .modal-filter-controls .filter-select {
-    width: 100%;
+    flex: 1 1 150px; /* Cho phép co giãn, độ rộng cơ bản 150px */
+    min-width: 150px;
 }
 
 .modal-filter-controls .custom-date-picker-container {
-    padding: 0;
-    border: none;
-    background: none;
-    margin-top: 0;
+    flex: 2 1 300px; /* Cho phép co giãn, chiếm nhiều không gian hơn */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.modal-filter-controls .custom-date-picker-container .date-input-group {
+    flex: 1;
+}
+
+/* ========================================================== */
+/* == TỐI ƯU BỘ LỌC TRONG MODAL CHO MÀN HÌNH NHỎ (<= 480px) == */
+/* ========================================================== */
+
+@media (max-width: 480px) {
+
+    /** * Container chính của bộ lọc
+     * Sử dụng flexbox để căn chỉnh các mục con trên một hàng.
+     */
+    .modal-filter-controls {
+        display: flex;
+        flex-wrap: nowrap; /* Giữ các mục trên một hàng duy nhất */
+        align-items: center; /* QUAN TRỌNG: Căn giữa tất cả các mục theo chiều dọc */
+        gap: 8px; /* Khoảng cách nhất quán giữa các mục */
+        padding: 8px;
+        margin-bottom: 1rem; /* Tạo khoảng cách với nội dung bên dưới */
+    }
+
+    /**
+     * Container cho 2 ô chọn ngày.
+     * Nó sẽ tự co giãn để chiếm hết không gian còn lại.
+     */
+    .modal-filter-controls .custom-date-picker-container {
+        display: flex;
+        flex: 1 1 auto; /* Cho phép co giãn và chiếm không gian trống */
+        min-width: 0; /* Cho phép nó co lại nhỏ hơn kích thước nội dung */
+        gap: 8px;
+        border: none;
+        padding: 0;
+        background: none;
+    }
+
+    .modal-filter-controls .date-input-group {
+        position: relative;
+        flex: 1;
+    }
+
+    /* Ẩn hoàn toàn label "Từ:" và "Đến:" để tiết kiệm không gian */
+    .modal-filter-controls .date-input-group label {
+        display: none;
+    }
+
+    /**
+     * Tùy chỉnh ô input ngày thành dạng icon-only
+     * - color: transparent: Ẩn văn bản ngày tháng (dd/mm/yyyy).
+     * - height: 40px: Đặt chiều cao tiêu chuẩn, dễ bấm.
+     * - font-size: 16px: Tránh trình duyệt trên iOS tự động phóng to khi focus.
+     */
+    .modal-filter-controls .filter-date {
+        width: 100%;
+        height: 40px;
+        padding: 0;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background-color: var(--bg-primary);
+        color: transparent; /* MẸO: Làm cho chữ trong suốt */
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    /**
+     * Định vị lại icon chọn lịch mặc định của trình duyệt.
+     * Di chuyển nó vào giữa ô input.
+     */
+    .modal-filter-controls .filter-date::-webkit-calendar-picker-indicator {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 0.7;
+        padding: 10px; /* Tăng vùng có thể bấm cho dễ tương tác */
+        cursor: pointer;
+    }
+
+    /**
+     * Nút "Áp dụng"
+     * - flex-shrink: 0: Ngăn không cho nút bị co lại.
+     * - height: 40px: Đồng bộ chiều cao với các ô input.
+     */
+    .modal-filter-controls .filter-apply-button {
+        flex-shrink: 0;
+        height: 40px;
+        padding: 0 16px;
+        white-space: nowrap;
+    }
 }
