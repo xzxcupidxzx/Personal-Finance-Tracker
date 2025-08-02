@@ -4384,57 +4384,127 @@ hr {
     flex-grow: 1; /* Cho phép phần mô tả chiếm hết không gian còn lại */
 }
 
-/* --- 2. TỐI ƯU CHO MÀN HÌNH NHỎ (<= 480px) --- */
+/* ========================================================== */
+/* == STYLE BỘ LỌC NGÀY THÁNG - PHIÊN BẢN TINH CHỈNH CUỐI CÙNG == */
+/* ========================================================== */
+/* ====== FILTER CONTROLS STYLE - DESKTOP & MOBILE ====== */
+.filter-controls,
+.modal-filter-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-direction: row;     /* Luôn ngang */
+    flex-wrap: nowrap;       /* Không xuống dòng */
+    width: 100%;
+    overflow-x: auto;        /* Nếu quá dài sẽ cuộn ngang */
+    -webkit-overflow-scrolling: touch;
+    padding: 0 2px;
+    box-sizing: border-box;
+}
 
+/* --- Nhóm chọn ngày tùy chỉnh cũng luôn nằm ngang --- */
+#custom-date-picker-container,
+#modal-account-custom-dates {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Ẩn nhãn, chỉ để lại cho accessibility */
+.date-input-group label {
+    position: absolute;
+    width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); border: 0;
+    display: inline;
+}
+
+/* --- Style cho input chọn ngày dạng icon --- */
+.filter-date {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 36px;
+    height: 36px;
+    min-width: 32px;
+    min-height: 32px;
+    padding: 0;
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #3a4252);
+    cursor: pointer;
+    color: transparent;
+    background-color: var(--bg-primary, #232a39);
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="%2364748b" viewBox="0 0 16 16"><path d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4V.5zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 18px 18px;
+    transition: all 0.2s ease;
+}
+
+.filter-date:focus {
+    outline: none;
+    border-color: var(--primary-color, #378afe);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+/* --- Style đồng bộ các select, button --- */
+.filter-select,
+.filter-apply-button {
+    min-width: 36px;
+    height: 36px;
+    font-size: 15px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #3a4252);
+    background: var(--bg-primary, #232a39);
+    color: var(--text-color, #e2e6f3);
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.filter-apply-button {
+    background: var(--primary-color, #378afe);
+    color: #fff;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0 18px;
+}
+
+/* ========== RESPONSIVE: MOBILE OPTIMIZED ========== */
 @media (max-width: 480px) {
-    /* Ghi đè các style cần thiết cho giao diện nhỏ gọn */
-    .modal-filter-controls {
-        flex-wrap: nowrap;
-        padding: 8px;
-        gap: 8px;
+    .filter-controls,
+    .modal-filter-controls,
+    #custom-date-picker-container,
+    #modal-account-custom-dates {
+        gap: 6px;
+        padding: 0 1px;
     }
-
-    .modal-filter-controls .custom-date-picker-container {
-        flex: 1 1 auto;
-        min-width: 0;
-        gap: 8px;
+    .filter-select,
+    .filter-apply-button,
+    .filter-date {
+        min-width: 30px;
+        height: 32px;
+        font-size: 13px;
+        border-radius: 6px;
+        padding: 0 6px;
     }
-
-    .modal-filter-controls .date-input-group label {
-        display: none;
+    .filter-date {
+        width: 32px;
+        height: 32px;
+        background-size: 15px 15px;
     }
-    
-    .modal-filter-controls .date-input-group {
-        position: relative;
-        gap: 0;
-    }
-
-    /* Áp dụng mẹo biến ô input thành dạng icon-only */
-    .modal-filter-controls .filter-date {
-        /* ✨ FIX CHO IPHONE: Reset giao diện gốc của trình duyệt */
-        -webkit-appearance: none;
-        appearance: none;
-
-        /* Các thuộc tính cũ giữ nguyên */
-        height: 40px;
-        color: transparent;
-        background-color: var(--bg-primary);
-        padding: 0;
-        text-align: center;
-        font-size: 16px;
-        cursor: pointer;
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-
-        /* Kỹ thuật dùng background-image để hiển thị icon */
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="%2364748b" viewBox="0 0 16 16"><path d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4V.5zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2zM9.5 7h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3 0h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3 0h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm9 3h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5zm-3 0h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5zm-3 0h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5-.5zm-3 0h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5-.5z"/></svg>');
-        background-repeat: no-repeat;
-        background-position: center;
-    }
-    
-    /* Đồng bộ chiều cao nút "Áp dụng" */
-    .modal-filter-controls .filter-apply-button {
-        height: 40px;
+    .filter-apply-button {
+        padding: 0 12px;
+        font-size: 14px;
     }
 }
 
+/* Tăng touch-area trên thiết bị cảm ứng */
+@media (pointer: coarse) {
+    .filter-select,
+    .filter-apply-button,
+    .filter-date {
+        min-width: 44px;
+        min-height: 44px;
+    }
+}
